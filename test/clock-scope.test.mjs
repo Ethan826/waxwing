@@ -69,3 +69,26 @@ test('global. is read like globalThis.', () => {
   ]) assert.deepEqual(formsOf(code), [form], code);
   assert.deepEqual(formsOf('function f(global) { global.Date.now(); }'), []);
 });
+
+test('less common clock sources are findings', () => {
+  for (const [code, form] of [
+    ['Temporal.Now.instant();', 'Temporal.Now'],
+    ['globalThis.Temporal.Now.plainDateISO();', 'Temporal.Now'],
+    ['process.uptime();', 'process.uptime'],
+    ['process.cpuUsage();', 'process.cpuUsage'],
+    ['process.resourceUsage();', 'process.resourceUsage'],
+    ['const s = Date();', 'Date()'],
+    ['const s = Date(0);', 'Date()'],
+    ["import { uptime } from 'node:os'; uptime();", 'os.uptime'],
+    ["import { uptime as up } from 'os';", 'os.uptime'],
+    ["import os from 'node:os'; os.uptime();", 'os.uptime'],
+    ["import * as host from 'node:os'; host.uptime();", 'os.uptime'],
+    ["import os from 'os'; const { uptime } = os;",
+      'destructured os.uptime']
+  ]) assert.deepEqual(formsOf(code), [form], code);
+  for (const code of ["import { cpus } from 'node:os'; cpus();",
+    'function f(Date) { return Date(1); }',
+    'const o = { uptime() {} }; o.uptime();',
+    'const d = new Date(0); d.toString();'])
+    assert.deepEqual(formsOf(code), [], code);
+});

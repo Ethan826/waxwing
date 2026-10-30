@@ -8,7 +8,6 @@ const apply = 'fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): '
   + 'Int = 0; ';
 const noX = 'fn noX(p: { ...u }, q: { ...v }): Int where u lacks { x }, '
   + 'v lacks { x } = 0; ';
-const QUIET_MS = 2000;
 const QUIET_USES = 12;
 const indices = count => Array.from({ length: count }, (_, i) => i);
 
@@ -35,9 +34,9 @@ export const r005bEndProbes = {
     done(context);
   },
   // Twelve quiet predicates (no field, no rigid tail) reach a fixpoint
-  // at once and are Unresolved, quickly.
+  // at once and are Unresolved. The mutant keeps them going to the bound,
+  // which is E_INTERNAL; the probe checks the outcome, not the time.
   'r005b-quiet': context => {
-    const started = Date.now();
     const uses = indices(QUIET_USES);
     const parameters = uses.map(i => `f${i}: (a${i}, b${i}) -> c`);
     const source = `${pickR}fn h(${parameters.join(', ')}): Int = 0; `
@@ -45,10 +44,6 @@ export const r005bEndProbes = {
     expect(context, 'quiet predicates kept going', source,
       `E_TYPE ${pickRHolds}pass a lambda with annotated parameters in `
         + `place of pickR @pickR ${rsWritten}`);
-    if (Date.now() - started >= QUIET_MS) {
-      console.error('quiet predicates slow');
-      process.exit(1);
-    }
     done(context);
   },
   // A predicate still waiting at the end is never dropped: `split`'s

@@ -6,8 +6,9 @@ import { caught, expected, installation, lookup, unwinding }
 import { scenario } from './fx-services-programs.mjs';
 
 // FX001 Task 11 (design §5, "Scale, attributed separately"): Waxwing-
-// emitted programs against fixed bounds, so they run serially (the
-// fx-block.serial convention). Each bound is three times the median of five
+// emitted programs against fixed bounds, so they run under `npm run perf`
+// (the routine half is fx-scale.serial.test.mjs). Each bound is three times
+// the median of five
 // runs of the test on the author's laptop (2026-10-12; load averages and
 // the minimum and maximum are in docs/progress.md, FX001 Task 11). The
 // first run of a fresh binary pays the host's scan, so it is a warm-up that

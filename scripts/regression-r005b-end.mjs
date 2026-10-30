@@ -49,8 +49,8 @@ export const r005bEndRows = [
     needle: '        | reached.changed = Loop found\n',
     replacement: '        | reached.changed || true = Loop found\n',
     probe: 'r005b-quiet',
-    message: new RegExp('quiet predicates (kept going: E_INTERNAL '
-      + 're-examination passed|slow)')
+    message: new RegExp('quiet predicates kept going: E_INTERNAL '
+      + 're-examination passed')
   },
   {
     // Waiting predicates dropped at the end of a body: the body passes

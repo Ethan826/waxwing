@@ -18,17 +18,17 @@ const program = (width, count) => `${list}fn deep(x: a): `
   + `${'L('.repeat(width)}a${')'.repeat(width)} = deep(x);`
   + ` fn main(): Int = sink(${calls(count, '1')});`;
 
-const timed = work => work();
+const direct = work => work();
 
 const rejectedAtDepth = (width, count, first) => {
-  const diagnostic = timed(() => checkRejectedAt(program(width, count),
+  const diagnostic = direct(() => checkRejectedAt(program(width, count),
     'E_NESTING', calls(first, '1')));
   assert.equal(diagnostic.message,
     `Inferred type nesting exceeds ${limit} levels`);
 };
 
 test(`an inferred type exactly ${limit} deep checks`, () => {
-  timed(() => checkedPoly(program(27, 37)));
+  direct(() => checkedPoly(program(27, 37)));
 });
 
 test(`an inferred type ${limit + 1} deep is E_NESTING at its expression`,
@@ -55,7 +55,7 @@ test('a type that deepens after it is built is E_NESTING at its holder',
     const source = `${list}fn same(x: a, y: a): Int = 0; fn deep(x: a): `
       + `${'L('.repeat(27)}a${')'.repeat(27)} = deep(x); fn main(): Int =`
       + ` match N { C(h, t) => ${call} + same(h, C(1, N)), N => 0 };`;
-    const diagnostic = timed(() => checkRejectedAt(source, 'E_NESTING', call));
+    const diagnostic = direct(() => checkRejectedAt(source, 'E_NESTING', call));
     assert.equal(diagnostic.message,
       `Inferred type nesting exceeds ${limit} levels`);
   });
@@ -91,7 +91,7 @@ for (const [links, nest] of [[2, 7], [3, 4]]) {
   test(`${links} chained links of deep^${nest} are E_NESTING in unification`,
     () => {
       const { source, right } = chained(links, nest);
-      const diagnostic = timed(() => checkRejectedAt(source, 'E_NESTING',
+      const diagnostic = direct(() => checkRejectedAt(source, 'E_NESTING',
         right));
       assert.equal(diagnostic.message,
         `Inferred type nesting exceeds ${limit} levels`);
@@ -108,7 +108,7 @@ test('a binding made too deep by its own unification is E_NESTING', () => {
     + ` fn deep(x: a): ${'L('.repeat(127)}a${')'.repeat(127)} = deep(x);`
     + ' fn main(): Int = match Z { P(h1, h2, h3, g1) =>'
     + ` same(W(h1, h2, g1), ${right}), Z => 0 };`;
-  const diagnostic = timed(() => checkRejectedAt(source, 'E_NESTING', right));
+  const diagnostic = direct(() => checkRejectedAt(source, 'E_NESTING', right));
   assert.equal(diagnostic.message,
     `Inferred type nesting exceeds ${limit} levels`);
 });
@@ -143,7 +143,7 @@ test('six chained links of L^997 are E_NESTING, not a crash', () => {
     + ` fn l10(x: a): ${nested(10)} = l10(x); fn l1(x: a): L(a) = l1(x);`
     + ` fn main(): Int = match Z { P(${[...g, 'h1'].join(', ')}) =>`
     + ` same(${left}, ${right}), Z => 0 };`;
-  const diagnostic = timed(() => checkRejectedAt(source, 'E_NESTING', right));
+  const diagnostic = direct(() => checkRejectedAt(source, 'E_NESTING', right));
   assert.equal(diagnostic.message,
     `Inferred type nesting exceeds ${limit} levels`);
 });

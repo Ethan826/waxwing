@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { loadavg } from 'node:os';
 
-// The one routine module that compares elapsed times: a doubling check
+// The only routine module that compares elapsed times against a threshold
+// (the shrink deadline in fx-shrink.mjs is a functional limit that fails
+// nothing, and go-timed's `buildMs` is returned, not compared, outside
+// perf files): a doubling check
 // (Sedgewick and Wayne, Algorithms 4th ed., section 1.4) that bounds growth
 // between two sizes. It does not prove linearity, and a ratio reduces but
 // does not remove interference from other work on the machine.

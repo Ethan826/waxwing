@@ -9,10 +9,12 @@ import { posix } from 'node:path';
 
 const clockPaths = new Set(['performance.now', 'performance.timeOrigin',
   'performance.mark', 'performance.measure', 'Date.now', 'process.hrtime',
-  'process.hrtime.bigint', 'console.time', 'console.timeEnd',
-  'console.timeLog']);
+  'process.hrtime.bigint', 'process.uptime', 'process.cpuUsage',
+  'process.resourceUsage', 'console.time', 'console.timeEnd',
+  'console.timeLog', 'Temporal.Now', 'os.uptime']);
 const clockRoots = new Set(['performance', 'Date', 'process', 'console',
-  'globalThis', 'global']);
+  'globalThis', 'global', 'Temporal', 'os']);
+const osModules = new Set(['node:os', 'os']);
 const clockModules = new Set(['node:perf_hooks', 'perf_hooks']);
 const timingHelpers = new Set(['test/go-timed.mjs', 'test/growth.mjs',
   'test/timing.mjs']);
@@ -152,6 +154,13 @@ export const scanSource = (file, source, parse) => {
     else if (pattern.type === 'ObjectPattern' && base !== undefined)
       destructure(pattern, base, scope);
   };
+  // `import os from 'node:os'` makes the local name an alias of the `os`
+  // root; `import { uptime } from 'node:os'` is itself a read.
+  const osImport = (entry, scope) => {
+    if (entry.type === 'ImportSpecifier') {
+      if (entry.imported.name === 'uptime') report(entry, 'os.uptime');
+    } else lookup(entry.local.name, scope)?.aliases.set(entry.local.name, 'os');
+  };
   const moduleRequest = (node, spec) => {
     if (clockModules.has(spec)) report(node, `import ${spec}`);
     if (!spec.startsWith('.')) return;
@@ -172,6 +181,13 @@ export const scanSource = (file, source, parse) => {
     if (type === 'VariableDeclarator') bind(node.id, node.init, scope);
     if (type === 'AssignmentExpression' && node.operator === '=')
       bind(node.left, node.right, scope);
+    if (type === 'CallExpression') {
+      const callee = resolve(node.callee, scope);
+      if (callee !== undefined && bareOf(callee) === 'Date')
+        report(node, 'Date()');
+    }
+    if (type === 'ImportDeclaration' && osModules.has(importSource(node)))
+      node.specifiers.forEach(entry => osImport(entry, scope));
     if (type === 'NewExpression' && node.arguments.length === 0) {
       const callee = resolve(node.callee, scope);
       if (callee !== undefined && bareOf(callee) === 'Date')

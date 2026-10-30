@@ -7,6 +7,10 @@ import { parse } from 'acorn';
 // `assert.<name>`, `t.assert.<name>` and `assert.rejects`). Used to compare
 // routine coverage before and after the verification-contract split
 // (docs/plans/2026-10-30-verification-contract-proposal.md).
+// Blind spots: only assertions written in the test file itself are counted
+// (a helper that asserts in another file is invisible); a test made by a
+// loop is one site; a timeout is not an assertion, so an unlisted timeout is
+// not a finding.
 //   node scripts/test-inventory.mjs            print the inventory
 //   node scripts/test-inventory.mjs diff A B   compare two printed files
 const testCalls = new Set(['test', 'it', 'describe', 'suite']);

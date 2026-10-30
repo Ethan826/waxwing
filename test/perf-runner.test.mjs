@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { perfFiles, runPerf, splitTestNames }
+import { readFileSync } from 'node:fs';
+import { perfFiles, runPerf, splitTestNames, switchedOff }
   from '../scripts/perf.mjs';
 
 // scripts/perf.mjs: every file runs after a failure, each failure is
@@ -33,6 +34,36 @@ test('perf attempts each file once, with no retry', () => {
   }, () => {});
   assert.deepEqual(seen, ['x', 'y', 'z']);
   assert.deepEqual(failed, ['y']);
+});
+
+test('a timed-out file is a failure and the run continues', () => {
+  const seen = [];
+  const failed = runPerf(['x', 'y'], file => {
+    seen.push(file);
+    return file === 'x' ? 'timed out' : 0;
+  }, () => {});
+  assert.deepEqual(seen, ['x', 'y']);
+  assert.deepEqual(failed, ['x']);
+});
+
+test('a skipped, todo or only test in a perf file is a failure', () => {
+  // Assembled, so the repository's disabled-test scan does not see them.
+  const off = word => `${word}('a', () => {});`;
+  const options = word => `test('a', { ${word}: true }, () => {});`;
+  for (const text of [off(['test', 'skip'].join('.')),
+    off(['it', 'todo'].join('.')), options('skip'),
+    off(['describe', 'only'].join('.'))])
+    assert.equal(switchedOff(text), true, text);
+  assert.equal(switchedOff("test('a', () => {});"), false);
+  const texts = { x: off(['test', 'skip'].join('.')),
+    y: 'test("b", () => {});' };
+  const lines = [];
+  const failed = runPerf(['x', 'y'], () => 0, line => lines.push(line),
+    file => texts[file]);
+  assert.deepEqual(failed, ['x']);
+  assert.ok(lines.some(line => line.includes('switched-off test')));
+  for (const file of perfFiles('test'))
+    assert.equal(switchedOff(readFileSync(file, 'utf8')), false, file);
 });
 
 test('perf and verify split file names by suffix', () => {

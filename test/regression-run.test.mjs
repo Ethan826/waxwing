@@ -154,3 +154,29 @@ test('the real pin row is a test-tree row', () => {
   const row = r0AminRows.find(r => r.name === 'r0-amin-cohort-pin-readonly');
   assert.equal(rowTree(row), 'test');
 });
+
+test('rows flagged alone run one at a time, after the pooled rows',
+  async t => {
+    const log = [];
+    let active = 0;
+    const prove = async row => {
+      active += 1;
+      log.push(`start ${row.name} active ${active}`);
+      await pause();
+      active -= 1;
+      log.push(`end ${row.name}`);
+    };
+    const flagged = [{ name: 'slow', alone: true }, ...rows,
+      { name: 'slower', alone: true }];
+    const { result } = await captured(t, () => runRegression(flagged, [], 4,
+      options(prove)));
+    assert.deepEqual(result, []);
+    const slow = log.indexOf('start slow active 1');
+    const slower = log.indexOf('start slower active 1');
+    assert.ok(slow > log.findLastIndex(line => line.startsWith('end ')
+      && !line.includes('slow')), log.join('\n'));
+    assert.ok(slower > log.indexOf('end slow'), log.join('\n'));
+    assert.ok(log.every(line => !line.includes('slow')
+      || line.includes('active 1') || line.startsWith('end')),
+    log.join('\n'));
+  });

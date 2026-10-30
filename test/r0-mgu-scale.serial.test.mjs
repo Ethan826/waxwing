@@ -22,16 +22,16 @@ const problemOf = n => {
   return generatedOrThrow(generate(tables)(signatures)(main), 'main');
 };
 
-const timed = run => ({ value: run() });
+const direct = run => ({ value: run() });
 
 test(`openRequirements on generic(${count})`, () => {
   const problem = problemOf(count);
   assert.equal(problem.bq.length, 1);
-  const { value } = timed(() => openRequirements(problem));
+  const { value } = direct(() => openRequirements(problem));
   assert.equal(value.length, 0, 'main\'s atom is not open');
 });
 
 test(`g0Guard on generic(${count})`, () => {
   const problem = problemOf(count);
-  timed(() => g0Guard(problem));
+  direct(() => g0Guard(problem));
 });

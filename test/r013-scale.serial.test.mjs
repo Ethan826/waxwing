@@ -10,7 +10,7 @@ const chainLength = 2000;
 const main = ' fn main(): Int = 0;';
 
 // The 2 s bound is in r013-scale.perf.test.mjs (npm run perf).
-const bounded = work => work();
+const direct = work => work();
 
 const declarations = (count, last, passed) => {
   const types = Array.from({ length: count }, (_, index) =>
@@ -22,18 +22,18 @@ const bare = () => '...r';
 const labelled = index => `{ g${index}: Int, ...r }`;
 
 test('a 2,000-declaration records-heavy chain compiles', () => {
-  bounded(() => checked(declarations(chainLength, `E${chainLength}`, bare)));
+  direct(() => checked(declarations(chainLength, `E${chainLength}`, bare)));
 });
 
 test('so does one that labels each argument', () => {
   const last = `E${chainLength}({ h: Int, ...r })`;
-  bounded(() => checked(declarations(chainLength, last, labelled)));
+  direct(() => checked(declarations(chainLength, last, labelled)));
 });
 
 test('a clash at the far end of the chain is the one reported', () => {
   const source = declarations(chainLength,
     `E${chainLength}({ g0: Bool, ...r })`, labelled);
-  const diagnostic = bounded(() => rejected(source, 'E_DUPLICATE'));
+  const diagnostic = direct(() => rejected(source, 'E_DUPLICATE'));
   assert.equal(diagnostic.message, 'Duplicate field g0');
   assert.equal(diagnostic.span.start.offset, source.indexOf('g0'));
   assert.deepEqual(diagnostic.related.map(note => note.message),

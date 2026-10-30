@@ -12,11 +12,11 @@ import { expected, source } from './fn-scale-mixed.mjs';
 // A 5,000-parameter function with a mixed body (Int, Bool and list
 // parameters, each read twice out of order) is called directly and used
 // as a staged value; through the CLI, its generated program's `go build`
-// takes at most 10 s. Task 8 adds the full scale set below. A serial
-// test (`*.serial.test.mjs`): scripts/verify.mjs runs these one at a time
-// after the parallel phase, so `go build` is not timed under the parallel
-// runner's load (user decision A, 2026-10-09; it failed once at 10,584 ms
-// there, 4.0-4.4 s alone).
+// takes at most 10 s. Task 8 adds the full scale set below. These are the
+// time bounds only; they run under `npm run perf` (scripts/perf.mjs), one
+// file at a time, and the routine half is fn-scale.serial.test.mjs. (It
+// failed once at 10,584 ms under the parallel runner's load, 4.0-4.4 s
+// alone: user decision A, 2026-10-09.)
 const buildBoundMs = 10_000;
 const buildTimeoutMs = 120_000;
 

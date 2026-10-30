@@ -8,9 +8,19 @@
 // unchanged and the build is clean; the work per declaration becomes
 // quadratic in its parameter count. The row shows the ratio assertion's
 // sensitivity to that slowdown, not protection against a past bug.
+//
+// Calibration disclosure: the form was chosen after two scratch trials. The
+// first form (scan of the leading `at` elements) gave ratio 3.078, marginal;
+// the second, final form (scan of the whole list) gave 3.444 in a trial and
+// 3.425 in the formal run. Choosing a form after seeing ratios is a
+// selection effect, and the margin is 14% over the 3.0 threshold. The text
+// builds clean under `spago build --strict --pedantic-packages`; a mutant
+// lives only in an isolated clone and is not subject to the style gates.
+// `alone` runs the row one at a time after the pooled rows.
 export const growthRows = [
   {
     name: 'partialfirst-growth',
+    alone: true,
     edits: [
       {
         file: 'src/Features/Specialize/Body.purs',

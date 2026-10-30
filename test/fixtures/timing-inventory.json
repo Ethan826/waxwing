@@ -217,7 +217,7 @@
    "line": "const deadline = Date.now() + limitMs;",
    "count": 1,
    "category": "functional clock use",
-   "note": "wall-time limit on shrinking; load changes how far it gets, nothing fails on time (dossier 18.115)"
+   "note": "the shrink deadline and its check; load changes how far shrinking gets, nothing fails on time (dossier 18.115)"
   },
   {
    "file": "test/fx-shrink.mjs",
@@ -225,7 +225,7 @@
    "line": "if (++calls > budget || Date.now() > deadline) return current;",
    "count": 1,
    "category": "functional clock use",
-   "note": "wall-time limit on shrinking; load changes how far it gets, nothing fails on time (dossier 18.115)"
+   "note": "the shrink deadline and its check; load changes how far shrinking gets, nothing fails on time (dossier 18.115)"
   },
   {
    "file": "test/fx008-install.perf.test.mjs",
@@ -410,6 +410,22 @@
    "category": "absolute budget"
   },
   {
+   "file": "test/perf-regression.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-side regression proof duplicate-scan-timing (scripts/regression-perf.mjs)"
+  },
+  {
+   "file": "test/perf-regression.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / 1000;",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-side regression proof duplicate-scan-timing (scripts/regression-perf.mjs)"
+  },
+  {
    "file": "test/poly-coverage-timing.perf.test.mjs",
    "form": "performance.now",
    "line": "const started = performance.now();",
@@ -561,38 +577,6 @@
    "note": "regression probe for the growth mutant row"
   },
   {
-   "file": "test/regression-r005b-end.mjs",
-   "form": "Date.now",
-   "line": "const started = Date.now();",
-   "count": 1,
-   "category": "absolute budget",
-   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
-  },
-  {
-   "file": "test/regression-r005b-end.mjs",
-   "form": "Date.now",
-   "line": "if (Date.now() - started >= QUIET_MS) {",
-   "count": 1,
-   "category": "absolute budget",
-   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
-  },
-  {
-   "file": "test/regression-task5.mjs",
-   "form": "performance.now",
-   "line": "const started = performance.now();",
-   "count": 1,
-   "category": "absolute budget",
-   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
-  },
-  {
-   "file": "test/regression-task5.mjs",
-   "form": "performance.now",
-   "line": "const seconds = (performance.now() - started) / 1000;",
-   "count": 1,
-   "category": "absolute budget",
-   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
-  },
-  {
    "file": "test/text-scale.perf.test.mjs",
    "form": "import test/go-timed.mjs",
    "line": "import { timedBuild } from './go-timed.mjs';",
@@ -641,7 +625,8 @@
   {
    "file": "test/fx-differential.serial.test.mjs",
    "line": "const shrinkMs = 180_000;",
-   "category": "termination safeguard"
+   "category": "functional clock use",
+   "note": "the limitMs argument of the shrink deadline in fx-shrink.mjs, not a kill"
   },
   {
    "file": "test/fx008-hook.test.mjs",

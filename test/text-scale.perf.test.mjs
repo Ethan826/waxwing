@@ -9,8 +9,9 @@ import { scalePrograms } from './text-scale-programs.mjs';
 
 // Text v1 Task 9: the scale rule (design §7). A 1 MB literal, 10,000
 // interpolation parts and a literal of 100,000 escapes each compile and
-// run with the right output. A serial test (`*.serial.test.mjs`):
-// scripts/verify.mjs runs it after the parallel phase. Each bound is 3x
+// run with the right output. These are the time bounds, run
+// under `npm run perf` (routine half: text-scale.serial.test.mjs).
+// Each bound is 3x
 // the median of five runs on the development host (docs/progress.md, Text
 // entry), for the in-process compile and for `go build` alone (after a
 // warm-up build, the minimum of three).

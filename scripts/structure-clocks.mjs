@@ -1,41 +1,53 @@
 import { posix } from 'node:path';
 import { scanSource } from './clock-scan.mjs';
 
-// Clock gate (docs/plans/2026-10-30-verification-contract-proposal.md,
-// docs/engineering.md "Verification contract"). Every clock read under
-// test/ belongs to one command and one category in
+// Clock gate (docs/engineering.md "Verification contract"). Every clock
+// read under test/ belongs to one command and one category in
 // test/fixtures/timing-inventory.json, and the gate checks the match.
 //
 // Scope. Parallel: every top-level test/*.test.mjs that is neither
 // *.serial.test.mjs nor *.perf.test.mjs, plus every module under test/ it
 // imports, transitively, by relative static import (`import … from` and
-// `export … from`). Serial: the same for *.serial.test.mjs. Perf: the same
-// for *.perf.test.mjs. A module reached from several scopes takes the
-// strictest (parallel, then serial, then perf).
+// `export … from`). Serial: the same for *.serial.test.mjs. Regression: the
+// same for test/regression.mjs and test/regression-*.mjs, which verify's
+// regression phase runs. Perf: the same for *.perf.test.mjs and for
+// test/perf-regression.mjs (the perf-side regression proofs). A module
+// reached from several scopes takes the strictest (parallel, serial,
+// regression, perf, in that order). Every routine scope (all but perf)
+// shares the serial scope's allowed categories.
 //
 // Policy. A clock read must match a use in the inventory (file, form,
 // source line text, count), and the use's category must be allowed in the
 // file's scope: parallel, `functional clock use` only (a named exception,
-// never a whole-file one); serial, also `termination safeguard`,
-// `diagnostics only` and `growth check`; perf, every category. So an
-// absolute bound cannot sit in a serial or parallel file, and test/growth.mjs
-// (the only routine module that compares elapsed times) is imported only
-// from files the inventory lists. Every top-level *.perf.test.mjs file must
-// be listed in `perfFiles`. An unlisted read, a listed use that no longer
-// matches (a different count, a missing file, a changed line) and a listed
-// file or timeout line that is gone are findings, so a stale or widened
-// entry fails. Entries are checked against their own file whether or not a
-// scope reaches it.
+// never a whole-file one); serial and regression, also `termination
+// safeguard` and `diagnostics only`; perf, every category. `growth check`
+// is allowed only for an import of test/growth.mjs and for the clock reads
+// inside test/growth.mjs itself. So an absolute bound cannot sit in a
+// routine file, and elapsed times are compared against a threshold in
+// routine code only inside test/growth.mjs; the listed functional uses
+// (fx-shrink's deadline) compare a time with a limit that fails nothing,
+// and go-timed's `buildMs` is returned and compared only in perf files
+// (nothing enforces that last point: see the limits). Importing growth.mjs
+// is allowed only from files the inventory lists. Every top-level
+// *.perf.test.mjs file must be listed in `perfFiles`, the count must equal
+// `floors.perfFiles` exactly, and each must reach at least one listed
+// `absolute budget` or `existing ratio check` use, so a perf file cannot
+// be emptied of its bound unnoticed. An unlisted read, a listed use that no
+// longer matches (a different count, a missing file, a changed line) and a
+// listed file or timeout line that is gone are findings, so a stale or
+// widened entry fails. Entries are checked against their own file whether or
+// not a scope reaches it.
 //
 // Finding forms: `performance.now`, `.timeOrigin`, `.mark`, `.measure`;
 // `globalThis.performance`; any import of `node:perf_hooks` or
 // `perf_hooks`; `Date.now`; every zero-argument `new Date()`, stored values
 // included (`new Date(x)` reads no clock and is outside the rule);
-// `process.hrtime` and `.bigint`; `console.time`, `.timeEnd`, `.timeLog`;
+// `process.hrtime` and `.bigint`, `process.uptime`, `process.cpuUsage`,
+// `process.resourceUsage`; `console.time`, `.timeEnd`, `.timeLog`;
+// `Temporal.Now`; a call of `Date()` without `new`; `os.uptime` (a named
+// import of `uptime` from `node:os`/`os`, or a member of an imported `os`);
 // any import of test/go-timed.mjs, test/growth.mjs or test/timing.mjs.
-// Aliases are followed in source order within the file: destructuring,
-// assignment of the object and `.bind`. `global.` is read as `globalThis.`.
-// Bindings are tracked by lexical scope (scripts/clock-scan.mjs).
+// Aliases and lexical scopes: scripts/clock-scan.mjs.
 //
 // Limits (also in docs/engineering.md). The gate sees syntax, not intent:
 // it cannot judge whether a listed use really is a termination safeguard,
@@ -49,28 +61,33 @@ import { scanSource } from './clock-scan.mjs';
 // checks that the listed line still exists. Also blind: a clock reached
 // through a module outside test/ (scripts/, compiled output, a child
 // process); computed property access with a non-literal key, or eval; a
-// clock root passed as a value (`f(performance)`, `{ c: performance }`);
-// elapsed time asserted through a runner timeout; dynamic or conditional
-// imports when building the scope; `require` or `createRequire` of
-// perf_hooks; a clock read in one file whose value is compared in another;
+// clock root passed as a value (`f(performance)`); elapsed time asserted
+// through a runner timeout; dynamic imports and `require`/`createRequire`
+// (so `import('node:os')`); a clock read in one file compared in another;
 // an alias made at top level and used in a function declared earlier;
-// non-.mjs modules under test/ (skipped; none exist today).
+// other clock sources (`Atomics.wait`, `setInterval` counting, `fs` mtimes).
 
 // Floors on what the scan saw, so an empty or truncated scan cannot pass.
 // They fall only with the owner's approval.
 export const floors = { parallelTests: 250, scanned: 380, perfFiles: 26 };
+// perfFiles is exact: a file added or removed changes it with the owner's
+// approval.
 
+const routine = ['functional clock use', 'termination safeguard',
+  'diagnostics only', 'growth check'];
 const allowedIn = {
   parallel: ['functional clock use'],
-  serial: ['functional clock use', 'termination safeguard',
-    'diagnostics only', 'growth check'],
+  serial: routine,
+  regression: routine,
   perf: null,
-  unreached: null
+  unreached: routine
 };
 const serialSuffix = '.serial.test.mjs';
 const perfSuffix = '.perf.test.mjs';
 const topLevelTest = file => /^test\/[^/]+\.test\.mjs$/.test(file);
 const isPerf = file => topLevelTest(file) && file.endsWith(perfSuffix);
+const isPerfEntry = file => file === 'test/perf-regression.mjs';
+const isRegression = file => /^test\/regression(-[^/]*)?\.mjs$/.test(file);
 const isSerial = file => topLevelTest(file) && file.endsWith(serialSuffix);
 const isParallel = file => topLevelTest(file) && !isPerf(file)
   && !isSerial(file);
@@ -83,6 +100,8 @@ const unlistedHint = {
   parallel: `clock read in a parallel-phase test (FORM); ${parallelHint}`,
   serial: 'clock read in a serial test (FORM) that the timing inventory '
     + 'does not list',
+  regression: 'clock read in a regression-phase module (FORM) that the '
+    + 'timing inventory does not list',
   perf: 'clock read in a perf file or helper (FORM) that the timing '
     + 'inventory does not list',
   unreached: 'clock read (FORM) that the timing inventory does not list'
@@ -116,7 +135,12 @@ const compare = (file, found, listed, scope) => {
         Array(entry.count ?? 1).fill(entry.category));
       group.found.forEach((use, at) => {
         const allowed = allowedIn[scope];
-        if (allowed !== null && !allowed.includes(categories[at]))
+        if (categories[at] === 'growth check' && file !== 'test/growth.mjs'
+          && use.form !== 'import test/growth.mjs')
+          texts.push(`${file}:${use.line}: a direct clock read (${use.form}) `
+            + 'labeled growth check; only test/growth.mjs reads a clock for '
+            + 'it, and callers import it');
+        else if (allowed !== null && !allowed.includes(categories[at]))
           texts.push(`${file}:${use.line}: ${categories[at]} use in a ${
             scope} test (${use.form}); only ${allowed.join(', ')} may read `
             + 'a clock there');
@@ -157,11 +181,14 @@ export const clockFindings = (sources, parse, limits = floors,
   const files = Object.keys(sources);
   const parallel = reach(files.filter(isParallel));
   const serial = reach(files.filter(isSerial));
-  const perf = reach(files.filter(isPerf));
+  const regression = reach(files.filter(isRegression));
+  const perf = reach(files.filter(file => isPerf(file) || isPerfEntry(file)));
   const scopeOf = file => parallel.has(file) ? 'parallel'
-    : serial.has(file) ? 'serial' : perf.has(file) ? 'perf' : 'unreached';
+    : serial.has(file) ? 'serial' : regression.has(file) ? 'regression'
+      : perf.has(file) ? 'perf' : 'unreached';
   const listedFiles = [...new Set(inventory.uses.map(use => use.file))];
-  const checked = new Set([...parallel, ...serial, ...perf, ...listedFiles]
+  const checked = new Set([...parallel, ...serial, ...regression, ...perf,
+    ...listedFiles]
     .filter(file => sources[file] !== undefined));
   const missing = listedFiles.filter(file => sources[file] === undefined)
     .map(file => `clock inventory names a missing file ${file}`);
@@ -170,11 +197,17 @@ export const clockFindings = (sources, parse, limits = floors,
     scopeOf(file)));
   return [...failures, ...missing, ...comparisons,
     ...perfFileFindings(files.filter(isPerf), inventory.perfFiles),
+    ...files.filter(isPerf).filter(file => !hasBound(reach([file]),
+      inventory.uses)).map(file => `${file}: a perf file must reach a `
+      + 'listed absolute budget or ratio use; it has none'),
     ...timeoutFindings(sources, inventory.timeouts),
     ...outOfScopeFindings(inventory.outOfScope, outside),
-    ...floorFindings(files, parallel.size + serial.size + perf.size,
-      scans.size, limits)];
+    ...floorFindings(files, scans.size, limits)];
 };
+
+const boundCategories = ['absolute budget', 'existing ratio check'];
+const hasBound = (reached, uses) => uses.some(use => reached.has(use.file)
+  && boundCategories.includes(use.category));
 
 const perfFileFindings = (present, listed) => [
   ...present.filter(file => !listed.includes(file)).map(file =>
@@ -194,15 +227,15 @@ const outOfScopeFindings = (entries, outside) => entries
   .filter(entry => !outside.has(entry.file)).map(entry =>
     `clock inventory names a missing file ${entry.file}`);
 
-const floorFindings = (files, reached, scanned, limits) => [
+const floorFindings = (files, scanned, limits) => [
   ...(files.filter(isParallel).length < limits.parallelTests ? [`clock gate `
     + `saw ${files.filter(isParallel).length} parallel test files, floor ${
       limits.parallelTests}`] : []),
   ...(scanned < limits.scanned ? [`clock gate scanned ${scanned} files, `
     + `floor ${limits.scanned}`] : []),
-  ...(files.filter(isPerf).length < limits.perfFiles ? [`clock gate saw ${
-    files.filter(isPerf).length} perf files, floor ${limits.perfFiles}`]
-    : [])];
+  ...(files.filter(isPerf).length !== limits.perfFiles ? [`clock gate saw ${
+    files.filter(isPerf).length} perf files, expected exactly ${
+    limits.perfFiles}`] : [])];
 
 // The checkStructure entry: reads test/ from `files` (paths from filesUnder)
 // and loads acorn when called, so a missing install fails verify's own

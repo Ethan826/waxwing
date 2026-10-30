@@ -1,5 +1,6 @@
-// Timing bounds moved out of depth.test.mjs so they run in
-// verify's serial phase (docs/plans/2026-10-29-verify-timing-proposal.md, 1a).
+// Absolute time bounds moved out of depth.test.mjs. They run only under
+// `npm run perf` (scripts/perf.mjs); the routine half is
+// depth-timing.serial.test.mjs.
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';

@@ -5,8 +5,9 @@ import { Right } from '../output/Data.Either/index.js';
 import { manyLets } from './fx-block-programs.mjs';
 
 // FX001 Task 2: a long block through a long Waxwing phase against a fixed
-// bound, so it runs serially, not under the parallel runner's load (as
-// test/fn-linear.serial.test.mjs; under that load it took 999 ms of 1,500).
+// bound, so it runs under `npm run perf`, not the parallel runner's load
+// (under that load it took 999 ms of 1,500). The routine half is
+// fx-block.serial.test.mjs.
 // 20,000 let items, each reading the one before, through the whole
 // compiler to Go text, bounded at three times the time measured on the
 // author's laptop (2026-10-09, one process, load about 3: 490-510 ms; 40,000

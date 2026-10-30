@@ -5,13 +5,13 @@ import assert from 'node:assert/strict';
 import { components } from './poly-termination-support.mjs';
 
 const longest = 20000;
-const timed = work => work();
+const direct = work => work();
 
 test('components are stack-safe on a 20,000-node chain and cycle', () => {
   const chain = Array.from({ length: longest }, (_, index) =>
     index + 1 < longest ? [index + 1] : []);
-  assert.equal(new Set(timed(() => components(chain))).size, longest);
+  assert.equal(new Set(direct(() => components(chain))).size, longest);
   const cycle = Array.from({ length: longest }, (_, index) =>
     [(index + 1) % longest]);
-  assert.equal(new Set(timed(() => components(cycle))).size, 1);
+  assert.equal(new Set(direct(() => components(cycle))).size, 1);
 });

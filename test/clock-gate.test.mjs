@@ -202,5 +202,5 @@ test('an empty or small scan cannot pass', () => {
   assert.ok(gate({ 'test/a.test.mjs': '' }, { ...small, perfFiles: 1 })
     .some(text => text.includes('perf files')));
   assert.ok(floors.parallelTests >= 250 && floors.scanned >= 380
-    && floors.perfFiles >= 26);
+    && floors.perfFiles === 26);
 });

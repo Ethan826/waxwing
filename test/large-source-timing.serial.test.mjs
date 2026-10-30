@@ -9,7 +9,7 @@ import { padded, declarationCount, declarationsFrom }
 
 // The time bounds (5 s per compile, 1 s for the parameter check) are in
 // large-source-timing.perf.test.mjs (npm run perf).
-const secondsFor = work => work();
+const direct = work => work();
 
 const last = declarationCount - 1;
 const declarations = `${declarationsFrom('\n')}\nfn main(): Int = f${last}();`;
@@ -22,13 +22,13 @@ const armSource = `fn main(): Int = match 7 { ${Array.from(
   { length: armCount - 1 }, (_, index) => `${index} => ${index}`
 ).join(', ')}, _ => 0 };`;
 // Each execution has its own Go batch (T001), built lazily inside its test
-// after the timed compile, so each timed checked() is that source's first
+// after the compile, so each checked() is that source's first
 // (cold) compile, as before.
 const batch = runGoBatch(import.meta.url, [['declarations', declarations]]);
 
 test('twenty thousand declarations compile and run', () => {
   const source = declarations;
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
   assert.equal(batch.run('declarations'), `${last}\n`);
 });
 
@@ -40,14 +40,14 @@ const manyTypes = typesFrom(declarationCount);
 // constructor, so 20,000 types took 25.7 s (A003 final review I3).
 test('twenty thousand one-constructor types compile', () => {
   const source = `${manyTypes} fn main(): Int = 0;`;
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
 });
 
 // Type and constructor duplicate checks sort names like functions do; the
 // first declaration in source order is still the one reported.
 test('duplicates among many types are reported where they first occur', () => {
   const main = ' fn main(): Int = 0;';
-  secondsFor(() => {
+  direct(() => {
     rejectedAt(`${manyTypes} type T7 = X;${main}`, 'E_DUPLICATE',
       'type T7 = C7;');
     rejectedAt(`${manyTypes} type X = C7;${main}`, 'E_DUPLICATE', 'C7');
@@ -74,7 +74,7 @@ test('ten thousand binding arguments resolve in source order', () => {
   const source = `fn f(${parameters.join(', ')}): Int = 0; `
     + `fn main(): Int = f(${bindings.join(', ')});`;
   let go = '';
-  secondsFor(() => { go = checked(source); });
+  direct(() => { go = checked(source); });
   const binders = Array.from(go.matchAll(/waxwingLocal(\d+) := /g),
     found => Number(found[1]));
   const inOrder = Array.from({ length: wideCount }, (_, index) => index);
@@ -84,7 +84,7 @@ test('ten thousand binding arguments resolve in source order', () => {
 
 test('a five-thousand-arm integer match compiles', () => {
   const source = armSource;
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
   const arms = runGoBatch(import.meta.url, [['arms', source]], 'arms');
   assert.equal(arms.run('arms'), '7\n');
 });
@@ -100,7 +100,7 @@ test('a three-thousand-constructor match is judged in full', () => {
   const matching = (count, extra = '') => `type T = ${ctors.join(' | ')}; `
     + `fn main(): Int = match C3 { ${ctors.slice(0, count)
       .map((ctor, index) => `${ctor} => ${index}`).join(', ')}${extra} };`;
-  secondsFor(() => checked(matching(ctorCount)));
+  direct(() => checked(matching(ctorCount)));
   const diagnostic = rejected(matching(ctorCount - 1), 'E_NON_EXHAUSTIVE');
   assert.equal(diagnostic.message, `Missing pattern: C${ctorCount - 1}`);
   const redundant = matching(ctorCount, ', _ => 0');
@@ -116,7 +116,7 @@ test('twenty thousand parameters are checked', () => {
     (_, index) => `p${index}: Int`);
   const source = `fn f(${parameters.join(', ')}): Int = 0; `
     + 'fn main(): Int = 0;';
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
   rejectedAt(source.replace('p19999: Int', 'p7: Int'), 'E_DUPLICATE', 'p7');
 });
 
@@ -133,7 +133,7 @@ test('three thousand distinct instantiations compile', () => {
     + Array.from({ length: instantiationCount }, (_, index) => each(index))
       .join(' ') + ' fn main(): Int = 0;';
   let go = '';
-  secondsFor(() => { go = checked(source); });
+  direct(() => { go = checked(source); });
   const functions = go.match(/^func waxwingFn\d+\(/gm).length;
   assert.equal(functions, 2 * instantiationCount + 1, 'one copy per key');
 });
@@ -152,7 +152,7 @@ test('five thousand Nothing arms join', () => {
     (_, index) => `${index} => Nothing`);
   const source = 'type Maybe(a) = Nothing | Just(a);'
     + ` fn main(): Maybe(Int) = match 7 { ${arms.join(', ')}, _ => Just(0) };`;
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
 });
 
 test('four thousand Nil arguments unify', () => {
@@ -161,5 +161,5 @@ test('four thousand Nil arguments unify', () => {
   const source = 'type List(a) = Nil | Cons(a, List(a));'
     + ` fn f(${parameters.join(', ')}): Int = 0;`
     + ` fn main(): Int = f(${Array(nilCount).fill('Nil').join(', ')});`;
-  secondsFor(() => checked(source));
+  direct(() => checked(source));
 });

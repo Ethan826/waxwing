@@ -10,8 +10,9 @@ import { serviceEnvironments, shapeChain } from './r001-scale-programs.mjs';
 
 // R001 Task 10: the scale rule (design §8). 200 distinct record shapes
 // flow through a chain of 20 generic functions: one key per shape and
-// link, so keys grow linearly. A serial test (`*.serial.test.mjs`):
-// scripts/verify.mjs runs it after the parallel phase. Each bound is 3x
+// link, so keys grow linearly. These are the time bounds, run
+// under `npm run perf` (routine half: r001-scale.serial.test.mjs).
+// Each bound is 3x
 // the median of five runs on the development host (docs/progress.md, R001
 // entry), by the Text v1 method (docs/engineering.md): compile in-process,
 // and `go build` alone after one warm-up build, the minimum of three. The

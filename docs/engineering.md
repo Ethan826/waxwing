@@ -35,7 +35,10 @@ adding a bypass allowlist.
   `node:perf_hooks`/`perf_hooks`, `Date.now`, every zero-argument
   `new Date()` (stored values included; a labeled amendment; `new Date(x)`
   with arguments reads no clock and is outside the rule),
-  `process.hrtime`(`.bigint`), `console.time`/`timeEnd`/`timeLog`, imports
+  `process.hrtime`(`.bigint`), `process.uptime`, `process.cpuUsage`,
+  `process.resourceUsage`, `Temporal.Now`, `Date()` without `new`,
+  `os.uptime` (named or via an imported `os`),
+  `console.time`/`timeEnd`/`timeLog`, imports
   of test/go-timed.mjs, test/growth.mjs or test/timing.mjs, and aliases by
   destructuring, assignment of the object or `.bind` followed in source
   order. `global.` reads as `globalThis.`. Bindings are tracked by lexical
@@ -324,18 +327,16 @@ adding a bypass allowlist.
   `go build` time is Go's fixed startup (~130 ms) plus ~17/~4 ms of Waxwing
   output, so a time bound there tests the host, not the compiler (user
   decision 2026-10-13); they still build, run and match exactly.
-  Under verify's load the measured figures stayed inside the bounds, but
-  they are not guaranteed to on a busy host (T003 exposure). FN006's
-  20,000-parameter timing suite
-  is now test/fn-linear-timing.serial.test.mjs, separate from the existing
-  fn-linear.serial.test.mjs; every workload, assertion and bound is
-  unchanged. Repeated parallel-contention failures motivated this runner
-  prerequisite (FX001 Task 3 continuation, user-authorized 2026-10-09).
-  T003's deep/wide match ladder timing block is similarly extracted to
-  test/match-lift-timing.serial.test.mjs; semantic match-lift tests stay
-  parallel. Its source, constants, assertion and 1500 ms bound are identical
-  (controller ruling after a 1670.670250 ms parallel failure). These moves
-  apply the existing fixed-bound scheduling policy, not looser checks.
+  Under verify's load the measured figures did not stay inside the bounds
+  on this shared machine (dossier 18.130), which is why the bounds moved to
+  `npm run perf`. FN006's 20,000-parameter suite is
+  test/fn-linear-timing.serial.test.mjs (workloads and outcome assertions)
+  with its eight bounds in test/fn-linear-timing.perf.test.mjs, unchanged;
+  fn-linear.serial.test.mjs is separate. The T003 deep/wide match ladder
+  block is test/match-lift-timing.serial.test.mjs (outcome) and
+  match-lift-timing.perf.test.mjs (its 1500 ms bound, unchanged);
+  semantic match-lift tests stay parallel. These moves keep each bound's
+  constant and workload.
   Then verify runs
   scripts/regression.mjs (T013: one plain-purs baseline compiled per run in
   .build/regression/baseline, never the spago output, whose bytes differ;
@@ -588,14 +589,19 @@ is classified by its actual assertion, not by the file name:
   by use, never a whole-file exemption;
 - diagnostics only: a duration returned or printed and never compared in a
   routine file (go-timed.mjs's `buildMs`);
-- growth check: test/growth.mjs and its listed callers.
+- growth check: imports of test/growth.mjs by its listed callers, and the
+  clock reads inside test/growth.mjs itself; a direct clock read in any
+  other file labeled growth check is a finding;
+- the shrink deadline's `limitMs` argument (fx-differential's `shrinkMs`) is
+  a functional clock use, the parameter of fx-shrink's deadline, not a kill.
 A limit that proves to be a budget is reclassified, not loosened. An
 assertion on elapsed time inside a file that looks like a termination test
 (poly-termination-timing) is a budget.
 
 Clock gate policy. Parallel phase: no clock reads except listed functional
-exceptions. Serial phase: reads only through listed uses of a category the
-scope allows (growth helper, termination helpers, diagnostics). Perf files
+exceptions. Regression phase: as serial. Serial phase: reads only
+through listed uses of a category the scope allows (growth helper,
+termination helpers, diagnostics). Perf files
 and the helpers only they reach: free to read clocks, but every
 `*.perf.test.mjs` file and every read must be in the inventory. An unlisted
 read, an import of go-timed.mjs or growth.mjs from an unlisted file, and a
@@ -615,15 +621,50 @@ asserted through a runner timeout; dynamic imports when building the scope;
 compared in another; an alias made at top level and used in a function
 declared earlier; non-.mjs modules under test/ (skipped; none exist today).
 
-Known absolute budgets not moved. Two regression probes, reached through
-test/regression-probes.mjs and run in verify's regression phase, still
-carry absolute bounds: `r005b-quiet` in test/regression-r005b-end.mjs
-(`Date.now()`, exits 1 at 2000 ms) and `duplicate-scan-timing` in
-test/regression-task5.mjs (`seconds < 5` over three 20,000-type compiles).
-They are rows of the regression registry, whose proofs run a healthy and a
-broken compiler; moving them needs a perf form of the registry, outside the
-approved scope. They are listed in the inventory as absolute budgets
-outside the gate's scope and are open for the author.
+Regression phase. test/regression.mjs and test/regression-*.mjs run in
+verify's regression phase and are a routine gate scope (the serial
+categories; no absolute budget). The `r005b-quiet` probe lost its
+`Date.now()` limit and is now the functional check it already was: the
+mutant fails with E_INTERNAL "re-examination passed". The row
+`duplicate-scan-timing` (an absolute 5 s budget over three 20,000-type
+compiles) left the routine registry: it is a perf regression proof in
+scripts/regression-perf.mjs, run by `npm run perf` after the perf files
+through the regression runner (probe: test/perf-regression.mjs). A fixed
+compiler must pass it and the restored defect must fail it; either
+failing counts as a perf failure. A growth check on it is a later
+candidate. A row flagged `alone` runs one at a time after the pooled rows;
+the growth row uses it, because the pool's load is not the load a ratio
+should be measured under.
+
+Growth mutant calibration. The constructed mutant of row
+`partialfirst-growth` is not a pre-registered form. Two scratch trials
+preceded the formal run: a first form (scan of the leading `at` elements,
+ratio 3.078, marginal), then the final form (scan of the whole list, ratio
+3.444); the formal run gave 3.425. Choosing the form after seeing ratios
+is a selection effect. The margin over the 3.0 threshold is 14% (3.425 /
+3.0), so the row shows sensitivity to this slowdown, not that 3.0 separates
+every quadratic. The mutant text builds clean under the strict build
+(`spago build --strict --pedantic-packages`, 0 warnings, 0 errors, checked
+by applying the row's edits to a scratch copy). A row's mutant is not
+subject to the style gates (purs-tidy, anonymous-lambda and let rules):
+those run on the real src tree and on nothing in an isolated clone.
+
+Counts and corrections. The proposal's first-pass table named five
+existing ratio checks. By assertion only one is: fx008-install's doubling.
+large-source-timing, r013-scale, r0-mgu-scale and fx008-scale hold
+absolute bounds only. The inventory also missed r005b-predicates (a
+`Date.now` bound on each check), now a perf file. `npm run perf` has a
+termination safeguard of its own: a perf file running longer than 600 s
+(`fileTimeoutMs`, about ten times the longest file) is killed and reported
+as failed, and the run continues; a skipped, todo or `only` test inside a
+perf file is a failure. The perf file count is pinned exactly in the gate
+(`floors.perfFiles`), and each perf file must reach a listed absolute
+budget or ratio use.
+
+scripts/test-inventory.mjs counts static test sites and `assert` call sites
+inside each file. Its blind spots: assertions made by a helper in another
+file are not counted, a test generated by a loop is one site, and a
+timeout is not an assertion, so an unlisted timeout is not a finding.
 
 Completion reports state functional acceptance (routine verify) and
 performance qualification (`npm run perf`: run or not run, result,

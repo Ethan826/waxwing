@@ -6,8 +6,11 @@ import { applyEdits, buildBaseline, cloneTreeAsync, compileTreeAsync,
 import { regressionJobs, runPool } from './regression-pool.mjs';
 const base = '.build/regression';
 const failures = '.build/regression-failed';
-const probe = (...args) =>
-  spawnAsync('node', ['test/regression.mjs', ...args]);
+// A row's probe runs through `entry` (default test/regression.mjs); the
+// perf-side rows (scripts/regression-perf.mjs) name test/perf-regression.mjs.
+const entryOf = row => row.entry ?? 'test/regression.mjs';
+const probe = (row, ...args) =>
+  spawnAsync('node', [entryOf(row), ...args]);
 // A row edits either the compiler (no `tree`) or the test helpers
 // (`tree: 'test'`, every edit under test/); one row never mixes the two.
 // Edit paths are normalized and relative, so no edit leaves the row root.
@@ -34,8 +37,8 @@ export const rowTree = row => {
   return 'src';
 };
 const healthyRun = async row => {
-  const healthy = await probe('output/Program.Compile/index.js', 'output',
-    row.probe);
+  const healthy = await probe(row, 'output/Program.Compile/index.js',
+    'output', row.probe);
   assert.ifError(healthy.error);
   assert.equal(healthy.status, 0, healthy.stderr);
 };
@@ -54,7 +57,7 @@ const proveSource = async row => {
   assert.ifError(built.error);
   assert.equal(built.status, 0, built.stderr);
   await healthyRun(row);
-  assertBroken(row, await probe(`${root}/output/Program.Compile/index.js`,
+  assertBroken(row, await probe(row, `${root}/output/Program.Compile/index.js`,
     `${root}/output`, row.probe));
 };
 // Files outside test/ that the probe set reads from its cwd (dossier
@@ -124,9 +127,16 @@ export const runRegression = async (rows, names = [],
   rmSync(failures, { recursive: true, force: true });
   try {
     if (proved.length > 0) buildBase(`${base}/baseline`);
-    const results = await runPool(proved, jobs, proveRow);
-    const failed = results.filter(result => !result.ok)
-      .map(result => result.item.name);
+    // Rows flagged `alone` (timing-sensitive growth rows) run one at a
+    // time after the pooled rows, so the pool's load is not theirs.
+    const pooled = await runPool(proved.filter(row => !row.alone), jobs,
+      proveRow);
+    const single = await runPool(proved.filter(row => row.alone), 1,
+      proveRow);
+    const failedNames = new Set([...pooled, ...single]
+      .filter(result => !result.ok).map(result => result.item.name));
+    const failed = proved.map(row => row.name)
+      .filter(name => failedNames.has(name));
     console.log(`Regression proofs: ${proved.length - failed.length} of `
       + `${proved.length} passed (jobs ${jobs}).`);
     if (failed.length > 0) {

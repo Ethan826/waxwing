@@ -11,7 +11,7 @@ import { generatedOrThrow, load, resolved }
 // and 33,602 ms at 2,000 (docs/findings.md, "R021"); the bound is
 // generous against the new times (about 200 ms) so that only a return
 // to quadratic cost fails, and still under half the old times (review
-// M-1 raised it from 1,000 ms). Serial: a timing test.
+// M-1 raised it from 1,000 ms). A timing test, so under `npm run perf`.
 const count = 1000;
 const boundMs = 2500;
 const { generationInputs } = await load('Features.Check.Generate.Inputs');

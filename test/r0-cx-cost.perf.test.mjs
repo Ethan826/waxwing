@@ -12,9 +12,8 @@ import { subProblem } from './r0-cx-support.mjs';
 // (pairs: the sub-body's row variables times its labels, after `ρ`), so
 // that is the bound; each probe certificate's check is timed (median of
 // `runs`; 5 for the widest) beside it, and the corpus's widest
-// certificate too. Timing,
-// so serial; `timeBound` is generous, the times themselves are recorded
-// in docs/findings.md.
+// certificate too. Timing, so under `npm run perf`; `timeBound` is
+// generous, the times themselves are recorded in docs/findings.md.
 const online = await onlineFrom(load);
 const Search = await load('Features.Check.Refute.Counter.Search');
 const Check = await load('Features.Check.Refute.Counter.Check');

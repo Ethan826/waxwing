@@ -1,5 +1,6 @@
-// Timing bounds moved out of poly-coverage.test.mjs so they run in
-// verify's serial phase (docs/plans/2026-10-29-verify-timing-proposal.md, 1a).
+// Absolute time bounds moved out of poly-coverage.test.mjs. They run only under
+// `npm run perf` (scripts/perf.mjs); the routine half is
+// poly-coverage-timing.serial.test.mjs.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checkRejectedAt, checkedPoly } from './phases.mjs';

@@ -108,17 +108,6 @@ export const coreRows = [
     message: /constructor and function collision: program was accepted/
   },
   {
-    name: 'duplicate-scan-timing',
-    file: 'src/Features/Resolve/TypeValidation.purs',
-    needle: 'uniqueCtor { repeats, entry }\n'
-      + '    | repeats = reportEarliest globals entry.name\n'
-      + '    | otherwise = Right unit',
-    replacement: 'uniqueCtor { repeats, entry } = when repeats\n'
-      + '    (reportEarliest globals entry.name)',
-    probe: 'duplicate-scan-timing',
-    message: /large-source duplicate regression took/
-  },
-  {
     name: 'duplicate-effect', file: 'src/Features/Resolve/Effect.purs',
     needle: 'effectAt index = maybe (Right unit) duplicate\n'
       + '    (Array.index declarations index)',

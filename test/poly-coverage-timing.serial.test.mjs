@@ -16,14 +16,14 @@ const chain = prelude + Array.from({ length: chainLength }, (_, index) =>
   `type T${index}(a) = A${index}(T${index + 1}(a));`).join(' ')
   + ` type T${chainLength}(a) = Z(a); type U(a) = Dead(T0(a)) | Live;`;
 
-const timed = work => work();
+const direct = work => work();
 
 test('coverage expands a 3,000-application chain', () => {
   const live = 'match u { Live => 0 }';
-  timed(() => checkedPoly(`${chain} fn f(u: U(Void)): Int = ${live};${main}`));
+  direct(() => checkedPoly(`${chain} fn f(u: U(Void)): Int = ${live};${main}`));
   for (const argument of ['Int', 'a']) {
     const source = `${chain} fn f(u: U(${argument})): Int = ${live};${main}`;
-    const diagnostic = timed(() =>
+    const diagnostic = direct(() =>
       checkRejectedAt(source, 'E_NON_EXHAUSTIVE', live));
     assert.equal(diagnostic.message, 'Missing pattern: Dead(_)');
   }

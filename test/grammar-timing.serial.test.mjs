@@ -24,21 +24,21 @@ const fieldCount = 1536;
 const argumentCount = 1793;
 const listOf = (count, item) => Array.from({ length: count }, item);
 
-const boundedCompile = checked;
+const direct = checked;
 
 test('a type with 1,536 constructors compiles', () => {
   const constructors = listOf(constructorCount, (_, index) => `C${index}`);
-  boundedCompile(`type T = ${constructors.join(' | ')};${main}`);
+  direct(`type T = ${constructors.join(' | ')};${main}`);
 });
 
 test('a constructor with 1,536 fields compiles', () => {
   const fields = listOf(fieldCount, () => 'Int');
-  boundedCompile(`type P = Wide(${fields.join(', ')});${main}`);
+  direct(`type P = Wide(${fields.join(', ')});${main}`);
 });
 
 test('a call with 1,793 arguments compiles', () => {
   const parameters = listOf(argumentCount, (_, index) => `p${index}: Int`);
   const zeros = listOf(argumentCount, () => '0');
-  boundedCompile(`fn f(${parameters.join(', ')}): Int = 0; `
+  direct(`fn f(${parameters.join(', ')}): Int = 0; `
     + `fn main(): Int = f(${zeros.join(', ')});`);
 });

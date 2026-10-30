@@ -10,7 +10,7 @@ import { forwardingChain, manyDefers, manyInstallations }
 // The generation scale bounds of test/r0-census.serial.test.mjs (Task 3.5),
 // run under `npm run perf`; the routine file keeps the census tests and the
 // generation outcome assertions.
-// Generation on the scale programs, against each one's serial suite's
+// Generation on the scale programs, against each one's scale suite's
 // bound for its whole compile (or, for FX008's, its check): generation
 // must fit inside the budget that phase already has. The bounds are
 // those suites' constants (3 × a measured median), cited, not re-measured.
