@@ -7143,3 +7143,26 @@ timeout margins, child-reported durations, helper misuse, dynamic
 imports, other time sources). Review (Opus): no P0; three P1s and the
 P2s fixed in 43c0320; the evidence above is local and summarized here.
 Spend about 0.58M of 0.70M. Next: integration and one routine verify.
+
+### 18.134 Routine acceptance verify passed at dac50f3 (2026-10-30)
+
+One `npm run verify` at dac50f3, alone under the lock, clean tree, exit
+0 (log: .build/evidence/2026-10-30-contract-verify/verify.log, local).
+Parallel 2991 of 2991 (load1 6.75); serial 203 of 203 (load1 3.88),
+the partialFirst growth check at ratio 2.178 (median S 426.0 ms, L
+927.7 ms) against 3.0; regression proofs 255 of 255 (load1 4.25),
+`partialfirst-growth` among them. Its last line: "Performance
+qualification was not run: 26 files under npm run perf." Functional
+acceptance: passed. Performance qualification: not run; its 26 files
+and the duplicate-scan-timing proof hold the unchanged absolute budgets,
+which failed on the pre-batch tree under this machine's shared load
+(§18.130). The failed acceptance runs of §18.127 and §18.129 stand.
+Correction to §18.133: the contract pass spent about 0.52M of 0.70M
+(implementer 0.336, reviewer 0.151, controller about 0.03), not 0.58M.
+Task 7: the conditions of §18.122 and §18.131-18.132 for acceptance
+(implementation, the combined review, the contract implemented and
+reviewed, a complete routine verify passing) are now met; acceptance
+is the author's. No milestone moved: tranche 1's recording (Tasks 7,
+8, 10-13) is in place, but no effect validator exists (A2 deferred),
+Task 9's implementation is unauthorized and Task 14 is open. Nothing
+pushed.

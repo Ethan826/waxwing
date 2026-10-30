@@ -10,14 +10,11 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25.
 
-**Verification contract proposed (§18.131,
-docs/plans/2026-10-30-verification-contract-proposal.md; needs the author).**
-Earlier: **timing investigated (§18.130): the partialFirst bound fails on the
-pre-batch tree too; regression phase 255 of 255; a doubling-ratio gate proposed;
-needs the author.** Earlier (§18.129): second verify failed at dde534a,
-partialFirst timing 950 ms vs bound 930; needs the author.** Earlier (§18.127):
-two stale pins (r0-static-problem line cite; structure-surface module list);
-needs the author.** Earlier:
+**Routine acceptance verify passed at dac50f3 (§18.134); Task 7 awaits the
+author's acceptance.** Performance qualification not run (26 perf files,
+unchanged budgets). Next, the author's: Task 7 acceptance; then Task 9
+implementation, Task 14 and A2 each need authorization. Earlier: §18.131-18.133
+(contract), §18.130 (timing), §18.127/§18.129 (failed runs, kept).
 **completion pass stopped at its cap (§18.125).** Repairs on batch/completion
 (7fe0113), unintegrated; window re-pin (author chose: extend class), the E8
 written-tail P2 and P3s, integration and the verify remain. Earlier: **batch
