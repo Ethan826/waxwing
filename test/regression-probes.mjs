@@ -25,6 +25,7 @@ import { r0ElabProbes } from './regression-r0-elab.mjs';
 import { r0AminProbes } from './regression-r0-amin.mjs';
 import { r0PortProbes } from './regression-r0-port.mjs';
 import { ieProbes } from './regression-ie.mjs';
+import { growthProbes } from './regression-growth.mjs';
 
 export const externalProbes = {
   ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
@@ -33,6 +34,6 @@ export const externalProbes = {
   ...r005bEndProbes, ...r005bRenderProbes,
   ...r012Probes, ...r0Probes, ...r0G0Probes, ...r0OnlineProbes,
   ...r0WitnessProbes, ...r0CxProbes, ...r0ElabProbes, ...r0AminProbes,
-  ...r0PortProbes,
+  ...r0PortProbes, ...growthProbes,
   ...ieProbes, ...diagProbes
 };

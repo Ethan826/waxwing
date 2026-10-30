@@ -13,6 +13,7 @@ import { r005bRenderRows } from './regression-r005b-render.mjs';
 import { r012Rows } from './regression-r012.mjs';
 import { r0Rows } from './regression-r0.mjs';
 import { ieRows } from './regression-ie.mjs';
+import { growthRows } from './regression-growth.mjs';
 import { exitCodeFor, runRegression } from './regression-run.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 // One plain-purs baseline is compiled per run; each row clones it (APFS
@@ -29,6 +30,6 @@ import { exitCodeFor, runRegression } from './regression-run.mjs';
 const allRows = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
   ...textRows, ...fx020Rows, ...r001Rows, ...r004Rows, ...r005Rows,
   ...r005bRows, ...r005bEndRows, ...r005bRenderRows, ...r012Rows, ...ieRows,
-  ...r0Rows];
+  ...r0Rows, ...growthRows];
 const failed = await runRegression(allRows, process.argv.slice(2));
 process.exitCode = exitCodeFor(failed);

@@ -169,8 +169,8 @@ const probes = {
   'state-thread': stateThread, capture
 };
 const context = {
-  compile, Left, Right, wire, printed, ran, probe, compilerPath };
+  compile, Left, Right, wire, printed, ran, probe, compilerPath, load };
 const delegated = name => () => externalProbes[name](context);
 for (const name of Object.keys(externalProbes)) probes[name] = delegated(name);
 assert.ok(probe in probes, `unknown probe: ${probe}`);
-probes[probe]();
+await probes[probe]();
