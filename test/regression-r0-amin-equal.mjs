@@ -20,8 +20,11 @@ const recorded = async (context, source, role) => {
 };
 
 // A shaped marked type without marks, handler clauses or effect rows:
-// what Generate/Elab/Recorded.purs records as the type. Equal erasures
-// are compared as data, so no canonical encoding is needed here.
+// what Generate/Elab/Recorded.purs records as the type. It is not
+// canonical: it sorts record fields but not record tails. It is
+// sufficient here because it only compares the two sides of one Sig3 E1
+// in probe programs that write no record with two or more spread
+// tails, so equal types erase to equal data.
 const erased = mty => {
   const [name, fields] = Object.entries(mty)[0];
   switch (name) {
@@ -37,9 +40,12 @@ const erased = mty => {
 };
 
 export const equalProbes = {
-  // Detects the Sig3 defect through ERASURE only (the body's type on
-  // both sides leaves no written Log mark in the right side); it says
-  // nothing about the marked-side check.
+  // A targeted check that Sig3's written marks survive: with the
+  // body's type on both sides, no written Log mark is left in the right
+  // side. On this program erasure is preserved, so the probe checks
+  // marks, not erasure; the corpus test's reproduction of the defect
+  // (dossier §18.120) failed through erasure, which is a different
+  // check, and the marked-side check is r0-amin-equal-sig3-mark-only.
   'r0-amin-equal-sig3-marks': async context => {
     const source = `${prelude}fn mk(): Handler(Log with Console) = `
       + 'handler Log { log(n) => Console.print(n) }; '
@@ -47,6 +53,7 @@ export const equalProbes = {
     const { fieldsOf } = await toolkit(context);
     const sides = fieldsOf(source, 'mk').effects.obligations.filter(item =>
       item.provenance.constructor.name === 'BesideAtom'
+      && item.rule.constructor.name === 'SigRule'
       && item.rule.value0 === 3).map(item =>
       JSON.stringify(shape(item.value.value1)));
     if (!sides.some(text => text.includes('"Written"')))
@@ -87,6 +94,7 @@ export const equalProbes = {
     const found = { checked: 0, fresh: 0, problems: [] };
     const items = effects.obligations.filter(item =>
       item.provenance.constructor.name === 'BesideAtom'
+      && item.rule.constructor.name === 'SigRule'
       && item.rule.value0 === 3);
     if (items.length === 0) fail('Sig3 records no E1');
     for (const item of items) {

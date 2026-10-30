@@ -34,10 +34,13 @@ export const equalRows = [
   },
   {
     // Task 7 fix round 1: Sig3's equation takes the body's marked type
-    // on both sides. Detected through ERASURE only: the probe's
-    // "sides differ" check, since the body's erasure here differs from
-    // the written result's. The marked-side check never fires for it;
-    // r0-amin-equal-sig3-mark-only covers that check.
+    // on both sides. A targeted check that Sig3's written marks
+    // survive: the probe looks for the written result's `Written` marks
+    // in the right side. On the probe's program erasure is preserved
+    // (the body and the written result erase alike), so erasure is not
+    // what fires here. The corpus test's reproduction of this defect
+    // (dossier §18.120) failed through erasure, a different check, and
+    // r0-amin-equal-sig3-mark-only covers the marked-side check.
     name: 'r0-amin-equal-sig3-marks',
     file: `${generate}Signature.purs`,
     needle: 'agreeEqual bodySpan body written markedBody sig.result',
