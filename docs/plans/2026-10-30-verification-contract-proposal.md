@@ -1,8 +1,8 @@
 # Verification contract: functional acceptance and performance qualification (2026-10-30)
 
-Status: proposal for the author (dossier §18.131). Nothing here is
-implemented, measured or authorized beyond writing this note. It
-replaces the timing-gate proposal in §18.130.
+Status: approved with clarifications (author, 2026-10-30, dossier
+§18.132; cap 0.70M, ceiling 7.93M). It replaces the timing-gate
+proposal in §18.130.
 
 ## Why
 
@@ -43,14 +43,17 @@ by that second question.
   them in its final line.
 - **One growth helper.** test/growth.mjs is the only routine module
   that compares elapsed times. Its protocol is fixed in code before any
-  result is collected: one untimed warm-up run per size; samples taken
-  in the order small, large, large, small, repeated (5 per size); the
-  statistic is median(large) / median(small); the threshold is a
-  constant passed by the caller and printed with every sample.
+  result is collected (§18.132): two untimed warm-ups, small then
+  large; then exactly ten measured invocations in this order: S L L S
+  S L L S S L (S = 10,000 parameters, L = 20,000; five of each); the
+  statistic is median(L) / median(S); the threshold is a constant passed
+  by the caller; every sample, its position and load1 are printed.
 - **Termination safeguards stay.** A timeout that kills a hung child
-  (spawn timeouts, `go build` group kills) is not a budget: it fails
-  only on a hang. Each keeps a margin of at least ten times its
-  measured time, stated beside it in a comment.
+  (spawn timeouts, `go build` group kills) is not a budget, but it can
+  also fail on a computation that is merely slow, not hung. A margin of
+  about ten times the measured time is a review guideline stated
+  beside it, not a portable guarantee and not a calibration
+  prerequisite (§18.132).
 
 ## Inventory of elapsed-time uses (first pass, grep-based)
 

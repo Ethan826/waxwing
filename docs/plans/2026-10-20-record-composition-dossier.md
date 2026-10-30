@@ -7071,3 +7071,35 @@ together. Correction: §18.130 named an "FN001 quadratic
 partial-application path" as the defect to restore without evidence;
 no row or finding names it, so locating or constructing it is the
 first step. Nothing implemented; Task 7 stays blocked.
+
+### 18.132 Verification contract approved: 0.70M, ceiling 7.93M (2026-10-30)
+
+The author approved §18.131's contract and a 0.70M all-in cap,
+cumulative ceiling 7.93M, both binding; the runner, clock-gate,
+inventory, documentation and regression changes are authorized, with
+no further proposal checkpoint. Clarifications: functional coverage is
+preserved (before/after test inventories and assertions compared; a
+split keeps its workload and outcome checks routine, its unchanged
+budget runs under `npm run perf`); classification follows the actual
+assertion, not the file name (poly-termination-timing resolved in the
+inventory); a timeout can fail on a merely slow computation, and ten
+times is a review guideline, not a guarantee or a calibration
+prerequisite; legitimate functional clock uses stay as specific
+inventoried exceptions, not whole-file exemptions; the schedule is two
+warm-ups then exactly S L L S S L L S S L. The history check is brief;
+failing a suitable historical defect, a clearly labeled,
+semantics-preserving constructed quadratic mutant in the measured
+compiler path is authorized: it builds cleanly, preserves the outcome
+and fails the ratio assertion itself, which shows sensitivity to that
+slowdown, not protection against a historical bug. The 3.0 threshold
+is adopted only if the demonstration succeeds; otherwise the evidence
+is reported and the threshold is not adjusted. Existing ratio checks
+move to perf pending their own qualification. `npm run perf` runs all
+its files, reports every failure, exits unsuccessfully on any and
+retries nothing; routine verify prints the dynamically counted number
+of excluded perf files and states that performance qualification was
+not run. A targeted review, a bounded fix allowance and one routine
+acceptance verify are included; no quiet-machine attempt. Prior
+failures and the absolute budgets are preserved. Task 7 stays blocked
+until this contract is implemented, reviewed and routine verify
+passes. Protected compiler pins unchanged; no push.
