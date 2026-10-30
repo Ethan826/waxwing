@@ -10,7 +10,10 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25.
 
-**Batch stopped (2026-10-30, dossier §18.123): needs the author.**
+**Completion pass stopped at its cap (§18.125): needs the author.** Repairs on
+batch/completion (7fe0113), unintegrated; window re-pin (author chose: extend
+class), the E8 written-tail P2 and P3s, integration and the verify remain.
+Earlier: **batch stopped (§18.123).**
 Integrated and reviewed at fc8a459; stopped at the 1.60M cap (about
 1.55M spent) and on reviewer 2's P0 (`fail` records no consumption;
 §4's E2 site list omits it). No acceptance verify ran. Author rulings

@@ -6903,3 +6903,29 @@ Task 9's implementation (its tests and regression rows) is not
 authorized. Batch the repairs, review and verify once; stop for scope
 growth, an unresolved semantic conflict or the cap. Task 7 acceptance
 open; R031, A2 deferred.
+
+### 18.125 Completion pass: repairs done, stopped at its cap before verify (2026-10-30)
+
+All eight repairs of §18.124 are committed on branch batch/completion
+(5c4b52b..7fe0113, worktree .claude/worktrees/batch-fix), not yet on
+r0-t2-d1: `fail` consumes `Fail(payload)` (AtFail); main's open tail
+is one minted flexible variable (EntryTail, carried by the result
+root to avoid a double mint) shared by ambient and Entry; FX032 keys
+on `written`; UnframedInstall restricts a `with` over a non-MHandler;
+the Sig3 label restored; uniqueness gated over all kinds (147483
+obligations, 0 repeats); coverage 13 fixture, 18 unfinished; Task 12
+corrected, its Step 3 proof run by hand (3 of 4 boundary tests fail).
+Five new regression rows detect their defects. Focused review: no P0
+or P1; P2: the code flexes any open rigid tail on main, a written
+`...r` included (as the live checker's `mainRow` does), while
+Body.purs's comment and the E8 amendment say the implicit variable
+only, and no test covers `...r`; P3s: a stale EntryTail comment,
+`unsupportedAt`'s comment and role naming a `with`, Defer and
+Unsupported missing from the uniqueness kind minimums, the
+EffectNotAllowed `also` checking the source only. Open: the window
+test fails (UnframedInstall adds a reason to 9 already-blocked rows;
+the author chose to extend the class and re-pin, not done). Spend:
+about 0.352M of 0.35M (implementer 0.232, reviewer 0.086, controller
+about 0.034): the cap is reached, so the window re-pin, the P2/P3
+fixes, integration and the verify wait for authorization. No verify
+ran; Task 7 acceptance open.
