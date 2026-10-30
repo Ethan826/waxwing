@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { consumeProbes } from './regression-r0-amin-consume.mjs';
 import { coverageProbes } from './regression-r0-amin-coverage.mjs';
+import { entryProbes } from './regression-r0-amin-entry.mjs';
 import { equalProbes } from './regression-r0-amin-equal.mjs';
 import { markedProbes } from './regression-r0-amin-marked.mjs';
 import { miscProbes } from './regression-r0-amin-misc.mjs';
@@ -40,6 +41,7 @@ export const r0AminProbes = {
   ...coverageProbes,
   ...equalProbes,
   ...consumeProbes,
+  ...entryProbes,
   ...miscProbes,
   ...pinProbes,
   // Task 20 (I2, dossier 18.102): a `fail`-only declaration keeps the

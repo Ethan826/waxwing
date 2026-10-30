@@ -12,14 +12,21 @@
 -- `main`'s open tail, which today's checker infers, left closed (§12.1's
 -- fallback, Task 7.1 ruling, provisional). The declared row, marked as
 -- declared, is the body's ambient row (amin Task 8, E10, E11), recorded at
--- the body's root.
+-- the body's root, except for `main`'s open top-level tail (§18.124 ruling
+-- 2, statements §4 E8 amendment): there today's checker infers the tail
+-- (Check/Function.purs `mainRow`), so the ambient row and `Entry` read
+-- one flexible variable `EntryTail` that this module mints once at the
+-- root. The recorded signature (`SignatureAt`) keeps its rigid variable,
+-- which rigid accounting still counts, and the checked row above stays
+-- closed: that closing is a provisional representation, not E8's
+-- specification.
 module Features.Check.Generate.Body (generateIn) where
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Effect (InstanceSig)
+import Domain.Recorded.Effect (ERole(..), EVar(..), MRow)
 import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
 import Domain.Resolved (FunctionDecl, exprSpan)
 import Domain.Row (Row(..))
@@ -28,9 +35,10 @@ import Features.Check.Generate.Ambient (callbackParameters)
 import Features.Check.Generate.Declared (declaredSignature)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Expr (expr)
-import Features.Check.Generate.Gen (Gen, lifted)
+import Features.Check.Generate.Gen (Gen, effected, lifted)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Obligation (ambientAt, entryAt)
+import Features.Check.Generate.Out (EffectItem(..))
 import Features.Check.Generate.Signature
   ( declaration
   , isEntry
@@ -47,13 +55,14 @@ generateIn
 generateIn tables signatures function = do
   locals ← lifted (parameterLocals tables function)
   declared ← lifted (declaredSignature tables function)
-  ambientAt root declared.row
+  ambient ← entryTail function root declared.row
+  ambientAt root ambient
   body ← expr
     { decl: function.id
     , tables
     , signatures
     , locals
-    , ambient: declared.row
+    , ambient
     , callbacks: callbackParameters function
     }
     root
@@ -62,22 +71,36 @@ generateIn tables signatures function = do
     (exprSpan function.body)
   signature
   body.emits
-  entered function declared
+  entered function ambient
   pure (checkedOf function <$> body.expr)
   where
   root = Path { root: InBody, steps: [] }
 
+-- `main`'s declared row with its rigid top-level tail replaced by the
+-- one flexible `EntryTail` at `path`, minted here and nowhere else. A
+-- closed row, a written tail that is not the implicit variable and every
+-- other function keep the declared row.
+entryTail ∷ ∀ s. FunctionDecl → Path → MRow → Gen s MRow
+entryTail function path row =
+  if isEntry function then maybe (pure row) tailed row.tail else pure row
+  where
+  inferred = EffFresh path EntryTail
+  tailed = case _ of
+    EffRigid _ →
+      row { tail = Just inferred } <$ effected [ MintedVar inferred ]
+    EffFresh _ _ → pure row
+
 -- E8: `main`, and only `main`, records its declared row for the entry
 -- check (Sig10's rule, at the result root where it records its atom).
-entered ∷ ∀ s. FunctionDecl → InstanceSig → Gen s Unit
-entered function declared = when (isEntry function)
+entered ∷ ∀ s. FunctionDecl → MRow → Gen s Unit
+entered function row = when (isEntry function)
   ( entryAt
       { decl: function.id
       , path: Path { root: InResult, steps: [] }
       , rule: SigRule 10
       }
       function.span
-      declared.row
+      row
   )
 
 checkedOf ∷ FunctionDecl → Checked.Expr → Checked.FunctionDecl

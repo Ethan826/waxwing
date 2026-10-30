@@ -125,8 +125,11 @@ test('E10 targets the declared row', () => {
 
 test('ambient rows recorded', () => {
   const body = effectsOf('fn main(): Unit with Console = ();');
-  assert.deepEqual(lookup(body.ambient, at('InBody')),
-    shape(body.signature).row);
+  // §18.124 ruling 2: main's open tail is the flexible EntryTail in the
+  // ambient row (test/r0-obligations-entry.test.mjs); the labels are the
+  // declared row's.
+  assert.deepEqual(lookup(body.ambient, at('InBody')).labels,
+    shape(body.signature).row.labels);
   const lambdaAt = items(0, 'Let', 'value');
   const lambda = effectsOf(sources.lambda);
   assert.deepEqual(lookup(lambda.ambient,

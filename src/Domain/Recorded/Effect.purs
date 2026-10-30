@@ -40,7 +40,9 @@ import Domain.Type (TypeId, VarId)
 data EVar = EffRigid VarId | EffFresh Path ERole
 
 -- `AnnotationClauses j k`: parameter j's annotation, k-th eligible
--- handler occurrence in it (pre-order).
+-- handler occurrence in it (pre-order). `EntryTail`: `main`'s inferable
+-- top-level ambient tail (§18.124 ruling 2), minted at its body's root
+-- by Generate.Body alone.
 data ERole
   = EffInst VarId
   | EffectOf
@@ -51,6 +53,7 @@ data ERole
   | AnnotationClauses Int Int
   | Stage Int
   | OpenedRow
+  | EntryTail
 
 data Fixed = FixedN | FixedM | FixedRigid String
 

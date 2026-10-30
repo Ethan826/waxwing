@@ -120,7 +120,10 @@ test('Entry only in main', () => {
   assert.ok(item, 'main records no Entry');
   assert.equal(extra, undefined, 'a second Entry');
   assert.equal(roleOf(item), 'EntryRow');
-  assert.deepEqual(shape(item.value.value0), shape(effects.signature.row));
+  // §18.124 ruling 2: the declared labels; the open tail is the flexible
+  // EntryTail (test/r0-obligations-entry.test.mjs).
+  assert.deepEqual(shape(item.value.value0).labels,
+    shape(effects.signature.row).labels);
   for (const name of ['a', 'b', 'c'])
     assert.equal(kindsOf(effectsOf(fails, name), 'Entry').length, 0, name);
   const console = 'fn main(): Unit with Console = Console.print(1);';
