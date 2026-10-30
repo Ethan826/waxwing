@@ -10,6 +10,7 @@ import { entryRows } from './regression-r0-amin-entry.mjs';
 import { equalRows } from './regression-r0-amin-equal.mjs';
 import { miscRows } from './regression-r0-amin-misc.mjs';
 import { pinRows } from './regression-r0-amin-pin.mjs';
+import { unsupportedRows } from './regression-r0-amin-unsupported.mjs';
 import { signatureRows } from './regression-r0-amin-signature.mjs';
 const generate = 'src/Features/Check/Generate/';
 const marked = `${generate}Marked.purs`;
@@ -22,6 +23,7 @@ export const r0AminRows = [
   ...entryRows,
   ...miscRows,
   ...pinRows,
+  ...unsupportedRows,
   {
     // Tasks 2, 3: a Fail label translated as written (the Console-only
     // guard), so its mark is M or a position, not N.

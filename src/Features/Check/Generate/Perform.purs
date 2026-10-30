@@ -14,7 +14,6 @@ module Features.Check.Generate.Perform
 
 import Prelude
 import Data.Array as Array
-import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (sequence)
 import Domain.Checked.Internal as Checked
@@ -133,12 +132,12 @@ unsupported
   → Span
   → EffectId
   → Int
-  → Maybe (TyRow VarId)
+  → Boolean
   → Gen s Unit
-unsupported context path span effect index = traverse_ recorded
-  where
-  recorded _ = unsupportedAt (at context path (ExprRule 17)) span
-    (OperationWithRow effect index)
+unsupported context path span effect index written = when written
+  ( unsupportedAt (at context path (ExprRule 17)) span
+      (OperationWithRow effect index)
+  )
 
 -- An operation's row, as Check/Operation.purs `operationUse` writes it:
 -- its own effect over the effect's parameters, plain, closed.

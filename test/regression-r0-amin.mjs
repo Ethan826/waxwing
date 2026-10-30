@@ -15,6 +15,7 @@ import { openedProbes } from './regression-r0-amin-opened.mjs';
 import { ownedProbes } from './regression-r0-amin-owned.mjs';
 import { pinProbes } from './regression-r0-amin-pin.mjs';
 import { signatureProbes } from './regression-r0-amin-signature.mjs';
+import { unsupportedProbes } from './regression-r0-amin-unsupported.mjs';
 import { toolkit } from './regression-r0-amin-support.mjs';
 
 const fail = message => {
@@ -44,6 +45,7 @@ export const r0AminProbes = {
   ...entryProbes,
   ...miscProbes,
   ...pinProbes,
+  ...unsupportedProbes,
   // Task 20 (I2, dossier 18.102): a `fail`-only declaration keeps the
   // marking that lets the pinned cohort stay Solved: E23 emits no
   // Outside for a written family that translates. Checked on a program

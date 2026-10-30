@@ -54,7 +54,10 @@ ownRow role path = { labels: [], tail: Just (EffFresh path role) }
 -- `f L + ρ`: the installed handler's label under the frame mark at the
 -- `with` node, in front of the outer row. A handler whose type is not
 -- yet a handler type when generation reads it names no label here, so
--- its body's ambient row is ρ alone.
+-- its body's ambient row is ρ alone. That is not a complete ambient
+-- representation, so `with` records an explicit `UnframedInstall`
+-- Unsupported for it (Effect.purs `unframed`, §18.124 ruling 4);
+-- symbolic framing is Task 9 design.
 framed ∷ Path → MTy → MRow → MRow
 framed path installed outer = case installed of
   MHandler label _ → inFront [ label { mark = At (Frame path) } ] outer

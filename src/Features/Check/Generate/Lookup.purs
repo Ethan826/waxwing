@@ -17,7 +17,7 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe)
 import Domain.Ids (EffectId(..), TypeId(..))
-import Domain.Resolved (CtorId(..), FunctionId, Joined, Ty, TyRow, VarId)
+import Domain.Resolved (CtorId(..), FunctionId, Joined, Ty, VarId)
 import Domain.Row (EffectRef(..))
 import Domain.Syntax (Sort(..))
 import Features.Check.Generate.Fault (Gen, GenerationFault(..))
@@ -47,7 +47,7 @@ type OperationShape =
   { sorts ∷ Array Sort
   , parameters ∷ Array (Ty VarId)
   , result ∷ Ty VarId
-  , written ∷ Maybe (TyRow VarId)
+  , written ∷ Boolean -- a `with` row was written, resolved or not
   }
 
 calleeOf ∷ Signatures → FunctionId → Gen Signature
@@ -92,7 +92,7 @@ operationShape tables effect@(EffectId index) operation = do
     { sorts: map (const TypeSort) info.parameters
     , parameters: map typeOf found.parameters
     , result: found.result
-    , written: found.effects
+    , written: found.written
     }
   where
   typeOf parameter = parameter.ty

@@ -7,7 +7,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..), hush)
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), isJust, maybe)
 import Data.Traversable (traverse)
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
@@ -74,6 +74,7 @@ effects declared known declarations = do
     , parameters
     , result
     , effects: written
+    , written: isJust declaration.row
     , syntax: Array.snoc (map parameterSyntax declaration.parameters)
         declaration.result
     , span: declaration.span

@@ -32,6 +32,7 @@ import Domain.Recorded.Effect
   , MarkRef(..)
   , Position(..)
   , SiteRole(..)
+  , UnsupportedKind(..)
   )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, HandlerClause, Ty, VarId)
@@ -63,7 +64,7 @@ import Features.Check.Generate.Node
   , markersAt
   , tagged
   )
-import Features.Check.Generate.Obligation (equalAt)
+import Features.Check.Generate.Obligation (equalAt, unsupportedAt)
 
 -- E20: `app (Handler e) [⟨p, inst j⟩ …]`, `Outside HandlerType` (O3),
 -- clause bodies with parameters at θ of their declared types; markers of
@@ -121,6 +122,7 @@ with
   ∷ ∀ s. Recur s → Context s → Path → Span → Expr → Expr → Gen s (Ruled s)
 with recur context path span installed body = do
   handlerPart ← recur context (childOf path "With" "handler") installed
+  unframed context path span handlerPart.marked
   inside ← enter bodyPath (framed path handlerPart.marked context.ambient)
     context
   -- `Frame p` carries this node's path, so the node mints it (Minted
@@ -141,6 +143,17 @@ with recur context path span installed body = do
     }
   where
   bodyPath = childOf path "With" "body"
+
+-- §18.124 ruling 4: a handler whose marked type is not an `MHandler`
+-- names no label for `Ambient.framed`, so the body's ambient row would
+-- be the outer row alone: not a complete ambient representation. Record
+-- `UnframedInstall` at the `with`'s path (Decide routes it to
+-- `EffectsUnchecked`, never Solved) until Task 9 designs symbolic
+-- framing.
+unframed ∷ ∀ s. Context s → Path → Span → MTy → Gen s Unit
+unframed context path span = case _ of
+  MHandler _ _ → pure unit
+  _ → unsupportedAt (at context path (ExprRule 21)) span UnframedInstall
 
 -- An explicit marker of this rule (origin body), when its condition
 -- holds.

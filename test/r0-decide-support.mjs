@@ -21,7 +21,8 @@ export const sources = {
 
 const named = value => value.constructor.name;
 
-const operation = kind => `${named(kind)} ${kind.value0} ${kind.value1}`;
+const operation = kind => (kind.value0 === undefined ? named(kind)
+  : `${named(kind)} ${kind.value0} ${kind.value1}`);
 
 const unsupport = value => {
   switch (named(value)) {

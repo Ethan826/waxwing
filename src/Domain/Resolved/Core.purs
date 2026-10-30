@@ -92,11 +92,16 @@ type Parameter =
 -- references, as `fieldSyntax` does for constructors (FX001 Task 6).
 -- `effects` is the operation's written `with` row, kept as data for the
 -- shadow generator (FX032, a-min statements §9); compilation reads none.
+-- `written` says whether a row was written at all, apart from whether it
+-- resolved: a row that fails to resolve leaves `effects` Nothing but
+-- `written` true, so FX032's Unsupported is never erased by a resolution
+-- failure (§18.124 ruling 3).
 type OperationInfo =
   { name ∷ String
   , parameters ∷ Array Parameter
   , result ∷ Ty VarId
   , effects ∷ Maybe (TyRow VarId)
+  , written ∷ Boolean
   , syntax ∷ Array TypeRef
   , span ∷ Span
   }

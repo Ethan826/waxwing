@@ -106,7 +106,14 @@ data SiteKind
   | ClauseIntoC Int
   | InstallR
 
-data UnsupportedKind = OperationWithRow EffectId Int
+-- What the validator does not support, each routed to `EffectsUnchecked`
+-- (Decide/Reason.purs). `OperationWithRow e i`: operation i of effect e
+-- writes a `with` row (FX032). `UnframedInstall` (§18.124 ruling 4): a
+-- `with` installs a handler whose marked type is not an `MHandler` when
+-- generation reads it, so its label is unknown and the body's ambient
+-- row is the outer row alone, which is not a complete ambient
+-- representation. Symbolic framing is Task 9 design.
+data UnsupportedKind = OperationWithRow EffectId Int | UnframedInstall
 
 data Obligation
   = Equal MTy MTy
