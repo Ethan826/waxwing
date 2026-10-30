@@ -1,4 +1,4 @@
-# RESUME HERE (2026-10-27, context reset)
+# RESUME HERE (2026-10-30, context reset before the parallel batch)
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -8,41 +8,51 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-Priority: R0 and its effect guarantees; arithmetic parked.
+No milestone has moved since 2026-10-25.
 
-**Where things stand.** Milestone 1's representation is approved
-(a-min statements, docs/plans/r0-amin-statements.md, 535b780); its
-checking half needs the validator (A2, options note
-docs/plans/2026-10-25-amin-a2-options.md, questions 1-3 open). Tranche 1
-(docs/plans/2026-10-25-amin-tranche-1-plan.md, toward milestone 2) has
-recorded the effect problem in shadow generation: Checkpoint A (Tasks
-1-5), Checkpoint B (Tasks 15-17), correction units C (Tasks 18-20:
-R033 opened rows/handled labels, R032 signature record, I2 fail-only
-amendment) and D (Tasks 21-23: MissingSignature fault, cohort pin only
-by scripts/r0-fail-only-pin.mjs, signature rigids vs
-effectRigids/rigidMarks). Head 7d1d668 on r0-t2-d1, unpushed; verify
-exit 0 there (2961 + 146 tests, 231 regression proofs; logs in the main
-checkout's .build/evidence/2026-10-27-checkpointB/). Nothing checks
-effects yet; live compilation unchanged; G0's atoms byte-identical.
-History and rulings: dossier
-docs/plans/2026-10-20-record-composition-dossier.md §18.95-§18.105;
-docs/progress.md's tranche-1 entries.
+**Next action: run the authorized parallel batch** (dossier §18.121,
+§18.122; proposal docs/plans/2026-10-30-tranche-1-parallel-batch.md,
+read it in full). Authorized: 1.60M more, running ceiling 6.82M, both
+binding; spend so far about 5.22M (subagent tokens, approximate).
+1. Step 0 (controller, not yet started; tree clean at b71a472 plus this
+   note): move `operationRef`, `perform`, `operation` and
+   `operationRow` (Generate/Effect.purs lines 78-160, with their
+   comments) verbatim into a new Generate/Perform.purs; Expr.purs
+   imports `operationRef`, `perform` from it; Effect keeps `handler`,
+   `with`, `marker` (Failure imports `marker`) and the literal helpers;
+   fix imports only. Checks before dispatch: npm run build,
+   checkStructure, purs-tidy, width, the perform/generation tests,
+   test/r0-obligations-equal.test.mjs, the problem pin. Trusted-surface
+   re-pin (node scripts/trusted-surface-pin.mjs) for Effect and
+   Perform, named in the commit. The structure-elab allowlists may need
+   the new module; that is part of the authorized extraction only.
+2. Dispatch together, fresh agents, each in its own worktree from the
+   step-0 commit: A (Task 7 remaining: erasure-preserving mark mutant,
+   e.g. Sig3's right side re-marked under `InAnnotation` instead of
+   `Declared`, registered row, fails through "marked side matches no
+   recorded type" with erasure passing; relabel the Sig3 row as
+   detecting through erasure; document candidate matching), B (Task
+   8), C (Tasks 10-11), D (Tasks 12-13), R9 (Task 9 design, document
+   only, Opus). Lane ownership, re-pin list and stops: the proposal.
+3. Integrate A, B, C, D in order (rebase, no merge commits); census and
+   window re-pin only for FX032 rows, each checked first; three Opus
+   reviewers on the integrated change; fix allowance 0.20M; one full
+   verify alone under the lock, not retried if it fails.
 
-**Held for the author (nothing authorized):**
-- Task 7 (E1 obligations) and Tasks 8-14: each needs its own
-  authorization. Spend so far about 4.65M against a 5.29M running
-  ceiling; any new unit needs a new cap (the author asks for a bounded
-  estimate first).
-- Task 24 closed (§18.118): the clean-tree verify at a557782 satisfied
-  its gate after the verify runner change (d622bb7 to a557782). The
-  partialFirst measurement protocol stays held.
-- Task 7 (E1, O1, O2) started 2026-10-29 under 0.65M, running ceiling
-  5.29M (§18.118, §18.107's scope and stops).
-- The `effectRigids` ambient-variable exception is asserted from the
-  corpus (statements §2), not from a definition.
-- R031 deferred to an effect-row-binding tranche (§18.100).
-- Self-hosting docs: confirmed in origin/main at 7093c79, all four
-  final text fixes included.
+**State of the work.** Task 24 closed (§18.118). Verify runner change
+done (timing tests serial; acorn clock gate; conditions logging).
+Task 7 implemented (9ea3fd6, c77f5c3, needle fix 8f8eac8), acceptance
+open: it waits for lane A, the combined review and the full verify. The
+marked-side check accepts any eligible candidate with equal erasure,
+not the intended home (§18.120): never describe it as identifying the
+home. The Sig3 mutant is detected through erasure only. Follow-up:
+remove dead `Record.shape` (needs a Record re-pin). partialFirst
+measurement protocol held. R031 deferred; A2 open.
+
+**Standing rules from this session.** A pasted ChatGPT review that
+responds to the latest report is the author's ruling (memory). New
+prose in American spelling (memory). A denied tool call stops the agent;
+never route around it (a subagent's denied `pkill` was not retried).
 
 **How work runs here:** a pasted review plus "Ratified" is the
 author's ruling (record it in the dossier and plan, then act; caps are
