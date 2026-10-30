@@ -105,8 +105,8 @@ export const r0AminRows = [
         + ' found.instance.parameters\n        , last: found.instance.row\n'
         + '        , result: found.instance.result\n        }\n' },
     { file: `${generate}Call.purs`,
-      needle: '  , mintedStages\n  , tagged\n  )\n',
-      replacement: '  , mintedStages\n  , stagedArrow\n  , tagged\n  )\n' }],
+      needle: '  , mintedStages\n  )\n',
+      replacement: '  , mintedStages\n  , stagedArrow\n  )\n' }],
     probe: 'r0-amin-partial-reuses-stages',
     message: /three\(1\) rest begins at .*, not Stage 1/
   },
