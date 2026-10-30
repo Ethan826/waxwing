@@ -7,6 +7,7 @@ import { load, resolved } from './r0-generate-support.mjs';
 import { rt8Sources } from './r0-rt8-run.mjs';
 import { defectProbes } from './r0-shadow-known.mjs';
 import { shape } from './regression-r0-amin-support.mjs';
+import { markedSides, recordedTypes } from './r0-obligations-sides.mjs';
 
 // R0 amin tranche 1, Task 7: E1 equations. Every `GenEqual` atom has an
 // `Equal` obligation recorded beside it (provenance `BesideAtom` with the
@@ -41,6 +42,14 @@ const atomKey = (id, path, rule) => stableStringify({ decl: id.decl,
   path, index: id.index, rule });
 const kindOf = item => item.provenance.constructor.name;
 
+// The healthy build's kit for the shared marked-side check.
+const kit = {
+  pairs: map => pairs(map).map(pair => [pair.value0, pair.value1]),
+  pathOf: decodePath,
+  erased: mty => stableStringify(erase(mty)),
+  marks: mty => key(shape(mty))
+};
+
 const survey = async () => {
   const found = { atoms: 0, sites: [], problems: [], repeats: [],
     checked: 0, fresh: 0 };
@@ -58,48 +67,10 @@ const survey = async () => {
   return found;
 };
 
-// The declaration's recorded marked types with the path each hangs at
-// (the signature's, at no path), each with its erasure.
-const recordedTypes = effects => {
-  const at = (path, mty) =>
-    ({ path, mty, erased: stableStringify(erase(mty)) });
-  const found = [];
-  for (const name of ['nodes', 'annotations'])
-    for (const pair of pairs(effects[name]))
-      found.push(at(decodePath(pair.value0), pair.value1));
-  const sigs = [[null, effects.signature],
-    ...pairs(effects.instances).map(pair =>
-      [decodePath(pair.value0), pair.value1])];
-  for (const [path, sig] of sigs)
-    for (const mty of [...sig.parameters, sig.result])
-      found.push(at(path, mty));
-  return found;
-};
-const under = (path, base) => path === null || (path.root !== undefined &&
-  key(path.root) === key(base.root) && key(path.steps.slice(0,
-    base.steps.length)) === key(base.steps));
-
-// Marked sides: a side with a recorded candidate (same erasure, at the
-// atom's path or under it, or in the signature) must equal one exactly,
-// marks included. Fresh-built sides (builtArrow, markedRecord) have no
-// candidate: erasure only here, plus the namedIn scan in r0-marked-corpus.
-const markedSides = (at, id, base, item, recorded, found) => {
-  for (const side of [item.value.value0, item.value.value1]) {
-    const erased = stableStringify(erase(side));
-    const options = recorded.filter(entry => entry.erased === erased &&
-      under(entry.path, base));
-    if (options.length === 0) { found.fresh += 1; continue; }
-    found.checked += 1;
-    if (!options.some(entry => key(shape(entry.mty)) === key(shape(side))))
-      found.problems.push(`${at}: marked side matches no recorded type`
-        + ` at ${id}`);
-  }
-};
-
 const compare = (at, problem, found) => {
   const { effects } = Recorded.fields(problem);
   const { obligations } = effects;
-  const recorded = recordedTypes(effects);
+  const recorded = recordedTypes(effects, kit);
   const beside = new Map();
   const here = new Set();
   for (const item of obligations) {
@@ -137,7 +108,7 @@ const compare = (at, problem, found) => {
     if (stableStringify(erased) !== stableStringify([left, right]))
       found.problems.push(`${at}: sides differ at ${id}`);
     markedSides(at, id, decodePath(item.provenance.value1.path), item,
-      recorded, found);
+      recorded, found, kit);
   }
   for (const id of beside.keys())
     if (!used.has(id)) found.problems.push(`${at}: E1 without atom ${id}`);
