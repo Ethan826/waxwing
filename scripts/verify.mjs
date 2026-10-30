@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync }
 import { spawnSync } from 'node:child_process';
 import { checkStructure } from './structure.mjs';
 import { conditionsLine } from './verify-conditions.mjs';
+import { splitTestNames } from './perf.mjs';
 mkdirSync('.build', { recursive: true });
 const run = (command, args) => {
   const result = spawnSync(command, args, { stdio: 'inherit' });
@@ -35,12 +36,16 @@ run('node', ['scripts/strict-rebuild.mjs']);
 assert.deepEqual(await checkStructure(), [], 'structural gates');
 run('node', ['scripts/width.mjs']);
 // Every test file runs; a hand-kept list could silently omit a new one.
-// `*.serial.test.mjs` files time `go build` or other heavy work against
-// fixed bounds, so they run after the parallel phase, one file at a time,
-// rather than under the parallel runner's load (user, 2026-10-09).
+// `*.serial.test.mjs` files build Go or do other heavy work, so they run
+// after the parallel phase, one file at a time, rather than under the
+// parallel runner's load (user, 2026-10-09). `*.perf.test.mjs` files hold
+// absolute time bounds and run only under `npm run perf`
+// (scripts/perf.mjs); verify excludes them by name and counts them below
+// (docs/engineering.md, "Verification contract").
 const serialSuffix = '.serial.test.mjs';
-const testFiles = readdirSync('test').filter(name => name.endsWith('.test.mjs'))
-  .sort().map(name => `test/${name}`);
+const names = splitTestNames(readdirSync('test').sort());
+const perfCount = names.perf.length;
+const testFiles = names.routine.map(name => `test/${name}`);
 const tests = testFiles.filter(name => !name.endsWith(serialSuffix));
 const serialTests = testFiles.filter(name => name.endsWith(serialSuffix));
 assert.ok(tests.length > 0, 'no test files found');
@@ -54,3 +59,5 @@ console.log(conditionsLine('regression'));
 run('node', ['scripts/regression.mjs']);
 console.log('Verified compiler, gates, executable programs, rejection ' +
   'diagnostics, properties, and regression proofs.');
+console.log(`Performance qualification was not run: ${perfCount} files ` +
+  'under npm run perf.');

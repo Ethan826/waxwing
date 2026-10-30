@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "verify": "node scripts/verify.mjs",
+    "perf": "node scripts/perf.mjs",
     "waxwing": "node scripts/waxwing.mjs"
   },
   "engines": {

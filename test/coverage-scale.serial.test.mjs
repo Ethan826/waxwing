@@ -8,23 +8,11 @@ import { checked, rejected, rejectedAt } from './support.mjs';
 // stack with a raw RangeError.
 const fieldCount = 5000;
 const chainLength = 10000;
-// Timings measured on a 2026 laptop are recorded in
-// docs/plans/applicative-parser-review.md; 5 s leaves room for a cold,
-// loaded machine while still failing a quadratic regression by far.
-const compileSecondsLimit = 5;
-const millisecondsPerSecond = 1000;
+// The 5 s time bound on each compile is in coverage-scale.perf.test.mjs
+// (npm run perf); this file keeps the workloads and outcome assertions.
 const main = ' fn main(): Int = 0;';
 
-const secondsFor = work => {
-  const started = performance.now();
-  work();
-  return (performance.now() - started) / millisecondsPerSecond;
-};
-
-const bounded = work => {
-  const seconds = secondsFor(work);
-  assert.ok(seconds < compileSecondsLimit, `coverage took ${seconds}s`);
-};
+const bounded = work => work();
 
 const listOf = (count, item) => Array.from({ length: count }, item);
 const wildcards = count => listOf(count, () => '_');

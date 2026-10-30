@@ -51,28 +51,24 @@ test('the erased-row detector agrees with the reference reading', () => {
   assert.deepEqual(disagreements.slice(0, 10), []);
 });
 
-// Generation on the scale programs, against each one's serial suite's
-// bound for its whole compile (or, for FX008's, its check): generation
-// must fit inside the budget that phase already has. The bounds are
-// those suites' constants (3 × a measured median), cited, not re-measured.
+// Generation on the scale programs: every declaration generates. Their time
+// bounds (each serial suite's constant, 3 x a measured median) are in
+// r0-census.perf.test.mjs (npm run perf).
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const text = name => scalePrograms.find(found => found.name === name).source;
 const scale = [
-  ['fn-scale: 1,000 partial applications', chain(1000).source, 3 * 75],
-  ['fn-scale: a 1,000-long arrow type', curried(1000).source, 3 * 75],
-  ['fn-scale: 5,000 parameters through generics', generic(5000).source,
-    3 * 550],
-  ['text-scale: a 1 MB literal', text('a 1 MB literal'), 3 * 141],
+  ['fn-scale: 1,000 partial applications', chain(1000).source],
+  ['fn-scale: a 1,000-long arrow type', curried(1000).source],
+  ['fn-scale: 5,000 parameters through generics', generic(5000).source],
+  ['text-scale: a 1 MB literal', text('a 1 MB literal')],
   ['text-scale: 10,000 interpolation parts',
-    text('10,000 interpolation parts'), 3 * 521],
-  ['text-scale: 100,000 escapes', text('a literal of 100,000 escapes'),
-    3 * 142],
-  ['r001-scale: 200 shapes, depth 20', shapeChain(200, 20).source, 3 * 243],
-  ['fx008-scale: 8,000 defers', manyDefers(8000), 3 * 1001],
-  ['fx008-scale: 1,000 installations', manyInstallations(1000), 3 * 486],
-  ['fx008-scale: 1,000 forwarding installations', forwardingChain(1000),
-    3 * 311]
+    text('10,000 interpolation parts')],
+  ['text-scale: 100,000 escapes', text('a literal of 100,000 escapes')],
+  ['r001-scale: 200 shapes, depth 20', shapeChain(200, 20).source],
+  ['fx008-scale: 8,000 defers', manyDefers(8000)],
+  ['fx008-scale: 1,000 installations', manyInstallations(1000)],
+  ['fx008-scale: 1,000 forwarding installations', forwardingChain(1000)]
 ];
 const generateAll = program => {
   const { tables, signatures } = Inputs.generationInputs(program);
@@ -80,15 +76,11 @@ const generateAll = program => {
     Generate.generate(tables)(signatures)(decl));
 };
 
-for (const [name, source, boundMs] of scale) {
-  test(`generation within the bound: ${name}`, t => {
+for (const [name, source] of scale) {
+  test(`generation succeeds: ${name}`, () => {
     const program = resolved(source);
     generateAll(resolved('fn main(): Int = 0;'));
-    const started = performance.now();
     const results = generateAll(program);
-    const elapsedMs = performance.now() - started;
-    t.diagnostic(`${Math.round(elapsedMs)} ms, bound ${boundMs}`);
     assert.ok(results.every(result => result.constructor.name === 'Right'));
-    assert.ok(elapsedMs <= boundMs, `took ${elapsedMs} ms`);
   });
 }

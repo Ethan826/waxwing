@@ -1,5 +1,3 @@
-// Timing bounds moved out of large-source.test.mjs so they run in
-// verify's serial phase (docs/plans/2026-10-29-verify-timing-proposal.md, 1a).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { lex } from '../output/Format.Lex/index.js';
@@ -9,18 +7,9 @@ import { runGoBatch } from './go-batch.mjs';
 import { padded, declarationCount, declarationsFrom }
   from './large-source-support.mjs';
 
-const lexSecondsLimit = 5;
-// About 0.3 s after the E002/I3 fixes on a 2026 laptop and 25.7 s before
-// (quadratic resolver tables and Go emission); 5 s leaves room for a cold,
-// loaded machine while still failing a quadratic regression by far.
-const compileSecondsLimit = 5;
-const millisecondsPerSecond = 1000;
-
-const secondsFor = work => {
-  const started = performance.now();
-  work();
-  return (performance.now() - started) / millisecondsPerSecond;
-};
+// The time bounds (5 s per compile, 1 s for the parameter check) are in
+// large-source-timing.perf.test.mjs (npm run perf).
+const secondsFor = work => work();
 
 const last = declarationCount - 1;
 const declarations = `${declarationsFrom('\n')}\nfn main(): Int = f${last}();`;
@@ -39,8 +28,7 @@ const batch = runGoBatch(import.meta.url, [['declarations', declarations]]);
 
 test('twenty thousand declarations compile and run', () => {
   const source = declarations;
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(source));
   assert.equal(batch.run('declarations'), `${last}\n`);
 });
 
@@ -50,32 +38,27 @@ const manyTypes = typesFrom(declarationCount);
 
 // Resolver tables and Go emission once scanned every type per type or per
 // constructor, so 20,000 types took 25.7 s (A003 final review I3).
-test('twenty thousand one-constructor types compile in linear time', () => {
+test('twenty thousand one-constructor types compile', () => {
   const source = `${manyTypes} fn main(): Int = 0;`;
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(source));
 });
 
 // Type and constructor duplicate checks sort names like functions do; the
 // first declaration in source order is still the one reported.
 test('duplicates among many types are reported where they first occur', () => {
   const main = ' fn main(): Int = 0;';
-  const seconds = secondsFor(() => {
+  secondsFor(() => {
     rejectedAt(`${manyTypes} type T7 = X;${main}`, 'E_DUPLICATE',
       'type T7 = C7;');
     rejectedAt(`${manyTypes} type X = C7;${main}`, 'E_DUPLICATE', 'C7');
     rejectedAt(`fn C7(): Int = 0; ${manyTypes}${main}`, 'E_DUPLICATE',
       'fn C7(): Int = 0;');
   });
-  assert.ok(seconds < compileSecondsLimit, `rejecting took ${seconds}s`);
 });
 
-test('lexing a megabyte takes linear, not quadratic, time', () => {
-  const started = performance.now();
+test('lexing a megabyte', () => {
   const result = lex(padded);
-  const seconds = (performance.now() - started) / millisecondsPerSecond;
   assert.ok(result instanceof Right, 'padded program did not lex');
-  assert.ok(seconds < lexSecondsLimit, `lexing took ${seconds}s`);
 });
 
 // Resolution numbers binders through Fresh and a balanced `traverse` (G001
@@ -91,8 +74,7 @@ test('ten thousand binding arguments resolve in source order', () => {
   const source = `fn f(${parameters.join(', ')}): Int = 0; `
     + `fn main(): Int = f(${bindings.join(', ')});`;
   let go = '';
-  const seconds = secondsFor(() => { go = checked(source); });
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => { go = checked(source); });
   const binders = Array.from(go.matchAll(/waxwingLocal(\d+) := /g),
     found => Number(found[1]));
   const inOrder = Array.from({ length: wideCount }, (_, index) => index);
@@ -102,8 +84,7 @@ test('ten thousand binding arguments resolve in source order', () => {
 
 test('a five-thousand-arm integer match compiles', () => {
   const source = armSource;
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(source));
   const arms = runGoBatch(import.meta.url, [['arms', source]], 'arms');
   assert.equal(arms.run('arms'), '7\n');
 });
@@ -119,8 +100,7 @@ test('a three-thousand-constructor match is judged in full', () => {
   const matching = (count, extra = '') => `type T = ${ctors.join(' | ')}; `
     + `fn main(): Int = match C3 { ${ctors.slice(0, count)
       .map((ctor, index) => `${ctor} => ${index}`).join(', ')}${extra} };`;
-  const seconds = secondsFor(() => checked(matching(ctorCount)));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(matching(ctorCount)));
   const diagnostic = rejected(matching(ctorCount - 1), 'E_NON_EXHAUSTIVE');
   assert.equal(diagnostic.message, `Missing pattern: C${ctorCount - 1}`);
   const redundant = matching(ctorCount, ', _ => 0');
@@ -130,15 +110,13 @@ test('a three-thousand-constructor match is judged in full', () => {
 // Parameter duplicates sort names (Repeated) rather than filtering the
 // parameter list per parameter, which took 2.7 s at 20,000 (G001 Task 4b).
 const parameterCount = 20000;
-const parameterSecondsLimit = 1;
 
-test('twenty thousand parameters are checked in linear time', () => {
+test('twenty thousand parameters are checked', () => {
   const parameters = Array.from({ length: parameterCount },
     (_, index) => `p${index}: Int`);
   const source = `fn f(${parameters.join(', ')}): Int = 0; `
     + 'fn main(): Int = 0;';
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < parameterSecondsLimit, `checking took ${seconds}s`);
+  secondsFor(() => checked(source));
   rejectedAt(source.replace('p19999: Int', 'p7: Int'), 'E_DUPLICATE', 'p7');
 });
 
@@ -147,7 +125,7 @@ test('twenty thousand parameters are checked in linear time', () => {
 // so 3,000 function keys and 3,000 `List` type keys are created.
 const instantiationCount = 3000;
 
-test('three thousand distinct instantiations compile in linear time', () => {
+test('three thousand distinct instantiations compile', () => {
   const each = index => `type T${index} = C${index};`
     + ` fn f${index}(): List(T${index}) = single(C${index});`;
   const source = 'type List(a) = Nil | Cons(a, List(a));'
@@ -155,8 +133,7 @@ test('three thousand distinct instantiations compile in linear time', () => {
     + Array.from({ length: instantiationCount }, (_, index) => each(index))
       .join(' ') + ' fn main(): Int = 0;';
   let go = '';
-  const seconds = secondsFor(() => { go = checked(source); });
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => { go = checked(source); });
   const functions = go.match(/^func waxwingFn\d+\(/gm).length;
   assert.equal(functions, 2 * instantiationCount + 1, 'one copy per key');
 });
@@ -170,21 +147,19 @@ test('three thousand distinct instantiations compile in linear time', () => {
 const nothingCount = 5000;
 const nilCount = 4000;
 
-test('five thousand Nothing arms join in linear time', () => {
+test('five thousand Nothing arms join', () => {
   const arms = Array.from({ length: nothingCount - 1 },
     (_, index) => `${index} => Nothing`);
   const source = 'type Maybe(a) = Nothing | Just(a);'
     + ` fn main(): Maybe(Int) = match 7 { ${arms.join(', ')}, _ => Just(0) };`;
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(source));
 });
 
-test('four thousand Nil arguments unify in linear time', () => {
+test('four thousand Nil arguments unify', () => {
   const parameters = Array.from({ length: nilCount },
     (_, index) => `x${index}: b`);
   const source = 'type List(a) = Nil | Cons(a, List(a));'
     + ` fn f(${parameters.join(', ')}): Int = 0;`
     + ` fn main(): Int = f(${Array(nilCount).fill('Nil').join(', ')});`;
-  const seconds = secondsFor(() => checked(source));
-  assert.ok(seconds < compileSecondsLimit, `compiling took ${seconds}s`);
+  secondsFor(() => checked(source));
 });

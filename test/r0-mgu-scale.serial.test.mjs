@@ -6,14 +6,10 @@ import { generatedOrThrow, load, resolved }
 
 // BACKLOG R021: the shadow `BQ` detectors' unifier
 // (Features.Check.Entailed.Mgu) on `main`'s problem of fn-scale's
-// `generic(n)` (one `BQ` atom, about 1.8 n `B` atoms). Before the
-// triangular unifier, `openRequirements` took 5,648 ms at n = 1,000
-// and 33,602 ms at 2,000 (docs/findings.md, "R021"); the bound is
-// generous against the new times (about 200 ms) so that only a return
-// to quadratic cost fails, and still under half the old times (review
-// M-1 raised it from 1,000 ms). Serial: a timing test.
+// `generic(n)` (one `BQ` atom, about 1.8 n `B` atoms). Routine half: the
+// 2,500 ms bounds are in r0-mgu-scale.perf.test.mjs (npm run perf), with
+// the history (docs/findings.md, "R021").
 const count = 1000;
-const boundMs = 2500;
 const { generationInputs } = await load('Features.Check.Generate.Inputs');
 const { generate } = await load('Features.Check.Generate');
 const { openRequirements } = await load('Features.Check.Decide.Open');
@@ -26,22 +22,16 @@ const problemOf = n => {
   return generatedOrThrow(generate(tables)(signatures)(main), 'main');
 };
 
-const timed = run => {
-  const start = performance.now();
-  const value = run();
-  return { value, ms: performance.now() - start };
-};
+const timed = run => ({ value: run() });
 
-test(`openRequirements on generic(${count}) within ${boundMs} ms`, () => {
+test(`openRequirements on generic(${count})`, () => {
   const problem = problemOf(count);
   assert.equal(problem.bq.length, 1);
-  const { value, ms } = timed(() => openRequirements(problem));
+  const { value } = timed(() => openRequirements(problem));
   assert.equal(value.length, 0, 'main\'s atom is not open');
-  assert.ok(ms <= boundMs, `took ${Math.round(ms)} ms`);
 });
 
-test(`g0Guard on generic(${count}) within ${boundMs} ms`, () => {
+test(`g0Guard on generic(${count})`, () => {
   const problem = problemOf(count);
-  const { ms } = timed(() => g0Guard(problem));
-  assert.ok(ms <= boundMs, `took ${Math.round(ms)} ms`);
+  timed(() => g0Guard(problem));
 });

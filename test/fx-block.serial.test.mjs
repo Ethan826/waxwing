@@ -11,13 +11,9 @@ import { manyLets } from './fx-block-programs.mjs';
 // compiler to Go text, bounded at three times the time measured on the
 // author's laptop (2026-10-09, one process, load about 3: 490-510 ms; 40,000
 // took 915 ms and 80,000 1,739 ms, linear; docs/progress.md FX001 Task 2).
-const measuredMs = 500;
-test('20,000 let items compile in linear time', t => {
+// The bound is in fx-block.perf.test.mjs (npm run perf).
+test('20,000 let items compile', () => {
   const source = manyLets(20000);
-  const started = performance.now();
   const result = compile(source);
-  const elapsedMs = performance.now() - started;
-  t.diagnostic(`${Math.round(elapsedMs)} ms, bound ${3 * measuredMs}`);
   assert.ok(result instanceof Right, 'compiled');
-  assert.ok(elapsedMs <= 3 * measuredMs, `took ${elapsedMs} ms`);
 });

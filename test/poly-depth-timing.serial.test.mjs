@@ -1,5 +1,5 @@
-// Timing bounds moved out of poly-depth.test.mjs so they run in
-// verify's serial phase (docs/plans/2026-10-29-verify-timing-proposal.md, 1a).
+// Routine half: the 5 s bounds are in poly-depth-timing.perf.test.mjs
+// (npm run perf).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checkRejectedAt, checkedPoly } from './phases.mjs';
@@ -8,8 +8,6 @@ import { checkRejectedAt, checkedPoly } from './phases.mjs';
 // E_NESTING at the expression whose type first exceeds it, never a stack
 // overflow. Check only; the CLI compiles no polymorphic program until Task 7.
 const limit = 1000;
-const secondsLimit = 5;
-const millisecondsPerSecond = 1000;
 const list = 'type L(a) = N | C(a, L(a)); fn sink(x: a): Int = 0; ';
 const calls = (depth, leaf) => 'deep('.repeat(depth) + leaf
   + ')'.repeat(depth);
@@ -20,13 +18,7 @@ const program = (width, count) => `${list}fn deep(x: a): `
   + `${'L('.repeat(width)}a${')'.repeat(width)} = deep(x);`
   + ` fn main(): Int = sink(${calls(count, '1')});`;
 
-const timed = work => {
-  const started = performance.now();
-  const result = work();
-  const seconds = (performance.now() - started) / millisecondsPerSecond;
-  assert.ok(seconds < secondsLimit, `took ${seconds} s`);
-  return result;
-};
+const timed = work => work();
 
 const rejectedAtDepth = (width, count, first) => {
   const diagnostic = timed(() => checkRejectedAt(program(width, count),

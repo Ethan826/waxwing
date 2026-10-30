@@ -10,21 +10,17 @@ import { serviceEnvironments, shapeChain } from './r001-scale-programs.mjs';
 
 // R001 Task 10: the scale rule (design §8). 200 distinct record shapes
 // flow through a chain of 20 generic functions: one key per shape and
-// link, so keys grow linearly. A serial test (`*.serial.test.mjs`):
-// scripts/verify.mjs runs it after the parallel phase. Each bound is 3x
-// the median of five runs on the development host (docs/progress.md, R001
-// entry), by the Text v1 method (docs/engineering.md): compile in-process,
-// and `go build` alone after one warm-up build, the minimum of three. The
-// key count is exact; Go lines are deterministic, bounded the same way.
+// link, so keys grow linearly. Routine half: the key count is exact, the Go
+// lines are deterministic and bounded (3x the median of five runs on the
+// development host, docs/progress.md, R001 entry), and every build runs and
+// prints the right output. The compile and `go build` time bounds are in
+// r001-scale.perf.test.mjs (npm run perf).
 const shapes = 200;
 const depth = 20;
 const slack = 3;
-const measured = { compileMs: 243, buildMs: 714, lines: 19617 };
-const bounds = {
-  compileMs: slack * measured.compileMs,
-  buildMs: slack * measured.buildMs,
-  lines: slack * measured.lines
-};
+const measured = { lines: 19617 };
+const bounds = { lines: slack * measured.lines };
+// A termination safeguard, about ten times the measured 0.7 s build.
 const buildTimeoutMs = 120_000;
 const builds = 3;
 
@@ -46,9 +42,7 @@ const lineCount = go => go.split('\n').length;
 test(`${shapes} shapes through a chain of ${depth} generic functions`,
   async t => {
     const program = shapeChain(shapes, depth);
-    const started = performance.now();
     const result = compile(program.source);
-    const compileMs = performance.now() - started;
     assert.ok(result instanceof Right, 'program was rejected');
     const keys = keyTexts(program.source).length;
     const lines = lineCount(result.value0);
@@ -57,10 +51,7 @@ test(`${shapes} shapes through a chain of ${depth} generic functions`,
     for (let run = 0; run < builds; run++) {
       runs.push(await buildOf(result.value0));
     }
-    const buildMs = Math.min(...runs.map(one => one.buildMs));
-    t.diagnostic(`keys ${keys}; lines ${lines}, bound ${bounds.lines}; `
-      + `compile ${Math.round(compileMs)} ms, bound ${bounds.compileMs}; `
-      + `go build ${Math.round(buildMs)} ms, bound ${bounds.buildMs}`);
+    t.diagnostic(`keys ${keys}; lines ${lines}, bound ${bounds.lines}`);
     for (const one of runs) {
       assert.equal(one.killed, false, `go build killed at ${buildTimeoutMs}`);
       assert.equal(one.status, 0, one.errors);
@@ -68,8 +59,6 @@ test(`${shapes} shapes through a chain of ${depth} generic functions`,
     }
     assert.equal(keys, program.keys);
     assert.ok(lines <= bounds.lines, `${lines} Go lines`);
-    assert.ok(compileMs <= bounds.compileMs, `compile took ${compileMs} ms`);
-    assert.ok(buildMs <= bounds.buildMs, `go build took ${buildMs} ms`);
   });
 
 // The services proxy (design §8): measured and recorded in

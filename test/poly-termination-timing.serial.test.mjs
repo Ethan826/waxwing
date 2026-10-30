@@ -1,18 +1,11 @@
-// Timing bounds moved out of poly-termination.test.mjs so they run in
-// verify's serial phase (docs/plans/2026-10-29-verify-timing-proposal.md, 1a).
+// Routine half: the 5 s bounds are in poly-termination-timing.perf.test.mjs
+// (npm run perf); an absolute elapsed-time bound, so a budget, not a kill.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { components } from './poly-termination-support.mjs';
 
 const longest = 20000;
-const secondsLimit = 5;
-const timed = work => {
-  const started = performance.now();
-  const result = work();
-  const seconds = (performance.now() - started) / 1000;
-  assert.ok(seconds < secondsLimit, `took ${seconds} s`);
-  return result;
-};
+const timed = work => work();
 
 test('components are stack-safe on a 20,000-node chain and cycle', () => {
   const chain = Array.from({ length: longest }, (_, index) =>

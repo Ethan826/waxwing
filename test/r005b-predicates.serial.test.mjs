@@ -9,19 +9,13 @@ import { checkedPoly, checkRejectedAt } from './phases.mjs';
 // unification and in each settling round (§2.4, §2.9). A predicate still
 // waiting at the end of a body is D4 at its location (T6); a
 // contradiction a predicate caused is D6 when a part of it is at fault,
-// else the failure's own text, located by the user's L2 rule (B5). Each
-// program is checked within a time bound.
+// else the failure's own text, located by the user's L2 rule (B5).
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const same = 'fn same(a: z, b: z): Int = 0; ';
-const BOUND_MS = 2000;
-
-const timed = (run, source, ...rest) => {
-  const started = Date.now();
-  const found = run(source, ...rest);
-  assert.ok(Date.now() - started < BOUND_MS, 'over the time bound');
-  return found;
-};
+// The 2,000 ms bound on each check is in r005b-predicates.perf.test.mjs
+// (npm run perf).
+const timed = (run, source, ...rest) => run(source, ...rest);
 const checks = source => timed(checkedPoly, source);
 const rejectedAs = (source, text, nth, message) => {
   const found = timed(checkRejectedAt, source, 'E_TYPE', text, nth);

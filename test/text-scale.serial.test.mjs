@@ -9,23 +9,13 @@ import { scalePrograms } from './text-scale-programs.mjs';
 
 // Text v1 Task 9: the scale rule (design §7). A 1 MB literal, 10,000
 // interpolation parts and a literal of 100,000 escapes each compile and
-// run with the right output. A serial test (`*.serial.test.mjs`):
-// scripts/verify.mjs runs it after the parallel phase. Each bound is 3x
-// the median of five runs on the development host (docs/progress.md, Text
-// entry), for the in-process compile and for `go build` alone (after a
-// warm-up build, the minimum of three).
+// run with the right output. Routine half: the compile and `go build` time
+// bounds (3x the median of five runs, docs/progress.md, Text entry) are in
+// text-scale.perf.test.mjs (npm run perf). Only the 10,000-part program
+// kept the multi-build method (a warm-up, then the minimum of three).
+// The kill is a termination safeguard, about ten times the measured 0.7 s.
 const buildTimeoutMs = 120_000;
-const bounds = {
-  // Medians of five: compile 141 ms. No go build bound: go build time for
-  // these two is Go's fixed startup (~130 ms) plus ~17/~4 ms of Waxwing
-  // output; a time bound there tests the host, not the compiler (user
-  // decision 2026-10-13). They still build, run and match exactly.
-  'a 1 MB literal': { compileMs: 3 * 141, buildMs: null },
-  // Compile 521 ms, go build 709 ms.
-  '10,000 interpolation parts': { compileMs: 3 * 521, buildMs: 3 * 709 },
-  // Compile 142 ms; no go build bound (see above).
-  'a literal of 100,000 escapes': { compileMs: 3 * 142, buildMs: null }
-};
+const timedPrograms = new Set(['10,000 interpolation parts']);
 
 const buildOf = result => timedBuild(work => {
   const go = join(work, 'main.go');
@@ -46,30 +36,19 @@ const warmUp = async () => {
 };
 
 for (const program of scalePrograms) {
-  test(`${program.name} compiles and runs`, async t => {
-    const started = performance.now();
+  test(`${program.name} compiles and runs`, async () => {
     const result = compile(program.source);
-    const compileMs = performance.now() - started;
     assert.ok(result instanceof Right, 'program was rejected');
-    const bound = bounds[program.name];
-    const timed = bound.buildMs !== null;
+    const timed = timedPrograms.has(program.name);
     if (timed) await warmUp();
     const runs = [];
     for (let run = 0; run < (timed ? builds : 1); run++) {
       runs.push(await buildOf(result.value0));
     }
-    const buildMs = Math.min(...runs.map(one => one.buildMs));
-    t.diagnostic(`compile ${Math.round(compileMs)} ms, bound `
-      + `${bound.compileMs}; go build ${Math.round(buildMs)} ms, bound `
-      + `${timed ? bound.buildMs : 'none'}`);
     for (const one of runs) {
       assert.equal(one.killed, false, `go build killed at ${buildTimeoutMs}`);
       assert.equal(one.status, 0, one.errors);
       assert.equal(one.stdout, program.expected);
-    }
-    assert.ok(compileMs <= bound.compileMs, `compile took ${compileMs} ms`);
-    if (timed) {
-      assert.ok(buildMs <= bound.buildMs, `go build took ${buildMs} ms`);
     }
   });
 }

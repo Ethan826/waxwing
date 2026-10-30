@@ -6,20 +6,11 @@ import { checked, rejected } from './support.mjs';
 // declarations followed each record parameter down the rest of the chain
 // for every record argument, so n = 2,000 took about 5.6 s a compile (1.7 s
 // at 1,000, after R014). The labels are gathered once now: about 0.15 s.
-// 2 s leaves room for a cold, loaded machine and still fails the
-// quadratic walk by a wide margin.
 const chainLength = 2000;
-const compileSecondsLimit = 2;
-const millisecondsPerSecond = 1000;
 const main = ' fn main(): Int = 0;';
 
-const bounded = work => {
-  const started = performance.now();
-  const result = work();
-  const seconds = (performance.now() - started) / millisecondsPerSecond;
-  assert.ok(seconds < compileSecondsLimit, `compile took ${seconds}s`);
-  return result;
-};
+// The 2 s bound is in r013-scale.perf.test.mjs (npm run perf).
+const bounded = work => work();
 
 const declarations = (count, last, passed) => {
   const types = Array.from({ length: count }, (_, index) =>
