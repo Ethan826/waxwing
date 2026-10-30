@@ -83,9 +83,10 @@ generateIn tables signatures function = do
 
 -- `main`'s declared row with its rigid top-level tail replaced by the
 -- one flexible `EntryTail` at `path` (the result root), minted here and
--- nowhere else. A
--- closed row, a written tail that is not the implicit variable and every
--- other function keep the declared row.
+-- nowhere else: any open top-level tail, implicit or a written `...r`
+-- (§18.126; as Check/Function.purs `mainRow`). A closed row and every
+-- other function keep the declared row; other signature occurrences of
+-- that variable stay rigid.
 entryTail ∷ ∀ s. FunctionDecl → Path → MRow → Gen s MRow
 entryTail function path row =
   if isEntry function then maybe (pure row) tailed row.tail else pure row

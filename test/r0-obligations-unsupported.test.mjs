@@ -69,7 +69,7 @@ test('a with over a non-MHandler records UnframedInstall', () => {
   assert.equal(extra, undefined);
   assert.equal(found.value.value0.constructor.name, 'UnframedInstall');
   assert.equal(found.provenance.value0.role.constructor.name,
-    'UnsupportedOperation');
+    'UnframedWith');
   assert.equal(kinds(unframed, 'framed').length, 0, 'control: an MHandler');
 });
 

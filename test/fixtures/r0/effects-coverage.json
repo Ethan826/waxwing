@@ -134,7 +134,7 @@
     "verdict": "solved",
     "also": [
       {
-        "obligation": "Consume[source:FailEffect]",
+        "obligation": "Consume[source:FailEffect,target:EffectOf]",
         "site": "a:E23:Consumed:AtFail"
       }
     ]

@@ -895,8 +895,9 @@ edge (ExpectedNofail).
 (UnhandledEffect).
 **Amendment (author, 2026-10-30, dossier §18.124): main's top-level
 ambient tail is inferable, not rigid.** Written labels and a closed
-row are kept. Where `main` has an open top-level tail (the implicit
-row variable of its declared signature), generation records one minted
+row are kept. Where `main` has an open top-level tail (any open tail,
+the implicit row variable or a written `...r`, as today's checker's
+`mainRow`; corrected §18.126), generation records one minted
 flexible effect variable in its place, shared by main's body ambient
 row (E11) and `Entry`; E8 judges that completed row against Console's
 allowance. The recorded declaration signature is unchanged: it keeps

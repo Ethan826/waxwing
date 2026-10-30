@@ -40,7 +40,7 @@ import Domain.Recorded.Effect
   , Provenance(..)
   , SiteKind(..)
   , SiteRole(..)
-  , UnsupportedKind
+  , UnsupportedKind(..)
   )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..))
 import Domain.Syntax (Span)
@@ -163,11 +163,16 @@ payloadAt ∷ ∀ s. At → Span → MTy → Gen s Unit
 payloadAt site span payload =
   siteAt site PayloadHead span (FailConcrete payload)
 
--- FX032: a perform form of an operation that writes a `with` row, which
--- the validator does not support.
+-- A form the validator does not support, under the role naming it:
+-- FX032's perform of an operation that writes a `with` row, or a `with`
+-- over a handler whose marked type is not a handler type (§18.124).
 unsupportedAt ∷ ∀ s. At → Span → UnsupportedKind → Gen s Unit
 unsupportedAt site span kind =
-  siteAt site UnsupportedOperation span (Unsupported kind)
+  siteAt site (roleOf kind) span (Unsupported kind)
+  where
+  roleOf = case _ of
+    OperationWithRow _ _ → UnsupportedOperation
+    UnframedInstall → UnframedWith
 
 siteAt ∷ ∀ s. At → SiteRole → Span → Obligation → Gen s Unit
 siteAt site role span value = effected

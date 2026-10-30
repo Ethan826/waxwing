@@ -37,7 +37,10 @@ const flexible = { EffFresh: [{ root: { InResult: [] }, steps: [] },
 
 test('an open tail becomes one flexible variable, shared', () => {
   for (const source of ['fn main(): Unit = ();',
-    'fn main(): Unit with Console = Console.print(1);']) {
+    'fn main(): Unit with Console = Console.print(1);',
+    // A written `...r` is an open top-level tail too (§18.126, as
+    // Check/Function.purs `mainRow`); the signature keeps it rigid.
+    'fn main(): Unit with Console + ...r = ();']) {
     const effects = effectsOf(source);
     const signature = shape(effects.signature).row;
     assert.ok(tailOf(signature).EffRigid, 'the signature keeps its tail');

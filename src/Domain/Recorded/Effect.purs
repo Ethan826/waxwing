@@ -41,7 +41,8 @@ data EVar = EffRigid VarId | EffFresh Path ERole
 
 -- `AnnotationClauses j k`: parameter j's annotation, k-th eligible
 -- handler occurrence in it (pre-order). `EntryTail`: `main`'s inferable
--- top-level ambient tail (§18.124 ruling 2), minted at its body's root
+-- top-level ambient tail (§18.124 ruling 2), any open top-level tail,
+-- a written `...r` included; carried by and minted at the result root
 -- by Generate.Body alone.
 data ERole
   = EffInst VarId
@@ -155,7 +156,9 @@ data Provenance
 -- `Defer` and `DeferInto` its consumption, both at the `defer` item's
 -- path; `EntryRow` `main`'s; `PayloadHead` a `fail` or a fail clause's
 -- payload; `UnsupportedOperation` a perform form of an operation that
--- writes a `with` row (FX032).
+-- writes a `with` row (FX032); `UnframedWith` a `with` whose installed
+-- handler's marked type is not a handler type (`UnframedInstall`,
+-- §18.124, its own role per §18.126).
 data SiteRole
   = ClauseBody
   | WithNode
@@ -165,6 +168,7 @@ data SiteRole
   | EntryRow
   | PayloadHead
   | UnsupportedOperation
+  | UnframedWith
 
 type Placed a =
   { provenance ∷ Provenance, rule ∷ RuleId, span ∷ Span, value ∷ a }

@@ -148,7 +148,8 @@ test('provenance is distinct within a declaration, for every kind', t => {
   t.diagnostic(`identified ${found.identified}: ${key(found.kinds)}`);
   assert.deepEqual(found.repeats.slice(0, 10), [], 'a provenance repeats');
   assert.ok(found.identified > FLOOR, `${found.identified} identified`);
-  for (const kind of ['Equal', 'Consume', 'Entry', 'FailConcrete'])
+  for (const kind of ['Equal', 'Consume', 'Entry', 'FailConcrete', 'Defer',
+    'Unsupported'])
     assert.ok(found.kinds[kind] > 0, `no ${kind} obligation scanned`);
 });
 
