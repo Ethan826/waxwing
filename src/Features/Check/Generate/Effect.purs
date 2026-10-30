@@ -86,7 +86,7 @@ handler recur context path span label@(Label effect _ mark) clauses = do
   read ← slots path inst.slots
   let markedType = literalType path effect inst.all
   effected
-    ( mintedAt path (literalVars path)
+    ( mintedAt path (literalVars path <> Array.mapWithIndex clauseRow clauses)
         (map PartTy ([ markedType ] <> Array.concatMap _.marked found))
     )
   pure
@@ -106,6 +106,10 @@ handler recur context path span label@(Label effect _ mark) clauses = do
     }
   where
   snd (Tuple _ ty) = ty
+  -- Each clause's own row c, `⟨p, clauses k⟩` (statements §2, ownership
+  -- table): the clause body's ambient row (E11), minted by the literal,
+  -- whose path it carries.
+  clauseRow place _ = EffFresh path (Clauses place)
   clauseOf naming place = handlerClause recur context
     { handler: path, clause: place, label }
     naming
@@ -119,6 +123,9 @@ with recur context path span installed body = do
   handlerPart ← recur context (childOf path "With" "handler") installed
   inside ← enter bodyPath (framed path handlerPart.marked context.ambient)
     context
+  -- `Frame p` carries this node's path, so the node mints it (Minted
+  -- `mintedAt`: an owner mints only what carries its own path).
+  effected (mintedAt path [] [ PartRow inside.ambient ])
   bodyPart ← recur inside bodyPath body
   res ← nodeRes path (ExprRule 21) span
   pure

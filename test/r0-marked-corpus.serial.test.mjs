@@ -99,14 +99,15 @@ const repeatsOf = (at, effects) => ['flexEff', 'positions'].flatMap(name => {
 });
 
 // Every `EffFresh` variable and `At` position a recorded type names (in
-// `nodes`, `instances`, `annotations`, the declaration's `signature` and
-// the types inside `obligations`),
+// `nodes`, `instances`, `annotations`, `ambient` (Task 8's ambient rows,
+// which name a clause's `⟨p, clauses k⟩` and a frame's `Frame p`), the
+// declaration's `signature` and the types inside `obligations`),
 // by an explicit stack.
 const valuesOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => shape(pair.value1));
 const namedIn = effects => {
   const named = { flexEff: new Set(), positions: new Set() };
-  const pending = ['nodes', 'instances', 'annotations']
+  const pending = ['nodes', 'instances', 'annotations', 'ambient']
     .flatMap(name => valuesOf(effects[name]));
   pending.push(shape(effects.signature));
   // E1's built right sides (Task 7, Generate.Obligation `builtArrow`)
