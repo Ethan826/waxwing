@@ -10,7 +10,19 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25.
 
-**Next action: run the authorized parallel batch** (dossier §18.121,
+**Batch stopped (2026-10-30, dossier §18.123): needs the author.**
+Integrated and reviewed at fc8a459; stopped at the 1.60M cap (about
+1.55M spent) and on reviewer 2's P0 (`fail` records no consumption;
+§4's E2 site list omits it). No acceptance verify ran. Author rulings
+needed: the §4 E2 amendment for `fail`; main's Entry/ambient tail
+(§4 E8); whether to fund a fix round for the in-scope findings
+(FX032 under `hush`, the Sig3 relabel, the uniqueness gate, the two
+over-claimed coverage rows, Task 12's comment and Step 3, a628bd5's
+message); the `with` non-MHandler ambient as a Task 9 question; R9's
+Q1-Q7 and f020475's minting (R9 Q5). Then one verify under the lock.
+The section below is the batch as dispatched.
+
+**Was next: run the authorized parallel batch** (dossier §18.121,
 §18.122; proposal docs/plans/2026-10-30-tranche-1-parallel-batch.md,
 read it in full). Authorized: 1.60M more, running ceiling 6.82M, both
 binding; spend so far about 5.22M (subagent tokens, approximate).

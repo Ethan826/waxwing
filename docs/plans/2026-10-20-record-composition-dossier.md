@@ -6792,3 +6792,71 @@ unfinished; lane A's proof preserves erasure and fails through the
 marked-side check's own diagnostic. A failed acceptance verify is
 reported, not retried. Out of scope: Task 9's implementation, Task 14
 beyond the named fixture maintenance, A2's algorithm, R031. No push.
+
+### 18.123 Batch integrated and reviewed; stopped at the cap and a §4 gap (2026-10-30)
+
+Done (r0-t2-d1, 8e9ddf7..fc8a459): step 0; lanes A-D integrated in
+order without merge commits; R9's note saved
+(docs/plans/2026-10-30-task-9-literal-design.md, Q1-Q7 open).
+Controller fixes: f020475 (the literal mints `⟨p, clauses k⟩`, `with`
+mints `Frame p`; the merge had 521 named-unminted), 2720177 (Assemble
+built effect lists by appending one item at a time, quadratic; Task 8
+broke two census scale bounds through it; measured against base and
+Task 8 alone, fixed, no bound touched), ade8206 (window re-pin: only
+inline:fx032#g moved). Lane A's mutant against the corpus test: 242
+problems, all "marked side matches no recorded type" at Sig3, none
+erasure. Coverage after D's recheck: 31 rows, 18 fixture, 13
+unfinished. All 249 regression proofs passed on the integrated tree
+before D's recheck. No acceptance verify ran.
+
+Spend: about 1.55M of the 1.60M cap (R9 0.17, A 0.08, B 0.28, C 0.27,
+D 0.19, three reviewers 0.55), so the fix allowance is spent; the cap
+binds and the batch stops here. Also a stop on its own: reviewer 2's
+P0 needs a §4 amendment.
+
+Review findings, unfixed, for the author:
+- R2 P0: `fail` records no consumption. Statements §4's E2 site list
+  omits `fail`, Task 8 followed it, and §13's coverage repeats the gap;
+  live refuses `run(fn(u: Unit) => fail(Oops))` into a `with pure`
+  callback (MustBePure) but nothing recorded requires `Fail(Err)` in
+  the lambda's row. Needs a §4 ruling (add `fail` to E2's sites).
+- R2 P1: an operation row that fails to resolve is `hush`ed to
+  Nothing, so FX032 is missed and `g` is Solved (observed for `Nope`
+  and `Log + ...e`), against §9. Fix in scope: record that a row was
+  written separately from its resolution.
+- R2 P1, R1 P2: a `with` whose handler's marked type is not yet
+  `MHandler` records the body's ambient row without `f L` (Ambient
+  `framed`); live accepts such programs. Blocked today by rule 1
+  (`Outside HandlerType`); must not reach Task 9. A Task 9 design
+  choice (Unsupported, or L through the image); unrecorded departure.
+- R2 P2, R1 P2: `main`'s Entry and ambient rows keep the rigid
+  `EffRigid 0` tail; the checked IR closes it, the live checker makes
+  it flexible. E8 over a rigid tail is unsatisfiable. A §4 E8 reading.
+- R1 P1: the relabel of r0-amin-equal-sig3-marks as "through erasure
+  only" is false for its probe (a marks check; erasure is preserved on
+  its program). The controller's brief, from a wrong premise in this
+  dossier's next-session note, caused it; §18.120's label ("a targeted
+  check that Sig3's written marks survive") was right. Comment fix.
+- R1 P2: the equal test's non-Equal skip removed every non-E1 kind
+  from the corpus provenance-uniqueness check; a survey found 0
+  repeats in 147368 obligations, but no gate enforces it.
+- R3 P1: coverage ExpectedNofail (E7) is fixture although validator
+  side (plan self-review), and its FixedN token is met by the target
+  alone; RowEquality's program reaches LabelMismatch, not RowEquality,
+  and its token is met by the target alone. Both over-claimed.
+- R3 P2: rows 3-5 share one program whose Equal is `MHandler ≡ MVar`;
+  §13's obligation column is never compared; Task 12's comment says
+  only Equal is recorded, its "non-vacuous" assertion is implied by
+  Task 5's, and its Step 3 proof was not rerun; a628bd5's message
+  lists pin changes that are not in the pin and omits the equal-test
+  edit.
+- P3s (comments, a probe's private erasure, unchecked `SigRule`, an
+  open AtDefer source, stale fx032 blind-spot text, SiteRole outside
+  every gate, Frame p minted only for MHandler): listed in the
+  reviewers' reports, summarized in docs/next-session.md.
+Accepted by the reviewers: step 0 verbatim; each pin named and in
+scope; the window move; the needle updates; the test narrowings (equal
+skip, AtDefer, ambient as naming) except as R1 P2 says; Assemble's
+order; live preservation (generation unreachable from Program.Main,
+first-diagnostic passes); the minting fix; most lane rulings.
+No milestone moved. Task 7 acceptance still open.
