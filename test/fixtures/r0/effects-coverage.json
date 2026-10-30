@@ -12,24 +12,15 @@
   },
   {
     "rule": "two handler types: effect and arguments (Uni",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
-    "obligation": "Equal[MHandler]",
-    "site": "pick:E11",
-    "verdict": "blocked"
+    "unfinished": "validator-side, Definition 4.1 part (A2, after Task 13): the one Equal recorded here is MHandler against MVar, which does not tell this part from the others, so recording it is not demonstrating the check (Task 13 accounting)"
   },
   {
     "rule": "handled marks by equality (UnifyParts `handl",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
-    "obligation": "Equal[MHandler]",
-    "site": "pick:E11",
-    "verdict": "blocked"
+    "unfinished": "validator-side, Definition 4.1 part (A2, after Task 13): the one Equal recorded here is MHandler against MVar, which does not tell this part from the others, so recording it is not demonstrating the check (Task 13 accounting)"
   },
   {
     "rule": "R ≡ R: with marks when neither side owns a C",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
-    "obligation": "Equal[MHandler]",
-    "site": "pick:E11",
-    "verdict": "blocked"
+    "unfinished": "validator-side, Definition 4.1 part (A2, after Task 13): the one Equal recorded here is MHandler against MVar, which does not tell this part from the others, so recording it is not demonstrating the check (Task 13 accounting)"
   },
   {
     "rule": "C ≡ C when either side owns a C, R standing",
@@ -119,10 +110,7 @@
   },
   {
     "rule": "ExpectedNofail (MarkReport)",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with nofail Log = 1; fn g(): Int with nofail Log = f(); fn main(): Unit = ();",
-    "obligation": "Consume[FixedN]",
-    "site": "g:E5:Consumed:AtCall",
-    "verdict": "solved"
+    "unfinished": "validator-side (E7, plan self-review): the check runs in the validator, which is not in tranche 1 (Tasks 8-10 record only the Consume with FixedN, and recording a relevant token is not demonstrating validator behavior)"
   },
   {
     "rule": "UnhandledEffect (Entry)",
@@ -140,10 +128,16 @@
   },
   {
     "rule": "EffectNotAllowed, MustBePure (Reject, Requir",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with Log = 1; fn g(): Int with Log = f(); fn main(): Unit = ();",
-    "obligation": "Consume[ToDeclared]",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with Log = 1; fn g(): Int with Log = f(); fn run(f: Unit -> Int with pure): Int with pure = f(()); fn a(): Int with Fail(Err) { fail } = run(fn(u: Unit) => fail(Oops)); fn main(): Unit = ();",
+    "obligation": "Consume[ToDeclared,source:UserEffect]",
     "site": "g:E5:Consumed:AtCall",
-    "verdict": "solved"
+    "verdict": "solved",
+    "also": [
+      {
+        "obligation": "Consume[source:FailEffect]",
+        "site": "a:E23:Consumed:AtFail"
+      }
+    ]
   },
   {
     "rule": "CallbackRowLacks (CallbackParts)",
@@ -154,29 +148,20 @@
   },
   {
     "rule": "RowEquality (Argument, RowName)",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(h: Unit -> Unit with State(Int)): Unit with State(Bool) = h(()); fn main(): Unit = ();",
-    "obligation": "Consume[BoolBase]",
-    "site": "g:E14:Consumed:AtCallback",
-    "verdict": "blocked"
+    "unfinished": "the program that reaches this refusal live is refused as LabelMismatch here, and its tokens are met by the target alone; no program is found whose recorded obligation shows RowEquality on the source side, so it stays open until the validator (A2, after Task 13) decides it"
   },
   {
     "rule": "LabelMismatch (Reject `RowPayload`), RowOccu",
-    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(h: Unit -> Unit with State(Int)): Unit with State(Bool) = h(()); fn f(h: Unit -> Unit with State(Int) + State(Bool)): Unit -> Unit with State(Bool) + State(Int) = h; fn main(): Unit = ();",
-    "obligation": "Equal[MArrow,IntBase]",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(h: Unit -> Unit with State(Int) + State(Bool)): Unit -> Unit with State(Bool) + State(Int) = h; fn main(): Unit = ();",
+    "obligation": "Equal[source:MArrow,source:IntBase,target:MArrow,target:IntBase]",
     "site": "f:Sig3",
-    "verdict": "blocked",
-    "also": [
-      {
-        "obligation": "Consume[BoolBase]",
-        "site": "g:E14:Consumed:AtCallback"
-      }
-    ]
+    "verdict": "blocked"
   },
   {
     "rule": "`handle` ambient (Handle `withFailures`)",
     "fixture": "type E = E; fn main(): Unit with Console = handle { Fail.fail(E) } { fail(error: E) => () };",
     "obligation": "Ambient[FailEffect]",
-    "site": "main:Ambient",
+    "site": "main:Ambient:Handle/body",
     "verdict": "blocked"
   },
   {
