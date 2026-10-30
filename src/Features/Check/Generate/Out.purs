@@ -155,7 +155,7 @@ placed origin = case _ of
 -- E1 beside the atom it was listed with: that atom's own AtomId.
 besideAtom ∷ Origin → Obligation → Placed Obligation
 besideAtom origin value =
-  { provenance: BesideAtom origin.atom
+  { provenance: BesideAtom origin.rule origin.atom
   , rule: origin.rule
   , span: origin.span
   , value

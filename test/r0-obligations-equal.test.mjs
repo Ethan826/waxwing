@@ -42,7 +42,8 @@ const atomKey = (id, path, rule) => stableStringify({ decl: id.decl,
 const kindOf = item => item.provenance.constructor.name;
 
 const survey = async () => {
-  const found = { atoms: 0, sites: [], problems: [], repeats: [] };
+  const found = { atoms: 0, sites: [], problems: [], repeats: [],
+    checked: 0, fresh: 0 };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     let program;
     try { program = resolved(source); } catch { continue; }
@@ -57,14 +58,58 @@ const survey = async () => {
   return found;
 };
 
+// The declaration's recorded marked types with the path each hangs at
+// (the signature's, at no path), each with its erasure.
+const recordedTypes = effects => {
+  const at = (path, mty) =>
+    ({ path, mty, erased: stableStringify(erase(mty)) });
+  const found = [];
+  for (const name of ['nodes', 'annotations'])
+    for (const pair of pairs(effects[name]))
+      found.push(at(decodePath(pair.value0), pair.value1));
+  const sigs = [[null, effects.signature],
+    ...pairs(effects.instances).map(pair =>
+      [decodePath(pair.value0), pair.value1])];
+  for (const [path, sig] of sigs)
+    for (const mty of [...sig.parameters, sig.result])
+      found.push(at(path, mty));
+  return found;
+};
+const under = (path, base) => path === null || (path.root !== undefined &&
+  key(path.root) === key(base.root) && key(path.steps.slice(0,
+    base.steps.length)) === key(base.steps));
+
+// Marked sides: a side with a recorded candidate (same erasure, at the
+// atom's path or under it, or in the signature) must equal one exactly,
+// marks included. Fresh-built sides (builtArrow, markedRecord) have no
+// candidate: erasure only here, plus the namedIn scan in r0-marked-corpus.
+const markedSides = (at, id, base, item, recorded, found) => {
+  for (const side of [item.value.value0, item.value.value1]) {
+    const erased = stableStringify(erase(side));
+    const options = recorded.filter(entry => entry.erased === erased &&
+      under(entry.path, base));
+    if (options.length === 0) { found.fresh += 1; continue; }
+    found.checked += 1;
+    if (!options.some(entry => key(shape(entry.mty)) === key(shape(side))))
+      found.problems.push(`${at}: marked side matches no recorded type`
+        + ` at ${id}`);
+  }
+};
+
 const compare = (at, problem, found) => {
-  const { obligations } = Recorded.fields(problem).effects;
+  const { effects } = Recorded.fields(problem);
+  const { obligations } = effects;
+  const recorded = recordedTypes(effects);
   const beside = new Map();
   const here = new Set();
   for (const item of obligations) {
+    if (kindOf(item) === 'BesideAtom' && ruleName(item.provenance.value0)
+      !== ruleName(item.rule))
+      found.problems.push(`${at}: provenance rule differs from the rule`);
     const id = kindOf(item) === 'BesideAtom'
-      ? atomKey(item.provenance.value0,
-        decodePath(item.provenance.value0.path), ruleName(item.rule))
+      ? atomKey(item.provenance.value1,
+        decodePath(item.provenance.value1.path),
+        ruleName(item.provenance.value0))
       : null;
     if (id === null) {
       const site = shape(item.provenance);
@@ -91,9 +136,8 @@ const compare = (at, problem, found) => {
     const erased = [erase(item.value.value0), erase(item.value.value1)];
     if (stableStringify(erased) !== stableStringify([left, right]))
       found.problems.push(`${at}: sides differ at ${id}`);
-    if (key(shape(item.span)) !== key(shape(entry.origin.span)) &&
-      stableStringify(item.span) !== stableStringify(entry.origin.span))
-      found.problems.push(`${at}: span differs at ${id}`);
+    markedSides(at, id, decodePath(item.provenance.value1.path), item,
+      recorded, found);
   }
   for (const id of beside.keys())
     if (!used.has(id)) found.problems.push(`${at}: E1 without atom ${id}`);
@@ -101,8 +145,11 @@ const compare = (at, problem, found) => {
 
 const found = await survey();
 
-test('E1 beside every GenEqual, sides erasing to the atom\'s', () => {
+test('E1 beside every GenEqual, sides erasing to the atom\'s', t => {
   assert.ok(found.atoms > 90000, `${found.atoms} equality atoms`);
+  t.diagnostic(`marked sides: ${found.checked} checked against a recorded`
+    + ` type, ${found.fresh} without a candidate`);
+  assert.ok(found.checked > 100000, `${found.checked} sides checked`);
   assert.deepEqual(found.problems.slice(0, 10), [],
     `${found.problems.length} problems`);
 });

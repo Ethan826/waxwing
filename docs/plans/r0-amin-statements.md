@@ -1091,6 +1091,11 @@ HandlerType`, §2).
 
 ## 10. Interfaces (revision 3's, amended)
 
+Amendment (Task 7, author ruling §18.119): `obligations` is `Array
+(Placed Obligation)`; each carries tagged provenance, `BesideAtom RuleId
+AtomId` or `AtSite { decl, path, rule, role }` (plan Task 7 provenance
+rules), a rule and a span.
+
 `Fields += { obligations ∷ Array Obligation, instances ∷ Map Site
 MTy, annotations ∷ Map Site MTy, rigidMarks, arities, effectRigids,
 ambient rows }`: `instances` holds each use's instantiated marked

@@ -168,9 +168,9 @@ applied context node made found generated =
     }
   count = Array.length found.parameters
   rest = Array.drop count generated
-  overApplied res = made' res
+  overApplied res = overApplication res
     <$> builtArrow node.path (map _.marked rest) (markedFlex res)
-  made' res built =
+  overApplication res built =
     { ty: flex res
     , marked: markedFlex res
     , node: saturated node.span made <$> found.slots

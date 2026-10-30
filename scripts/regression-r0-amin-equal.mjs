@@ -31,5 +31,15 @@ export const equalRows = [
       + ' (markedFlex res)\n              bodyPart.marked\n          )\n',
     probe: 'r0-amin-equal-o2',
     message: /O2 \(the with node against its body\) is not recorded/
+  },
+  {
+    // Task 7 fix round 1: Sig3's equation drops the written result's
+    // marks (the body's marked type on both sides).
+    name: 'r0-amin-equal-sig3-marks',
+    file: `${generate}Signature.purs`,
+    needle: 'agreeEqual bodySpan body written markedBody sig.result',
+    replacement: 'agreeEqual bodySpan body written markedBody markedBody',
+    probe: 'r0-amin-equal-sig3-marks',
+    message: /Sig3's E1 right side lost the written result's marks/
   }
 ];

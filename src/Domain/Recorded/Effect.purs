@@ -126,11 +126,11 @@ data Obligation
   | Unsupported UnsupportedKind
 
 -- Where an obligation comes from (plan Task 7, "Provenance rules"):
--- `BesideAtom` an E1 recorded with the `GenEqual` atom of that AtomId
--- (rule-local, so the `rule` of the `Placed` completes the identity);
+-- `BesideAtom` an E1 recorded with the `GenEqual` atom of that rule's
+-- AtomId (rule-local, so the rule is part of the identity);
 -- `AtSite` an effect-only E1, one per (declaration, path, rule, role).
 data Provenance
-  = BesideAtom AtomId
+  = BesideAtom RuleId AtomId
   | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }
 
 -- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).

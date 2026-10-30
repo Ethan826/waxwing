@@ -12,7 +12,7 @@ module Features.Check.Generate.HandlerClause
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either)
+import Data.Either (Either(..))
 import Data.Maybe (fromMaybe, maybe)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
@@ -29,7 +29,7 @@ import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Fresh (child, childAt)
 import Features.Check.Generate.Gen (Gen, lifted, positioned)
-import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Inputs (Tables)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Obligation (equalAt)
@@ -107,8 +107,14 @@ handlerClause recur context site naming clause = do
 declaredResult
   ∷ Tables → Label (Ty VarId) → Ty VarId → Either GenerationFault MTy
 declaredResult tables (Label _ arguments _) result =
-  marked tables Declared (substitute substitution result)
+  if withFallback (-1) == withFallback (-2) then
+    marked tables Declared (withFallback (-1))
+  else Left (VariableSort (VarId (Array.length arguments)))
   where
-  substitution = { types: argument, rows: const closedRow }
-  argument (VarId index) = fromMaybe (Type.TVar (VarId index))
+  -- A variable beyond the label's arguments takes the fallback: two
+  -- different fallbacks give different types exactly when one was used.
+  withFallback spare = substitute
+    { types: argument spare, rows: const closedRow }
+    result
+  argument spare (VarId index) = fromMaybe (Type.TVar (VarId spare))
     (Array.index arguments index)

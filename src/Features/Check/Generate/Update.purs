@@ -83,13 +83,13 @@ fieldUpdate path operand (Tuple field given) = entries
   <$> auxiliary path (ExprRule 27) (Upd field.name) SortType field.span
   <*> auxiliary path (ExprRule 27) (UpdRest field.name) SortRow field.span
   where
-  equalAt7 = equalTagged RowB 7 Body field.span
+  equalRowB7 = equalTagged RowB 7 Body field.span
   entries upd rest =
-    [ equalAt7 operand.ty
+    [ equalRowB7 operand.ty
         (recordOf [ Tuple field.name (flex upd) ] [ FlexRef rest ])
         operand.marked
         (markedRecord [ Tuple field.name (markedFlex upd) ] [ FlexRef rest ])
-    , equalAt7 given.ty (flex upd) given.marked (markedFlex upd)
+    , equalRowB7 given.ty (flex upd) given.marked (markedFlex upd)
     ]
 
 -- E28: `eq τ_e { l̄: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B8); the result is
