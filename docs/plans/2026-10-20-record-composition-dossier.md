@@ -6707,3 +6707,44 @@ deterministic site-local identity; no negative indices or offsets; the
 identity and uniqueness rules documented before coding and reviewed;
 the corpus comparison requires the correct marked sides. No new budget:
 about 0.51M remains under 5.29M. R031 deferred.
+
+### 18.120 Task 7: verify failed on a dead needle; Sig3 reproduction (2026-10-29)
+
+Rulings recorded (author, 2026-10-29): the `Effect.agree` removal is
+covered by the Task 7 re-pin ruling (it replaces the old equality
+helper and the commit names it). `Record.shape`'s removal is deferred:
+follow-up, an unused export whose removal needs a Record re-pin. The
+corpus check (`markedSides`) accepts any eligible recorded type with
+the same erasure under the path or in the signature; it does not
+identify each side's intended home, so a wrong candidate could pass.
+What it supports: 191172 sides match an eligible recorded candidate,
+marks included; 8414 have no candidate and are checked by erasure
+only. The floor `checked > 100000` stays as an explicitly chosen
+minimum beside that observed count. The r0-amin-equal-sig3-marks row is
+accepted as a targeted check that Sig3's written marks survive; it
+does not show the corpus check detects the defect.
+
+Full verify at c77f5c3 (run once, not retried) failed: parallel 2946 of
+2946 and serial 201 of 201 passed; regression proofs 234 of 235, the
+failing row r0-amin-partial-reuses-stages ("mutation must have exactly
+one target"). Its second needle (`  , mintedStages\n  , tagged\n  )\n`,
+scripts/regression-r0-amin.mjs) no longer occurs: Task 7 removed
+`tagged` from Call.purs's import list. A Task 7 defect the focused runs
+missed; not fixed (the fix round is used).
+
+Sig3 reproduction (isolated copy, fresh output/, strict build
+unchanged): the earlier mutant build failed with `UnusedName`
+(Signature.purs:147, `sig` unused); with `sig` replaced by `_` the
+mutant built clean (0 warnings, 0 errors). The emitted
+Features.Check.Generate.Signature JavaScript changed from
+`agreeEqual(...)(markedBody)(sig.result)` to
+`agreeEqual(...)(markedBody)(markedBody)`. Healthy copy: 5 of 5 pass.
+Mutant: 2 fail, "1675 problems"; every problem printed (the test prints
+ten) is "sides differ", the erasure comparison, not the marked-side
+check ("marked side matches no recorded type"). The mutant's right side
+equals a recorded candidate (the body node's type) exactly, so the
+marked-side check would accept it. So this reproduction shows the
+corpus test detects the Sig3 defect through erasure; it does not show
+the marked-side check detects anything. An instrumented run to count
+all 1675 by kind hung and was abandoned. Evidence: main checkout's
+.build/evidence/2026-10-29-task7-verify/. Task 7 acceptance open.
