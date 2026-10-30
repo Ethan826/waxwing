@@ -139,7 +139,10 @@ data Obligation
 -- Where an obligation comes from (plan Task 7, "Provenance rules"):
 -- `BesideAtom` an E1 recorded with the `GenEqual` atom of that rule's
 -- AtomId (rule-local, so the rule is part of the identity);
--- `AtSite` an effect-only E1, one per (declaration, path, rule, role).
+-- `AtSite` any obligation with no atom beside it (an effect-only E1,
+-- a consumption, `Entry`, ...), one per (declaration, path, rule, role);
+-- the role includes a `Consumed` ordinal. Every kind's tagged provenance
+-- is distinct within a declaration (§18.124; test/r0-obligations-unique).
 data Provenance
   = BesideAtom RuleId AtomId
   | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }

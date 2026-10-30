@@ -6,6 +6,7 @@ import { decodePath } from './r0-canonical-decode.mjs';
 import { load, resolved } from './r0-generate-support.mjs';
 import { rt8Sources } from './r0-rt8-run.mjs';
 import { defectProbes } from './r0-shadow-known.mjs';
+import { repeated } from './r0-obligations-unique.mjs';
 import { shape } from './regression-r0-amin-support.mjs';
 import { markedSides, recordedTypes } from './r0-obligations-sides.mjs';
 
@@ -52,7 +53,7 @@ const kit = {
 
 const survey = async () => {
   const found = { atoms: 0, sites: [], problems: [], repeats: [],
-    checked: 0, fresh: 0 };
+    checked: 0, fresh: 0, identified: 0, kinds: {} };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     let program;
     try { program = resolved(source); } catch { continue; }
@@ -72,7 +73,14 @@ const compare = (at, problem, found) => {
   const { obligations } = effects;
   const recorded = recordedTypes(effects, kit);
   const beside = new Map();
-  const here = new Set();
+  // Provenance is unique within a declaration for every kind (§18.124).
+  for (const id of repeated(obligations, shape))
+    found.repeats.push(`${at}: ${id}`);
+  found.identified += obligations.length;
+  for (const item of obligations) {
+    const name = item.value.constructor.name;
+    found.kinds[name] = (found.kinds[name] ?? 0) + 1;
+  }
   for (const item of obligations) {
     if (kindOf(item) === 'BesideAtom' && ruleName(item.provenance.value0)
       !== ruleName(item.rule))
@@ -83,12 +91,11 @@ const compare = (at, problem, found) => {
         ruleName(item.provenance.value0))
       : null;
     if (id === null) {
-      // Task 10's atom-free obligations (Defer, Entry, ...) are not E1.
-      if (item.value.constructor.name !== 'Equal') continue;
-      const site = shape(item.provenance);
-      if (here.has(key(site))) found.repeats.push(`${at}: ${key(site)}`);
-      here.add(key(site));
-      found.sites.push(site);
+      // The E1-site role check is Equal-only: Task 8's and Task 10's
+      // other obligations (Consume, Defer, Entry, ...) are not E1. They
+      // are still counted in the uniqueness check above.
+      if (item.value.constructor.name === 'Equal')
+        found.sites.push(shape(item.provenance));
       continue;
     }
     if (beside.has(id)) found.problems.push(`${at}: two E1 for ${id}`);
@@ -116,6 +123,8 @@ const compare = (at, problem, found) => {
     if (!used.has(id)) found.problems.push(`${at}: E1 without atom ${id}`);
 };
 
+// A floor on the obligations scanned, so an empty survey cannot pass.
+const FLOOR = 118000; // 80% of the 147483 observed
 const found = await survey();
 
 test('E1 beside every GenEqual, sides erasing to the atom\'s', t => {
@@ -132,8 +141,15 @@ test('the only effect-only E1 sites are O1 and O2; the literal is'
   const roles = new Set(found.sites.map(site =>
     Object.keys(site.AtSite[0].role)[0]));
   assert.deepEqual([...roles].sort(), ['ClauseBody', 'WithNode']);
-  assert.deepEqual(found.repeats.slice(0, 10), [], 'a site repeats');
   assert.ok(found.sites.length > 50, `${found.sites.length} sites`);
+});
+
+test('provenance is distinct within a declaration, for every kind', t => {
+  t.diagnostic(`identified ${found.identified}: ${key(found.kinds)}`);
+  assert.deepEqual(found.repeats.slice(0, 10), [], 'a provenance repeats');
+  assert.ok(found.identified > FLOOR, `${found.identified} identified`);
+  for (const kind of ['Equal', 'Consume', 'Entry', 'FailConcrete'])
+    assert.ok(found.kinds[kind] > 0, `no ${kind} obligation scanned`);
 });
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '
@@ -182,7 +198,8 @@ test('E1 marked sides: a written Log side keeps Written FixedM', () => {
     + 'handler Log { log(n) => Console.print(n) }; fn main(): Unit = ();';
   const effects = effectsOf(source, 'mk');
   const body = effects.obligations.filter(item =>
-    kindOf(item) === 'BesideAtom' && item.rule.value0 === 3);
+    kindOf(item) === 'BesideAtom' && item.rule.constructor.name === 'SigRule'
+    && item.rule.value0 === 3);
   const rights = body.map(item => key(shape(item.value.value1)));
   assert.ok(rights.some(text => text.includes(key({ Written: [{ FixedM:
     [] }] }))), `no written M side: ${rights}`);

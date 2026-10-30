@@ -26,5 +26,17 @@ export const consumeRows = [
     replacement: '        pure (const unit (failRow paid.marked))\n',
     probe: 'r0-amin-consume-fail',
     message: /fail does not consume Fail\(payload\) into its ambient row/
+  },
+  {
+    // §18.124 ruling 3: every Consume ordinal forced to 0, so a
+    // two-argument application's stages share one provenance. The
+    // all-kinds uniqueness check (test/r0-obligations-unique.mjs, run
+    // over the corpus by test/r0-obligations-equal.test.mjs) sees it.
+    name: 'r0-amin-consume-ordinal',
+    file: `${generate}Obligation.purs`,
+    needle: '          , role: Consumed stage.site stage.ordinal\n',
+    replacement: '          , role: Consumed stage.site (stage.ordinal * 0)\n',
+    probe: 'r0-amin-consume-ordinal',
+    message: /two obligations share a provenance/
   }
 ];
