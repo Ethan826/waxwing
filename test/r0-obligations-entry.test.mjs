@@ -30,7 +30,10 @@ const rootRow = effects => Maps.toUnfoldable(Unfoldable.unfoldableArray)(
 const entryRow = effects => shape(effects.obligations.find(item =>
   item.value.constructor.name === 'Entry').value).Entry[0];
 const tailOf = row => row.tail.Just?.[0];
-const flexible = { EffFresh: [root, { EntryTail: [] }] };
+// Carried by the result root, where Entry is recorded (not the body
+// root, whose node would mint it a second time).
+const flexible = { EffFresh: [{ root: { InResult: [] }, steps: [] },
+  { EntryTail: [] }] };
 
 test('an open tail becomes one flexible variable, shared', () => {
   for (const source of ['fn main(): Unit = ();',

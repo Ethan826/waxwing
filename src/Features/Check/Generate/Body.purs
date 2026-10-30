@@ -15,9 +15,13 @@
 -- the body's root, except for `main`'s open top-level tail (§18.124 ruling
 -- 2, statements §4 E8 amendment): there today's checker infers the tail
 -- (Check/Function.purs `mainRow`), so the ambient row and `Entry` read
--- one flexible variable `EntryTail` that this module mints once at the
--- root. The recorded signature (`SignatureAt`) keeps its rigid variable,
--- which rigid accounting still counts, and the checked row above stays
+-- one flexible variable `EntryTail` that this module mints once. It
+-- carries the result root, where `Entry` is recorded (Sig10), not the
+-- body root: a body-root node (a `with` at the root) mints every tail
+-- that carries its own path, so the body root would mint it twice
+-- (test/r0-marked-corpus.serial.test.mjs found 33 such declarations).
+-- The recorded signature (`SignatureAt`) keeps its rigid variable, which
+-- rigid accounting still counts, and the checked row above stays
 -- closed: that closing is a provisional representation, not E8's
 -- specification.
 module Features.Check.Generate.Body (generateIn) where
@@ -55,7 +59,7 @@ generateIn
 generateIn tables signatures function = do
   locals ← lifted (parameterLocals tables function)
   declared ← lifted (declaredSignature tables function)
-  ambient ← entryTail function root declared.row
+  ambient ← entryTail function resultRoot declared.row
   ambientAt root ambient
   body ← expr
     { decl: function.id
@@ -75,9 +79,11 @@ generateIn tables signatures function = do
   pure (checkedOf function <$> body.expr)
   where
   root = Path { root: InBody, steps: [] }
+  resultRoot = Path { root: InResult, steps: [] }
 
 -- `main`'s declared row with its rigid top-level tail replaced by the
--- one flexible `EntryTail` at `path`, minted here and nowhere else. A
+-- one flexible `EntryTail` at `path` (the result root), minted here and
+-- nowhere else. A
 -- closed row, a written tail that is not the implicit variable and every
 -- other function keep the declared row.
 entryTail ∷ ∀ s. FunctionDecl → Path → MRow → Gen s MRow
