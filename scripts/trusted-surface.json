@@ -308,15 +308,11 @@
   "source": [
    "handler",
    "marker",
-   "operationRef",
-   "perform",
    "with"
   ],
   "compiled": [
    "handler",
    "marker",
-   "operationRef",
-   "perform",
    "$$with as with"
   ]
  },
@@ -764,6 +760,16 @@
    "literal",
    "restShape",
    "spanOf"
+  ]
+ },
+ "Features.Check.Generate.Perform": {
+  "source": [
+   "operationRef",
+   "perform"
+  ],
+  "compiled": [
+   "operationRef",
+   "perform"
   ]
  },
  "Features.Check.Generate.Record": {

@@ -24,7 +24,7 @@ import Features.Check.Generate.Call (call, construct, ctorRef, functionRef)
 import Features.Check.Generate.Context (Context, localType)
 import Features.Check.Generate.Block (block)
 import Features.Check.Generate.Control (lambda, match)
-import Features.Check.Generate.Effect (handler, operationRef, perform, with)
+import Features.Check.Generate.Effect (handler, with)
 import Features.Check.Generate.Failure (fail, handle)
 import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Gen (Gen, effected, lifted, positioned)
@@ -38,6 +38,7 @@ import Features.Check.Generate.Operator
   , interpolate
   , pipe
   )
+import Features.Check.Generate.Perform (operationRef, perform)
 import Features.Check.Generate.Record (extension, fieldAccess, literal)
 import Features.Check.Generate.Update (removal, update)
 
