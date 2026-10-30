@@ -10,7 +10,9 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25.
 
-**Completion pass stopped at its cap (§18.125): needs the author.** Repairs on
+**Acceptance verify failed at 0fef9e4 (§18.127): two stale pins
+(r0-static-problem line cite; structure-surface module list); needs the
+author.** Earlier: **completion pass stopped at its cap (§18.125).** Repairs on
 batch/completion (7fe0113), unintegrated; window re-pin (author chose: extend
 class), the E8 written-tail P2 and P3s, integration and the verify remain.
 Earlier: **batch stopped (§18.123).**

@@ -6946,3 +6946,32 @@ corrections are covered; G0's problem pin and timing bounds stay
 protected. No reopened repair, no broad review; stop for a substantive
 new finding, the cap or a failed verify. Task 7 awaits the result. No
 push.
+
+### 18.127 Acceptance verify failed at 0fef9e4; not retried (2026-10-30)
+
+Done under §18.126: main's written `...r` (statement, comments, test),
+`SiteRole UnframedWith`, Defer and Unsupported in the uniqueness
+inventory, the `fail` coverage row's target checked (c4547c2); window
+re-pin of 20 rows and RT8 re-pin of the same nine compile-today rows,
+each ruled by the author and listed in docs/findings.md (0fef9e4);
+integrated into r0-t2-d1 by fast-forward. Focused tests 43 of 43, 12
+affected regression rows, the window test 13 of 13.
+
+One `npm run verify` at 0fef9e4, alone under the lock, clean tree
+(conditions: AC power, load1 7.75), exit 1: the parallel phase ran
+2973 tests, 2971 passed, 2 failed, so the serial phase and regression
+proofs did not run. Log: .build/evidence/2026-10-30-batch-verify/
+verify.log in this worktree. Both failures are stale pins the focused
+runs missed:
+- test/r0-static-problem.test.mjs "each cited raise line names its
+  constructor in its phase": it cites src/Features/Resolve/Effect.purs
+  :105 for `Duplicate`; Tasks 10 and §18.124's edits moved that raise
+  to line 118.
+- test/structure-surface.test.mjs "the real tree matches its pin and
+  its FFI names no token module": its expected module list lacks Task
+  8's Features.Check.Generate.Ambient and Generate.Consume.
+Not retried (§18.122, §18.126). Neither failure is a recorded-semantics
+defect; both are fixtures that name the tree's layout. Fixing them is
+a pin update the author must authorize, then one more verify. Spend
+this allowance: about 0.03M of 0.06M. Task 7 awaits the author's
+assessment. Nothing pushed.
