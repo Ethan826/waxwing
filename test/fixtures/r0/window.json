@@ -218,7 +218,7 @@
     "declarations": 9,
     "programs": 9,
     "compilingProgramsInClass": 1,
-    "stoppedUnderShadow": 0,
+    "stoppedUnderShadow": 1,
     "only": 1
    }
   },
@@ -257,10 +257,10 @@
    }
   },
   "stops": {
-   "underShadowDecisions": 250,
+   "underShadowDecisions": 251,
    "additionalIfErasedRowAdopted": 6,
    "additionalIfBoundHolesRejected": 5,
-   "allThree": 261
+   "allThree": 262
   },
   "optionC": [
    "research/composition-assessment/programs/p4.wxw#main",
@@ -1324,6 +1324,6 @@
   {"at":"inline:r022-disjoint#g","hash":"3ac3ad07a8bda318904aa4cb90eeadb49d6a9beee143bee16f29b6b8671c7f44","today":"compiles","r0":{"verdict":"Solved","attempt":"Accepted"},"rt8":"Solved with a bound hole (pending the author's ambiguity ruling)","class":"Solved with a bound hole (pending the author's ambiguity ruling)","section":"§3.2(a), pending policy","blockers":[],"programCompiles":true},
   {"at":"inline:r022-lacks#g","hash":"d680f5da862e0a1519ead03ef1551326da18d7473e977b8c0cd20561f283a020","today":"compiles","r0":{"verdict":"Solved","attempt":"Accepted"},"rt8":"Solved with a bound hole (pending the author's ambiguity ruling)","class":"Solved with a bound hole (pending the author's ambiguity ruling)","section":"§3.2(a), pending policy","blockers":[],"programCompiles":true},
   {"at":"inline:r020#main","hash":"7e1228b6248597bafdf2185dca6f09d62aed828e566d3b90b91fa829b4fb4108","today":{"code":"E_TYPE","text":"x is not a field of { ..._ }"},"r0":{"verdict":"Unresolved Inference NoCandidate","attempt":"Searched Exhausted"},"rt8":"agree: no candidate (Exhausted)","class":"defect","section":null,"blockers":[],"programCompiles":false,"defect":{"id":"R020","findings":"BACKLOG R020; findings \"No catch-all at the end of a body\"","today":"x is not a field of { ..._ }"}},
-  {"at":"inline:fx032#g","hash":"dc24ebbfabff6d8d0a21e01617cd5b8d48cfcdb52fa90a3807d4f06039399246","today":"compiles","r0":{"verdict":"Solved","attempt":"Accepted"},"rt8":"agree: Solved","class":"defect","section":null,"blockers":[],"programCompiles":true,"defect":{"id":"FX032","findings":"BACKLOG FX032; findings \"Erased effect rows\" (gate probe P6); the author's G-erased ruling item 5 makes it a defect","today":null,"blindSpot":"the C-erased detector reads resolved syntax, from which Resolve already discarded the operation row (Resolve/Effect.purs:47-58), so its silence here and today's agreement with R0 do not validate this declaration"}}
+  {"at":"inline:fx032#g","hash":"dc24ebbfabff6d8d0a21e01617cd5b8d48cfcdb52fa90a3807d4f06039399246","today":"compiles","r0":{"verdict":"Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0]","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0]","class":"defect","section":null,"blockers":[],"programCompiles":true,"defect":{"id":"FX032","findings":"BACKLOG FX032; findings \"Erased effect rows\" (gate probe P6); the author's G-erased ruling item 5 makes it a defect","today":null,"blindSpot":"the C-erased detector reads resolved syntax, from which Resolve already discarded the operation row (Resolve/Effect.purs:47-58), so its silence here and today's agreement with R0 do not validate this declaration"}}
  ]
 }

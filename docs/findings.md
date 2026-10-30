@@ -5135,3 +5135,17 @@ disposition:
 Not reviewed: the effect-row audit, the unexamined helpers (R030), the
 CX refuter, the R021 unifier, the census and window tables, and any
 conversation-level authorization.
+
+## Window re-pin: FX032's `g` routes to `EffectsUnchecked` (2026-10-30)
+
+Tranche 1 Task 11 (batch lane C, §18.122) makes rule 1 block a
+declaration that records an `Unsupported` operation. Re-pinned with
+`node scripts/r0-shadow-pin.mjs` on the integrated tree (Tasks 7, 8,
+10, 11): exactly one of 1033 rows moved, `inline:fx032#g` (class
+defect, today compiles), r0 verdict `Solved` to `Unresolved Unsupported
+EffectsUnchecked [OperationWithRow 1 0]` (attempt stays `Accepted`),
+rt8 `agree: Solved` to `(a) blocked` with that reason. The declaration
+records the `Unsupported (OperationWithRow 1 0)` obligation, the
+predicted FX032 routing. Summary: FX032 `stoppedUnderShadow` 0 to 1,
+`allThree` 261 to 262, `underShadowDecisions` 250 to 251. No other row
+moved; census.json did not move (r0-census.serial passes).
