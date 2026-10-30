@@ -6,7 +6,8 @@
 -- Failure.purs; D1 spec §3.5, R0 Task 7.1b): a clause's payload type is
 -- its written label's argument, rigid and static, so nothing reads it.
 -- Marked types (amin tranche 1, Task 3): `handle` and `fail` are their
--- `⟨p, res⟩`; a clause's local is its payload marked as declared.
+-- `⟨p, res⟩`; a clause's local is its payload marked as declared. The
+-- body runs in `Fail(E…) + ρ` (Task 8, E11; Handle.purs `withFailures`).
 module Features.Check.Generate.Failure (fail, handle) where
 
 import Prelude
@@ -24,6 +25,7 @@ import Domain.Resolved (Expr, FailClause, Ty, VarId)
 import Domain.Row (Label(..))
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
+import Features.Check.Generate.Ambient (enter, failing)
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Effect (marker)
 import Features.Check.Generate.Elab (Elab, GenTy)
@@ -51,7 +53,9 @@ handle
   → Array FailClause
   → Gen s (Ruled s)
 handle recur context path span body clauses = do
-  handled ← recur context (childOf path "Handle" "body") body
+  failures ← lifted (failing context.tables clauses context.ambient)
+  inside ← enter bodyPath failures context
+  handled ← recur inside bodyPath body
   found ← sequence (Array.mapWithIndex clauseOf clauses)
   minted ← nodeRes path (ExprRule 22) span
   let res = flex minted
@@ -71,6 +75,7 @@ handle recur context path span body clauses = do
         traverse_ _.emits found
     }
   where
+  bodyPath = childOf path "Handle" "body"
   clauseEqual res markedRes found =
     agreeEqual span found.ty res found.marked markedRes
   clauseOf place clause = failClause recur context

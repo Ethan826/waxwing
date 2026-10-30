@@ -2,7 +2,9 @@
 -- T-R0b §3.5, E17: operation references and performs (split from
 -- Generate.Effect, amin tranche 1 parallel batch, step 0). Each marker's
 -- condition is syntactic (§3.5): decided from the node and the tables,
--- never a solved type. Children: `Perform/args/k`. Checked nodes as
+-- never a solved type. Task 8 records the operation's arity and, through
+-- `applied`, its consumption (`AtPerform`). Children: `Perform/args/k`.
+-- Checked nodes as
 -- today's (Check/Operation.purs; D1 spec §3.5, R0 Task 7.1b): a perform
 -- is a named call (Generate.Call `applied`).
 module Features.Check.Generate.Perform
@@ -17,6 +19,7 @@ import Data.Traversable (sequence)
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId)
 import Domain.Recorded.Atom (OutsideKind(..))
+import Domain.Recorded.Effect (SiteKind(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, TyRow, VarId(..))
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
@@ -37,6 +40,7 @@ import Features.Check.Generate.Node
   , markersAt
   , mintedStages
   )
+import Features.Check.Generate.Obligation (arityAt)
 import Features.Check.Generate.Opening (openedRow)
 import Features.Check.Generate.Translate (translate, translateAll)
 
@@ -51,8 +55,9 @@ operationRef context path span effect index = referenced
     { ty: arrowOf found.parameters found.result
     , marked: instanceArrow path 0 found.instance
     , node: fixed (Checked.OperationRef effect index <$> found.slots)
-    , emits: emit (at context path (ExprRule 17))
-        (found.entries <> found.markers)
+    , emits: do
+        emit (at context path (ExprRule 17)) (found.entries <> found.markers)
+        arityAt path (Array.length found.parameters)
     }
 
 -- E17, a call: `eq τ_{e_k} θ(⟦T_k⟧)` per argument up to the operation's
@@ -76,7 +81,8 @@ perform
 perform recur context path span effect index arguments = do
   generated ← sequence (Array.mapWithIndex argument arguments)
   found ← operation context path span effect index
-  applied context { path, span, rule: ExprRule 17, row: RowB }
+  applied context
+    { path, span, rule: ExprRule 17, row: RowB, site: AtPerform }
     (Checked.Perform effect index)
     found
     generated

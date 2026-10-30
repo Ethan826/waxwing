@@ -13,6 +13,8 @@
 -- A node's marked type is its instance's (Generate.Callee): a partial
 -- application's rest keeps the instance's own stage rows (Task 4, a
 -- correction of Task 3's rest numbered from stage 0; controller ruling).
+-- Task 8 records each use's callee arity (`arities`) and its stage
+-- consumptions (Generate.Consume).
 module Features.Check.Generate.Call
   ( applied
   , call
@@ -28,17 +30,20 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Instantiation, Open)
 import Domain.Checked.Internal as Checked
+import Domain.Recorded.Effect (SiteKind(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (CtorId, Expr, FunctionId)
 import Domain.Row (closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
 import Features.Check.Generate.Callee (Called, ctorInstance, functionInstance)
+import Features.Check.Generate.Consume (callStages)
 import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Fresh (childAt, nodeRes)
 import Features.Check.Generate.Gen (Gen, emit)
 import Features.Check.Generate.Obligation
   ( agreeEqual
+  , arityAt
   , builtArrow
   , equalTagged
   )
@@ -53,9 +58,15 @@ import Features.Check.Generate.Node
   , mintedStages
   )
 
--- The node's place and rule, and the spec row of its argument
--- equations: F1 for E5 and E6, B1 for E17.
-type Node = { path ∷ Path, span ∷ Span, rule ∷ RuleId, row ∷ RowGroup }
+-- The node's place and rule, the spec row of its argument equations (F1
+-- for E5 and E6, B1 for E17) and the kind of site its call consumes at.
+type Node =
+  { path ∷ Path
+  , span ∷ Span
+  , rule ∷ RuleId
+  , row ∷ RowGroup
+  , site ∷ SiteKind
+  }
 
 -- How a named use's checked node is built from its instantiation and
 -- arguments (Check/Call.purs `Node`).
@@ -87,7 +98,7 @@ call recur context path span function arguments = do
   found ← functionInstance context path span function (ExprRule 5)
   generated ← traverse (argument recur context path "Call")
     (Array.mapWithIndex { index: _, expr: _ } arguments)
-  applied context { path, span, rule: ExprRule 5, row: RowF }
+  applied context { path, span, rule: ExprRule 5, row: RowF, site: AtCall }
     (Checked.Call function)
     found
     generated
@@ -106,7 +117,7 @@ construct recur context path span ctor arguments = do
   found ← ctorInstance context path span ctor (ExprRule 6)
   generated ← traverse (argument recur context path "Construct")
     (Array.mapWithIndex { index: _, expr: _ } arguments)
-  applied context { path, span, rule: ExprRule 6, row: RowF }
+  applied context { path, span, rule: ExprRule 6, row: RowF, site: AtCall }
     (Checked.Construct ctor)
     found
     generated
@@ -125,7 +136,9 @@ referenced context path rule made found = do
     { ty: arrowOf found.parameters found.result
     , marked: instanceArrow path 0 found.instance
     , node: fixed (made <$> found.slots)
-    , emits: emit (at context path rule) (found.entries <> found.markers)
+    , emits: do
+        emit (at context path rule) (found.entries <> found.markers)
+        arityAt path (Array.length found.parameters)
     }
 
 -- An argument at `Call/args/i` (`Construct/args/i`). Every argument is
@@ -186,6 +199,9 @@ applied context node made found generated =
   written more = do
     emit (at context node.path node.rule)
       (found.entries <> equations <> more <> found.markers)
+    arityAt node.path count
+    callStages context node
+      { count, supplied, row: found.instance.row }
     traverse_ _.emits generated
   equations = Array.zipWith equation generated
     (Array.zip found.parameters found.instance.parameters)

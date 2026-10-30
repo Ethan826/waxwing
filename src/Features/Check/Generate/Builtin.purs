@@ -29,6 +29,7 @@ import Domain.Recorded.Effect
   , MRow
   , MTy(..)
   , MarkRef(..)
+  , SiteKind(..)
   )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, LocalId(..))
@@ -49,6 +50,7 @@ import Features.Check.Generate.Gen
   )
 import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, tagged)
+import Features.Check.Generate.Obligation (consumeAt)
 
 data Builtin = PrintBuiltin | ShowBuiltin | CrashBuiltin
 
@@ -114,6 +116,7 @@ builtinCall recur context path span builtin arguments = do
     , emits: do
         emit (at context path (ExprRule 19))
           (map printable (single generated))
+        printed context path span builtin (Array.length generated)
         traverse_ _.emits generated
     }
   where
@@ -126,6 +129,18 @@ builtinCall recur context path span builtin arguments = do
     ShowBuiltin → pure { ty: TText, marked: MBase TextBase }
     CrashBuiltin → crashed <$> nodeRes path (ExprRule 19) span
   crashed handle = { ty: flex handle, marked: markedFlex handle }
+
+-- E2: `print` consumes its declared Console row into the ambient row
+-- (Check/Operation.purs `printCall`, an `Operation`: `AtPerform`); `show`
+-- and `crash` consume nothing (Check/Show.purs). Another argument count
+-- is refused statically, so it records nothing.
+printed
+  ∷ ∀ s. Context s → Path → Span → Builtin → Int → Gen s Unit
+printed context path span builtin count = case builtin of
+  PrintBuiltin | count == 1 → consumeAt (at context path (ExprRule 19)) span
+    { site: AtPerform, ordinal: 0, source: markedRowOf path builtin }
+    context.ambient
+  _ → pure unit
 
 -- The builtin applied to its one argument (Check/Operation.purs
 -- `printCall`). Another count is refused today (E_ARITY) and by the

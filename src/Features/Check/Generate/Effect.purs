@@ -38,6 +38,7 @@ import Domain.Resolved (Expr, HandlerClause, Ty, VarId)
 import Domain.Row (EffectRef, Label(..), closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
+import Features.Check.Generate.Ambient (enter, framed)
 import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Elab (Ref)
 import Features.Check.Generate.Fresh (childOf, instances, nodeRes)
@@ -110,12 +111,15 @@ handler recur context path span label@(Label effect _ mark) clauses = do
     naming
 
 -- E21: `⟨p, res⟩`, `Outside HandlerType`; no equation through the
--- handler.
+-- handler. The body runs in `f L + ρ` (E11, Task 8; Install.purs), `L`
+-- the handler's label under the frame mark `Frame p`.
 with
   ∷ ∀ s. Recur s → Context s → Path → Span → Expr → Expr → Gen s (Ruled s)
 with recur context path span installed body = do
   handlerPart ← recur context (childOf path "With" "handler") installed
-  bodyPart ← recur context (childOf path "With" "body") body
+  inside ← enter bodyPath (framed path handlerPart.marked context.ambient)
+    context
+  bodyPart ← recur inside bodyPath body
   res ← nodeRes path (ExprRule 21) span
   pure
     { ty: flex res
@@ -128,6 +132,8 @@ with recur context path span installed body = do
         handlerPart.emits
         bodyPart.emits
     }
+  where
+  bodyPath = childOf path "With" "body"
 
 -- An explicit marker of this rule (origin body), when its condition
 -- holds.

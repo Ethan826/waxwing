@@ -3,7 +3,10 @@
 -- E14, E15). Each relates its children's types by `eq` atoms (B1); none
 -- reads a solved shape: application is `eq τ_e (τ̄ → ⟨p, res⟩)` whatever
 -- `e` turns out to be (§4). Checked nodes as today's (Check/Infer.purs,
--- Apply.purs, Pipe.purs; D1 spec §3.5, R0 Task 7.1b).
+-- Apply.purs, Pipe.purs; D1 spec §3.5, R0 Task 7.1b). Task 8 records
+-- each stage's consumption into the ambient row (Generate.Consume):
+-- `AtApply`, `AtPipe`, or `AtCallback` when the function is a callback
+-- parameter.
 module Features.Check.Generate.Operator
   ( application
   , arithmetic
@@ -19,11 +22,13 @@ import Data.Foldable (traverse_)
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (Base(..))
-import Domain.Recorded.Effect (MTy(..))
+import Domain.Recorded.Effect (MTy(..), SiteKind(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr)
 import Domain.Syntax (Operator, Span)
 import Domain.Type (Ty(..))
+import Features.Check.Generate.Ambient (calleeSite)
+import Features.Check.Generate.Consume (applyStages)
 import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fresh (childAt, childOf, nodeRes)
@@ -171,7 +176,8 @@ application
 application recur context path span function arguments = do
   callee ← recur context (childOf path "Apply" "function") function
   generated ← sequence (Array.mapWithIndex argument arguments)
-  applied context path span 14 callee generated
+  applied context path span (calleeSite context AtApply function) 14 callee
+    generated
     (Checked.Apply <$> callee.expr <*> traverse _.expr generated)
   where
   argument index = recur context (childAt path "Apply" "args" index)
@@ -183,7 +189,8 @@ pipe ∷ ∀ s. Recur s → Context s → Path → Span → Expr → Expr → Ge
 pipe recur context path span left right = do
   callee ← recur context (childOf path "Pipe" "right") right
   value ← recur context (childOf path "Pipe" "left") left
-  applied context path span 15 callee [ value ]
+  applied context path span (calleeSite context AtPipe right) 15 callee
+    [ value ]
     (Checked.Pipe <$> value.expr <*> callee.expr)
 
 -- The applied value, then its arguments (for E15 the right operand is
@@ -193,12 +200,13 @@ applied
   . Context s
   → Path
   → Span
+  → SiteKind
   → Int
   → Generated s
   → Array (Generated s)
   → Elab s Checked.Node
   → Gen s (Ruled s)
-applied context path span rule function arguments node = do
+applied context path span site rule function arguments node = do
   handle ← nodeRes path (ExprRule rule) span
   built ← builtArrow path (map _.marked arguments) (markedFlex handle)
   pure (made handle built)
@@ -214,6 +222,8 @@ applied context path span rule function arguments node = do
               function.marked
               built
           ]
+        applyStages context { path, span, rule: ExprRule rule, site }
+          (Array.length arguments)
         function.emits
         traverse_ _.emits arguments
     }

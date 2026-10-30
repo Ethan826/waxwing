@@ -13,7 +13,8 @@
 -- annotated parameter k is marked as Generate.Marked `InAnnotation p k`
 -- reads it, with its owned clause rows (Generate.Owned), and recorded in
 -- `annotations` at `Lambda/params/k`, a key of its own (a parameter is
--- not a node, so no node path takes that step).
+-- not a node, so no node path takes that step). The lambda's body runs in
+-- the ambient row `⟨p, effect⟩` (Task 8, E11), recorded at `Lambda/body`.
 module Features.Check.Generate.Control
   ( lambda
   , match
@@ -36,6 +37,7 @@ import Domain.Recorded.Origin
   )
 import Domain.Resolved (Arm, Expr, LocalId, Param)
 import Domain.Syntax (Span)
+import Features.Check.Generate.Ambient (enter, ownRow)
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
@@ -127,9 +129,9 @@ lambda
 lambda recur context path span parameters body = do
   effected (mintedAt path ([ effect ] <> stages) [])
   typed ← sequence (Array.mapWithIndex (parameterOf path) parameters)
-  inner ← recur (Array.foldl bindParameter context typed)
-    (childOf path "Lambda" "body")
-    body
+  inside ← enter bodyPath (ownRow EffectOf path)
+    (Array.foldl bindParameter context typed)
+  inner ← recur inside bodyPath body
   pure
     { ty: arrowOf (map _.ty typed) inner.ty
     , marked: stagedArrow path
@@ -147,6 +149,7 @@ lambda recur context path span parameters body = do
         inner.emits
     }
   where
+  bodyPath = childOf path "Lambda" "body"
   effect = EffFresh path EffectOf
   stages = Array.mapWithIndex stage (Array.drop 1 parameters)
   stage index _ = EffFresh path (Stage index)

@@ -14,12 +14,13 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (Base(..), OutsideKind(..))
-import Domain.Recorded.Effect (MTy(..))
+import Domain.Recorded.Effect (ERole(..), MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, LocalId)
 import Domain.Resolved as Resolved
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
+import Features.Check.Generate.Ambient (enter, ownRow)
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Elab.Log (Log)
@@ -77,10 +78,25 @@ itemOf
 itemOf recur context path = case _ of
   Resolved.Let _ local value → letItem context local
     <$> recur context (childOf path "Let" "value") value
-  Resolved.Defer span value → deferred context path span
-    <$> recur context (childOf path "Defer" "value") value
+  Resolved.Defer span value → deferredItem recur context path span value
   Resolved.Discard value → discarded context
     <$> recur context (childOf path "Discard" "value") value
+
+-- The deferred expression runs in its own row `⟨p, effect⟩`, d (E11,
+-- Task 8; Defer.purs `checkDefer`), recorded at `Defer/value`.
+deferredItem
+  ∷ ∀ s
+  . Recur s
+  → Context s
+  → Path
+  → Span
+  → Expr
+  → Gen s (Visited s)
+deferredItem recur context path span value = do
+  inside ← enter valuePath (ownRow EffectOf path) context
+  deferred context path span <$> recur inside valuePath value
+  where
+  valuePath = childOf path "Defer" "value"
 
 discarded ∷ ∀ s. Context s → Generated s → Visited s
 discarded context found =

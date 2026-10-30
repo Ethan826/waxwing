@@ -2,7 +2,9 @@
 -- What every expression rule reads (T-R0b §2.4, G-local): the
 -- declaration's id, the tables, the signatures and the local
 -- environment `Γ`, each local at its generator type (D1 spec §3.2; R0
--- Task 7.1b) and its marked type (amin tranche 1, Task 3). Nothing
+-- Task 7.1b) and its marked type (amin tranche 1, Task 3). Task 8 adds
+-- the ambient row the expression runs in (E11) and the declaration's
+-- callback parameters, both read off the syntax. Nothing
 -- else: no checker state, substitution, meta counter or solved type is
 -- in scope, so no rule can branch on one (§4's applicative invariant;
 -- T10). `Recur` is the expression rule itself,
@@ -19,7 +21,7 @@ module Features.Check.Generate.Context
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe)
-import Domain.Recorded.Effect (MTy)
+import Domain.Recorded.Effect (MRow, MTy)
 import Domain.Recorded.Origin (Path, RuleId)
 import Domain.Resolved (Expr, FunctionId, LocalId)
 import Features.Check.Generate.Elab (GenTy)
@@ -33,6 +35,8 @@ type Context s =
   , tables ∷ Tables
   , signatures ∷ Signatures
   , locals ∷ Map LocalId (Local s)
+  , ambient ∷ MRow -- the row stages are consumed into (E2, E10, E11)
+  , callbacks ∷ Array LocalId -- parameters of one-stage function type
   }
 
 -- A local's generator type and its marked type, bound together.

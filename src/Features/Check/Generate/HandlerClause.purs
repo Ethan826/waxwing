@@ -3,7 +3,8 @@
 -- Task 3, for the line budget): a clause's body under its parameters,
 -- each at θ of its declared type, read at `ClauseParamType p c k` (spec
 -- §12.2), with its marked type at the handler's use (Generate.Marked
--- `AtUse p`); and a clause's id for the checked node.
+-- `AtUse p`); and a clause's id for the checked node. A clause body runs
+-- in the clause's own row `⟨p, clauses k⟩` (E11, Task 8).
 module Features.Check.Generate.HandlerClause
   ( Clause
   , effectId
@@ -19,12 +20,13 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Recorded.Atom (CheckedName(..))
-import Domain.Recorded.Effect (MTy, SiteRole(..))
+import Domain.Recorded.Effect (ERole(..), MTy, SiteRole(..))
 import Domain.Recorded.Origin (Path, RuleId(..), Step(..))
 import Domain.Resolved (HandlerClause, Ty, VarId(..))
 import Domain.Row (EffectRef(..), Label(..), closedRow)
 import Domain.Type (Ty(..)) as Type
 import Domain.Type (substitute)
+import Features.Check.Generate.Ambient (enter, ownRow)
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Fresh (child, childAt)
@@ -63,9 +65,9 @@ handlerClause
 handlerClause recur context site naming clause = do
   typed ← traverse typedParameter clause.parameters
   read ← traverse sited (Array.mapWithIndex Tuple typed)
-  body ← recur (Array.foldl bindParameter context typed)
-    (child path [ Named "body" ])
-    clause.body
+  inside ← enter bodyPath (ownRow (Clauses site.clause) site.handler)
+    (Array.foldl bindParameter context typed)
+  body ← recur inside bodyPath clause.body
   result ← lifted (declaredResult context.tables site.label clause.result)
   pure
     { clause:
@@ -86,6 +88,7 @@ handlerClause recur context site naming clause = do
     }
   where
   path = childAt site.handler "Handler" "clauses" site.clause
+  bodyPath = child path [ Named "body" ]
   typedParameter parameter = withLocal parameter.local
     <$> lifted (translate context.tables naming parameter.ty)
     <*> lifted (marked context.tables (AtUse site.handler) parameter.ty)

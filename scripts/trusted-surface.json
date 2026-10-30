@@ -197,6 +197,24 @@
    "staticRules"
   ]
  },
+ "Features.Check.Generate.Ambient": {
+  "source": [
+   "callbackParameters",
+   "calleeSite",
+   "enter",
+   "failing",
+   "framed",
+   "ownRow"
+  ],
+  "compiled": [
+   "callbackParameters",
+   "calleeSite",
+   "enter",
+   "failing",
+   "framed",
+   "ownRow"
+  ]
+ },
  "Features.Check.Generate.Assemble": {
   "source": [
    "Header",
@@ -265,6 +283,18 @@
    "ctorInstance",
    "functionInstance",
    "recordInstance"
+  ]
+ },
+ "Features.Check.Generate.Consume": {
+  "source": [
+   "Place",
+   "Use",
+   "applyStages",
+   "callStages"
+  ],
+  "compiled": [
+   "applyStages",
+   "callStages"
   ]
  },
  "Features.Check.Generate.Context": {
@@ -649,16 +679,25 @@
  },
  "Features.Check.Generate.Obligation": {
   "source": [
+   "StageSite",
    "agreeEqual",
+   "ambientAt",
+   "arityAt",
    "builtArrow",
+   "consumeAt",
    "equalAt",
-   "equalTagged"
+   "equalTagged",
+   "stageRow"
   ],
   "compiled": [
    "agreeEqual",
+   "ambientAt",
+   "arityAt",
    "builtArrow",
+   "consumeAt",
    "equalAt",
-   "equalTagged"
+   "equalTagged",
+   "stageRow"
   ]
  },
  "Features.Check.Generate.Opening": {

@@ -134,7 +134,10 @@ data Provenance
   | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }
 
 -- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).
-data SiteRole = ClauseBody | WithNode
+-- `Consumed site n` is an E2 consumption (Task 8): its site kind and its
+-- ordinal among that kind's stages at the path, so two stages of one
+-- application never share an identity.
+data SiteRole = ClauseBody | WithNode | Consumed SiteKind Int
 
 type Placed a =
   { provenance ∷ Provenance, rule ∷ RuleId, span ∷ Span, value ∷ a }

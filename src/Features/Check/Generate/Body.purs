@@ -10,7 +10,9 @@
 -- `checkFunction`): the written signature, rigid; the body with its
 -- holes renumbered by `holes` (§9); the effect row as written, and
 -- `main`'s open tail, which today's checker infers, left closed (§12.1's
--- fallback, Task 7.1 ruling, provisional).
+-- fallback, Task 7.1 ruling, provisional). The declared row, marked as
+-- declared, is the body's ambient row (amin Task 8, E10, E11), recorded at
+-- the body's root.
 module Features.Check.Generate.Body (generateIn) where
 
 import Prelude
@@ -21,10 +23,13 @@ import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Resolved (FunctionDecl, exprSpan)
 import Domain.Row (Row(..))
 import Domain.Type (Ty(..), TyRow)
+import Features.Check.Generate.Ambient (callbackParameters)
+import Features.Check.Generate.Declared (declaredSignature)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Expr (expr)
 import Features.Check.Generate.Gen (Gen, lifted)
 import Features.Check.Generate.Inputs (Signatures, Tables)
+import Features.Check.Generate.Obligation (ambientAt)
 import Features.Check.Generate.Signature
   ( declaration
   , isEntry
@@ -40,14 +45,25 @@ generateIn
   → Gen s (Elab s Checked.FunctionDecl)
 generateIn tables signatures function = do
   locals ← lifted (parameterLocals tables function)
-  body ← expr { decl: function.id, tables, signatures, locals }
-    (Path { root: InBody, steps: [] })
+  declared ← lifted (declaredSignature tables function)
+  ambientAt root declared.row
+  body ← expr
+    { decl: function.id
+    , tables
+    , signatures
+    , locals
+    , ambient: declared.row
+    , callbacks: callbackParameters function
+    }
+    root
     function.body
   signature ← declaration tables function body.ty body.marked
     (exprSpan function.body)
   signature
   body.emits
   pure (checkedOf function <$> body.expr)
+  where
+  root = Path { root: InBody, steps: [] }
 
 checkedOf ∷ FunctionDecl → Checked.Expr → Checked.FunctionDecl
 checkedOf function body =
