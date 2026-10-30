@@ -7052,3 +7052,22 @@ with it: a run showing the ratio near 2 on base and head, and a
 restored quadratic defect (e.g. FN001's earlier quadratic
 partial-application path) failing the ratio gate. Until a decision,
 any full verify on this machine is expected to fail on this test.
+
+### 18.131 Verification contract proposal (2026-10-30)
+
+The author asked for a revised verification proposal and one combined
+estimate, not measurement or implementation: routine verify keeps
+functional tests, gates, regression proofs, stack safety and generous
+hang timeouts; absolute budgets move to a separate, reported command;
+growth ratios only where demonstrated; no retries, adaptive thresholds
+or hidden exclusions; quiet-machine conditions not required. The
+proposal is docs/plans/2026-10-30-verification-contract-proposal.md:
+the contract, a file-name mechanism (`*.perf.test.mjs`, `npm run
+perf`), a first-pass inventory of 41 clock-reading files by category,
+partialFirst's split and its growth-check demonstration, the clock
+gate's revised policy and limits, completion criteria, one all-in
+estimate (0.68M, cap 0.70M) and the gate and pin changes to authorize
+together. Correction: §18.130 named an "FN001 quadratic
+partial-application path" as the defect to restore without evidence;
+no row or finding names it, so locating or constructing it is the
+first step. Nothing implemented; Task 7 stays blocked.
