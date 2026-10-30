@@ -19,10 +19,16 @@ import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (OutsideKind(..))
-import Domain.Recorded.Effect (MTy)
+import Domain.Recorded.Effect
+  ( Fixed(..)
+  , MRow
+  , MTy
+  , MarkRef(..)
+  , SiteKind(..)
+  )
 import Domain.Recorded.Origin (OriginKind(..), Path, RuleId(..), Step(..))
 import Domain.Resolved (Expr, FailClause, Ty, VarId)
-import Domain.Row (Label(..))
+import Domain.Row (EffectRef(..), Label(..))
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Ambient (enter, failing)
@@ -34,7 +40,11 @@ import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
 import Features.Check.Generate.Gen (Gen, emit, lifted)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, markersAt)
-import Features.Check.Generate.Obligation (agreeEqual, payloadAt)
+import Features.Check.Generate.Obligation
+  ( agreeEqual
+  , consumeAt
+  , payloadAt
+  )
 import Features.Check.Generate.Out (At, TypeMarker)
 import Features.Check.Generate.Translate (Naming(..), translate)
 
@@ -154,6 +164,9 @@ fail recur context path span family value = do
               <> markersAt Types span (maybe [] _.marks written)
           )
         payloadAt (at context path (ExprRule 23)) span paid.marked
+        consumeAt (at context path (ExprRule 23)) span
+          { site: AtFail, ordinal: 0, source: failRow paid.marked }
+          context.ambient
         paid.emits
     }
   where
@@ -161,6 +174,19 @@ fail recur context path span family value = do
     agreeEqual span paid.ty found.ty paid.marked found.marked
   familyOf found markedType =
     { ty: found.ty, marks: found.marks, marked: markedType }
+
+-- E2 at `fail` (§18.124 ruling 1; statements §4): the closed row
+-- `Fail(payload)` consumed into the ambient row, marked as today's
+-- checker marks it (Check/Failure.purs `consumeAt … FailOf`: the label
+-- `Fail` is Unmarked, the placeholder N here). The live checker refuses
+-- a `fail` in a pure callback through this consumption; E9 above is a
+-- different obligation (the payload's head).
+failRow ∷ MTy → MRow
+failRow payload =
+  { labels:
+      [ { effect: FailEffect, args: [ payload ], mark: Written FixedN } ]
+  , tail: Nothing
+  }
 
 singleArgument ∷ ∀ t. Label t → Maybe t
 singleArgument (Label _ arguments _) =

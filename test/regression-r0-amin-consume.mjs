@@ -13,5 +13,18 @@ export const consumeProbes = {
     if (stages.length !== 1)
       fail('an Apply stage is not consumed into its ambient row');
     passed(context);
+  },
+  // §18.124 ruling 1: the pure-callback example, `fail` inside a lambda.
+  'r0-amin-consume-fail': async context => {
+    const { fieldsOf } = await toolkit(context);
+    const source = 'type Err = Oops; fn run(f: Unit -> Int with pure): Int '
+      + 'with pure = f(()); fn a(): Int with Fail(Err) { fail } = '
+      + 'run(fn(u: Unit) => fail(Oops)); fn main(): Unit = ();';
+    const failed = fieldsOf(source, 'a').effects.obligations.filter(item =>
+      item.value.constructor.name === 'Consume'
+      && item.value.value0.site.constructor.name === 'AtFail');
+    if (failed.length !== 1)
+      fail('fail does not consume Fail(payload) into its ambient row');
+    passed(context);
   }
 };

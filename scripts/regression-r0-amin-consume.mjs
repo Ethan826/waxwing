@@ -15,5 +15,16 @@ export const consumeRows = [
       + ' (indices 0)\n',
     probe: 'r0-amin-consume-stage-site',
     message: /an Apply stage is not consumed into its ambient row/
+  },
+  {
+    // §18.124 ruling 1: `fail` records no Consume of Fail(payload).
+    name: 'r0-amin-consume-fail',
+    file: 'src/Features/Check/Generate/Failure.purs',
+    needle: '        consumeAt (at context path (ExprRule 23)) span\n'
+      + '          { site: AtFail, ordinal: 0, source: failRow paid.marked }\n'
+      + '          context.ambient\n',
+    replacement: '        pure (const unit (failRow paid.marked))\n',
+    probe: 'r0-amin-consume-fail',
+    message: /fail does not consume Fail\(payload\) into its ambient row/
   }
 ];

@@ -96,6 +96,7 @@ data SiteKind
   | AtStage Int
   | AtCallback
   | AtDefer
+  | AtFail
   | AtInstalledC
   | AtDeferredRow
   | ClauseIntoR Int

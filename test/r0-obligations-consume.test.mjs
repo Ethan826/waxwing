@@ -173,3 +173,34 @@ test('arities record each use\'s callee arity at its path', () => {
   const reference = effectsOf(`${add}fn main(): Int = { let f = add; 0 };`);
   assert.equal(lookup(reference.arities, items(0, 'Let', 'value')), 2);
 });
+
+// §18.124 ruling 1: `fail` consumes its closed `Fail(payload)` row into
+// the ambient row (E2), beside E9. The separating example: live refuses
+// it (a pure callback may not raise Fail(Err)), so the lambda's ambient
+// row must receive the consumption.
+test('fail consumes Fail(payload) into the lambda\'s ambient row', () => {
+  const source = 'type Err = Oops; fn run(f: Unit -> Int with pure): Int '
+    + 'with pure = f(()); fn a(): Int with Fail(Err) { fail } = '
+    + 'run(fn(u: Unit) => fail(Oops)); fn main(): Unit = ();';
+  const effects = effectsOf(source, 'a');
+  const failed = consumes(effects).filter(item =>
+    Object.keys(item.site)[0] === 'AtFail');
+  assert.equal(failed.length, 1);
+  const [found] = failed;
+  assert.equal(found.ordinal, 0);
+  assert.equal(found.value.marks, true);
+  assert.equal(found.value.bare, false);
+  // A closed row: no tail.
+  assert.equal(found.value.source.tail.Just, undefined);
+  const [label] = found.value.source.labels;
+  assert.equal(found.value.source.labels.length, 1);
+  assert.deepEqual(shape(label.effect), { FailEffect: [] });
+  assert.deepEqual(label.mark, { Written: [{ FixedN: [] }] });
+  assert.equal(label.args.length, 1);
+  // The target is the lambda's own `⟨p, effect⟩`, recorded at its body.
+  assert.deepEqual(found.value.target, lookup(effects.ambient, found.path));
+  assert.deepEqual(Object.keys(found.value.target.tail.Just[0])[0],
+    'EffFresh');
+  assert.deepEqual(found.value.target.tail.Just[0].EffFresh[1],
+    { EffectOf: [] });
+});
