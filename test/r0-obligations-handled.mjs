@@ -3,12 +3,18 @@
 // the corpus survey (r0-obligations-handler-survey.mjs) and the fixture
 // tests (r0-obligations-handler.test.mjs). Each takes { at, effects,
 // nodes, ambient, found }: `nodes` and `ambient` keyed by the shaped
-// path's JSON, shaped values; `found` counts what was checked.
-import { stableStringify } from './r0-canonical.mjs';
+// path's JSON, shaped values; `found` counts what was checked. It loads
+// no compiler output, so a regression probe can run it over a compiler
+// under test (test/regression-r0-amin-handler.mjs).
 import { shape } from './regression-r0-amin-support.mjs';
 
-// Key order differs between records built apart, so compare stably.
-const key = stableStringify;
+// Key order differs between records built apart, so compare stably (as
+// r0-canonical.mjs `stableStringify`, which loads the build's output).
+export const key = value => JSON.stringify(value, (name, found) =>
+  (found && typeof found === 'object' && !Array.isArray(found)
+    ? Object.fromEntries(Object.keys(found).sort()
+      .map(field => [field, found[field]]))
+    : found));
 const fresh = (path, role) => ({ EffFresh: [path, role] });
 const tailOnly = variable => ({ labels: [], tail: { Just: [variable] } });
 export const childPath = (path, ...names) => ({ root: path.root,
@@ -31,7 +37,7 @@ const consumption = (site, source, target, { marks, bare }) => entry(
 // E4 at a literal: HandlerLit names the node's own mark and tails (A4),
 // one clause row per clause, and the only obligations at the literal's
 // path under E20 are it and each clause's two consumptions (A3).
-export const literalProblems = ({ at, effects, nodes, found }) => {
+export const literalProblems = ({ at, effects, nodes, ambient, found }) => {
   const items = sited(effects);
   const problems = [];
   const literals = items.filter(item => item.value.HandlerLit);
@@ -57,6 +63,11 @@ export const literalProblems = ({ at, effects, nodes, found }) => {
     if ((count > 0 && !nodes.has(key(body(count - 1))))
       || nodes.has(key(body(count))))
       problems.push(`${where}: ${count} clause rows`);
+    // R9 Q5: clause k's ambient row is its clause row, the same variable.
+    const ownAmbient = (row, k) => key(ambient.get(key(body(k))))
+      === key(tailOnly(row));
+    if (!lit.clauseRows.every(ownAmbient))
+      problems.push(`${where}: a clause row is not its clause's ambient row`);
     // Each c_k into R ignoring marks, into C with marks, C bare.
     const clauseInto = (row, k) => [
       consumption({ ClauseIntoR: [k] }, tailOnly(row),

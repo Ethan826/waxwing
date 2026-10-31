@@ -2,8 +2,10 @@
 // tranche 1, Task 9; design note docs/plans/2026-10-30-task-9-literal-
 // design.md). Over the rt8 sources and the defect probes, as Task 7's
 // survey: A5 (every `Local` of a `let`-bound local carries the `let`
-// value's marked type exactly, marks included), each `HandlerLit` and
-// `Install` against the nodes they name (A3, A4 and E5's records), and
+// value's marked type exactly, marks included) and the other identity
+// routes (block results, record-literal fields, lambda results;
+// r0-obligations-routes.mjs), each `HandlerLit` and `Install` against
+// the nodes they name (A3, A4, the clause rows and E5's records), and
 // the minted positions (each once; exactly those the obligations,
 // instances and annotations name). Values are compared as shaped data.
 import { load, resolved } from './r0-generate-support.mjs';
@@ -13,6 +15,7 @@ import { defectProbes } from './r0-shadow-known.mjs';
 import { stableStringify } from './r0-canonical.mjs';
 import { shape } from './regression-r0-amin-support.mjs';
 import { literalProblems, installProblems } from './r0-obligations-handled.mjs';
+import { routeProblems } from './r0-obligations-routes.mjs';
 
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
@@ -90,8 +93,8 @@ const positionProblems = (at, effects) => {
 };
 
 export const survey = async () => {
-  const found = { locals: 0, literals: 0, installs: 0, framed: 0,
-    positions: 0, problems: [] };
+  const found = { locals: 0, blocks: 0, fields: 0, lambdas: 0, literals: 0,
+    installs: 0, framed: 0, positions: 0, problems: [] };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     let program;
     try { program = resolved(source); } catch { continue; }
@@ -107,7 +110,9 @@ export const survey = async () => {
         new Map(pairs(effects.ambient)), found };
       found.locals += checked;
       found.positions += effects.positions.length;
-      found.problems.push(...problems, ...positionProblems(at, effects),
+      found.problems.push(...problems,
+        ...routeProblems(at, decl, nodes, found),
+        ...positionProblems(at, effects),
         ...literalProblems(handled), ...installProblems(handled));
     }
   }

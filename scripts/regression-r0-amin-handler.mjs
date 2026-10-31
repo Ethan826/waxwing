@@ -5,34 +5,55 @@
 // compiling form.
 const generate = 'src/Features/Check/Generate/';
 const block = `${generate}Block.purs`;
+// The mutants' import edit and `forged`: a copy of a marked type whose
+// top-level handler mark is `Written FixedN` (marks erase).
+const forgedImport = { file: block,
+  needle: 'import Domain.Recorded.Effect (ERole(..), EVar(..), MTy(..))\n',
+  replacement: 'import Domain.Recorded.Effect\n'
+    + '  (ERole(..), EVar(..), Fixed(..), MTy(..), MarkRef(..))\n' };
+const forgedHelper = { file: block,
+  needle: '-- The deferred row d, `⟨p, effect⟩` at the `defer` item',
+  replacement: 'forged ∷ MTy → MTy\n'
+    + 'forged = case _ of\n'
+    + '  MHandler label rows → MHandler label { mark = Written FixedN }'
+    + ' rows\n'
+    + '  other → other\n\n'
+    + '-- The deferred row d, `⟨p, effect⟩` at the `defer` item' };
 export const handlerRows = [
   {
     // R9 §2: a `let` binds the local to a copy of the value's marked type
     // whose top-level handler mark is forged to `Written FixedN`. Erasure
-    // is preserved (marks erase), so the failure comes from the marked
-    // side: the installed handler no longer carries `At (Literal p)`.
+    // is preserved by construction (test/r0-marked-erase.mjs drops
+    // marks; the probe checks the two types agree with marks dropped),
+    // so the failure comes from the marked side: the installed handler
+    // no longer carries `At (Literal p)`.
     name: 'r0-amin-literal-reaches-use',
     edits: [
-      { file: block,
-        needle: 'import Domain.Recorded.Effect (ERole(..), EVar(..),'
-          + ' MTy(..))\n',
-        replacement: 'import Domain.Recorded.Effect\n'
-          + '  (ERole(..), EVar(..), Fixed(..), MTy(..), MarkRef(..))\n' },
+      forgedImport,
       { file: block,
         needle: '      (bindLocal <@> { ty: found.ty, marked: found.marked }'
           + ' <@> context)\n',
         replacement: '      (bindLocal <@> { ty: found.ty, marked: forged'
           + ' found.marked } <@> context)\n' },
-      { file: block,
-        needle: '-- The deferred row d, `⟨p, effect⟩` at the `defer` item',
-        replacement: 'forged ∷ MTy → MTy\n'
-          + 'forged = case _ of\n'
-          + '  MHandler label rows → MHandler label { mark = Written FixedN }'
-          + ' rows\n'
-          + '  other → other\n\n'
-          + '-- The deferred row d, `⟨p, effect⟩` at the `defer` item' }
+      forgedHelper
     ],
     probe: 'r0-amin-literal-reaches-use',
+    message: /installed handler's mark is .*, not At \(Literal/
+  },
+  {
+    // Review 1 P1-1: a block's type is a copy of its result's whose
+    // top-level handler mark is forged to `Written FixedN` (erasure kept,
+    // as above), so a literal reaching its `with` as a block's result
+    // loses `At (Literal p)`. The handler test's route check
+    // (r0-obligations-routes.mjs) fails under it too.
+    name: 'r0-amin-literal-block-route',
+    edits: [
+      forgedImport,
+      { file: block, needle: '    , marked: final.marked\n',
+        replacement: '    , marked: forged final.marked\n' },
+      forgedHelper
+    ],
+    probe: 'r0-amin-literal-block-route',
     message: /installed handler's mark is .*, not At \(Literal/
   },
   {
@@ -81,5 +102,22 @@ export const handlerRows = [
       + '      )\n',
     probe: 'r0-amin-install-r',
     message: /no InstallR at an MHandler with/
+  },
+  {
+    // Review 2 P2-2: InstallR is recorded with `marks: true`, so R would
+    // be consumed into ρ with marks. The coverage check reads tokens
+    // only and passes; the handler test's exact comparison fails.
+    name: 'r0-amin-install-r-marks',
+    file: `${generate}Effect.purs`,
+    needle: '      { site: InstallR\n'
+      + '      , source: rows.inference\n'
+      + '      , target: context.ambient\n'
+      + '      , marks: false\n',
+    replacement: '      { site: InstallR\n'
+      + '      , source: rows.inference\n'
+      + '      , target: context.ambient\n'
+      + '      , marks: true\n',
+    probe: 'r0-amin-handler-exact',
+    message: /handler records differ: .*E21 records/
   }
 ];

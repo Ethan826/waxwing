@@ -6,17 +6,23 @@ import { shape } from './regression-r0-amin-support.mjs';
 import { childPath, installProblems, literalProblems }
   from './r0-obligations-handled.mjs';
 import { namedPositions, survey } from './r0-obligations-handler-survey.mjs';
+import { routeProblems } from './r0-obligations-routes.mjs';
 
 // R0 amin tranche 1, Task 9: the handler family (statements §4 E3, E4,
 // E5; design note docs/plans/2026-10-30-task-9-literal-design.md, its
-// direction approved in dossier §18.124). A literal's marked type is its
-// node's type and reaches its uses by identity or through the moving
-// rule's E1 (A1-A5); no E1 is recorded at the literal's node. Each
-// literal records `HandlerLit` and its clause rows' E4 consumptions;
-// each `with` records `Install` and, over an MHandler, E5's InstallR and
-// installed-C site, else `UnframedInstall`. Recorded, not judged: no
-// validator reads these yet, and nothing here is an effect-soundness
-// result.
+// direction approved in dossier §18.124). What these tests establish,
+// on the recorded effect problem only: a literal's marked type is its
+// node's type and reaches its uses by identity along the routes tested
+// here (A5's `let`/local, a block's result, a record literal's fields,
+// a lambda's result, all corpus-wide with marks; a `with`'s handler
+// child, A2) or through one moving rule's E1 (A1: a call argument, E5,
+// on one fixture); no E1 is recorded at the literal's node (A3). Each
+// literal records `HandlerLit` and its clause rows' E4 consumptions,
+// its clause rows the clauses' own ambient rows; each `with` records
+// `Install` and, over an MHandler, E5's InstallR and installed-C site,
+// else `UnframedInstall`. Other moving rules' E1s are Task 7's tests.
+// Recorded, not judged: no validator reads these yet, and nothing here
+// is an effect-soundness result.
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Recorded = await load('Domain.Recorded');
@@ -167,6 +173,27 @@ test('a non-MHandler with: Install and UnframedInstall, no InstallR', () => {
     .includes('InstallR'));
 });
 
+// Review 1 P1-1: a literal as a block's result, a record field and a
+// lambda's result keeps its type, mark included, on each route.
+const routed = 'effect Log { fn log(n: Int): Unit; }; fn main(): Unit = '
+  + '{ let h = { handler Log { log(n) => () } }; let r = { k: handler Log '
+  + '{ log(n) => () } }; let f = fn(u: Unit) => handler Log { log(n) => () '
+  + '}; with h { Log.log(1) } };';
+
+test('identity routes: block result, record field, lambda result', () => {
+  const program = resolved(routed);
+  const decl = program.functions.find(item => item.name === 'main');
+  const nodes = keyed(effectsOf(routed).nodes);
+  const counts = { blocks: 0, fields: 0, lambdas: 0 };
+  assert.deepEqual(routeProblems('fixture', decl, nodes, counts), []);
+  assert.deepEqual(counts, { blocks: 3, fields: 1, lambdas: 1 });
+  const lit = body('Block', 'items', 0, 'Let', 'value', 'Block', 'result');
+  const mark = nodes.get(key(body('Block', 'result', 'With', 'handler')))
+    .MHandler[0].mark;
+  assert.deepEqual(mark, { At: [{ Literal: [lit] }] },
+    `installed handler's mark is ${key(mark)}, not At (Literal p_lit)`);
+});
+
 const positions = effects => shape(effects.positions).map(item => key(item));
 
 test('§12.1 N5: the let-bound failing handler records HandlerLit', () => {
@@ -193,16 +220,20 @@ test('positions: none minted twice, exactly those named', () => {
 
 const found = await survey();
 
-test('corpus: A5, HandlerLit, Install and positions', t => {
-  t.diagnostic(`locals ${found.locals}, literals ${found.literals}, `
-    + `installs ${found.installs} (framed ${found.framed}), positions `
-    + `${found.positions}`);
+test('corpus: A5, routes, HandlerLit, Install and positions', t => {
+  t.diagnostic(`locals ${found.locals}, blocks ${found.blocks}, fields `
+    + `${found.fields}, lambdas ${found.lambdas}, literals `
+    + `${found.literals}, installs ${found.installs} (framed `
+    + `${found.framed}), positions ${found.positions}`);
   assert.deepEqual(found.problems.slice(0, 10), [],
     `${found.problems.length} problems`);
   // Floors, so an empty survey cannot pass: about 80% of the counts
-  // observed when they were set (locals 531, literals 317, installs 317,
-  // framed 297).
+  // observed when they were set (locals 531, blocks 1346, fields 19404,
+  // lambdas 646, literals 317, installs 317, framed 297).
   assert.ok(found.locals > 424, `${found.locals} let-bound locals`);
+  assert.ok(found.blocks > 1076, `${found.blocks} blocks`);
+  assert.ok(found.fields > 15523, `${found.fields} record-literal fields`);
+  assert.ok(found.lambdas > 516, `${found.lambdas} lambdas`);
   assert.ok(found.literals > 253, `${found.literals} literals`);
   assert.ok(found.installs > 253, `${found.installs} installs`);
   assert.ok(found.framed > 237, `${found.framed} framed installs`);
