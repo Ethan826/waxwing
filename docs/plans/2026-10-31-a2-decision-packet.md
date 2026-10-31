@@ -1,6 +1,11 @@
 # A2 decision packet: the trusted effect validator (2026-10-31)
 
-Status: **a packet for the author's decision; nothing chosen, nothing
+Status (2026-10-31): **superseded for decision by the proposed
+specification and its one decision table,
+docs/plans/2026-10-31-a2-specification.md**, which folds Q1-Q12, F1
+and F4 and resolves F1 as a proposed amendment; this packet stays as
+the source-verification and evidence record. Earlier status: **a
+packet for the author's decision; nothing chosen, nothing
 implemented, no soundness claim.** Prepared under the overnight
 authorization of 2026-10-30 (docs/plans/2026-10-30-overnight-
 authorization.md, stream 3: documents and source verification only).
