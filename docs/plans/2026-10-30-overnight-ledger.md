@@ -109,12 +109,42 @@ None yet.
   (3) the coverage row check matches constructor tokens only, so the
   `marks`/`bare` booleans are asserted by Task 9's own tests, not by
   the coverage fixture.
-- Discrepancy to settle at phase 2: T14's draft assumed a non-MHandler
+- Review 1's four author items are listed under its report; none
+  blocks the run (each records an existing reading).
+- Discrepancy to settle at phase 2 (settled: Install is recorded): T14's draft assumed a non-MHandler
   `with` records no `Install`; the agreed interface records `Install`
   plus `UnframedInstall`. ExpectedHandler's row is re-judged against
   the integrated tree.
 
 ## Reports
+
+### Review 1 (Opus; semantics, identities, provenance) on 7eb388e
+
+No P0. Fields match E4/E5 and the interface (checked from source and
+probe dumps: literal, owned annotation C, ResultC, alias, nested `with`
+ρ). P1-1: the literal's identity route through a block result is
+unchecked: mutant Block.purs:60 `marked: forged final.marked` (top
+`MHandler` mark to `Written FixedN`, erasure preserved) passes the
+handler test 9/9 and the equal test 6/6; Install.handler carries the
+forged mark. A5 covers let/local only; record-literal fields (E24) and
+lambda results are the same class (by reading). R9's table and the §2
+amendment's list omit block results. Consequence: f20d6ec's coverage
+note over-claims. Fix: extend A5 to block result, record field and
+lambda result (marks included); a restored-defect row with the Block
+mutant; scope the note until then. P2-1: r0-amin-node-erasure does not
+evidence erasure for the forged node (it checks base-typed nodes of
+another fixture); erasure holds by construction (`erase` drops marks);
+cite that, optionally assert it in the probe. P2-2: the handler test's
+header over-claims (A1-A5 test let/local, direct installation, one
+argument E1). P3: stale comments (Ambient.purs:59-60, Recorded/Effect
+.purs:116 vs Effect.purs:175 on `unframed`/symbolic framing); per-site
+-kind minimums in the uniqueness inventory; Q5's shared clause row
+asserted on one fixture only (add a corpus check). For the author:
+(1) installed-C as `Consume` while E5 and Definition 4.2 say "no
+consumption" there: state its meaning in E2/E5; (2) unstripped rows
+with `bare: true` mean "the validator ignores label arguments": ratify;
+(3) A3's wording; (4) a non-MHandler `with` records Install naming an
+unused Frame p: confirm intended.
 
 ### T14 phase 2 (d5cda56, 534bda3)
 
