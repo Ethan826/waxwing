@@ -7350,3 +7350,55 @@ these to the specification, the statements and the options note, then
 one focused adversarial review of the concrete package interface, the
 pipeline and the distinguishing cases. Not authorized: validator
 implementation, lifting UnframedInstall, any soundness claim.
+
+### 18.140 A2 specification: adversarial review (2026-10-31)
+
+One focused adversarial review (fresh Opus) of the specification after
+the consistency pass (829ada5), as §18.139 authorized. Verdict: not
+ready for implementation authorization; one S1, thirteen S2, eight S3;
+none lets a forged package be certified through the pipeline as
+written. Read-only probes over the 3071 corpus declarations (observed):
+every recorded `EffFresh` and `At` is in `flexEff` and `positions` and
+vice versa; the 17 forced tails are each their ResultC's tail; `Consume`
+flags match the site-kind table exactly; `AtDeferredRow` occurs 0
+times; 52412 nullary `MData t [] []`; C1's and C2's recorded orders as
+the specification assumed.
+
+- S1-1: the specification (obligations read settle(complete P_in)) and
+  the amended statements §7 (complete the settled package) disagree;
+  under the statements' order an absent payload variable reaches E9
+  unbound, the pre-default refusal §18.139 rejected. Fix: statements
+  §7 to complete-then-settle, and a separating fixture.
+- S2: `erase` maps nullary data to `App (DataHead t) []`, but
+  generation and read-back give `Base (DataBase t)` (controller
+  confirmed at Generate/Elab/Recorded.purs:36-38), so honest packages
+  would fail G0, and the claim "erase gives today's Substitution" is
+  false; hole numbering contradicts itself (§2.3 vs §2.4); type-image
+  solved form unchecked before the obligations (refusal-only by an
+  unwritten argument); E9's "concrete" undefined, keyless `Fail`
+  labels unspecified; steps 5 and 6 can mask an earlier obligation's
+  edge failure, and the within-obligation order is undefined; I3's
+  order makes C1's `BindsForced` prediction false; Decide's reading of
+  the new refusals unspecified (they would raise spurious search
+  faults); `RecordDefect` reported only when a candidate reaches
+  certify; the old `certify` must stop minting and the module homes
+  respect the layer and token rules; whether an image's handler type
+  may own a C; `readsForced` against §R7b's "refused as unsupported"
+  and §7's list; C4's wrong pipeline mis-stated; no step catches a
+  record reference outside the domain.
+- S3: C7's second wrong pipeline vacuous; C1's W3 unobservable; C3,
+  C2(c) and a Reason.purs citation wrong; refusal shape inconsistent;
+  I3 (iv)-(vi) unordered and `TermJ ∅` a second spelling of N; the
+  table's section number.
+- Author items: A1 forcing failures as `NotCertifiable` (per §R7b) or
+  `ObligationFailed` with `readsForced`; A2 whether `Certified` must
+  carry the completed package; A3 whether an effect `Valid` may stand
+  beside `NoWitness` for unsolved type images; A4 a recorded
+  `AtDeferredRow` as a `RecordDefect` while settling's rows are
+  unfinished; A5 step 0 beyond the flags (domain references); A6
+  `Unsupported` before I3.
+Nothing fixed: the authorization covered one consistency pass and one
+review; a fix pass waits for the author. Missing distinguishing cases
+(eleven) and property tests (erase/settle commutation, erase of the
+honest package against today's read-back, complete/settle order) are
+listed in docs/plans/2026-10-30-overnight-ledger.md.

@@ -197,6 +197,24 @@ None yet.
 
 ## Reports
 
+### A2 specification review (§18.140)
+
+Summary in dossier §18.140. Missing distinguishing cases: a nullary
+data image; an absent payload variable under both orders; BindsForced
+against an extra key; a rigid-tailed consumption failing a payload and
+an exact count; FX032 with a `ClaimsComplete` candidate (no
+`CandidateRefused`); a record defect where every strategy returns
+`NoCandidate`; an `if` over two `mk()` results with an image C
+`Just`/`Nothing`; `v ↦ PArrow` in `FailConcrete`; a type image naming
+an absent flexible variable; a Console label with `TermJ ∅`; a forced
+tail whose source is a hole, and rigid. Property tests owed: erase and
+settle commute over generated well-sorted package types; erase of the
+honest package equals today's read-back on the corpus; settle after
+complete equals complete after settle on forced tails and differs on
+absent variables; G0 accepts erase(P_c) whenever it accepts
+erase(P_s). Restrictions table, soundness and completeness passes: in
+the reviewer's report as summarized in §18.140.
+
 ### Fix round (9f4aaac..f7c655b)
 
 Identity routes checked corpus-wide with marks (new
