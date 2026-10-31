@@ -5,7 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **Checkpoint A (Tasks 1-5) done, §18.98. Checkpoint B
+Status (2026-10-31): **every task implemented; Task 7 accepted; Tasks
+9 and 14 implemented, integrated and reviewed overnight (§18.137),
+awaiting the author's acceptance with Tasks 8 and 10-13.** Earlier:
+**Checkpoint A (Tasks 1-5) done, §18.98. Checkpoint B
 (Tasks 15, 6, 17, 16, verify, one review) authorized, §18.99. Tasks
 7-14 held.** The author
 accepted the scope (dossier §18.96) and asked for this plan and the A2
@@ -638,6 +641,13 @@ each use's callee arity at its path.
 
 ### Task 9: handler family (E3, E4, E5)
 
+**Done 2026-10-31 (§18.137):** ff736de, bdd9f14 and the fix round
+bdad600..e88b866; tests in test/r0-obligations-handler.test.mjs; A3 is
+tested as the exact set at the literal (HandlerLit and two
+consumptions per clause), since the approved E4 consumptions sit
+there too; identity is also checked through block results,
+record-literal fields and lambda results.
+
 **Amended 2026-10-30 (§18.124; design note
 docs/plans/2026-10-30-task-9-literal-design.md approved in direction):**
 no literal-node E1 (Q1). Step 1 now records `HandlerLit`, h's uses
@@ -742,6 +752,11 @@ today, e.g. a resolve-time refusal that precedes generation), or
 - [ ] **Step 4: commit.**
 
 ### Task 14: effect pin, census, window, records
+
+**Done 2026-10-31 (§18.137):** pin 4dad5d0 (225 declarations moved,
+exactly those recording HandlerLit or Install;
+docs/plans/2026-10-31-effect-pin-moves.txt); census, window and RT8:
+no row moved; coverage 18 fixture, 13 unfinished (f20d6ec, 302e140).
 
 **Files:** test/r0-effects-pin.serial.test.mjs (create),
 test/fixtures/r0/effects.json, census and window fixtures as rerun;

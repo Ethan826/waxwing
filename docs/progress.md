@@ -195,6 +195,42 @@ proof is not a registered row (the harness clones only src and
 .spago); the end-to-end row restores the placeholder-comparison defect,
 since deleting the write is not observable from outside.
 
+## a-min tranche 1, Tasks 9 and 14: handler family, effect pin (2026-10-31)
+
+Overnight run (dossier §18.135-18.137; ledger
+docs/plans/2026-10-30-overnight-ledger.md). Task 9 (ff736de, bdd9f14):
+generation records `HandlerLit` at each handler literal (rule E20,
+role `LiteralSite`) with each clause row consumed into R
+(`ClauseIntoR k`, marks ignored) and into C (`ClauseIntoC k`, marks,
+bare), and `Install` at each `with` (E21, `InstallSite`) with R into ρ
+(`InstallR`) and the installed-C site (`AtInstalledC`) over an
+`MHandler`; a `with` over any other type records `Install` and keeps
+`Unsupported UnframedInstall`, with no consumption. No literal-node
+E1: the literal's marked type reaches its uses by identity (let and
+locals, a `with`'s handler, block results, record-literal fields,
+lambda results, all checked corpus-wide with marks) or through the
+moving rule's E1. Re-pin: Generate.Literal (new, split from Effect),
+Obligation's `Consumption`, `consumedAt`, `siteAt`; SiteRole
+`LiteralSite`, `InstallSite`. Task 14 (efcc231, 7eb388e, 4dad5d0,
+f20d6ec): effect pin test/fixtures/r0/effects.json (3071 declarations
+of 998 programs, written only by scripts/r0-effects-pin.mjs), taken
+after Task 9; 225 declarations moved against the provisional pin,
+exactly those recording `HandlerLit` or `Install`
+(docs/plans/2026-10-31-effect-pin-moves.txt); efcc231 and 7eb388e
+carry the provisional pre-Task-9 pin and fail their own pin test.
+Census, window and RT8 rerun through scripts/r0-results-moved.mjs:
+0 STOP rows, 0 moved rows, 0 moved aggregates; no fixture changed.
+Coverage: 31 rows, 18 fixture, 13 unfinished (was 13 and 18).
+Two fresh reviews (semantics; coverage, gates, pins): review 1's P1
+(the block-result identity route untested) and review 2's P0 (the
+settling-step row over-claimed) fixed with the P2s and most P3s
+(bdad600..d898691). Regression rows added: r0-amin-literal-reaches-use,
+-literal-block-route, -handler-lit, -handler-lit-clauses, -install-r,
+-install-r-marks, -coverage-installed-c, -coverage-install,
+-effects-pin-obligation. This records obligations; no validator exists
+and no effect soundness is established. Verification: see the dossier
+§18.137 for the routine verify; performance qualification not run.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

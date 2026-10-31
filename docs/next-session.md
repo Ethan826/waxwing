@@ -1,4 +1,4 @@
-# RESUME HERE (2026-10-30, 22:30 America/New_York; overnight run)
+# RESUME HERE (2026-10-30, 22:16 America/New_York; overnight run)
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs

@@ -25,10 +25,13 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
 
 ## Events
 
+Times were corrected at 00:05 EDT from the ledger commits' committer
+times; the first versions carried estimates, not clock readings.
+
 - 22:14 EDT. Session started; authorization read in full.
-- 22:30 EDT. RESUME rewritten; §18.136 and this ledger recorded
+- 22:16 EDT. RESUME rewritten; §18.136 and this ledger recorded
   (f6aeda4).
-- 22:45 EDT. Four worktrees created from f6aeda4 (T9 and T14 with
+- 22:18 EDT. Four worktrees created from f6aeda4 (T9 and T14 with
   output/, .spago, node_modules and .build/home copied in); four
   agents dispatched. Interface agreed in both T9's and T14's briefs:
   `HandlerLit` at E20 with role `LiteralSite`, per-clause `Consume`
@@ -38,25 +41,25 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   handler; a non-`MHandler` handler records `Install` and keeps
   `Unsupported UnframedInstall`, with no `InstallR` (R9 Q6).
 
-- 23:00 EDT. A2 packet returned (697e543); controller read its
+- 22:31 EDT. A2 packet returned (697e543); controller read its
   header and checked two of its findings against the sources (F1:
   statements §2's ResultC row says the package holds the
   `⟨p, result clauses⟩` binding when it is the tail, while the options
   note's forcing step refuses it as Malformed; F6: statements §10
   gives `Consume` `Var`/`RowRef` fields, the code `MRow`). Both hold.
   Cherry-picked onto r0-t2-d1 as bff23d0; width 0.
-- 23:10 EDT. T14 phase 1 returned (a4c5ebc, e26ac5b). Controller
+- 22:33 EDT. T14 phase 1 returned (a4c5ebc, e26ac5b). Controller
   reran test/r0-effects-pin.serial.test.mjs and
   test/r0-results-diff.test.mjs in its worktree: 8 of 8 passed. Its
   baseline dump (.build/task14-base-results.json), coverage draft
   (.build/task14-coverage-draft.json) and draft checker
   (.build/task14-check-draft.mjs) stay in that worktree, uncommitted,
   for phase 2. Held for integration until Task 9 lands.
-- 23:20 EDT. SH returned (d73be05). Controller checked against main
+- 22:35 EDT. SH returned (d73be05). Controller checked against main
   at 7093c79: 324 .purs modules under src, 83 importing Data.Map, no
   Generate/ (the `seal` is delta-only); all as reported. Cherry-picked
   as 0c9df75; width 0.
-- 23:55 EDT. T9 returned (e22f31b, 1793b1e). Integrated by
+- 22:55 EDT. T9 returned (e22f31b, 1793b1e). Integrated by
   cherry-pick with T14's two commits: ff736de, bdd9f14, efcc231,
   7eb388e (no conflicts). Controller at 7eb388e: `npm run build`
   succeeded; test/r0-obligations-handler.test.mjs,
@@ -66,7 +69,7 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   semantics, marked identities, provenance) dispatched on 7eb388e.
   Review 2 (coverage, gates, pins, live preservation) waits for T14
   phase 2.
-- 00:20 EDT (Oct 31). T14 phase 2 returned. Pin after Task 9: 3071
+- 23:02 EDT. T14 phase 2 returned. Pin after Task 9: 3071
   declarations of 998 programs; 225 declarations moved (173
   programs), exactly the 225 that record HandlerLit or Install; none
   added or removed. Census/window/RT8: `0 STOP rows, 0 MOVED rows, 0
@@ -77,12 +80,22 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   test/r0-effects-pin.serial.test.mjs 4 of 4, coverage line "31 rows;
   fixture 19, unconstructible 0, unfinished 12". Review 2 (Opus;
   coverage, gates, pins, live preservation) dispatched on f20d6ec.
-- 01:05 EDT. Review 2 returned. Fix round dispatched (fresh Opus,
+- 23:24 EDT. Review 2 returned. Fix round dispatched (fresh Opus,
   worktree on-task9, branch overnight/task9-fix at 8bed565): R1 P1-1
   (identity routes: block result, record field, lambda result, plus a
   Block restored-defect row), R1 P2s and P3s, R2 P0-1 (settling row
   back to unfinished), R2 P2-1 to P2-3, P3-3, P3-4. Not in the round:
   author items below; R2 P2-4, P3-6, P3-7, P3-8 (recorded only).
+- 00:03 EDT (Oct 31). Fix round returned (9f4aaac, 1087223, 4194e65,
+  038714f, f7c655b; no item stopped; effect pin and trusted-surface
+  pin unchanged). Integrated as bdad600, e88b866, 302e140, 8457ec5,
+  d898691. Controller at d898691: build succeeded; coverage, results
+  diff, pin keys and effect pin tests 16 of 16, coverage "31 rows;
+  fixture 18, unconstructible 0, unfinished 13"; width 0.
+- 00:10 EDT. Completion records written (progress, plan, statements
+  status, closure checklist A1 and 2c, the moved-pin list
+  docs/plans/2026-10-31-effect-pin-moves.txt). Next: one routine
+  `npm run verify` alone under the lock, then §18.137.
 
 ## Decisions made for review
 
@@ -132,6 +145,28 @@ None yet.
   ExpectedHandler's row is re-judged against the integrated tree.
 
 ## Reports
+
+### Fix round (9f4aaac..f7c655b)
+
+Identity routes checked corpus-wide with marks (new
+test/r0-obligations-routes.mjs): block 1346, record fields 19404,
+lambdas 646, 0 problems, floors about 80%; all three are identities in
+the code. New rows r0-amin-literal-block-route (reviewer 1's mutant;
+fails on the mark), r0-amin-install-r-marks (InstallR marks flip,
+probe r0-amin-handler-exact), r0-amin-coverage-installed-c,
+r0-amin-coverage-install. Failing-first: the block mutant fails 2 of 10
+of the new handler test (passes the old 9 of 9); record and lambda
+mutants also fail. Comments on symbolic framing agree; consumption-site
+floors (ClauseIntoR/C 324 > 259, InstallR/AtInstalledC 297 > 237);
+corpus check that `clauseRows[k]` is clause k's ambient row. Settling
+step (d) back to unfinished (18 fixture, 13 unfinished); the
+literal-images note names the routes and both defect rows, without the
+A4 claim. Results diff compares arrays as multisets except
+`census/order` (3 new unit tests). `movedKeys` shared by the pin test
+and its probe; the encoder throws on an unexpected field set. Checks:
+build 0 warnings, purs-tidy, checkStructure [], width 0; 85 of 85
+focused tests; serial pin, boundary, problem pin 6 of 6; regression-run
+12 of 12; 11 of 11 regression rows.
 
 ### Review 2 (Opus; coverage, gates, pins, live) on f20d6ec
 

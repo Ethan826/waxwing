@@ -1,6 +1,12 @@
 # a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
-Status: **approved as a representation by the author at 535b780
+Status (2026-10-31): tranche 1's generation records the obligations
+of §4 (E1-E6, E8, E9, E11; E4 and E5 by Task 9) and they are pinned
+(test/fixtures/r0/effects.json); no validator exists, no effect
+soundness is established, and 13 of §13's 31 rows remain unfinished
+(dossier §18.137). Wording questions found while implementing are in
+docs/plans/2026-10-30-overnight-ledger.md, for the author.
+Earlier status: **approved as a representation by the author at 535b780
 (2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
 and §0e's carried table), no soundness claim; implementation, A2's
 algorithm, G-D1's closure and Task 4.6 unauthorized.** Revision 3.6
