@@ -6,7 +6,12 @@ E11; E4 and E5 by Task 9) and they are pinned
 (test/fixtures/r0/effects.json); no validator exists, no effect
 soundness is established, and 13 of §13's 31 rows remain unfinished.
 The author's 2026-10-31 corrections are applied in §2, E2, E4, E5 and
-§13.
+§13. The A2 rulings of 2026-10-31 (dossier §18.139; the A2
+specification, docs/plans/2026-10-31-a2-specification.md) are applied
+as dated amendments in §2 (the ResultC row, the two package domains),
+§4 E9 (D7 rejected: E9 stays after settling), §7 (pipeline order and
+routing), §10 (interface) and §13b (citations). They specify the
+validator's interface; no validator exists and none is authorized.
 Earlier status: **approved as a representation by the author at 535b780
 (2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
 and §0e's carried table), no soundness claim; implementation, A2's
@@ -382,7 +387,7 @@ is a reference by key.
 | a stage tail's binding, copies of ρ's prefix included | `bindings`, at the stage tail variable (the copies are its labels) | E2 by variable |
 | a handler literal's own-abort mark m | `sites` `HandlerLit { m }` | E4, E5 |
 | a handler literal's C (its clause row aggregate) | `bindings`, at the literal's `⟨p, handler clauses⟩` effect-row variable (a bare row) | `HandlerLit` by variable; E4, E5 |
-| a ResultC (top-level result handler type at a use, ResultClauses `ownClauses`) | **the recorded problem**: generation records it in the use's instance type (`instances`, §10), labels, marks and tail as "What generation records" below states; the package holds only the binding of `⟨p, result clauses⟩` when that variable is the tail | Definition 4.1, E4′, E5 |
+| a ResultC (top-level result handler type at a use, ResultClauses `ownClauses`) | **the recorded problem**: generation records it in the use's instance type (`instances`, §10), labels, marks and tail as "What generation records" below states; ~~the package holds only the binding of `⟨p, result clauses⟩` when that variable is the tail~~ **Amended (author, 2026-10-31, dossier §18.139 D5):** an input package holds no binding of `⟨p, result clauses⟩`; under the provisional restriction (§R7b) the validator derives it by forcing, `⟨p, result clauses⟩ ↦` the image of R's tail; supplying one is `Malformed` (I3). The completed certified package includes the derived binding. If the restriction is lifted, this row is revisited | Definition 4.1, E4′, E5 |
 | an annotation C (each handler type in a local annotation not inside another handler type's rows, MarkUse `freshType`, `handlerRows`; F6) | **the recorded problem**: generation records the annotation's MTy with this C (`annotations`, §10): labels R's, bare; written `nofail`, `nofail(k)` kept; every other mark a position of its own in `sites` `Annotation { marks }`, distinct from R's position for the same label; tail always `⟨p, annotation clauses i⟩`, an effect-row variable bound in `bindings` | Definition 4.1, E4′, E5 |
 | an installation's frame mark f | `sites` `Installation { frame }` | E5 |
 | a callee's `nofail(k)` at a use (one meta per k, shared across its signature) | `sites` `Instantiated { marks ∷ Map MarkName MarkTerm }` | the instance's written labels, by name |
@@ -393,7 +398,18 @@ is a reference by key.
 Every site fact holds marks or variable names, never rows (rows are
 bindings or recorded in the problem); I3 refuses a site fact that
 carries a row (T3-b, N6). The package's domain equals the recorded
-positions exactly (N10); R's extension marks are terms inside bindings,
+positions exactly (N10). **Amended (author, 2026-10-31, dossier
+§18.139 D4, D5):** the package is one authoritative `EffectPackage`
+(A2 specification §2; its concrete representation is proposed there,
+not approved). Two domains are stated apart. The **input** domain: a
+term for every recorded position, the unread frame of a non-handler
+`with` included (a well-formed term there is exact-domain accounting
+and conveys no evidence that the blocked installation is valid); a
+binding for every recorded flexible effect-row variable except the
+forced ResultC tails; type and record-row variables as `certify`
+reads them today. The **completed** domain adds the forced ResultC
+tails, derived from the record and the input. R's extension marks are
+terms inside bindings,
 read only as the last table row says (F7: §R5 judged the `assume`
 reading harmless; a reading through Definition 4.1 equates them with
 another type's C marks, which can only refuse more).
@@ -947,7 +963,11 @@ variable becomes flexible. The checked IR's closed tail for `main`
 representation, not E8's specification.
 
 **E9, Fail payloads**: each payload's head concrete after settling
-(FailNeedsConcrete, Failure.purs:102).
+(FailNeedsConcrete, Failure.purs:102). (Author, 2026-10-31, dossier
+§18.139 D7: a proposal to judge E9 before settling was **rejected**;
+E9 stays after settling. The live checker is supporting evidence, not
+authority to change the completed-package semantics. U4, the hole
+default, stays open and is not resolved by an E9 exception.)
 
 **E10, the body's row within the declared row** (E2 with the declared
 row as target; EffectNotAllowed, MustBePure). Settled by reading in 3.5
@@ -1082,6 +1102,16 @@ restrictions, arities, one sort per hole, binding constructor matching
 sort, Console N, the ownership table's single homes, domain exact),
 (b) settle, G0 on `erase`, (c) `validateEffects` E1-E12; 5. routing;
 6. `elaborate` (problem identity, seal, Cov), `build (strip P)`.
+**Amended (author, 2026-10-31, dossier §18.139; order and data flow
+in the A2 specification §4):** `certify` first checks the record's own
+consistency (a `Consume` whose `marks`/`bare` disagree with its site
+kind is a `RecordDefect`), then I3 on the input package, then refuses
+any problem recording an `Unsupported` obligation (`NotCertifiable`),
+then settles the input package, runs G0 on the erasure of the settled
+package, completes the settled package by forcing, and evaluates
+E1-E12 on the completed settled package. It never mints a certificate
+for a problem recording an `Unsupported` obligation, whatever the
+caller's routing.
 
 **Routing, pinned to the code (T5-a).**
 - An `Unsupported` obligation is known from the problem before any
@@ -1094,6 +1124,15 @@ sort, Console N, the ownership table's single homes, domain exact),
   then suppressed by `solvedUnlessBlocked`, so the verdict is Unresolved
   (§7.1 item 3), never Solved (N3; documentation only, behaviour
   unchanged).
+- **Amended (author, 2026-10-31, dossier §18.139):** two refusals do
+  not advance to another strategy as a repair. A `RecordDefect` fails
+  closed for that recorded problem: no candidate can be certified, the
+  declaration is reported separately as a generation defect, and no
+  other candidate is taken as repairing it. A `NotCertifiable` for an
+  `Unsupported` obligation is the same for every candidate; rule 1
+  already blocks the declaration. The bullet below applies to the
+  candidate-specific refusals (`Malformed`, G0's, `ObligationFailed`,
+  `NotCertifiable` for Definition 4.2 or forcing).
 - A candidate that fails (a)-(c) is a `CheckRefusal`; Strategy.purs
   `checked` makes it a `CheckFailed` attempt with no solution, and
   `decide`'s rule 2 (`untilVerdict`) continues to the next strategy
@@ -1165,6 +1204,22 @@ Amendment (Task 7, author ruling §18.119): `obligations` is `Array
 (Placed Obligation)`; each carries tagged provenance, `BesideAtom RuleId
 AtomId` or `AtSite { decl, path, rule, role }` (plan Task 7 provenance
 rules), a rule and a span.
+
+**Amended (author, 2026-10-31, dossier §18.139 D4, D10, D15; F6 of
+the A2 packet):** the `Obligation` type below is superseded by the
+code's, src/Domain/Recorded/Effect.purs: `Equal MTy MTy | Consume {
+site ∷ SiteKind, source ∷ MRow, target ∷ MRow, marks ∷ Boolean, bare
+∷ Boolean } | HandlerLit { m ∷ Position, inference ∷ EVar, clauses ∷
+EVar, clauseRows ∷ Array EVar } | Install { frame ∷ Position, handler
+∷ MTy, ambient ∷ MRow } | Defer { row ∷ EVar, enclosing ∷ MRow } |
+Entry MRow | FailConcrete MTy | Unsupported UnsupportedKind`; `bare`
+ignores arguments in the comparison without erasing them (§18.138).
+`SiteFact`s are the package's term map; the package is the A2
+specification's `EffectPackage`, replacing `Substitution` as the
+certificate. `CheckRefusal` gains four categories: `Malformed`,
+`ObligationFailed`, `NotCertifiable` and `RecordDefect` (A2
+specification §6), in place of `Malformed | ObligationFailed
+Obligation` below.
 
 `Fields += { obligations ∷ Array Obligation, instances ∷ Map Site
 MTy, annotations ∷ Map Site MTy, rigidMarks, arities, effectRigids,
@@ -1790,7 +1845,13 @@ author; none is resolved here.
     Sound relaxations exist only as language features: lacks
     constraints on ϱ (Gaster and Jones 1996), or masking that skips a
     frame (Biernacki et al. POPL 2018; Leijen's `inject`, POPL 2017;
-    Koka's `mask`); citations from memory, unverified. This bears on
+    Koka's `mask`); citations from memory, unverified. **Amended
+    (author, 2026-10-31, dossier §18.139 D15; A2 packet §1):**
+    Biernacki et al.'s `lift` is verified (POPL 2018, §1, p. 4);
+    Gaster and Jones's predicates for absence are consistent at
+    abstract level only; Leijen's `inject` is unconfirmed (absent from
+    the 2016 technical report; the POPL text was not read); Koka's
+    `mask` was not checked. This bears on
     BACKLOG FX007: callback-row subsumption is unsound without one.
   - If adopted: §12.1's N4 row and the oracle's N4 case flip to refused
     (p1 separating), §14's rigid-remainder row is restated, and p2, p4,

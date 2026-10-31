@@ -1,6 +1,11 @@
 # A2: the trusted effect validator, options note (draft, 2026-10-25)
 
-Status: **options for the author's choice; nothing chosen, nothing
+Status (2026-10-31): **the author approved M-C, R-A and the interim
+policy F14 with amendments (dossier §18.139); the corrected
+specification is docs/plans/2026-10-31-a2-specification.md, which
+supersedes this note where they differ.** Amendments dated 2026-10-31
+below; validator implementation is not authorized. Earlier status:
+**options for the author's choice; nothing chosen, nothing
 authorized.** Closure checklist path 2 step 2c, row A2. Drafted with
 the tranche 1 plan (docs/plans/2026-10-25-amin-tranche-1-plan.md) so
 that inputs the validator needs are recorded by tranche 1 rather than
@@ -46,7 +51,9 @@ validator does this as one deterministic step, in this order:
 1. **Read** the package's substitution σ (bindings and mark terms). A
    package binding for any `⟨p, result clauses⟩` variable is refused
    as `Malformed` (I3: the variable is the record's to fix, not the
-   package's).
+   package's). (Ratified 2026-10-31, dossier §18.139 D5; statements §2's
+   ResultC row amended to agree. The input package's domain excludes
+   the forced tails; the completed package includes them.)
 2. **Settle** σ: holes to lowering's defaults (§6), giving σs.
 3. **Force:** for each recorded ResultC whose tail is `⟨p, result
    clauses⟩`, add the binding `⟨p, result clauses⟩ ↦ σs(t)`, t being
@@ -55,6 +62,11 @@ validator does this as one deterministic step, in this order:
    reference. The result is σf. Forcing reads only the record and σs.
 4. **Solved form** (V2) over σf, including the forced bindings.
 5. **Obligations** E1-E12 evaluated under σf.
+
+Amended (2026-10-31, §18.139): the exact order, with record
+consistency and the `Unsupported` refusal, and which settled
+projection G0 reads, is in the specification §4; G0 runs on the
+erasure of σs before step 3, which adds only effect-row bindings.
 
 σf is the substitution checked, and it is the one certified: the
 witness `Certified Valid (Witnessed (strip P))` carries σf, and
@@ -66,11 +78,11 @@ ResultC recorded with R's tail or closed is untouched by step 3.
 
 | Part | What it checks | Source | Fidelity |
 |---|---|---|---|
-| V0 architecture | witness plus independent checker | [MMNS11] | faithful |
+| V0 architecture | witness plus independent checker | [MMNS11] | ~~faithful~~ adapted: one-sided, acceptances only (amended 2026-10-31, §18.139 D14; source read through an author's slides only, partly) |
 | V1a forcing | E4′'s step 3 above | E4′ (§R7b) | Waxwing-specific; deterministic |
 | V1 settling | holes to lowering's defaults before every obligation (§6) | certify argument C1-C2, extended (U4) | Waxwing rule; the ∅ default is flagged novel (§11) |
-| V2 solved form | bindings for effect rows and marks are in solved form (U8's extension) | solved forms of unification problems [BS01] | faithful; extends the existing `solvedForm` (Strategy/Witness.purs) |
-| V3 row equality | rows equal up to scoped-label order (E1) | [L05] | faithful |
+| V2 solved form | bindings for effect rows and marks are in solved form (U8's extension) | solved form (idempotence) [BS01] §2.2.3, plus §18.76 item 2's restriction (images over declared rigids and holes only) | ~~faithful~~ adapted: BS01's solved form allows an image to name a variable outside the domain, U8 refuses it (amended 2026-10-31, §18.139 D14; BS01 verified); extends the existing `solvedForm` (Strategy/Witness.purs; §18.139 D9) |
+| V3 row equality | rows equal up to scoped-label order (E1) | [L05] Figure 1, labels compared by key as [L17] §3 does ("we ignore the type arguments when comparing labels"), a `Fail` label keyed by its payload's head, plus marks | ~~faithful~~ adapted (amended 2026-10-31, §18.139 D14; L05 verified on its 2005 draft, L17 partly, 2016 report) |
 | V4 consumption | per-key matching, the side condition, Definition 4.2 (E2, E4, E5, E10) | FX001/FX008 design | Waxwing-specific; flagged novel (§11) |
 | V5 handler types | Definition 4.1 with rule J | FX008 §3.4, §5; rule J (§18.85) | Waxwing-specific |
 | V6 marks | `holds` per edge on normal forms; `norm` equality per E1 mark pair (E12) | §5's argument; the satisfiability it mirrors is atomic constraints over a finite lattice [RM99] | adapted: the term check is derived (universal argument, bounded oracle), not published |
@@ -204,11 +216,18 @@ author rules any of them out, the plan's Task 1 shrinks with it.
    author's stated direction is M-A gated, M-B as an independent test
    oracle, and R-A.
 
+Answered 2026-10-31 (dossier §18.139): question 1 M-C, question 2
+R-A, question 3 F14 items 1-3; the specification's decision table
+records each ruling with its amendments.
+
 ## References
 
 Citations come from the repository's existing references and the
 statements' reviews; they were not re-read against the sources for
-this draft. Each source-fidelity claim in the components table must
+this draft. (2026-10-31: checked in the A2 packet §1. BS01, L05 and
+Tar75 verified; MMNS11 partly, through an author's slides; RM99 not
+accessible. Labels unchanged in the specification §12.)
+Each source-fidelity claim in the components table must
 be checked against its source before the author's final algorithm
 approval (author, §18.97).
 
