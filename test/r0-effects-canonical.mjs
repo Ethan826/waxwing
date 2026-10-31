@@ -31,8 +31,21 @@ export const encoderFor = (Maps, Unfoldable) => {
       .map(name => [name, shape(value[name])]))
       : { [constructor.name]: fields };
   };
-  return effects => Object.fromEntries(names.map(name =>
-    [name, shape(effects[name])]));
+  return effects => {
+    fieldsAre(effects);
+    return Object.fromEntries(names.map(name =>
+      [name, shape(effects[name])]));
+  };
+};
+
+// The effect problem's fields are exactly the encoded `names`, so a field
+// added to EffectProblem (Domain/Recorded/Effect.purs) fails loudly
+// instead of leaving the pin blind to it.
+const fieldsAre = effects => {
+  const found = Object.keys(effects).sort();
+  if (JSON.stringify(found) !== JSON.stringify([...names].sort()))
+    throw new Error(`effect problem fields [${found}] are not the `
+      + `encoded [${names}]`);
 };
 
 export const effectsOf = encoderFor(healthyMaps, healthyUnfoldable);

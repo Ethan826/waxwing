@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { effectsTable, healthyBuild, pinCommand, effectsFile,
+import { effectsTable, healthyBuild, movedKeys, pinCommand, effectsFile,
   pinnedEffects, sourcesOf } from './r0-effects-pin-run.mjs';
 
 // Amin tranche 1, Task 14 Step 1: every corpus declaration's recorded
@@ -16,11 +16,13 @@ const found = await effectsTable(await healthyBuild(), await sourcesOf());
 test('every corpus effect problem equals its pinned digest', () => {
   assert.ok(found.programs > 900, `${found.programs} programs`);
   assert.ok(found.declarations > 2500, `${found.declarations} declarations`);
-  const moved = Object.keys({ ...pinned.digests, ...found.digests })
-    .filter(key => pinned.digests[key] !== found.digests[key]);
+  const { added, removed, changed } = movedKeys(pinned.digests,
+    found.digests);
+  const moved = [...added, ...removed, ...changed];
   assert.deepEqual(moved.slice(0, 10), [],
-    `${moved.length} declarations' effect problems moved from `
-    + `${effectsFile}; if reviewed, re-pin with ${pinCommand}`);
+    `effect problems moved from ${effectsFile} (added ${added.length}, `
+    + `removed ${removed.length}, changed ${changed.length}); if `
+    + `reviewed, re-pin with ${pinCommand}`);
   assert.equal(found.declarations, pinned.declarations);
   assert.equal(found.programs, pinned.programs);
 });

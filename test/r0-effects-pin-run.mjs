@@ -71,5 +71,16 @@ export const effectsTable = async (build, sources) => {
   return { programs, declarations: Object.keys(digests).length, digests };
 };
 
+// The keys that moved between two digest tables (`origin#declaration`
+// to digest): in `found` only, in `pinned` only, and in both with
+// different digests, each sorted. Shared by the serial pin test and the
+// pin's regression probe (test/regression-r0-amin-effects-pin.mjs).
+export const movedKeys = (pinned, found) => ({
+  added: Object.keys(found).filter(key => !(key in pinned)).sort(),
+  removed: Object.keys(pinned).filter(key => !(key in found)).sort(),
+  changed: Object.keys(found).filter(key => key in pinned
+    && pinned[key] !== found[key]).sort()
+});
+
 export const pinnedEffects = () =>
   JSON.parse(readFileSync(join(repoRoot, effectsFile), 'utf8'));

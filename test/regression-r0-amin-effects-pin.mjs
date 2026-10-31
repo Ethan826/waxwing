@@ -4,7 +4,7 @@
 // of the pinned corpus that mention `fail`, with the compiler under
 // test, and compares them to test/fixtures/r0/effects.json, as the
 // serial pin test does for the whole corpus. The pin is only read.
-import { effectsTable, pinnedEffects, sourcesOf }
+import { effectsTable, movedKeys, pinnedEffects, sourcesOf }
   from './r0-effects-pin-run.mjs';
 import { encoderFor } from './r0-effects-canonical.mjs';
 import { fail, passed, shape, toolkit }
@@ -38,11 +38,16 @@ export const effectsPinProbes = {
       .filter(({ source }) => source.includes('fail')).slice(0, sampleSize);
     if (sources.length < sampleSize) fail(`only ${sources.length} samples`);
     const found = await effectsTable(await buildOf(context), sources);
-    const pinned = pinnedEffects().digests;
-    const keys = Object.keys(found.digests);
-    const moved = keys.filter(key => pinned[key] !== found.digests[key]);
+    // The pin's rows for the sampled programs, so a declaration dropped
+    // from one of them counts as removed.
+    const sampled = key => sources.some(({ origin }) =>
+      key.startsWith(`${origin}#`));
+    const pinned = Object.fromEntries(Object.entries(pinnedEffects()
+      .digests).filter(([key]) => sampled(key)));
+    const { added, removed, changed } = movedKeys(pinned, found.digests);
+    const moved = [...added, ...removed, ...changed];
     if (moved.length > 0)
-      fail(`effect pin: ${moved.length} of ${keys.length} sampled `
+      fail(`effect pin: ${moved.length} of ${found.declarations} sampled `
         + `declarations moved, the first ${shape(moved[0])}`);
     passed(context);
   }
