@@ -8,7 +8,16 @@
   },
   {
     "rule": "R into ρ ignoring marks (Consume `consumeIgn",
-    "unfinished": "Consume (E2) is recorded by Task 8; E5 by Task 9, outside this batch"
+    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = { let h = handler Log { log(n) => Fail.fail(E) }; with h { Log.log(1) } };",
+    "obligation": "Consume",
+    "site": "main:E21:Consumed:InstallR",
+    "verdict": "blocked",
+    "also": [
+      {
+        "obligation": "Consume",
+        "site": "main:E20:Consumed:ClauseIntoR"
+      }
+    ]
   },
   {
     "rule": "two handler types: effect and arguments (Uni",
@@ -31,7 +40,10 @@
   },
   {
     "rule": "installation's edge ρ partner ⊑ C label (Len",
-    "unfinished": "Task 9 implementation outside this batch: Install's installed-C consumption"
+    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = { let h = handler Log { log(n) => Fail.fail(E) }; with h { Log.log(1) } };",
+    "obligation": "Consume[AtInstalledC]",
+    "site": "main:E21:Consumed:AtInstalledC",
+    "verdict": "blocked"
   },
   {
     "rule": "consumption: first occurrence, payloads, ρ ⊑",
@@ -49,7 +61,20 @@
   },
   {
     "rule": "settling step (d): clause rows into C, insta",
-    "unfinished": "clause rows into C are E4 (HandlerLit, Task 9, outside this batch); installed C and deferred rows are Consume (Tasks 8, 10)"
+    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = { let h = handler Log { log(n) => Fail.fail(E) }; with h { defer Log.log(1); () } };",
+    "obligation": "Consume[AtInstalledC]",
+    "site": "main:E21:Consumed:AtInstalledC",
+    "verdict": "blocked",
+    "also": [
+      {
+        "obligation": "Consume",
+        "site": "main:E20:Consumed:ClauseIntoC"
+      },
+      {
+        "obligation": "Consume[AtDefer]",
+        "site": "main:E16:DeferInto"
+      }
+    ]
   },
   {
     "rule": "side-condition per-key cycle test (§3.5 (c),",
@@ -71,35 +96,69 @@
   },
   {
     "rule": "a handler literal's type copied into images",
-    "unfinished": "the literal-node E1 is deferred to Task 9 (outside this batch); O1 and O2 are recorded (test/r0-obligations-equal.test.mjs)"
+    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn pass(h: Handler(Log with Fail(E))): Handler(Log with Fail(E)) = h; fn main(): Unit with Console = { let h = handler Log { log(n) => Fail.fail(E) }; let g = pass(h); with h { defer Log.log(1); () } };",
+    "obligation": "Equal[source:Literal,target:Opened]",
+    "site": "main:E5",
+    "verdict": "blocked",
+    "also": [
+      {
+        "obligation": "HandlerLit[Literal]",
+        "site": "main:E20:LiteralSite"
+      },
+      {
+        "obligation": "Equal",
+        "site": "main:E20:ClauseBody"
+      },
+      {
+        "obligation": "Equal",
+        "site": "main:E21:WithNode"
+      }
+    ],
+    "note": "covered because Task 9's A1-A5 tests (test/r0-obligations-handler.test.mjs, A5 corpus-wide) and its restored-defect row r0-amin-literal-reaches-use pass on this tree; this row shows A1, A4, O1 and O2 only; provisional controller ruling for the author"
   },
   {
     "rule": "handler literal: c into R and C, C ⊑ c (Clau",
-    "unfinished": "Task 9 implementation outside this batch: HandlerLit and its clause consumptions"
+    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn mk(): Handler(Log with Fail(E)) = handler Log { log(n) => Fail.fail(E) }; fn main(): Unit = ();",
+    "obligation": "HandlerLit",
+    "site": "mk:E20:LiteralSite",
+    "verdict": "blocked",
+    "also": [
+      {
+        "obligation": "Consume",
+        "site": "mk:E20:Consumed:ClauseIntoR"
+      },
+      {
+        "obligation": "Consume",
+        "site": "mk:E20:Consumed:ClauseIntoC"
+      }
+    ]
   },
   {
     "rule": "own abort (Frames `aborting`)",
-    "unfinished": "Task 9 implementation outside this batch: HandlerLit (own abort)"
+    "unfinished": "validator-side (A2, after Task 13), E4's M below m over a clause row holding Fail: Task 9 records HandlerLit's m and the clause consumption, so the input exists, and recording it is not demonstrating the check"
   },
   {
     "rule": "clause tail pass (TailPass)",
-    "unfinished": "Task 9 implementation outside this batch: HandlerLit (tail pass)"
+    "unfinished": "validator-side (A2, after Task 13), Definition 4.2 at ClauseIntoR and ClauseIntoC: Task 9 records both consumptions, and recording them is not demonstrating the tail pass"
   },
   {
     "rule": "owned C at a use (ResultClauses `ownClauses`",
-    "unfinished": "E5's Install is Task 9, outside this batch; the ResultC in instances is recorded (Task 4)"
+    "fixture": "effect Ask { fn ask(): Int; }; fn mk(): Handler(nofail Ask with ...s) with pure = handler Ask { ask() => 1 }; fn run(): Int with pure = with mk() { Ask.ask() }; fn main(): Unit = ();",
+    "obligation": "Install[OwnedC,ResultClauses]",
+    "site": "run:E21:InstallSite",
+    "verdict": "blocked"
   },
   {
     "rule": "frame marks (Frames `framed`: FrameOwn, Fram",
-    "unfinished": "Task 9 implementation outside this batch: Install (frame marks)"
+    "unfinished": "validator-side (A2, after Task 13), E5's m and mark edges against the frame: Task 9 records Install's frame (Frame p), so the input exists, and recording it is not demonstrating the check"
   },
   {
     "rule": "installation pairing (Lend `partners`)",
-    "unfinished": "Task 9 implementation outside this batch: Install (pairing)"
+    "unfinished": "validator-side (A2, after Task 13), pairing rho with C by key and position: Task 9 records Install and the installed-C consumption, so the input exists, and recording them is not demonstrating the pairing"
   },
   {
     "rule": "ExpectedHandler (Handler `withHandler`)",
-    "unfinished": "Task 9 implementation outside this batch: Install (ExpectedHandler)"
+    "unfinished": "validator-side (A2, after Task 13), the head check over Install's handler: Task 9 records Install for a non-handler head together with Unsupported UnframedInstall (no consumption), so the input and the restriction exist, but no recorded obligation judges or demonstrates ExpectedHandler"
   },
   {
     "rule": "defer absence and demand (Defer `judge`, Fra",
@@ -166,6 +225,6 @@
   },
   {
     "rule": "step-5 mark check (Mark `violation`)",
-    "unfinished": "E12 collects the edges of E2-E6 and has no obligation of its own; E4 and E5 are Task 9 (outside this batch)"
+    "unfinished": "E12 collects the edges of E2-E6 and has no obligation of its own; Task 9 records E4 and E5, and the check is validator-side (A2, after Task 13)"
   }
 ]
