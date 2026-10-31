@@ -66,3 +66,32 @@ test('an aggregate-only move gives exit status 2', () => {
   const after = { ...structuredClone(before), census: { a: 2 } };
   assert.equal(compareResults(before, after).status, 2);
 });
+
+// Review 2 P2-3: arrays compare as multisets, counts included.
+test('a lost duplicate in an aggregate array moves; a reorder does not',
+  () => {
+    assert.deepEqual(aggregateMoves({ l: ['a', 'a'] }, { l: ['a'] }, 'p'),
+      ['p/l: removed 1 [a], added 0 []']);
+    assert.deepEqual(aggregateMoves({ l: ['a'] }, { l: ['a', 'a'] }, 'p'),
+      ['p/l: removed 0 [], added 1 [a]']);
+    assert.deepEqual(aggregateMoves({ l: ['a', 'b'] }, { l: ['b', 'a'] },
+      'p'), []);
+  });
+
+test('the census category order is ordered: a reorder moves', () => {
+  const moves = aggregateMoves({ order: ['A', 'B'] },
+    { order: ['B', 'A'] }, 'census');
+  assert.equal(moves.length, 1);
+  assert.match(moves[0], /^census\/order: reordered/);
+});
+
+test('a declaration\'s blockers and categories compare as multisets', () => {
+  const two = { ...blocked, blockers: ['HandlerType', 'ErasedRow'] };
+  const swapped = { ...blocked, blockers: ['ErasedRow', 'HandlerType'] };
+  assert.deepEqual(declarationMoves({ 'x#f': two }, { 'x#f': swapped }), []);
+  const doubled = { ...blocked, categories: ['HandlerType', 'HandlerType'] };
+  const once = { ...blocked, categories: ['HandlerType'] };
+  const [move] = declarationMoves({ 'x#f': doubled }, { 'x#f': once });
+  assert.equal(move.stop, false);
+  assert.ok(move.changes[0].startsWith('categories:'));
+});

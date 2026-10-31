@@ -13,6 +13,14 @@ const blockedClass = name => name !== null && name.startsWith('(a) blocked');
 const show = value => (typeof value === 'string' ? value
   : JSON.stringify(value));
 
+// An array as a multiset: its entries' text, sorted, so equal counts
+// compare equal in any order. A declaration's `blockers` and
+// `categories` are sets of names (the census reads `new Set(categories)`,
+// r0-census-tally.mjs; blockers follow the verdict's kinds), so their
+// order carries nothing; a repeated entry still counts.
+const multiset = list => (Array.isArray(list) ? list.map(show).sort()
+  : list);
+
 // The comparable fields of one declaration and whether each is a status.
 const fieldsOf = row => ({
   status: headOf(row.r0.verdict),
@@ -21,9 +29,9 @@ const fieldsOf = row => ({
   today: row.today,
   rt8: row.rt8,
   window: row.window,
-  blockers: row.blockers,
+  blockers: multiset(row.blockers),
   compiles: row.compiles,
-  categories: row.categories
+  categories: multiset(row.categories)
 });
 
 const statusMoved = (before, after) => before.status !== after.status
@@ -57,18 +65,44 @@ export const declarationMoves = (oldRows, newRows) => {
 const isRecord = value => value !== null && typeof value === 'object'
   && !Array.isArray(value);
 
+// Aggregate arrays whose order is meaningful: the census's category
+// order, in which its marginal counts are taken (r0-census-classify.mjs
+// `categoryOrder`). Every other aggregate array (origins, declarations,
+// RT8's holes and defects, the window's lists) is a multiset.
+const ordered = new Set(['census/order']);
+
+// Each entry's text with its count.
+const counted = list => {
+  const counts = new Map();
+  for (const item of list.map(show))
+    counts.set(item, (counts.get(item) ?? 0) + 1);
+  return counts;
+};
+
+// The entries `left` holds more often than `right`, once per extra copy.
+const surplus = (left, right) => [...left].flatMap(([item, count]) =>
+  Array.from({ length: Math.max(0, count - (right.get(item) ?? 0)) },
+    () => item));
+
+// An array's move: entries removed and added as multisets (counts), and
+// for an ordered array a reorder of equal entries too.
+const arrayMoves = (before, after, path) => {
+  const left = counted(before);
+  const right = counted(after);
+  const gone = surplus(left, right);
+  const fresh = surplus(right, left);
+  if (gone.length + fresh.length > 0)
+    return [`${path}: removed ${gone.length} [${gone.slice(0, 3)}], `
+      + `added ${fresh.length} [${fresh.slice(0, 3)}]`];
+  return ordered.has(path) && show(before) !== show(after)
+    ? [`${path}: reordered ${show(before)} -> ${show(after)}`] : [];
+};
+
 // Moved aggregate values by path: a number or string by old -> new, an
-// array as a multiset of elements added and removed.
+// array by `arrayMoves`.
 export const aggregateMoves = (before, after, path = '') => {
-  if (Array.isArray(before) && Array.isArray(after)) {
-    const left = before.map(show);
-    const right = after.map(show);
-    const gone = left.filter(item => !right.includes(item));
-    const fresh = right.filter(item => !left.includes(item));
-    return gone.length + fresh.length === 0 ? []
-      : [`${path}: removed ${gone.length} [${gone.slice(0, 3)}], `
-        + `added ${fresh.length} [${fresh.slice(0, 3)}]`];
-  }
+  if (Array.isArray(before) && Array.isArray(after))
+    return arrayMoves(before, after, path);
   if (isRecord(before) && isRecord(after))
     return [...new Set([...Object.keys(before), ...Object.keys(after)])]
       .flatMap(key => aggregateMoves(before[key], after[key],
