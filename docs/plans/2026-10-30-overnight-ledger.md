@@ -77,6 +77,12 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   test/r0-effects-pin.serial.test.mjs 4 of 4, coverage line "31 rows;
   fixture 19, unconstructible 0, unfinished 12". Review 2 (Opus;
   coverage, gates, pins, live preservation) dispatched on f20d6ec.
+- 01:05 EDT. Review 2 returned. Fix round dispatched (fresh Opus,
+  worktree on-task9, branch overnight/task9-fix at 8bed565): R1 P1-1
+  (identity routes: block result, record field, lambda result, plus a
+  Block restored-defect row), R1 P2s and P3s, R2 P0-1 (settling row
+  back to unfinished), R2 P2-1 to P2-3, P3-3, P3-4. Not in the round:
+  author items below; R2 P2-4, P3-6, P3-7, P3-8 (recorded only).
 
 ## Decisions made for review
 
@@ -109,6 +115,15 @@ None yet.
   (3) the coverage row check matches constructor tokens only, so the
   `marks`/`bare` booleans are asserted by Task 9's own tests, not by
   the coverage fixture.
+- For the author, from review 2: (1) settling's deferred rows: the
+  controller sent the row back to unfinished rather than reading the
+  `defer`-site consumption as the settling consumption; (2) whether
+  rows whose §13 cell names validator-side parts (I3, E4′, Definition
+  4.2) count once the recorded part is shown (the CallbackRowLacks
+  precedent); (3) the literal-images ruling; (4) `siteAt`'s export.
+  From review 1: the §2 amendment's identity list omits block results
+  (and lambda results); the fix round tests them, the statement text
+  waits for the author.
 - Review 1's four author items are listed under its report; none
   blocks the run (each records an existing reading).
 - Discrepancy to settle at phase 2 (settled: Install is recorded):
@@ -117,6 +132,35 @@ None yet.
   ExpectedHandler's row is re-judged against the integrated tree.
 
 ## Reports
+
+### Review 2 (Opus; coverage, gates, pins, live) on f20d6ec
+
+P0-1: the "settling step (d)" coverage row over-claims: its deferred
+rows part is E2 at settling (`AtDeferredRow`, never emitted), and the
+row cites the `defer`-site `DeferInto`, the related-token pattern
+§18.124 rejected; fix: back to unfinished (18 fixture, 13
+unfinished), or the author rules otherwise. No P1. P2-1: no registered
+proof that coverage detects loss of Task 9 rows (hand-proved: dropping
+AtInstalledC or Install fails coverage); add two rows. P2-2: coverage
+does not check marks/bare (Task 9's tests do, corpus-wide; flips fail
+the handler test 5/9); add a registered flip row. P2-3: the diff
+tool compares arrays as sets, not multisets (its HEAD and d4148de
+dumps were byte-identical, so "0 moved" stands). P2-4: "owned C at a
+use" names validator-side parts (I3, E4′); author's call. P3: the
+moved pin declarations are not listed (independently confirmed: the
+225 with HandlerLit/Install, nothing else); efcc231 and 7eb388e fail
+their own pin test (bisect hazard, note only); the pin probe
+reimplements the comparison (share `movedKeys`); the encoder should
+assert its field set; the note over-states A4; the unfinished-reason
+regex is met formally by "after Task 13"; the diff tool treats an RT8
+class move as MOVED; `siteAt` export (author). Checked sound:
+trusted-surface re-pin limited to the planned exports; src confined to
+Generate/{Effect,Literal,Obligation} and Domain/Recorded/Effect; no
+test weakened; 50 r0-amin rows unique with live needles; pin writer
+separate; census/window/RT8 dumps byte-identical across the change;
+r0-verdict, structure-surface 12/12; problem pin, first diagnostic,
+effect pin, boundary, equal, diff, forgery, forged-witness 32/32; 7
+regression rows 7/7.
 
 ### Review 1 (Opus; semantics, identities, provenance) on 7eb388e
 
