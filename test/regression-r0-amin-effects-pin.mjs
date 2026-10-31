@@ -4,8 +4,10 @@
 // of the pinned corpus that mention `fail`, with the compiler under
 // test, and compares them to test/fixtures/r0/effects.json, as the
 // serial pin test does for the whole corpus. The pin is only read.
-import { effectsTable, movedKeys, pinnedEffects, sourcesOf }
-  from './r0-effects-pin-run.mjs';
+// The pin helpers load lazily: they read the corpus module under
+// research/ (test/r0-corpus.mjs), which a test-tree row's clone does not
+// hold (scripts/regression-run.mjs `testTreeInputs`), and this module is
+// loaded with every other probe.
 import { encoderFor } from './r0-effects-canonical.mjs';
 import { fail, passed, shape, toolkit }
   from './regression-r0-amin-support.mjs';
@@ -34,6 +36,8 @@ const buildOf = async context => {
 
 export const effectsPinProbes = {
   'r0-amin-effects-pin-obligation': async context => {
+    const { effectsTable, movedKeys, pinnedEffects, sourcesOf } =
+      await import('./r0-effects-pin-run.mjs');
     const sources = (await sourcesOf())
       .filter(({ source }) => source.includes('fail')).slice(0, sampleSize);
     if (sources.length < sampleSize) fail(`only ${sources.length} samples`);
