@@ -7,6 +7,7 @@
 import { consumeRows } from './regression-r0-amin-consume.mjs';
 import { coverageRows } from './regression-r0-amin-coverage.mjs';
 import { entryRows } from './regression-r0-amin-entry.mjs';
+import { handlerRows } from './regression-r0-amin-handler.mjs';
 import { equalRows } from './regression-r0-amin-equal.mjs';
 import { miscRows } from './regression-r0-amin-misc.mjs';
 import { pinRows } from './regression-r0-amin-pin.mjs';
@@ -24,6 +25,7 @@ export const r0AminRows = [
   ...miscRows,
   ...pinRows,
   ...unsupportedRows,
+  ...handlerRows,
   {
     // Tasks 2, 3: a Fail label translated as written (the Console-only
     // guard), so its mark is M or a position, not N.
