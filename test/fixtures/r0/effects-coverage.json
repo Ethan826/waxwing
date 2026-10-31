@@ -61,20 +61,7 @@
   },
   {
     "rule": "settling step (d): clause rows into C, insta",
-    "fixture": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = { let h = handler Log { log(n) => Fail.fail(E) }; with h { defer Log.log(1); () } };",
-    "obligation": "Consume[AtInstalledC]",
-    "site": "main:E21:Consumed:AtInstalledC",
-    "verdict": "blocked",
-    "also": [
-      {
-        "obligation": "Consume",
-        "site": "main:E20:Consumed:ClauseIntoC"
-      },
-      {
-        "obligation": "Consume[AtDefer]",
-        "site": "main:E16:DeferInto"
-      }
-    ]
+    "unfinished": "settling's deferred-row consumption (E2, site AtDeferredRow: deferred rows into their row at settling) is not recorded by any task yet; no generator code records an AtDeferredRow. The row's other parts are recorded by Task 9: installed C into ρ (Consume[AtInstalledC] at E21, the row \"installation's edge ρ partner ⊑ C label\") and clause rows into C (Consume at E20 ClauseIntoC, the row \"handler literal: c into R and C\"); the defer consumption at E16 (Task 8, AtDefer) is d into the enclosing row at the defer, not settling's. A row naming several obligations is covered only when all are recorded"
   },
   {
     "rule": "side-condition per-key cycle test (§3.5 (c),",
@@ -114,7 +101,7 @@
         "site": "main:E21:WithNode"
       }
     ],
-    "note": "covered because Task 9's A1-A5 tests (test/r0-obligations-handler.test.mjs, A5 corpus-wide) and its restored-defect row r0-amin-literal-reaches-use pass on this tree; this row shows A1, A4, O1 and O2 only; provisional controller ruling for the author"
+    "note": "covered because Task 9's identity tests in test/r0-obligations-handler.test.mjs (A1, the call-argument E1, on one fixture; A2, the with's handler child; the identity routes corpus-wide with marks: let/local (A5), a block's result, a record literal's fields, a lambda's result) and its restored-defect rows r0-amin-literal-reaches-use and r0-amin-literal-block-route pass on this tree. This coverage row checks constructor tokens only (Literal on the E5 Equal's source, Opened on its target, HandlerLit, the O1 and O2 Equals), not the identities; provisional controller ruling for the author"
   },
   {
     "rule": "handler literal: c into R and C, C ⊑ c (Clau",

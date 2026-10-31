@@ -1,8 +1,8 @@
-// R0 a-min tranche 1 regression probe for the coverage accounting (Task
-// 13), spread into test/regression-r0-amin.mjs. It reads the fixture rows
-// of test/fixtures/r0/effects-coverage.json from the compiler under test
-// and applies the coverage test's own check (the recording half only: no
-// verdict is decided here).
+// R0 a-min tranche 1 regression probes for the coverage accounting (Task
+// 13), spread into test/regression-r0-amin.mjs. Each reads the fixture
+// rows of test/fixtures/r0/effects-coverage.json from the compiler under
+// test and applies the coverage test's own check (the recording half
+// only: no verdict is decided here).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { recordedProblems } from './r0-effects-coverage-sites.mjs';
@@ -35,5 +35,8 @@ const probeFor = kind => async context => {
 
 export const coverageProbes = {
   'r0-amin-coverage-equal': probeFor('Equal'),
-  'r0-amin-coverage-consume': probeFor('Consume')
+  'r0-amin-coverage-consume': probeFor('Consume'),
+  // Task 9's records (review 2 P2-1).
+  'r0-amin-coverage-installed-c': probeFor('Consume[AtInstalledC]'),
+  'r0-amin-coverage-install': probeFor('Install')
 };
