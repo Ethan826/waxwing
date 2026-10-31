@@ -12,9 +12,10 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. The A2 specification and its one decision table
-(docs/plans/2026-10-31-a2-specification.md, §12: D1-D15) wait for the
-author. Tranche 1 is accepted and closed (§18.138).
+Nothing. The A2 specification was ruled (§18.139), amended in one
+consistency pass (829ada5) and adversarially reviewed (§18.140: one
+S1, thirteen S2, author items A1-A6). Nothing from the review is fixed;
+a fix pass waits for the author.
 
 ## Where the work is
 
