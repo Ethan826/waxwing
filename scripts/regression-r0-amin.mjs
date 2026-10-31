@@ -6,6 +6,7 @@
 // local and git-ignored); docs/progress.md lists the rows.
 import { consumeRows } from './regression-r0-amin-consume.mjs';
 import { coverageRows } from './regression-r0-amin-coverage.mjs';
+import { effectsPinRows } from './regression-r0-amin-effects-pin.mjs';
 import { entryRows } from './regression-r0-amin-entry.mjs';
 import { handlerRows } from './regression-r0-amin-handler.mjs';
 import { equalRows } from './regression-r0-amin-equal.mjs';
@@ -24,6 +25,7 @@ export const r0AminRows = [
   ...entryRows,
   ...miscRows,
   ...pinRows,
+  ...effectsPinRows,
   ...unsupportedRows,
   ...handlerRows,
   {
