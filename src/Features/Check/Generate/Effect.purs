@@ -172,7 +172,7 @@ install context path span handlerType =
 -- It records `UnframedInstall` (§18.124 ruling 4; Decide routes it to
 -- `EffectsUnchecked`, never Solved) and no consumption: its R is read
 -- from the package through `Install`, never a guessed source (R9 Q6).
--- Symbolic framing is unresolved.
+-- Symbolic framing is unresolved; `UnframedInstall` restricts it.
 installed ∷ ∀ s. Context s → Path → Span → MTy → Gen s Unit
 installed context path span = case _ of
   MHandler _ rows →

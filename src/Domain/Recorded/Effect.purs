@@ -113,7 +113,8 @@ data SiteKind
 -- `with` installs a handler whose marked type is not an `MHandler` when
 -- generation reads it, so its label is unknown and the body's ambient
 -- row is the outer row alone, which is not a complete ambient
--- representation. Symbolic framing is Task 9 design.
+-- representation. Symbolic framing is unresolved; `UnframedInstall`
+-- restricts it.
 data UnsupportedKind = OperationWithRow EffectId Int | UnframedInstall
 
 data Obligation

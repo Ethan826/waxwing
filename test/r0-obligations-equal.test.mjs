@@ -44,6 +44,10 @@ const ruleName = rule => `${{ SigRule: 'Sig', ExprRule: 'E',
 const atomKey = (id, path, rule) => stableStringify({ decl: id.decl,
   path, index: id.index, rule });
 const kindOf = item => item.provenance.constructor.name;
+// A consumption's site kind (`Consumed site k`), else null.
+const siteKindOf = item => (kindOf(item) === 'AtSite'
+  && item.provenance.value0.role.constructor.name === 'Consumed'
+  ? item.provenance.value0.role.value0.constructor.name : null);
 
 // The healthy build's kit for the shared marked-side check.
 const kit = {
@@ -55,7 +59,7 @@ const kit = {
 
 const survey = async () => {
   const found = { atoms: 0, sites: [], problems: [], repeats: [],
-    checked: 0, fresh: 0, identified: 0, kinds: {} };
+    checked: 0, fresh: 0, identified: 0, kinds: {}, siteKinds: {} };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     let program;
     try { program = resolved(source); } catch { continue; }
@@ -82,6 +86,8 @@ const compare = (at, problem, found) => {
   for (const item of obligations) {
     const name = item.value.constructor.name;
     found.kinds[name] = (found.kinds[name] ?? 0) + 1;
+    const site = siteKindOf(item);
+    if (site !== null) found.siteKinds[site] = (found.siteKinds[site] ?? 0) + 1;
   }
   for (const item of obligations) {
     if (kindOf(item) === 'BesideAtom' && ruleName(item.provenance.value0)
@@ -127,6 +133,11 @@ const compare = (at, problem, found) => {
 
 // A floor on the obligations scanned, so an empty survey cannot pass.
 const FLOOR = 118000; // 80% of the 147483 observed
+// Floors on Task 9's consumption sites (review 1 P3), about 80% of the
+// counts observed when set: ClauseIntoR and ClauseIntoC 324 each,
+// InstallR and AtInstalledC 297 each.
+const SITE_FLOORS = { ClauseIntoR: 259, ClauseIntoC: 259, InstallR: 237,
+  AtInstalledC: 237 };
 const found = await survey();
 
 test('E1 beside every GenEqual, sides erasing to the atom\'s', t => {
@@ -155,6 +166,12 @@ test('provenance is distinct within a declaration, for every kind', t => {
   for (const kind of ['Equal', 'Consume', 'Entry', 'FailConcrete', 'Defer',
     'Unsupported', 'HandlerLit', 'Install'])
     assert.ok(found.kinds[kind] > 0, `no ${kind} obligation scanned`);
+  // Task 9's consumption sites each clear a floor, so uniqueness is
+  // checked over every one of them.
+  t.diagnostic(`consumption sites: ${key(found.siteKinds)}`);
+  for (const [site, floor] of Object.entries(SITE_FLOORS))
+    assert.ok((found.siteKinds[site] ?? 0) > floor,
+      `${found.siteKinds[site] ?? 0} ${site} consumptions`);
 });
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '

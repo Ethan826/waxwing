@@ -56,8 +56,8 @@ ownRow role path = { labels: [], tail: Just (EffFresh path role) }
 -- yet a handler type when generation reads it names no label here, so
 -- its body's ambient row is ρ alone. That is not a complete ambient
 -- representation, so `with` records an explicit `UnframedInstall`
--- Unsupported for it (Effect.purs `unframed`, §18.124 ruling 4);
--- symbolic framing is Task 9 design.
+-- Unsupported for it (Effect.purs `installed`, §18.124 ruling 4).
+-- Symbolic framing is unresolved; `UnframedInstall` restricts it.
 framed ∷ Path → MTy → MRow → MRow
 framed path installed outer = case installed of
   MHandler label _ → inFront [ label { mark = At (Frame path) } ] outer
