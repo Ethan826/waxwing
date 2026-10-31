@@ -1,6 +1,8 @@
 # A2 decision packet: the trusted effect validator (2026-10-31)
 
-Status (2026-10-31): **superseded for decision by the proposed
+Status (2026-10-31): **superseded for decision by the specification,
+its table ruled by the author (dossier §18.139) and amended in one
+consistency pass (829ada5); originally the proposed
 specification and its one decision table,
 docs/plans/2026-10-31-a2-specification.md**, which folds Q1-Q12, F1
 and F4 and resolves F1 as a proposed amendment; this packet stays as
