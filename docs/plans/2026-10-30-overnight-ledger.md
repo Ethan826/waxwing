@@ -11,8 +11,8 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 
 | Lane | Work | Branch | Worktree | Base | State |
 |---|---|---|---|---|---|
-| T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | **implemented** (e22f31b, 1793b1e; about 0.29M tokens), integrated as ff736de, bdd9f14; review 1 running |
-| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 integrated as efcc231, 7eb388e; phase 2 **done** (d5cda56, 534bda3), integrated as 4dad5d0, f20d6ec; records, reviews and verify remain (controller) |
+| T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | **done**: integrated, reviewed, fixed (fix round 0.21M tokens), verified at 4ca1097 |
+| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 integrated as efcc231, 7eb388e; **done**: phase 2 integrated as 4dad5d0, f20d6ec; records written; verified at 4ca1097 |
 | A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
 | SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | **done**: d73be05, integrated as 0c9df75 (docs only); about 0.30M tokens |
 
@@ -96,6 +96,34 @@ times; the first versions carried estimates, not clock readings.
   status, closure checklist A1 and 2c, the moved-pin list
   docs/plans/2026-10-31-effect-pin-moves.txt). Next: one routine
   `npm run verify` alone under the lock, then §18.137.
+- 00:25 EDT. Verify 1 at aaa9c9b failed (serial, r0-marked-corpus:
+  20 minted, unnamed `Frame p`); repaired in 5540ce0 (§18.137).
+- 00:53 EDT. Verify 2 at 5540ce0 failed (regression,
+  r0-amin-cohort-pin-readonly at load); repaired in 4ca1097.
+- 01:21 EDT. Verify 3 at 4ca1097 passed: 3013/3013, 204/204,
+  264/264; performance qualification not run. §18.137 recorded.
+- 01:30 EDT. Final checkpoint (below). No agent is running.
+
+## Final checkpoint (2026-10-31, 01:30 EDT)
+
+- Integration: r0-t2-d1, worktree .claude/worktrees/r0-t2-d1, head is
+  the commit that records this checkpoint (on top of 4ca1097), clean,
+  unpushed. Lane branches kept: overnight/task9 (e22f31b,
+  1793b1e), overnight/task9-fix (f7c655b), overnight/task14
+  (534bda3), overnight/a2-packet (697e543), overnight/self-hosting
+  (d73be05); all integrated by cherry-pick. Worktrees on-task9,
+  on-task14, on-a2, on-selfhost kept (on-task14's .build holds the
+  census/window/RT8 dumps); remove with `git worktree remove` when no
+  longer wanted.
+- Completed and integrated: Task 9, Task 14, the fix round, the A2
+  packet, the self-hosting analysis. Reviewed: Task 9 and Task 14 (two
+  fresh reviews, fixes integrated; the verify repairs 5540ce0 and
+  4ca1097 were not re-reviewed). Accepted: none yet (Task 7 earlier).
+- Tests: routine verify passed at 4ca1097 (logs
+  .build/evidence/2026-10-31-overnight-verify-{1,2,3}/verify.log in
+  the r0-t2-d1 worktree, local); performance qualification not run.
+- Next: the author's acceptance and answers (§18.137); nothing else is
+  authorized.
 
 ## Decisions made for review
 

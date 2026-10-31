@@ -7195,3 +7195,64 @@ streams in parallel: Task 9's implementation (primary), Task 14
 (documents and source verification only) and the self-hosting
 dependency/API gap analysis (documents only). Base: r0-t2-d1 at the
 commit that records this entry.
+
+### 18.137 Tasks 9 and 14 implemented and reviewed; routine verify passed at 4ca1097 (2026-10-31)
+
+Overnight run (§18.135, §18.136; ledger
+docs/plans/2026-10-30-overnight-ledger.md, which keeps every lane's
+report). Task 9 (ff736de, bdd9f14): `HandlerLit` and its clause rows
+consumed into R and C at each handler literal; `Install` with R into ρ
+and the installed-C site at each `with` over an `MHandler`; a `with`
+over any other type records `Install` and keeps `UnframedInstall`, no
+consumption; no literal-node E1 (R9 Q1); roles `LiteralSite`,
+`InstallSite` in the uniqueness gate. Re-pin: Generate.Literal (new),
+Obligation's `Consumption`, `consumedAt`, `siteAt`. Task 14 (efcc231,
+7eb388e, 4dad5d0, f20d6ec): effect pin of 3071 declarations; 225 moved
+after Task 9, exactly those recording `HandlerLit` or `Install`
+(docs/plans/2026-10-31-effect-pin-moves.txt); census, window and RT8:
+no row or aggregate moved, no fixture changed; coverage 18 fixture, 13
+unfinished. Two fresh reviews: review 1's P1 (the identity route
+through block results unchecked; a forged mark there passed every
+test) and review 2's P0 (the settling-step coverage row stood on the
+`defer`-site consumption) fixed with the in-scope P2s and P3s
+(bdad600..d898691); identity is now checked corpus-wide with marks
+through let and locals, a `with`'s handler, block results,
+record-literal fields and lambda results. This records obligations: no
+validator exists and no effect soundness is established.
+
+Routine verify, run alone under the lock each time:
+- aaa9c9b, exit 1 (log .build/evidence/2026-10-31-overnight-verify-1/
+  verify.log): parallel 3013/3013; serial 203/204, regression phase not
+  run. test/r0-marked-corpus.serial.test.mjs counted a position as
+  named only inside an `At` mark, so the 20 `with`s over a
+  non-`MHandler` handler, whose `Frame p` only `Install.frame` names,
+  were "minted, unnamed". Repaired in 5540ce0: the scan reads the two
+  site-fact homes of statements §2's ownership table, `HandlerLit.m`
+  and `Install.frame` (additive; a position named nowhere still fails).
+  The lane briefs had not listed this serial test.
+- 5540ce0, exit 1 (…-verify-2/verify.log): parallel 3013/3013, serial
+  204/204, regression proofs 263/264: r0-amin-cohort-pin-readonly (a
+  test-tree row) failed at load, because Task 14's effect-pin probe,
+  loaded with every probe, imported a corpus module under research/
+  that test-tree clones do not hold. Repaired in 4ca1097: the probe
+  imports those helpers when it runs; both rows pass.
+- 4ca1097, exit 0 (…-verify-3/verify.log; clean tree; load1 7.87 at
+  the parallel phase, 3.64 serial, 4.21 regression): parallel
+  3013/3013; serial 204/204, the partialFirst growth ratio 2.278
+  against 3.0; regression proofs 264/264. "Performance qualification
+  was not run: 26 files under npm run perf."
+Functional acceptance: passed. Performance qualification: not run.
+
+Questions for the author raised by the run (none blocked it), with the
+A2 packet's Q1-Q12 and the self-hosting analysis's seven questions:
+whether `defer`'s consumption stands for settling's deferred-row
+consumption (the row was left unfinished); whether rows naming
+validator-side parts count once the recorded part is shown; the
+literal-images coverage ruling; `siteAt`'s export; the §2 amendment's
+identity list (block, record-field and lambda routes); the installed-C
+record's meaning beside E5's "no consumption"; unstripped rows with
+`bare: true`; R9's A3 wording; `Install` recorded for a non-`MHandler`
+`with`. Task 9 and Task 14 await the author's acceptance, with Tasks 8
+and 10-13. No milestone moved: the effect problem is recorded and
+pinned, but no validator exists (A2 is the author's choice). Nothing
+pushed.

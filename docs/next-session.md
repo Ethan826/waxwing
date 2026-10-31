@@ -12,19 +12,16 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-The author's overnight authorization
-(docs/plans/2026-10-30-overnight-authorization.md, dossier §18.135,
-execution started §18.136) is being executed from this worktree. No
-token ceiling for its work; earlier spend caps do not bind it. Four
-streams: (1) Task 9 implementation, primary; (2) Task 14, prepared
-during Task 9 and finished after it; (3) an A2 decision packet,
-documents and source verification only; (4) a self-hosting
-dependency/API gap analysis, documents only. Live state of the streams
-(agents, branches, worktrees, reports) is in the run ledger,
-docs/plans/2026-10-30-overnight-ledger.md: read it before redispatching
-anything, and inspect each lane branch's commits against its base. A
-3 a.m. usage-reset checkpoint is required (the authorization says what
-it records).
+Nothing. The overnight run (docs/plans/2026-10-30-overnight-authorization.md,
+§18.135-18.137) finished at 01:30 EDT on 2026-10-31; its record and
+every lane's report are in docs/plans/2026-10-30-overnight-ledger.md.
+Delivered: Task 9 and Task 14 implemented, integrated, reviewed by two
+fresh reviewers, fixed; routine verify passed at 4ca1097 after two
+failed, repaired runs (§18.137); the A2 decision packet
+(docs/plans/2026-10-31-a2-decision-packet.md) and the self-hosting
+API gap analysis (docs/plans/2026-10-31-self-hosting-api-gaps.md).
+Next: the author's acceptance of Tasks 8-14 and answers to the
+questions listed in §18.137; no further work is authorized.
 
 ## Where the work is
 
@@ -44,18 +41,19 @@ it records).
 | 1-6, 15-24 | done and accepted (Checkpoints A and B, units C and D, Task 24 closed §18.118) |
 | 7 (E1, O1, O2) | **accepted** by the author (§18.135) |
 | 8 (E2, E10, E11), 10 (defer, Fail, entry, FX032), 11 (rule 1), 12 (boundary), 13 (coverage) | implemented, integrated, reviewed, repaired (§18.123-18.128); covered by the routine verify at dac50f3; not separately accepted |
-| 9 (handler family E3-E5) | design approved in direction (§18.124 ruling 4, R9's Q1-Q7); `Clauses k` minting done (f020475); `UnframedInstall` restriction in place; **implementation authorized overnight** |
-| 14 (effect pin, census, window, records) | open; authorized overnight (prepare now, finish after Task 9) |
+| 9 (handler family E3-E5) | implemented, integrated, reviewed, fixed; routine verify passed at 4ca1097 (§18.137); awaiting acceptance |
+| 14 (effect pin, census, window, records) | done the same way (§18.137): pin of 3071 declarations, no census/window/RT8 row moved; awaiting acceptance |
 
-Coverage ledger (test/fixtures/r0/effects-coverage.json): 31 rows, 13
-fixture, 18 unfinished (§18.125); most unfinished rows wait for Task 9
-or are validator-side (A2).
+Coverage ledger (test/fixtures/r0/effects-coverage.json): 31 rows, 18
+fixture, 13 unfinished (§18.137); the unfinished rows are
+validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Routine acceptance verify **passed** at dac50f3 (§18.134): parallel
-  2991/2991, serial 203/203, regression proofs 255/255, the
-  partialFirst growth check at ratio 2.178 against 3.0.
+- Routine acceptance verify **passed** at 4ca1097 (§18.137): parallel
+  3013/3013, serial 204/204, regression proofs 264/264, growth ratio
+  2.278 against 3.0. Failed runs kept: aaa9c9b and 5540ce0 (§18.137).
+  Earlier: passed at dac50f3 (§18.134).
 - Performance qualification (`npm run perf`, 26 files plus the
   duplicate-scan-timing proof) has **not been run**; its absolute
   budgets failed on the pre-batch tree under this machine's shared load
@@ -86,7 +84,9 @@ or are validator-side (A2).
 
 ## Open, needs the author
 
-- A2's selection (the overnight packet prepares it; it does not choose).
+- Acceptance of Tasks 8-14, and the run's questions (§18.137).
+- A2's selection: the packet recommends M-C with R-A, Q1-Q12.
+- The self-hosting analysis's seven questions (port target first).
 - Whether and when to run performance qualification.
 - Follow-up: remove dead `Record.shape` (needs a Record re-pin).
 
