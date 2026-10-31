@@ -111,10 +111,10 @@ None yet.
   the coverage fixture.
 - Review 1's four author items are listed under its report; none
   blocks the run (each records an existing reading).
-- Discrepancy to settle at phase 2 (settled: Install is recorded): T14's draft assumed a non-MHandler
-  `with` records no `Install`; the agreed interface records `Install`
-  plus `UnframedInstall`. ExpectedHandler's row is re-judged against
-  the integrated tree.
+- Discrepancy to settle at phase 2 (settled: Install is recorded):
+  T14's draft assumed a non-MHandler `with` records no `Install`;
+  the agreed interface records `Install` plus `UnframedInstall`.
+  ExpectedHandler's row is re-judged against the integrated tree.
 
 ## Reports
 
