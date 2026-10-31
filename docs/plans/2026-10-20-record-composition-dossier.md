@@ -7256,3 +7256,53 @@ record's meaning beside E5's "no consumption"; unstripped rows with
 and 10-13. No milestone moved: the effect problem is recorded and
 pinned, but no validator exists (A2 is the author's choice). Nothing
 pushed.
+
+### 18.138 Tranche 1 accepted; the run's questions settled (2026-10-31)
+
+The author accepted Tasks 9 and 14, with Tasks 8 and 10-13: tranche
+1's planned recording work is accepted. The author checked the final
+log (3013 parallel, 204 serial, 264 regression proofs passed at
+4ca1097) and inspected the two post-review repairs (5540ce0, 4ca1097);
+neither needs another acceptance run. Recorded: functional acceptance
+passed; performance qualification not run. Coverage stays 18 fixture
+rows and 13 unfinished. This does not establish exhaustive recording
+coverage, effect soundness or a completed milestone. The recording
+tranche closes; its open obligations stay visible as inputs to the
+validator work.
+
+Rulings on §18.137's questions:
+- Settling's deferred rows: unfinished; a `defer`-site consumption does
+  not demonstrate the distinct settling obligation.
+- Rows mixing recording and validator requirements: reported as
+  "recorded component demonstrated, validation open", never the whole
+  claim covered (statements §13, reporting rule).
+- Literal-images coverage: the tested identity routes count as covered;
+  that shows faithful recording along them, not validator refusal of
+  forged packages.
+- `siteAt`: the reviewed export stays.
+- Statements §2's identity list gains the block-result, record-field
+  and lambda-result routes.
+- Installed C: its `Consume` record stands for the site's count/pairing
+  and mark-edge conditions only, not argument equality, row extension
+  or another tail condition (stated beside E2 and E5).
+- `bare: true`: arguments are ignored for that comparison, not erased
+  from the stored row; what determines keys, `Fail` heads included,
+  is kept.
+- A3: the literal site's expected obligations are stated exactly
+  (HandlerLit and its clause consumptions); the prohibition is an
+  invented literal-node E1 (statements E4; the design note's A3).
+- A non-handler `with` records `Install`; `UnframedInstall` stays a
+  hard certification blocker (statements E5).
+These documentation corrections are authorized without a further
+verify; they are applied in the statements and the Task 9 design note.
+
+A2 is the next substantial decision. M-C with R-A stays the author's
+preferred direction, but the ResultC binding-ownership conflict (the
+packet's F1) and the package interface need one coherent resolution
+first: Q1-Q12 are to be consolidated into a corrected specification and
+one decision table, partial or inaccessible source verification kept
+plainly labeled. Self-hosting's planning target is the stable R0
+replacement once accepted, the shipped compiler kept as the
+compatibility reference and bootstrap seed; no full legacy port
+followed by another checker port. Not authorized: validator
+implementation, a compiler port, a push.

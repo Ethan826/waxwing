@@ -97,8 +97,12 @@ test/r0-obligations-handler.test.mjs:
 - **A2.** `nodes[p_with/With/handler]` equals `nodes[p_lit]` exactly, so its
   mark is `At (Literal p_lit)` and its tails are the literal's. Once Install
   exists, `Install.handler` at `p_with` equals it too.
-- **A3.** No obligation has provenance at `p_lit` under rule E20 except
-  `HandlerLit`, and no `Equal` there has identical sides. This must be scoped to
+- **A3.** (Amended by the author, 2026-10-31, dossier §18.138; was: "No
+  obligation has provenance at `p_lit` under rule E20 except
+  `HandlerLit`".) The obligations at `p_lit` under rule E20 are exactly
+  `HandlerLit` and, per clause k, `ClauseIntoR k` and `ClauseIntoC k`;
+  the prohibition is on an invented literal-node E1, and no `Equal`
+  there has identical sides. This must be scoped to
   E20: E14 already records a reflexive definedness E1 beside its reflexive atom
   (Control.purs:196-198).
 - **A4.** `HandlerLit` at `p_lit` names `m = Literal p_lit`, `inference =

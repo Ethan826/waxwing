@@ -1,11 +1,12 @@
 # a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
-Status (2026-10-31): tranche 1's generation records the obligations
-of §4 (E1-E6, E8, E9, E11; E4 and E5 by Task 9) and they are pinned
+Status (2026-10-31): tranche 1's recording is accepted (dossier
+§18.138): generation records the obligations of §4 (E1-E6, E8, E9,
+E11; E4 and E5 by Task 9) and they are pinned
 (test/fixtures/r0/effects.json); no validator exists, no effect
-soundness is established, and 13 of §13's 31 rows remain unfinished
-(dossier §18.137). Wording questions found while implementing are in
-docs/plans/2026-10-30-overnight-ledger.md, for the author.
+soundness is established, and 13 of §13's 31 rows remain unfinished.
+The author's 2026-10-31 corrections are applied in §2, E2, E4, E5 and
+§13.
 Earlier status: **approved as a representation by the author at 535b780
 (2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
 and §0e's carried table), no soundness claim; implementation, A2's
@@ -463,12 +464,17 @@ inference⟩, clauses: Just ⟨p, handler clauses⟩ }`, and generation
 docs/plans/2026-10-30-task-9-literal-design.md, R9 Q1 and Q3):** that
 type is the literal's node type itself (Generate/Effect.purs
 `handler`): it reaches each use unchanged (`let`, locals, a `with`'s
-handler, a record literal) or through the E1 of the rule that moves it,
-so no equation is recorded at the literal's node. Coverage of this
-connection counts as satisfied only once Task 9's proposed evidence
-(the design note's A1-A5, A5 corpus-wide, and its restored-defect row)
-passes; until then it is open. (Earlier: deferred to Task 9 by the §4
-amendment of 2026-10-29, §18.119.)
+handler, a block's result, a record literal's fields, a lambda's
+result: its body's type behind the parameter arrows) or through the E1
+of the rule that moves it, so no equation is recorded at the literal's
+node. **Amended (author, 2026-10-31, dossier §18.138):** the block,
+record-field and lambda-result routes are added; each is an identity in
+the code and is checked corpus-wide with marks
+(test/r0-obligations-routes.mjs), with restored-defect rows for the
+literal's use and the block route. Coverage of this connection is
+satisfied for the tested routes: that demonstrates faithful recording
+along them, not that a validator refuses forged packages. (Earlier:
+deferred to Task 9 by the §4 amendment of 2026-10-29, §18.119.)
 Revision 3.2 claimed that an image can hold a copy of a site position
 only where today's checker unifies two types, each such unification
 recorded as an E1. **That claim was false**: §13a's audit found two
@@ -484,7 +490,8 @@ with several tails under O6's definition, and the `handle`, `if` and
 `match` node types); (ii) an E2 consumption, whose
 copies are labels of the completed source with a fresh top-level mark,
 arguments shared (O3, §4); (iii) the same variable (`let`, locals,
-binders, a handler literal's node: the same marked type, §18.124); or
+binders, a handler literal's node, a block's result, a record literal's
+fields, a lambda's result: the same marked type, §18.124, §18.138); or
 (iv) construction of positions (§2's table, E3, E4′, E5).
 Where these hold, a site position and every image copy of it are
 joined by recorded equations into one class; P2 holds per class (§5),
@@ -686,6 +693,18 @@ key); matched labels' arguments are equal (nested marks and nested
 handler types included), except that C rows are bare and compare keys
 only (T2-e).
 
+**Recording and meaning (author, 2026-10-31, dossier §18.138).** The
+installed-C site is recorded as `Consume { site: AtInstalledC, marks:
+true, bare: true }` (Task 9). That record stands for the site's own
+conditions only: the per-key count and pairing of C's labels with ρ's,
+and the mark edge `mark(ρ partner) ⊑ mark(C label)`. It does not imply
+ordinary argument equality, row extension, a remainder or any tail
+condition (Definition 4.2 does not apply there, as its site list says).
+`bare: true` on a recorded `Consume` means that comparison ignores label
+arguments; the stored row is not erased, and it keeps what determines
+each label's key, a `Fail` label's payload head included. The same
+reading applies to `ClauseIntoC k`.
+
 Tails (restated in 3.4, K3 and K4; rigid case in 3.5). On a completed
 package s's tail is closed (a hole settles to the closed row, §6) or a
 rigid ϱ, never a flexible variable, and every label that s's tail
@@ -799,8 +818,12 @@ the opened handled label's mark is the `Opened` position; no
 condition beyond E1's use of it.
 
 **E4, handler literal** with clause rows c_k (bindings) and own-abort
-mark m: each c_k is consumed into R ignoring marks and into C with
-marks (E2's conditions; C bare); a c_k ending in a rigid ϱ is consumed
+mark m (recorded at the literal's site, rule E20, exactly: `HandlerLit`
+and, for each clause k, the consumptions `ClauseIntoR k` and
+`ClauseIntoC k`; no E1 is recorded there, an invented literal-node E1
+being what the §2 amendment excludes; author, 2026-10-31, §18.138):
+each c_k is consumed into R ignoring marks and into C with marks (E2's
+conditions; C bare); a c_k ending in a rigid ϱ is consumed
 into R and into C under Definition 4.2, tail condition included (3.5,
 §R6 S2-1); for each c_k holding a `Fail` label or ending in a rigid ϱ,
 `M ⊑ m` (Frames `aborting`). Today's tail pass (TailPass `both`: R and
@@ -872,6 +895,16 @@ and ρ ending in ϱ;
 the body's ambient row is `f L + ρ`. Refusals: HandlerMayFail,
 ExpectedHandler (h's head not a handler); the rigid-tail mismatch is
 unreachable today (`Internal BodyState`, TailPass `installed`).
+
+Recording (Task 9; author, 2026-10-31, dossier §18.138). Each `with`
+records `Install { frame, handler, ambient }` at its site, ρ being the
+outer ambient row. When h's marked type is a handler type, generation
+also records E5's R into ρ (`InstallR`, marks ignored) and the
+installed-C site (E2's amendment above). When it is not, generation
+records `Install` with no consumption and `Unsupported UnframedInstall`
+(§18.124 ruling 4); that restriction is a hard certification blocker:
+no declaration recording it is certified, until symbolic framing is
+designed.
 
 Installed C under Definition 4.2 (3.5, §R6 S3-4; reasoned). The
 installed-C site has no tail condition of its own; its soundness rests
@@ -1388,6 +1421,14 @@ followed by the rows revision 3.1 adds and then those 3.3 adds:
 
 ## 13. U6: coverage of generated obligations (argument)
 
+Reporting rule (author, 2026-10-31, dossier §18.138). A coverage
+fixture row (test/fixtures/r0/effects-coverage.json) demonstrates the
+recorded component of its rule: the named obligation recorded at the
+named site. Where the rule's cell below also names validator
+requirements (Definitions 4.1 and 4.2, E4′'s forcing, I3, the refusal
+itself), those stay open; such a row is reported as "recorded component
+demonstrated, validation open", never as the whole claim covered.
+
 For every rule of today's checker that can refuse a program for an
 effect or a mark, after resolution, the obligation that records it, or
 an exclusion with its reason. The rule list is the union of the audit
@@ -1413,7 +1454,7 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | side-condition per-key cycle test (§3.5 (c), SyncCycle, F2) | E2's per-key count on final rows |
 | opening at use (MarkUse `openHandlers`) | E3 |
 | local-annotation fresh marks and C for every handler type not inside another's rows (MarkUse `freshType`, `handlerRows`) | E1 with `Annotation` positions; the annotation C recorded by generation (`annotations`), read by E4′ (N1, N2, F6) |
-| a handler literal's type copied into images (unification) | the literal's type itself at its node and its identity copies, and E1 at each recorded unification (N5; amended 2026-10-30, §18.124, satisfied only once Task 9's A1-A5 evidence passes), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2; 3.5: O4 decided as rule J, its case reasoned, resting on U8) |
+| a handler literal's type copied into images (unification) | the literal's type itself at its node and its identity copies, and E1 at each recorded unification (N5; amended 2026-10-30, §18.124; satisfied 2026-10-31, §18.138, for the tested identity routes of §2: faithful recording, not validator refusal of forged packages), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2; 3.5: O4 decided as rule J, its case reasoned, resting on U8) |
 | handler literal: c into R and C, C ⊑ c (Clauses `consumeBare`) | E4; Definition 4.2 for a rigid c, a departure from today's label-by-label c into C (3.5) |
 | own abort (Frames `aborting`) | E4 |
 | clause tail pass (TailPass) | E4 (implied by Definition 4.2 at c into R and C, 3.5) |

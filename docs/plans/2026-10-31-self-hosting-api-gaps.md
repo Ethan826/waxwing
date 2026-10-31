@@ -1,5 +1,12 @@
 # Self-hosting API gaps: library and host services the compiler uses
 
+**Planning target (author, 2026-10-31, dossier §18.138):** the stable
+R0 replacement once accepted, with the shipped compiler kept as the
+compatibility reference and bootstrap seed. No full port of the legacy
+checker followed by a second checker port. This answers open question
+1 below; the delta section's generator-scope material is therefore in
+scope. No port is authorized.
+
 Date: 2026-10-31 (written during the 2026-10-30 overnight run, stream 4 of
 docs/plans/2026-10-30-overnight-authorization.md). Status: source survey and
 gap ledger. It selects no design, authorizes no implementation and changes

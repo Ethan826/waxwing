@@ -228,8 +228,11 @@ settling-step row over-claimed) fixed with the P2s and most P3s
 -literal-block-route, -handler-lit, -handler-lit-clauses, -install-r,
 -install-r-marks, -coverage-installed-c, -coverage-install,
 -effects-pin-obligation. This records obligations; no validator exists
-and no effect soundness is established. Verification: see the dossier
-§18.137 for the routine verify; performance qualification not run.
+and no effect soundness is established. Routine verify passed at
+4ca1097 after two failed, repaired runs (dossier §18.137); performance
+qualification not run. Accepted by the author with Tasks 8 and 10-13
+(§18.138); the run's wording questions were settled there and applied
+to the statements.
 
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 

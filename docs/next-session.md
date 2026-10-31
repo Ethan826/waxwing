@@ -12,16 +12,12 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. The overnight run (docs/plans/2026-10-30-overnight-authorization.md,
-§18.135-18.137) finished at 01:30 EDT on 2026-10-31; its record and
-every lane's report are in docs/plans/2026-10-30-overnight-ledger.md.
-Delivered: Task 9 and Task 14 implemented, integrated, reviewed by two
-fresh reviewers, fixed; routine verify passed at 4ca1097 after two
-failed, repaired runs (§18.137); the A2 decision packet
-(docs/plans/2026-10-31-a2-decision-packet.md) and the self-hosting
-API gap analysis (docs/plans/2026-10-31-self-hosting-api-gaps.md).
-Next: the author's acceptance of Tasks 8-14 and answers to the
-questions listed in §18.137; no further work is authorized.
+The A2 consolidation (documents only): one corrected validator
+specification and one decision table folding the packet's Q1-Q12,
+F1 and F4 (dossier §18.138). Agent branch `overnight/a2-spec`, worktree
+.claude/worktrees/on-a2; inspect its commits against fa3f82a before
+redispatching. Tranche 1 is accepted and closed (§18.138); the
+overnight run's record is docs/plans/2026-10-30-overnight-ledger.md.
 
 ## Where the work is
 
@@ -39,10 +35,7 @@ questions listed in §18.137; no further work is authorized.
 | Task | State |
 |---|---|
 | 1-6, 15-24 | done and accepted (Checkpoints A and B, units C and D, Task 24 closed §18.118) |
-| 7 (E1, O1, O2) | **accepted** by the author (§18.135) |
-| 8 (E2, E10, E11), 10 (defer, Fail, entry, FX032), 11 (rule 1), 12 (boundary), 13 (coverage) | implemented, integrated, reviewed, repaired (§18.123-18.128); covered by the routine verify at dac50f3; not separately accepted |
-| 9 (handler family E3-E5) | implemented, integrated, reviewed, fixed; routine verify passed at 4ca1097 (§18.137); awaiting acceptance |
-| 14 (effect pin, census, window, records) | done the same way (§18.137): pin of 3071 declarations, no census/window/RT8 row moved; awaiting acceptance |
+| 7-14 | **accepted** (Task 7 §18.135; Tasks 8-14 §18.138) |
 
 Coverage ledger (test/fixtures/r0/effects-coverage.json): 31 rows, 18
 fixture, 13 unfinished (§18.137); the unfinished rows are
@@ -81,12 +74,19 @@ validator-side (A2) or unrecorded (settling's deferred rows).
   identifying the home.
 - R031 deferred. A2 (the validator algorithm) is the author's choice;
   no validator is implemented.
+- §18.138's rulings: settling's deferred rows unfinished; mixed rows
+  reported "recorded component demonstrated, validation open";
+  literal-images covered for the tested routes; `siteAt` exported;
+  installed-C and `bare` meanings; A3's exact set; non-handler `with`
+  records `Install`, `UnframedInstall` a hard blocker.
 
 ## Open, needs the author
 
-- Acceptance of Tasks 8-14, and the run's questions (§18.137).
-- A2's selection: the packet recommends M-C with R-A, Q1-Q12.
-- The self-hosting analysis's seven questions (port target first).
+- A2: the corrected specification and its one decision table (in
+  preparation); M-C with R-A is the author's preferred direction.
+- Self-hosting: target set (§18.138: the stable R0 replacement once
+  accepted; the shipped compiler is the compatibility reference and
+  bootstrap seed); the analysis's other six questions remain.
 - Whether and when to run performance qualification.
 - Follow-up: remove dead `Record.shape` (needs a Record re-pin).
 

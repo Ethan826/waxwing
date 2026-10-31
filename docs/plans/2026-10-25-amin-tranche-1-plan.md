@@ -5,9 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-10-31): **every task implemented; Task 7 accepted; Tasks
-9 and 14 implemented, integrated and reviewed overnight (§18.137),
-awaiting the author's acceptance with Tasks 8 and 10-13.** Earlier:
+Status (2026-10-31): **tranche 1 accepted (§18.138): every task done,
+Tasks 7-14 accepted; functional acceptance passed at 4ca1097,
+performance qualification not run; coverage 18 fixture, 13
+unfinished; no validator, no effect-soundness claim.** Earlier:
 **Checkpoint A (Tasks 1-5) done, §18.98. Checkpoint B
 (Tasks 15, 6, 17, 16, verify, one review) authorized, §18.99. Tasks
 7-14 held.** The author

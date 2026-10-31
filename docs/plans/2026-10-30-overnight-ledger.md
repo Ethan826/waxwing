@@ -124,6 +124,10 @@ times; the first versions carried estimates, not clock readings.
   the r0-t2-d1 worktree, local); performance qualification not run.
 - Next: the author's acceptance and answers (§18.137); nothing else is
   authorized.
+- Morning (2026-10-31). The author accepted Tasks 8-14 and settled the
+  run's questions (dossier §18.138). Statement corrections applied (§2,
+  E2, E4, E5, §13; the design note's A3). A2 consolidation dispatched
+  (the packet's agent resumed, branch overnight/a2-spec at fa3f82a).
 
 ## Decisions made for review
 
