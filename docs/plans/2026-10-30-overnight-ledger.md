@@ -128,6 +128,12 @@ times; the first versions carried estimates, not clock readings.
   run's questions (dossier §18.138). Statement corrections applied (§2,
   E2, E4, E5, §13; the design note's A3). A2 consolidation dispatched
   (the packet's agent resumed, branch overnight/a2-spec at fa3f82a).
+- Morning. A2 specification returned (92d3b00), integrated as 0469df3
+  (docs only; width 0). Controller checked: the statements and options
+  note are unedited; `solvedForm` is at Strategy/Witness.purs:86 as
+  cited; statements E9 reads "each payload's head concrete after
+  settling", so the specification's D7 (E9 judged before hole
+  defaults) is a new restriction, flagged as such by the agent.
 
 ## Decisions made for review
 

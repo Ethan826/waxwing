@@ -12,12 +12,9 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-The A2 consolidation (documents only): one corrected validator
-specification and one decision table folding the packet's Q1-Q12,
-F1 and F4 (dossier §18.138). Agent branch `overnight/a2-spec`, worktree
-.claude/worktrees/on-a2; inspect its commits against fa3f82a before
-redispatching. Tranche 1 is accepted and closed (§18.138); the
-overnight run's record is docs/plans/2026-10-30-overnight-ledger.md.
+Nothing. The A2 specification and its one decision table
+(docs/plans/2026-10-31-a2-specification.md, §12: D1-D15) wait for the
+author. Tranche 1 is accepted and closed (§18.138).
 
 ## Where the work is
 
@@ -82,8 +79,9 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Open, needs the author
 
-- A2: the corrected specification and its one decision table (in
-  preparation); M-C with R-A is the author's preferred direction.
+- A2: the corrected specification's decision table (D1-D15,
+  docs/plans/2026-10-31-a2-specification.md §12); M-C with R-A is the
+  author's preferred direction.
 - Self-hosting: target set (§18.138: the stable R0 replacement once
   accepted; the shipped compiler is the compatibility reference and
   bootstrap seed); the analysis's other six questions remain.
