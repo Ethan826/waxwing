@@ -134,6 +134,19 @@ times; the first versions carried estimates, not clock readings.
   cited; statements E9 reads "each payload's head concrete after
   settling", so the specification's D7 (E9 judged before hole
   defaults) is a new restriction, flagged as such by the agent.
+- Morning. The author ruled the A2 table (§18.139: D7 rejected, the
+  rest approved with amendments; four inconsistencies to repair). The
+  consistency pass returned (829ada5, fast-forwarded): specification
+  rewritten with a proposed concrete EffectPackage, the four repairs,
+  distinguishing cases C1-C7; statements and options note amended.
+  Controller checked two citations (Substitution.purs:53-55 `certify`
+  settles before checking; Online.purs:72 `Certificate`). Packet status
+  updated (dc7bd37). One focused adversarial review (fresh Opus)
+  dispatched on the specification. Open for the author from the pass:
+  `readsForced` as a flag on ObligationFailed instead of a forcing
+  refusal tag; the solved-form and domain asymmetries between
+  types/rows and effects/marks; `Unsupported` checked after I3; the
+  completed package not carried in `Certified`.
 
 ## Decisions made for review
 
