@@ -1,4 +1,118 @@
-# RESUME HERE (2026-10-30, context reset before the parallel batch)
+# RESUME HERE (2026-10-30, 22:30 America/New_York; overnight run)
+
+**Report in milestones first** (author, 2026-10-25): which of three
+milestones moved, what became possible, what blocks the next; IDs
+underneath; position as gates and dependencies, never percentages.
+1. An approved way to preserve and check effects in the new checker.
+2. The new checker builds complete typed programs, and the
+   compatibility boundary is resolved.
+3. Representative composed-record programs compile and run, and the
+   new path can be enabled safely.
+No milestone has moved since 2026-10-25.
+
+## What is running now
+
+The author's overnight authorization
+(docs/plans/2026-10-30-overnight-authorization.md, dossier §18.135,
+execution started §18.136) is being executed from this worktree. No
+token ceiling for its work; earlier spend caps do not bind it. Four
+streams: (1) Task 9 implementation, primary; (2) Task 14, prepared
+during Task 9 and finished after it; (3) an A2 decision packet,
+documents and source verification only; (4) a self-hosting
+dependency/API gap analysis, documents only. Live state of the streams
+(agents, branches, worktrees, reports) is in the run ledger,
+docs/plans/2026-10-30-overnight-ledger.md: read it before redispatching
+anything, and inspect each lane branch's commits against its base. A
+3 a.m. usage-reset checkpoint is required (the authorization says what
+it records).
+
+## Where the work is
+
+- Integration branch `r0-t2-d1`, worktree
+  /Users/ethan/Desktop/waxwing/.claude/worktrees/r0-t2-d1. One
+  controller owns integration, shared files, pins and records; workers
+  use their own worktrees and never edit this one. Nothing is pushed.
+- The main checkout (/Users/ethan/Desktop/waxwing) is on the stale
+  `r005b-replan` branch and holds the author's own uncommitted edits
+  (BACKLOG.md, README.md, direction plans, docs/writing/): never touch
+  them. origin/main is 7093c79.
+
+## Tranche 1 (a-min recording; plan docs/plans/2026-10-25-amin-tranche-1-plan.md)
+
+| Task | State |
+|---|---|
+| 1-6, 15-24 | done and accepted (Checkpoints A and B, units C and D, Task 24 closed §18.118) |
+| 7 (E1, O1, O2) | **accepted** by the author (§18.135) |
+| 8 (E2, E10, E11), 10 (defer, Fail, entry, FX032), 11 (rule 1), 12 (boundary), 13 (coverage) | implemented, integrated, reviewed, repaired (§18.123-18.128); covered by the routine verify at dac50f3; not separately accepted |
+| 9 (handler family E3-E5) | design approved in direction (§18.124 ruling 4, R9's Q1-Q7); `Clauses k` minting done (f020475); `UnframedInstall` restriction in place; **implementation authorized overnight** |
+| 14 (effect pin, census, window, records) | open; authorized overnight (prepare now, finish after Task 9) |
+
+Coverage ledger (test/fixtures/r0/effects-coverage.json): 31 rows, 13
+fixture, 18 unfinished (§18.125); most unfinished rows wait for Task 9
+or are validator-side (A2).
+
+## Verification state
+
+- Routine acceptance verify **passed** at dac50f3 (§18.134): parallel
+  2991/2991, serial 203/203, regression proofs 255/255, the
+  partialFirst growth check at ratio 2.178 against 3.0.
+- Performance qualification (`npm run perf`, 26 files plus the
+  duplicate-scan-timing proof) has **not been run**; its absolute
+  budgets failed on the pre-batch tree under this machine's shared load
+  (§18.130).
+- The failed acceptance runs stand as records: 0fef9e4 (two stale pins,
+  §18.127) and dde534a (one timing bound, §18.129).
+- The verification contract (§18.131-18.133) governs: routine `npm run
+  verify` is functional acceptance; `npm run perf` is reported
+  separately, run or not run.
+
+## Settled; do not reopen
+
+- §18.124 rulings: `fail` is an E2 site (AtFail); main's open top-level
+  tail is one minted flexible variable shared by its ambient row and
+  `Entry` (any open tail, a written `...r` included, §18.126); FX032
+  keys on whether a row was written; Sig3's precise label; uniqueness
+  gated across every obligation kind; coverage over-claims corrected;
+  R9's Q1-Q7 approved in direction; `UnframedInstall` restricts a `with`
+  over a non-`MHandler` until symbolic framing is designed.
+- §18.126-18.128: the window and RT8 re-pins as ruled; the two stale
+  pins corrected.
+- §18.132: the verification contract, the 3.0 growth threshold.
+- The marked-side check accepts any eligible candidate with equal
+  erasure, not the intended home (§18.120): never describe it as
+  identifying the home.
+- R031 deferred. A2 (the validator algorithm) is the author's choice;
+  no validator is implemented.
+
+## Open, needs the author
+
+- A2's selection (the overnight packet prepares it; it does not choose).
+- Whether and when to run performance qualification.
+- Follow-up: remove dead `Record.shape` (needs a Record re-pin).
+
+## How work runs here
+
+A pasted review that answers the latest report is the author's ruling;
+"Ratified" confirms it (record in the dossier and plan, then act).
+Subagent per task, focused tests by implementers; one routine verify
+at a time under the lock (mkdir <scratchpad>/verify.lock; anchored
+`pgrep -f "^node scripts/verify.mjs"`; clear .build/go-cache after);
+research probes as `.wxw.txt`; width 0 over 80 before commits; stage
+explicit paths; no merge commits; no push without the author's explicit
+yes; American spelling in new prose; a denied tool call stops that
+agent and is never routed around. Plan ledger (git-ignored):
+.superpowers/sdd/2026-10-25-amin-tranche-1-plan/progress.md.
+
+---
+
+# Historical: the RESUME section before the overnight run (superseded 2026-10-30)
+
+Kept verbatim as a record (its heading was "RESUME HERE (2026-10-30,
+context reset before the parallel batch)"). Its stops, caps and "next" steps are
+obsolete: the batch, completion pass, finishing allowance and
+verification contract it describes are finished (dossier
+§18.123-18.135), and the author's rulings on its open questions are
+listed under "Settled" above.
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs

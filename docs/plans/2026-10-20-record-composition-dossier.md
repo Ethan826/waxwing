@@ -7180,3 +7180,18 @@ boundaries, stops, review, one routine acceptance verify and the 3 a.m.
 usage-reset checkpoint. Recorded verbatim in
 docs/plans/2026-10-30-overnight-authorization.md. Nothing dispatched
 before the reset.
+
+### 18.136 Overnight run started (2026-10-30)
+
+Executing the authorization of §18.135
+(docs/plans/2026-10-30-overnight-authorization.md, recorded verbatim
+there before any dispatch). docs/next-session.md's RESUME section was
+rewritten first into a self-contained current state; the earlier text
+is kept below it, labeled historical. The run's live record (lanes,
+agents, branches, worktrees, bases, reports, tests run, decisions made
+for review, stops) is docs/plans/2026-10-30-overnight-ledger.md. Four
+streams in parallel: Task 9's implementation (primary), Task 14
+(prepared now, finished after Task 9), the A2 decision packet
+(documents and source verification only) and the self-hosting
+dependency/API gap analysis (documents only). Base: r0-t2-d1 at the
+commit that records this entry.
