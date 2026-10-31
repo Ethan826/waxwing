@@ -7306,3 +7306,47 @@ replacement once accepted, the shipped compiler kept as the
 compatibility reference and bootstrap seed; no full legacy port
 followed by another checker port. Not authorized: validator
 implementation, a compiler port, a push.
+
+### 18.139 A2 specification: main choices approved with amendments (2026-10-31)
+
+The author approved the specification's main policy choices
+(docs/plans/2026-10-31-a2-specification.md §12) with amendments; it is
+not yet ready for implementation authorization. D1-D3: M-C, R-A, F14's
+interim policy. D4: one authoritative `EffectPackage` as A2's
+interface; its concrete, sort-correct representation still needs
+design (the placeholder grammar is not an approved type). D5:
+record-owned forcing; input packages exclude forced ResultC bindings
+(supplying one is Malformed); the completed certified package includes
+the derived bindings; the two domains stated separately. D6: the
+independent test-only collector, which tests agreement on exercised
+inputs and does not establish E12's exhaustiveness universally. D7:
+**rejected**; E9 stays after settling as the approved statements say;
+the live checker is supporting evidence, not authority to change the
+completed-package semantics; U4 (the hole default) stays open, not
+resolved by an E9 exception. D8: deterministic first-failure
+reporting, with ordering clarified. D9: extend the existing solved-form
+definition, its trusted-surface change named in any future plan. D10:
+the four refusal categories, RecordDefect as below. D11: UnframedInstall
+stays blocked; no symbolic framing. D12: flags checked against the
+site-kind table; inconsistency is a record defect. D13-D15:
+fixture-only differential evidence for now; the fidelity, citation and
+stale-interface corrections, every source-verification qualification
+kept. Unused frame positions: a well-formed term is required for every
+recorded position, the unread non-handler frame included (exact-domain
+accounting); it conveys no evidence that the blocked installation is
+valid.
+
+Four inconsistencies to repair: (1) settled data flow: which settled
+projection G0 checks and which completed package forcing and the
+obligations read; (2) failure ordering: prerequisite failures defined
+apart, provenance kept on edges, where recorded-order selection applies
+stated exactly; (3) the effect-certification entry point never mints a
+successful certificate for an unsupported problem, independent of the
+caller's routing; (4) a RecordDefect fails closed for that recorded
+problem and is reported separately as a generation defect, not
+repaired by another candidate; the blanket "every refusal advances to
+another strategy" amended. Authorized: one consistency pass applying
+these to the specification, the statements and the options note, then
+one focused adversarial review of the concrete package interface, the
+pipeline and the distinguishing cases. Not authorized: validator
+implementation, lifting UnframedInstall, any soundness claim.
