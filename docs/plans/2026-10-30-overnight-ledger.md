@@ -13,7 +13,7 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 |---|---|---|---|---|---|
 | T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | dispatched 22:45, fresh Opus implementer |
 | T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 (preparation) dispatched 22:46, fresh Sonnet |
-| A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | dispatched 22:46, fresh Opus |
+| A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
 | SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | dispatched 22:46, fresh Sonnet; reads main's inventory from .claude/worktrees/integrate (7093c79, read-only) |
 
 Worktree paths are relative to the main checkout,
@@ -38,6 +38,14 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   handler; a non-`MHandler` handler records `Install` and keeps
   `Unsupported UnframedInstall`, with no `InstallR` (R9 Q6).
 
+- 23:00 EDT. A2 packet returned (697e543); controller read its
+  header and checked two of its findings against the sources (F1:
+  statements §2's ResultC row says the package holds the
+  `⟨p, result clauses⟩` binding when it is the tail, while the options
+  note's forcing step refuses it as Malformed; F6: statements §10
+  gives `Consume` `Var`/`RowRef` fields, the code `MRow`). Both hold.
+  Cherry-picked onto r0-t2-d1 as bff23d0; width 0.
+
 ## Decisions made for review
 
 - Controller: the installed-C site is recorded as an E2 `Consume` at
@@ -61,4 +69,30 @@ None yet.
 
 ## Reports
 
-None yet.
+### A2 (697e543, docs/plans/2026-10-31-a2-decision-packet.md)
+
+Recommendation, for the author's decision: M-C with R-A (M-A's per-edge
+`holds`/`norm` check as the trusted gate; M-B, union-find plus
+reachability, as a test-side differential checking both directions);
+forcing as §R7b; F14 items 1-3 kept. Runner-up M-D (both checks
+gated). Prerequisites before any implementation: a package carrying
+effect bindings and mark terms (today `Substitution = Map Var RTExpr`,
+Candidate.purs:31), tranche 2's read-back, Task 9's records, and an
+end to `Outside HandlerType` blocking every handler declaration.
+Sources (accessed 2026-10-30): Baader-Snyder 2001 verified (cited too
+strongly, F2); Leijen 2005 verified (draft rev. 76); Tarjan 1975
+verified; Biernacki et al. 2018 verified; Leijen 2017 partly (2016
+report; `inject` unconfirmed); McConnell et al. 2011 partly (slides
+only); Gaster-Jones 1996 abstract only; Rehof-Mogensen 1999 and
+Dowling-Gallier 1984 not accessible. Questions Q1-Q12 for the author
+(mark check option; rows; F14; package type's home; M-B's edge
+source; E9 hole head at default Int; first-failure reporting; package
+binding of `⟨p, result clauses⟩`; solvedForm extension vs new module;
+limitation refusal constructors; differential on fixtures until
+tranche 2; fidelity corrections). Findings against existing documents:
+F1 (options note vs statements §2 on the ResultC binding), F2/F3
+(V2, V3 "faithful" should be "adapted"), F4 (`inject` citation
+unconfirmed), F5 (package shape unspecified), F6 (statements §10
+stale), F7 (options inputs 1, 3, 4 already built), F8 (Rehof-Mogensen
+bears on M-B, not M-A). Nothing in the statements or options note was
+edited; the findings wait for the author.
