@@ -140,3 +140,21 @@ unconfirmed), F5 (package shape unspecified), F6 (statements §10
 stale), F7 (options inputs 1, 3, 4 already built), F8 (Rehof-Mogensen
 bears on M-B, not M-A). Nothing in the statements or options note was
 edited; the findings wait for the author.
+
+### T14 phase 2 steps (from its report, kept for a resumed session)
+
+1. After Task 9 is integrated: `npm run build`.
+2. `node scripts/r0-effects-pin.mjs`; review the key diff of
+   test/fixtures/r0/effects.json (predicted: only declarations with a
+   handler literal or `with` move); commit with the pin change named.
+3. `node scripts/r0-results-dump.mjs <new.json>`, then
+   `node scripts/r0-results-moved.mjs <base dump> <new.json>` with the
+   base dump .build/task14-base-results.json from the on-task14
+   worktree (or regenerate it at f6aeda4); list every moved row; a
+   STOP row is a substantive stop. Predicted exit 0.
+4. `node .build/task14-check-draft.mjs` (on-task14); fix site keys to
+   the integrated tree; apply the coverage rows; rerun
+   test/r0-effects-coverage.test.mjs and the coverage regression rows.
+5. Census, shadow and effect pin tests again.
+6. Records (plan Task 14 status, statements status, closure checklist
+   A1 and 2d, progress entry), then the reviews and one routine verify.
