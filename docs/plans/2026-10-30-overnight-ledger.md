@@ -12,7 +12,7 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 | Lane | Work | Branch | Worktree | Base | State |
 |---|---|---|---|---|---|
 | T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | **implemented** (e22f31b, 1793b1e; about 0.29M tokens), integrated as ff736de, bdd9f14; review 1 running |
-| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 done (a4c5ebc, e26ac5b), integrated as efcc231, 7eb388e; phase 2 running (same agent, branch moved to 7eb388e) |
+| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 integrated as efcc231, 7eb388e; phase 2 **done** (d5cda56, 534bda3), integrated as 4dad5d0, f20d6ec; records, reviews and verify remain (controller) |
 | A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
 | SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | **done**: d73be05, integrated as 0c9df75 (docs only); about 0.30M tokens |
 
@@ -66,6 +66,17 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   semantics, marked identities, provenance) dispatched on 7eb388e.
   Review 2 (coverage, gates, pins, live preservation) waits for T14
   phase 2.
+- 00:20 EDT (Oct 31). T14 phase 2 returned. Pin after Task 9: 3071
+  declarations of 998 programs; 225 declarations moved (173
+  programs), exactly the 225 that record HandlerLit or Install; none
+  added or removed. Census/window/RT8: `0 STOP rows, 0 MOVED rows, 0
+  moved aggregates`, exit 0; no fixture touched. Coverage: 31 rows,
+  fixture 19 (was 13), unfinished 12 (was 18). Integrated as 4dad5d0
+  (pin, named in its message), f20d6ec (coverage). Controller at
+  f20d6ec: build succeeded; test/r0-effects-coverage.test.mjs and
+  test/r0-effects-pin.serial.test.mjs 4 of 4, coverage line "31 rows;
+  fixture 19, unconstructible 0, unfinished 12". Review 2 (Opus;
+  coverage, gates, pins, live preservation) dispatched on f20d6ec.
 
 ## Decisions made for review
 
@@ -104,6 +115,27 @@ None yet.
   the integrated tree.
 
 ## Reports
+
+### T14 phase 2 (d5cda56, 534bda3)
+
+Moved to fixture: R into ρ ignoring marks (InstallR, also
+ClauseIntoR); installation's edge ρ partner ⊑ C label (AtInstalledC);
+settling step (d) (AtInstalledC, also ClauseIntoC, DeferInto); handler
+literal c into R and C (HandlerLit at E20:LiteralSite, also both
+consumes); owned C at a use (Install[OwnedC,ResultClauses] at
+E21:InstallSite); a literal's type copied into images
+(Equal[source:Literal,target:Opened] at main:E5, also HandlerLit, O1,
+O2; a `note` key, ignored by the test, names the A1-A5 tests and
+r0-amin-literal-reaches-use and the provisional ruling). Unfinished:
+own abort, frame marks, installation pairing, clause tail pass
+(validator-side over the recorded HandlerLit/Install); ExpectedHandler
+(probe `with h { 1 }`, `h: Int`: Install with handler `MBase Int`
+plus UnframedInstall, no consumption, nothing demonstrates the head
+check); step-5 mark check; the Definition 4.1 rows, per-key cycle,
+ExpectedNofail, RowEquality. Regression rows r0-amin-coverage-equal,
+-consume and r0-amin-effects-pin-obligation 3 of 3. Census and
+detectors 19 of 19; shadow, classes, effect pin, diff tool 24 of 24;
+R021 guard unchanged (3067 problems, 7624 BQ atoms, 0 ill-sorted).
 
 ### T9 (e22f31b, 1793b1e)
 
