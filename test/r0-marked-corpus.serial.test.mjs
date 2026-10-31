@@ -113,6 +113,15 @@ const namedIn = effects => {
   // E1's built right sides (Task 7, Generate.Obligation `builtArrow`)
   // name stage variables no node's type does.
   pending.push(...effects.obligations.map(item => shape(item.value)));
+  // Task 9's site facts are the homes of two marks (statements §2,
+  // ownership table): a literal's own-abort mark `HandlerLit.m` and an
+  // installation's frame mark `Install.frame`. They hold a bare
+  // position, not an `At`, and a `with` over a handler that is not an
+  // `MHandler` names its `Frame p` there only.
+  effects.obligations.map(item => shape(item.value)).forEach(value => {
+    if (value.HandlerLit) named.positions.add(key(value.HandlerLit[0].m));
+    if (value.Install) named.positions.add(key(value.Install[0].frame));
+  });
   while (pending.length > 0) {
     const value = pending.pop();
     if (value === null || typeof value !== 'object') continue;
