@@ -12,7 +12,7 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 | Lane | Work | Branch | Worktree | Base | State |
 |---|---|---|---|---|---|
 | T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | dispatched 22:45, fresh Opus implementer |
-| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 (preparation) dispatched 22:46, fresh Sonnet |
+| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 **done** (a4c5ebc, e26ac5b; about 0.20M tokens); not yet integrated (its pin is provisional and moves with Task 9); phase 2 waits for Task 9 |
 | A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
 | SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | dispatched 22:46, fresh Sonnet; reads main's inventory from .claude/worktrees/integrate (7093c79, read-only) |
 
@@ -45,6 +45,13 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   note's forcing step refuses it as Malformed; F6: statements §10
   gives `Consume` `Var`/`RowRef` fields, the code `MRow`). Both hold.
   Cherry-picked onto r0-t2-d1 as bff23d0; width 0.
+- 23:10 EDT. T14 phase 1 returned (a4c5ebc, e26ac5b). Controller
+  reran test/r0-effects-pin.serial.test.mjs and
+  test/r0-results-diff.test.mjs in its worktree: 8 of 8 passed. Its
+  baseline dump (.build/task14-base-results.json), coverage draft
+  (.build/task14-coverage-draft.json) and draft checker
+  (.build/task14-check-draft.mjs) stay in that worktree, uncommitted,
+  for phase 2. Held for integration until Task 9 lands.
 
 ## Decisions made for review
 
@@ -65,9 +72,46 @@ None yet.
 
 ## Stops and open questions
 
-None yet.
+- Coverage (T14's open questions; controller's provisional handling,
+  for the author): (1) the "handler literal's type copied into images"
+  row becomes a fixture row only when Task 9's identity tests (A1-A5,
+  A5 corpus-wide) and its restored-defect row pass on the integrated
+  tree, and the row says so; (2) own abort, frame marks and
+  installation pairing stay `unfinished`: §13 maps them to conditions
+  the validator evaluates on HandlerLit and Install, and recording the
+  carrier is not demonstrating the check (the author's §18.124 rule);
+  the drafted fixture rows are ready if the author counts the record;
+  (3) the coverage row check matches constructor tokens only, so the
+  `marks`/`bare` booleans are asserted by Task 9's own tests, not by
+  the coverage fixture.
+- Discrepancy to settle at phase 2: T14's draft assumed a non-MHandler
+  `with` records no `Install`; the agreed interface records `Install`
+  plus `UnframedInstall`. ExpectedHandler's row is re-judged against
+  the integrated tree.
 
 ## Reports
+
+### T14 phase 1 (a4c5ebc, e26ac5b)
+
+Effect pin: test/r0-effects-pin.serial.test.mjs (read-only),
+test/r0-effects-pin-run.mjs, writer scripts/r0-effects-pin.mjs,
+provisional pin test/fixtures/r0/effects.json (3071 declarations, 998
+programs, per-declaration SHA-256 keyed `origin#decl`; two writer runs
+byte-identical); `encoderFor` added to test/r0-effects-canonical.mjs
+(default encoding unchanged); regression row
+r0-amin-effects-pin-obligation (drops E9's FailConcrete; probe samples
+12 `fail` sources; "fixed compiler passes; restored defect fails").
+Baseline at f6aeda4: census and detectors 19/19; shadow and classes
+16/16 (RT8 0 defects, 0 position findings, 120 bound holes; R021 guard
+3067 problems, 0 ill-sorted); per declaration 2038 Solved, 1033
+Unresolved. Tool: scripts/r0-results-dump.mjs, r0-results-moved.mjs
+(exit 1 on a STOP row: verdict head, today's result, blocked window
+class, compiles, rows added or removed; exit 2 on other movement),
+r0-results-diff.mjs with 7 tests. Coverage draft: 6 rows to fixture
+after Task 9 (R into ρ, installed-C edge, settling step (d), literal
+images, clause rows into R and C, owned C at a use), 12 unfinished.
+Record drafts for the plan, statements, closure checklist A1/2d and
+progress are in its report (kept by the controller for phase 2).
 
 ### A2 (697e543, docs/plans/2026-10-31-a2-decision-packet.md)
 
