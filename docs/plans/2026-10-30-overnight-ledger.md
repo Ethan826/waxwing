@@ -14,7 +14,7 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 | T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | dispatched 22:45, fresh Opus implementer |
 | T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 **done** (a4c5ebc, e26ac5b; about 0.20M tokens); not yet integrated (its pin is provisional and moves with Task 9); phase 2 waits for Task 9 |
 | A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
-| SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | dispatched 22:46, fresh Sonnet; reads main's inventory from .claude/worktrees/integrate (7093c79, read-only) |
+| SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | **done**: d73be05, integrated as 0c9df75 (docs only); about 0.30M tokens |
 
 Worktree paths are relative to the main checkout,
 /Users/ethan/Desktop/waxwing.
@@ -52,6 +52,10 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   (.build/task14-coverage-draft.json) and draft checker
   (.build/task14-check-draft.mjs) stay in that worktree, uncommitted,
   for phase 2. Held for integration until Task 9 lands.
+- 23:20 EDT. SH returned (d73be05). Controller checked against main
+  at 7093c79: 324 .purs modules under src, 83 importing Data.Map, no
+  Generate/ (the `seal` is delta-only); all as reported. Cherry-picked
+  as 0c9df75; width 0.
 
 ## Decisions made for review
 
@@ -90,6 +94,30 @@ None yet.
   the integrated tree.
 
 ## Reports
+
+### SH (d73be05, docs/plans/2026-10-31-self-hosting-api-gaps.md)
+
+Reading: the compiler is main's src at 7093c79 (324 modules, one FFI
+file); the R0 line adds 118 modules and changes 78. Observed rows rest
+on source reading and counts; no build, corefn pass or run. Ledger of
+26 gaps (AG01-AG26); top ten: ordered persistent Map/Set (AG01), an
+indexable sequence with stable sort and first-occurrence nub (AG02),
+left-to-right balanced traverse (AG03), stack-safe monadic loops
+(AG04; Array.foldM over Either overflows near 1930 arms), Char and
+code-unit Text operations with the UTF-16 diagnostic-offset question
+(AG05, new item proposed), annotated rank-2 `seal` (AG06, delta only),
+constructor hiding and gateable import graph (AG07), host services
+(AG08), user-defined Functor-to-Monad instances and `Host m` (AG09), a
+deterministic JSON writer (AG10, new item proposed). Five porting
+slices (lexer, ArgumentGraph, Search's tailRecM, Host/Command/Node.js,
+the generator seal), sketches marked not implemented. Twelve
+corrections to the readiness doc and inventory (import-statement
+counts read as module counts: Array 309, Map 109, Set 55 modules at
+2643df3; the inventory counted r0-t2-d1, not main; SV10's `seal` is
+delta-only; SV12's coherence mechanism; SV18's UTF-16 `Ord String`;
+BACKLOG E002 stale). Seven questions for the author (port target;
+offsets; `Host` as effect or record; persistent-only collections;
+E_NESTING; whether to run a corefn pass).
 
 ### T14 phase 1 (a4c5ebc, e26ac5b)
 
