@@ -11,8 +11,8 @@ reset. Agents' reports are kept under "Reports" below, in substance.
 
 | Lane | Work | Branch | Worktree | Base | State |
 |---|---|---|---|---|---|
-| T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | dispatched 22:45, fresh Opus implementer |
-| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 **done** (a4c5ebc, e26ac5b; about 0.20M tokens); not yet integrated (its pin is provisional and moves with Task 9); phase 2 waits for Task 9 |
+| T9 | Task 9 implementation (primary) | overnight/task9 | .claude/worktrees/on-task9 | f6aeda4 | **implemented** (e22f31b, 1793b1e; about 0.29M tokens), integrated as ff736de, bdd9f14; review 1 running |
+| T14 | Task 14 preparation, then completion after T9 | overnight/task14 | .claude/worktrees/on-task14 | f6aeda4 | phase 1 done (a4c5ebc, e26ac5b), integrated as efcc231, 7eb388e; phase 2 running (same agent, branch moved to 7eb388e) |
 | A2 | A2 decision packet (documents, source verification) | overnight/a2-packet | .claude/worktrees/on-a2 | f6aeda4 | **done**: 697e543, integrated as bff23d0 (docs only); about 0.25M tokens |
 | SH | self-hosting dependency/API gap analysis (documents) | overnight/self-hosting | .claude/worktrees/on-selfhost | f6aeda4 | **done**: d73be05, integrated as 0c9df75 (docs only); about 0.30M tokens |
 
@@ -56,6 +56,16 @@ f6aeda4 on r0-t2-d1 (records §18.136 and this ledger).
   at 7093c79: 324 .purs modules under src, 83 importing Data.Map, no
   Generate/ (the `seal` is delta-only); all as reported. Cherry-picked
   as 0c9df75; width 0.
+- 23:55 EDT. T9 returned (e22f31b, 1793b1e). Integrated by
+  cherry-pick with T14's two commits: ff736de, bdd9f14, efcc231,
+  7eb388e (no conflicts). Controller at 7eb388e: `npm run build`
+  succeeded; test/r0-obligations-handler.test.mjs,
+  test/structure-surface.test.mjs, test/r0-results-diff.test.mjs 25 of
+  25; width 0. T14 phase 2 sent (pin after Task 9, moved rows,
+  coverage under the rulings below). Review 1 (Opus; obligation
+  semantics, marked identities, provenance) dispatched on 7eb388e.
+  Review 2 (coverage, gates, pins, live preservation) waits for T14
+  phase 2.
 
 ## Decisions made for review
 
@@ -94,6 +104,37 @@ None yet.
   the integrated tree.
 
 ## Reports
+
+### T9 (e22f31b, 1793b1e)
+
+Recorded as briefed: HandlerLit at E20 (LiteralSite) with per-clause
+ClauseIntoR k / ClauseIntoC k; Install at E21 (InstallSite) with
+InstallR and AtInstalledC over an MHandler; a non-MHandler `with`
+records Install plus UnframedInstall, no consumption. Re-pin: new
+module Generate.Literal (`literalAt`, `literalType`, `literalVars`;
+split from Effect, which would be 267 lines); Obligation exports
+`Consumption`, `consumedAt`, `siteAt`; SiteRole adds LiteralSite,
+InstallSite; structure-surface lists `.Literal`. Tests (implementer's
+runs): handler test 1 of 9 on base sources, 9 of 9 after; corpus
+survey 531 let-bound locals, 317 literals, 317 installs (297 MHandler,
+20 not), 0 problems; r0-obligations-* 35 of 35 (uniqueness over
+149359 obligations, 0 repeats); effects boundary 4 of 4, non-vacuous
+(225 declarations, floor 180 added); problem pin passes; other r0 and
+structure tests 86 of 86; checkStructure [], purs-tidy clean, width 0,
+build 0 warnings; 15 regression rows pass, 4 new
+(r0-amin-literal-reaches-use, r0-amin-handler-lit,
+r0-amin-handler-lit-clauses, r0-amin-install-r). R9's mutant: probe
+fails on the marked side; r0-amin-node-erasure green under it; Task
+7's equal test misses it (both R9 predictions observed). Decisions for
+review: Frame p minted explicitly for every `with`; R's alias at the
+installed-C site recorded unstripped with `bare: true`; `siteAt`
+exported; A3 as an exact set (HandlerLit plus two consumptions per
+clause); boundary floor; two rows share one probe. Observation: R9's
+A3 wording ("no obligation at p_lit under E20 except HandlerLit")
+conflicts with the approved E4 consumptions at p_lit; the statements
+may want the same wording fix. Consume count +634, positions 670 to
+690. first-diagnostic not run (nothing outside Generate* and
+Domain.Recorded.Effect changed).
 
 ### SH (d73be05, docs/plans/2026-10-31-self-hosting-api-gaps.md)
 
