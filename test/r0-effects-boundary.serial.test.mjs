@@ -134,10 +134,11 @@ test('the harness can return Solved outside the boundary', () => {
 
 // Task 12: the boundary extended to recorded obligations (§18.124
 // corrects this comment). Every obligation kind is recorded now (Tasks
-// 7, 8 and 10: Equal, Consume, Defer, Entry, FailConcrete, Unsupported);
-// `HandlerLit` and `Install` arrive with Task 9, so the HandlerLit/Install
-// check below ranges over zero declarations until then and is vacuous:
-// the test prints its range so a change shows. The last assertion, that
+// 7, 8 and 10: Equal, Consume, Defer, Entry, FailConcrete, Unsupported;
+// Task 9: HandlerLit and Install), so the HandlerLit/Install check below
+// ranges over the declarations that record them (225 when Task 9
+// landed), with a floor so it cannot become vacuous again unnoticed;
+// the test prints its range. The last assertion, that
 // an in-scope declaration with recorded obligations is still not Solved
 // and still marked, is implied by Task 5's check over all in-scope
 // declarations (above); it adds no new reach. What is new is the join:
@@ -152,6 +153,8 @@ test('the harness can return Solved outside the boundary', () => {
 // registered row would need this 2-minute corpus test as its probe.
 const obligedFloor = 220;
 const handlerKinds = ['HandlerLit', 'Install'];
+// About 80% of the 225 observed when Task 9 landed.
+const literalFloor = 180;
 
 test('recorded obligations never make a handler declaration Solved',
   async () => {
@@ -169,9 +172,11 @@ test('recorded obligations never make a handler declaration Solved',
     const obliged = found.scoped.filter(fact => recordedAt(fact).length > 0);
     console.log(`obligations recorded (all declarations): `
       + `${JSON.stringify(tally)}`);
-    console.log(`HandlerLit/Install declarations: ${literal.length} `
-      + `(vacuous while 0); in-scope declarations with any recorded `
+    console.log(`HandlerLit/Install declarations: ${literal.length}; `
+      + `in-scope declarations with any recorded `
       + `obligation: ${obliged.length} of ${found.scoped.length}`);
+    assert.ok(literal.length > literalFloor,
+      `only ${literal.length} HandlerLit/Install declarations`);
     const breaches = literal.flatMap(fact => [
       ...(fact.solved ? [`${fact.at}: Solved`] : []),
       ...(fact.kinds.includes('HandlerType') ? []

@@ -599,6 +599,18 @@
    "signatureOfDecl"
   ]
  },
+ "Features.Check.Generate.Literal": {
+  "source": [
+   "literalAt",
+   "literalType",
+   "literalVars"
+  ],
+  "compiled": [
+   "literalAt",
+   "literalType",
+   "literalVars"
+  ]
+ },
  "Features.Check.Generate.Lookup": {
   "source": [
    "CtorShape",
@@ -679,17 +691,20 @@
  },
  "Features.Check.Generate.Obligation": {
   "source": [
+   "Consumption",
    "StageSite",
    "agreeEqual",
    "ambientAt",
    "arityAt",
    "builtArrow",
    "consumeAt",
+   "consumedAt",
    "deferAt",
    "entryAt",
    "equalAt",
    "equalTagged",
    "payloadAt",
+   "siteAt",
    "stageRow",
    "unsupportedAt"
   ],
@@ -699,11 +714,13 @@
    "arityAt",
    "builtArrow",
    "consumeAt",
+   "consumedAt",
    "deferAt",
    "entryAt",
    "equalAt",
    "equalTagged",
    "payloadAt",
+   "siteAt",
    "stageRow",
    "unsupportedAt"
   ]

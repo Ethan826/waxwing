@@ -158,7 +158,10 @@ data Provenance
 -- payload; `UnsupportedOperation` a perform form of an operation that
 -- writes a `with` row (FX032); `UnframedWith` a `with` whose installed
 -- handler's marked type is not a handler type (`UnframedInstall`,
--- §18.124, its own role per §18.126).
+-- §18.124, its own role per §18.126). Task 9 (§18.124 ruling 4, Q4):
+-- `LiteralSite` a handler literal's `HandlerLit` (E20, one per literal
+-- at its path), `InstallSite` a `with`'s `Install` (E21, one per `with`
+-- at its path; distinct from `WithNode` by role).
 data SiteRole
   = ClauseBody
   | WithNode
@@ -169,6 +172,8 @@ data SiteRole
   | PayloadHead
   | UnsupportedOperation
   | UnframedWith
+  | LiteralSite
+  | InstallSite
 
 type Placed a =
   { provenance ∷ Provenance, rule ∷ RuleId, span ∷ Span, value ∷ a }

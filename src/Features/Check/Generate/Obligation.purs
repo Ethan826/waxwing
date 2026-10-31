@@ -10,19 +10,23 @@
 -- use's callee arity (`arityAt`).
 -- Task 10 adds the other atom-free obligations, each identified the
 -- same way (plan Task 10): `deferAt` (E6 with its E2), `entryAt` (E8),
--- `payloadAt` (E9) and `unsupportedAt` (FX032).
+-- `payloadAt` (E9) and `unsupportedAt` (FX032). Task 9's handler family
+-- (Generate.Effect) records through `siteAt` and `consumedAt`.
 module Features.Check.Generate.Obligation
-  ( StageSite
+  ( Consumption
+  , StageSite
   , agreeEqual
   , ambientAt
   , arityAt
   , builtArrow
   , consumeAt
+  , consumedAt
   , deferAt
   , entryAt
   , equalAt
   , equalTagged
   , payloadAt
+  , siteAt
   , stageRow
   , unsupportedAt
   ) where
@@ -174,6 +178,22 @@ unsupportedAt site span kind =
     OperationWithRow _ _ → UnsupportedOperation
     UnframedInstall → UnframedWith
 
+-- A consumption as recorded: its site kind, rows and flags.
+type Consumption =
+  { site ∷ SiteKind
+  , source ∷ MRow
+  , target ∷ MRow
+  , marks ∷ Boolean
+  , bare ∷ Boolean
+  }
+
+-- A consumption at a site with one stage of its kind at the path (E4's
+-- clause rows, E5's R and installed C), so its ordinal is 0.
+consumedAt ∷ ∀ s. At → Span → Consumption → Gen s Unit
+consumedAt site span consumption =
+  siteAt site (Consumed consumption.site 0) span (Consume consumption)
+
+-- An obligation with no atom, identified by its site and role.
 siteAt ∷ ∀ s. At → SiteRole → Span → Obligation → Gen s Unit
 siteAt site role span value = effected
   [ Obliged

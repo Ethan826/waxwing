@@ -14,8 +14,10 @@ import { markedSides, recordedTypes } from './r0-obligations-sides.mjs';
 // `Equal` obligation recorded beside it (provenance `BesideAtom` with the
 // atom's own AtomId) whose two marked sides erase to the atom's two sides,
 // in order; the effect-only sites are O1 (`AtSite … ClauseBody`) and O2
-// (`WithNode`). The handler literal's node is DEFERRED to Task 9
-// (dossier 18.119): no E1 is recorded there, and nothing here covers it.
+// (`WithNode`). No E1 is recorded at a handler literal's node (dossier
+// 18.119; 18.124 ruling 4, R9 Q1): Task 9's test
+// (r0-obligations-handler.test.mjs) checks the literal's connection to
+// its uses.
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Recorded = await load('Domain.Recorded');
@@ -136,20 +138,22 @@ test('E1 beside every GenEqual, sides erasing to the atom\'s', t => {
     `${found.problems.length} problems`);
 });
 
-test('the only effect-only E1 sites are O1 and O2; the literal is'
-  + ' deferred to Task 9', () => {
-  const roles = new Set(found.sites.map(site =>
-    Object.keys(site.AtSite[0].role)[0]));
-  assert.deepEqual([...roles].sort(), ['ClauseBody', 'WithNode']);
-  assert.ok(found.sites.length > 50, `${found.sites.length} sites`);
-});
+test('the only effect-only E1 sites are O1 and O2; none at the literal',
+  () => {
+    const roles = new Set(found.sites.map(site =>
+      Object.keys(site.AtSite[0].role)[0]));
+    assert.deepEqual([...roles].sort(), ['ClauseBody', 'WithNode']);
+    assert.ok(found.sites.length > 50, `${found.sites.length} sites`);
+  });
 
 test('provenance is distinct within a declaration, for every kind', t => {
   t.diagnostic(`identified ${found.identified}: ${key(found.kinds)}`);
   assert.deepEqual(found.repeats.slice(0, 10), [], 'a provenance repeats');
   assert.ok(found.identified > FLOOR, `${found.identified} identified`);
+  // Task 9 adds HandlerLit and Install (roles LiteralSite, InstallSite)
+  // and E4's and E5's consumptions (Consume).
   for (const kind of ['Equal', 'Consume', 'Entry', 'FailConcrete', 'Defer',
-    'Unsupported'])
+    'Unsupported', 'HandlerLit', 'Install'])
     assert.ok(found.kinds[kind] > 0, `no ${kind} obligation scanned`);
 });
 

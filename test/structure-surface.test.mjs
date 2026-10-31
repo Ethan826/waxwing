@@ -147,13 +147,15 @@ test('the real tree matches its pin and its FFI names no token module',
     // Block, Body, Callee, Node and Update, folding Rigid into Signature;
     // BACKLOG R026 Domain.Verdict.Certified, the public module of the
     // `Certified` token (Strategy.Substitution, already listed, mints it).
-    // Tranche 1's batch: Perform (step 0), Ambient and Consume (Task 8).
+    // Tranche 1's batch: Perform (step 0), Ambient and Consume (Task 8);
+    // Literal (Task 9, split from Effect).
     const generate = ['', '.Ambient', '.Assemble', '.Block', '.Body',
       '.Builtin', '.Call', '.Callee', '.Consume', '.Context', '.Control',
       '.Declared', '.Effect',
       '.Elab', '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
       '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
-      '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Lookup',
+      '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Literal',
+      '.Lookup',
       '.Marked', '.Minted', '.Node', '.Obligation', '.Opening',
       '.Operator', '.Owned', '.Out', '.Pattern', '.PatternLeaf', '.Perform',
       '.Record',
