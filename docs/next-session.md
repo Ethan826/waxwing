@@ -15,8 +15,9 @@ No milestone has moved since 2026-10-25.
 Nothing. The A2 validator stage (Tasks 0-15 and 17) is ACCEPTED
 (dossier §18.150; verify at ad3557b, §18.149). Task 16 held; C6's
 replacement decision and U6 open; performance not run. Next: write the
-tranche 2 read-back plan (§18.150 "Next"); its implementation is not
-authorized. A2 plan:
+tranche 2 read-back plan, drafted for review at
+docs/plans/2026-11-01-tranche-2-read-back-plan.md (Stage A ends at an
+approval gate; nothing authorized). A2 plan:
 docs/plans/2026-10-31-a2-validator-plan.md; live ledger (git-ignored):
 .superpowers/sdd/2026-10-31-a2-validator-plan/progress.md.
 
