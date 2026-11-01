@@ -7812,3 +7812,37 @@ exercising I3 on honest corpus packages, running the deferred
 compatibility property and differential, and specifying the activation
 gate). This acceptance authorizes neither its implementation nor a
 push.
+
+### 18.151 Tranche 2 Stage A authorized (2026-11-01)
+
+The author authorized Stage A of docs/plans/2026-11-01-tranche-2-
+read-back-plan.md (Tasks 1-2: the corpus inventory, the design note,
+the adversarial review); 0.7-1.0M is an estimate, not a cap. Stage B
+and Task 16 stay held. Clarifications: (1) the inventory reports every
+corpus declaration, then distinguishes live-checker refusal,
+online-search failure, existing certification and successful mapping;
+within the mapped cohort every required variable and position is
+accounted for, record-owned forced tails apart from package-owned
+inputs. (2) A matching location is not enough: each mapping
+establishes identity and sharing (which occurrences share a value,
+which stay distinct, how live rigid names map to recorded identities),
+with distinguishing examples for nested handlers, annotations, partial
+applications and entry tails. (3) Research implementations are
+authorized: isolated scripts implementing the proposed least-term
+calculation for oracle comparison; no production change, no
+trusted-surface change, no re-pin. Directions: Q1, the live mark graph
+(the recorded graph stays a separate check; shared machinery or
+assumptions disclosed); Q2, `NoCandidate` initially, missing mappings
+with reasons and counts, completion proposed separately if the evidence
+warrants it, no invented bindings; Q3, a non-minting package result on
+the certificate is acceptable in principle, its interface and
+dependency placement settled in Stage A, `Online` not changed yet.
+Scope correction before Stage B: the existing M-B differential checks
+marks and is not automatically an independent oracle for row semantics;
+mark comparisons are labelled so, and dropped labels, duplicated labels
+and moved tails need separately justified checks before they support
+broader differential claims. Stage A proceeds through its internal
+reviews and corrections without checkpoints and returns once
+(inventory, unresolved mappings, adversarial findings, revised Stage B
+plan); it stops earlier for a required semantic amendment or a
+production change. No push.

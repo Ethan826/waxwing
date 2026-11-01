@@ -5,10 +5,12 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-01): **proposed; not authorized** (dossier §18.150:
-the A2 acceptance authorizes neither this plan's implementation nor a
-push). Stage A (Tasks 1-2) is design and measurement only and ends at
-an approval gate; Stage B (Tasks 3-9) is specified at the interface
+Status (2026-11-01): **Stage A (Tasks 1-2) authorized, dossier
+§18.151, with its clarifications and the directions Q1 live graph, Q2
+`NoCandidate` first, Q3 acceptable in principle; Stage B and Task 16
+held; no push.** Earlier: proposed, not authorized (§18.150).
+Stage A (Tasks 1-2) is design and measurement only and ends at an
+approval gate; Stage B (Tasks 3-9) is specified at the interface
 level and is rewritten in detail from Stage A's approved design before
 it runs.
 
@@ -157,16 +159,23 @@ Task 1 measures it.
   script, not maintained code; reads the built output)
 - Create: research/t2-read-back-inventory/README.md (the table)
 
-- [ ] **Step 1:** for every corpus declaration the online strategy
-  solves, list each recorded flexible effect variable by role and each
-  recorded position by kind, with counts.
+- [ ] **Step 1:** the denominator (§18.151 (1)): every corpus
+  declaration, split into live-checker refusal, online-search failure,
+  existing certification and successful mapping. Within the mapped
+  cohort, list each recorded flexible effect variable by role and each
+  recorded position by kind, with counts; record-owned forced tails
+  (`ResultClauses` in F) apart from package-owned inputs.
 - [ ] **Step 2:** for each role and kind, find where today's checker
   holds its value (a node type's row at the path, an instantiation
   slot, a `Restricted` clause entry, a mark meta) by reading the
   checked declaration and `State` the online strategy already has;
   count the occurrences found and not found.
-- [ ] **Step 3:** for each mark position, the live meta it reads and
-  whether two positions share one (P2's classes, observed).
+- [ ] **Step 3:** identity and sharing (§18.151 (2)): for each mark
+  position, the live meta it reads and whether two positions share one
+  (P2's classes, observed); for each effect variable, which occurrences
+  must share a value and which stay distinct; how live rigid names map
+  to recorded identities. Distinguishing examples for nested handlers,
+  annotations, partial applications and entry tails.
 - [ ] **Step 4:** record the table, the not-found counts by role and
   three example declarations per not-found role. Label all of it
   corpus-observed. Commit the README and script only.
@@ -182,6 +191,9 @@ Task 1 measures it.
   arguments and nested rows; hole numbering; the interfaces of Tasks
   3-9; the claims (honest package passes I3 for every declaration
   today accepts, U2) with the check backing each.
+- [ ] **Step 1b:** a research implementation of the least-term
+  calculation over the live graph (§18.151 (3); research tree only),
+  compared with the bounded mark oracle and on the corpus.
 - [ ] **Step 2:** run adversarial-procedure-review on the least-term
   computation and the role map: restrictions table, soundness and
   completeness passes, distinguishing examples, the bounded mark oracle
@@ -299,6 +311,10 @@ under 250 lines).
 **Files:** test test/r0-t2-differential.serial.test.mjs; extends the
 M-B collector (test tree only).
 
+- [ ] Scope (§18.151): the M-B collector is an independent check of
+  marks only; mark comparisons are labelled so. Dropped labels,
+  duplicated labels and moved tails need a separately justified row
+  check before they support a row-semantics claim.
 - [ ] On honest corpus packages and their forged variants (each mark
   raised or lowered one step, each label dropped or duplicated, each
   tail moved): the validator against the independent checker, both
