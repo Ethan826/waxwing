@@ -915,6 +915,16 @@ Held until tranche 2's read-back supplies effect packages. When it
 runs, it wraps Task 11's tested `validate` rather than introducing new
 orchestration.
 
+Guards (whole-branch review, 2026-11-01; dossier §18.147):
+- Minting happens inside `validate`'s own composition, never from a
+  `ValidationResult` passed in: no function takes a result and returns
+  a `Certified`.
+- The G0-only `certify` is removed in the same change. Otherwise
+  `certifiedValidity` hands out a `Valid` that no effect check stands
+  behind.
+- Gated on merging duplicate `EffectsUnchecked` kinds in one reason
+  (Task 12's deferred minor; BACKLOG R034): that lands before Task 16.
+
 **Files:** Domain/Verdict/Certified.purs, Certified/Internal.purs,
 Strategy/Substitution.purs, Strategy/Online.purs (certificate
 `EffectPackage`, Online.purs:72, :156-157), the old-`certify` callers:

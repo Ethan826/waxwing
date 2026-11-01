@@ -1,6 +1,7 @@
 # A2 specification: the trusted effect validator (2026-10-31)
 
-Implementation plan (for review; implementation unauthorized):
+Implementation plan (implemented through Task 15 as a non-minting
+validator; Task 16, the minting switch, held; dossier §18.147):
 docs/plans/2026-10-31-a2-validator-plan.md.
 
 Status (2026-11-01): **implemented as a non-minting validator, plan Tasks
@@ -515,7 +516,7 @@ contract and `Uncovered`.
 
 | Module | Content | Layer and rule |
 |---|---|---|
-| Domain.Verdict.EffectPackage (new), with .Internal | §2.2's types; `Completed`'s constructor in .Internal, importable only by Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Package (`complete` is its only builder) | Domain; a new structure rule pins .Internal's importers |
+| Domain.Verdict.EffectPackage (new), with .Internal | §2.2's types; `Completed`'s constructor in .Internal, importable only by Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Complete (`complete` is its only builder; corrected 2026-11-01 per §18.145 (a), which moved `complete` out of Effects.Package) | Domain; a new structure rule pins .Internal's importers |
 | Domain.Verdict.Search | `CheckRefusal`'s four constructors; `MalformedReason`, `Limitation` | Domain |
 | Domain.Verdict | `Unsupport += RecordDefective, EffectLimit` | Domain |
 | Domain.Verdict.Certified(.Internal) | `Certified Valid Completed Compilation`, stored-field accessors | Domain; importers unchanged |
@@ -570,6 +571,20 @@ Marks: `holds x y` iff `x = N`, `y = M`, or `J S ⊆ J T` on normal
 forms (statements §5, universal; pairs36 and the oracle, bounded).
 Rows: grouped normal form by key (derived; bounded check owed, §11).
 
+Notes on the implementation (2026-11-01, whole-branch review; dossier
+§18.147):
+
+- A C label with no ρ partner currently fails `Install` as well as
+  `AtInstalledC`. A controller ruling, pending the author's
+  ratification (§18.147).
+- Recorded `Fail` and `Console` labels are assumed `Written FixedN` by
+  generation (Generate/Marked.purs:130 writes them so). The validator
+  relies on that; step 0 does not check it.
+- Generate/Owned.purs:91 records a `Fail` label's payload in an owned
+  ResultC by its head only, `MData t [] []`. This is safe because a
+  ResultC is compared bare (`bare` true: keys kept, arguments ignored)
+  at every site that reads it.
+
 ## 10. Restrictions
 
 From the packet (§3.2 there): T1 Definition 4.2, T2 forcing, T3 solved
@@ -582,30 +597,63 @@ position needs a term; nullary data has one spelling; a keyless `Fail`
 label in an image is malformed; `ForcedTail` covers every obligation
 connected to a forced tail by §5.1's edges.
 
-## 11. Owed checks (none run)
+## 11. Owed checks
+
+Status (2026-11-01, plan Task 15 and earlier tasks): each item is
+marked run, with its label and test file, or still owed. Run results
+are bounded: fixture-level holds on the listed packages only;
+corpus-observed and corpus-derived hold on today's pinned corpus only.
 
 - `erase`∘`settle` = `settled`∘`erase` over generated well-sorted
-  package types and rows.
+  package types and rows. **Run, bounded:** 2000 generated types
+  (test/r0-a2-erase.test.mjs "settle commutes with erase").
 - `erase` of the honest package = today's read-back substitution, on
   the corpus (the compatibility property for nullary data and every
-  other constructor).
+  other constructor). **Still owed.** It needs "up to record field
+  order" or a ruling: today's σ has record fields out of label order
+  in 14 of 2820 corpus candidates, and `erase` sorts them
+  (docs/findings.md; test/r0-a2-properties.serial.test.mjs). Related,
+  run: erasure of recorded types matches `recordedWith` over the
+  effect pin's corpus (test/r0-a2-erase-corpus.serial.test.mjs).
 - settle∘complete = complete∘settle on F; differ on absent variables
-  (C6 is the fixture).
+  (C6 is the fixture). **Run, fixture-level:** equal on F for C1 and
+  C15 (test/r0-a2-properties.test.mjs "complete/settle order"); differ
+  on C6's absent variable (test/r0-a2-complete.test.mjs "C6 order
+  separates").
 - G0 accepts `erase P_c` whenever it accepts `erase (settle P_in)`.
+  **Run, fixture-level** over the case packages
+  (test/r0-a2-properties.test.mjs "G0 monotonicity on fixtures").
 - Whether any pinned witness or test records fresh hole numerals that
-  completion's numbering (§2.4) would change.
+  completion's numbering (§2.4) would change. **Type part run,
+  corpus-observed and corpus-derived:** completion numbers as
+  `bindingsOf` on every corpus candidate and on each less its first or
+  last variable; no pinned fixture records a `Free n`
+  (test/r0-a2-properties.serial.test.mjs "hole numerals"). **Effect
+  part still owed** (no effect hole until tranche 2's read-back).
 - A3's completeness impact: how many honest packages the all-sort
   solved form refuses at I3 (related evidence only: 0 of 14,867
   `Inline` images name a non-hole fresh variable over Solved rows,
-  statements §11 U8).
+  statements §11 U8). **Type part run, corpus-observed:** 0 of 2030
+  Solved candidates refused by `unsolvedKey`
+  (test/r0-a2-properties.serial.test.mjs "A3 impact, type part").
+  **Effect part still owed** (tranche 2).
 - Dep's claim (§5.1) that no check relates a node outside Dep to a
   forced binding: a test that every check of §9 relates only mentions
-  of its own obligation.
+  of its own obligation. **Run, fixture-level,** with a control showing
+  the perturbations bite inside `mentions`
+  (test/r0-a2-properties.test.mjs "Dep completeness").
 - The grouped normal form against (eq-swap)'s closure on small rows;
-  `norm` equality over every valuation of up to four marks.
+  `norm` equality over every valuation of up to four marks. **Run,
+  bounded:** rows of up to four labels over two effects, closed or
+  rigid-tailed; terms over four rigid marks, all 16 valuations
+  (test/r0-a2-terms.test.mjs).
 - One fixture per case of §12, one forged package per refusal
   constructor, one restored-defect proof per obligation kind, and a
-  test that every `SiteKind` has a site-table row.
+  test that every `SiteKind` has a site-table row. **Run in part:**
+  C1-C16 each appear in test/r0-a2-*.test.mjs; every `SiteKind` has a
+  row (test/r0-a2-record.test.mjs); the A2 rows are in
+  scripts/regression-r0-a2*.mjs. Per-constructor and per-kind
+  completeness of the forged packages and rows was not audited here.
 
 ## 12. Distinguishing cases
 
@@ -737,6 +785,12 @@ probe; 9 corpus `FailConcrete`s have a flexible variable payload).
   (RigidVar a)`: keyless after settling, refused as the arrow case
   (reasoned; k2's recording not probed).
 - Wrong (D7, rejected): refuses the absent and hole cases.
+- **Note (2026-11-01, implementation):** the specified pipeline
+  refuses `k` with its field variable absent at G0 (Unsatisfied),
+  before E9 is reached: G0 reads `erase (settle P_in)`, which does not
+  see completion's hole. Only the hole-bound package is accepted. The
+  prediction above or G0's projection needs a ruling; the question is
+  open for the author (docs/findings.md, A2 section; dossier §18.147).
 
 **C7. Which settled projection.** (a) §12.2's hole identity: `fn g():
 Unit = { let k = fn(u: Unit) => (); k(()) }`, the lambda row

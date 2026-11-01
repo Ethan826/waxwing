@@ -41,8 +41,9 @@ vertical slice before adding language features. Task tracking is local.
   Features.Check.Strategy.Substitution import
   Domain.Verdict.Certified.Internal (BACKLOG R026); only
   Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Complete
-  import Domain.Verdict.EffectPackage.Internal (A2, §18.145); no Runtime
-  module imports
+  import Domain.Verdict.EffectPackage.Internal (A2, §18.145); only
+  Domain.Verdict.EffectPackage and its .Internal import
+  Domain.Verdict.EffectPackage.Types; no Runtime module imports
   Domain.Elaborating* or Features.Check.Generate*. Their re-exports
   keep the allowed form, and scripts/structure-elab.mjs pins their
   export lists (rule E6).

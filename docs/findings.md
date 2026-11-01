@@ -5212,8 +5212,10 @@ totals unchanged, 0 defects, 0 position findings.
   hole-bound package. Either the C6 prediction or G0's projection needs
   a ruling. The differential reporter records the pipeline's observed
   behavior (test/r0-a2-differential.test.mjs).
-- The M-B differential (Task 13) found no disagreement on 116 exercised
-  packages, bounded: five E2 sites (AtCallback, AtStage, AtApply, AtPipe,
+- The M-B differential (Task 13) found no disagreement: 116 packages
+  run; compared on 11 accepted (validator accepts ⇒ M-B holds) and 10
+  mark refusals (validator refuses ⇒ M-B fails); other refusals not
+  compared. Bounded: five E2 sites (AtCallback, AtStage, AtApply, AtPipe,
   AtDeferredRow) have no accepted-package coverage, binding-label marks
   are never mutated, and completion and settling are shared with the
   validator (§18.146).
