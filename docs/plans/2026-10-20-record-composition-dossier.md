@@ -7670,3 +7670,51 @@ RecordDefect; a C label with no partner fails Install; same-key labels
 with unequal argument counts are refused. (4) The C6-absent question
 (docs/findings.md). (5) The owed compatibility property needs "up to
 record field order" (14 corpus candidates; docs/findings.md).
+
+### 18.148 Completion wave: arity, companions, rulings ratified (2026-11-01)
+
+The author decided §18.147's open items; a scoped completion wave runs
+before the final acceptance verify (an acceptance verify started at
+9f582a5 was stopped at the author's direction; not a result; log kept as
+.build/evidence/2026-11-01-a2-verify-stopped). (1) Arity belongs in I3:
+record the declaration metadata needed to check effect-label arity and
+data type/row argument counts, built-ins included; check package images
+recursively, unused bindings included; invalid declaration metadata or a
+recorded application that contradicts it is a RecordDefect; an
+undeclared or wrong-arity application supplied by a package is
+Malformed. The metadata schema and an incremental estimate are written
+before coding; trusted-surface updates and effect-pin changes limited
+to this metadata are authorized; G0's problem pin and live behavior stay
+protected. (2) Step 0 checks the required companions of Install,
+HandlerLit and Defer against one explicit table, identities, sources and
+targets included, with restored-defect cases deleting or miswiring
+companions; this is local record consistency, not proof that generation
+recorded every source site; U6 stays open. (3) The three controller
+rulings are ratified and go into the specification with the implemented
+failure ordering: a ResultClauses variable outside the record-derived F
+is a RecordDefect; a C label lacking its ambient partner fails Install;
+same-key labels with unequal argument counts are refused, never zipped
+over a common prefix (I3 may refuse malformed package arities earlier;
+the obligation-level check stays defensive). (4) C6's prediction is
+corrected, G0's projection unchanged: field binding absent, refused at
+G0; field bound to a suitable hole, settling may give Int, the
+demonstrated shadow divergence; separate tests; the completion-order
+example distinguishes obligation-reading stages without claiming
+end-to-end acceptance; only the demonstrated hole-bound acceptance is
+the expected divergence; the replacement-compatibility decision stays
+open. (5) "Up to record field order" is approved for the owed
+compatibility property, with one canonical comparison preserving
+field/value associations, tail information and hole identities, never
+effect-label multiplicity or same-key occurrence order. Then a scoped
+review and the final routine verify. Estimate recorded in the run
+ledger; actual spend recorded; no new cap. Task 16 held; performance
+qualification separate; no push; no soundness claim.
+
+Incremental estimate (controller, before coding): two Opus implementers
+in parallel (arity: generation metadata, I3 check, metadata
+RecordDefect, defensive obligation check, tests, rows, pins and effect
+pin, about 0.5-0.8M with its review and fix round; companions, spec
+rulings, C6, canonical comparison, about 0.4-0.6M with review and fix
+round), one scoped Opus review of the wave (about 0.2M), integration and
+one routine verify (controller, about 0.1M): about 1.2-1.7M all in,
+3-5 hours of wall clock.
