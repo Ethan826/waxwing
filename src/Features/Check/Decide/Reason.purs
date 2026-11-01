@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Rules 1, 1′ and 3 of T-R0a §5.3 (Task 4.1): what blocks a
 -- whole-declaration Solved, the reason an Unresolved verdict carries,
 -- computed from the attempts, and the `SearchFault`s they imply.

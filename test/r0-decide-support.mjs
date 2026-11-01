@@ -29,6 +29,9 @@ const unsupport = value => {
   case 'Outside': return `Outside ${named(value.value0)}`;
   case 'EffectsUnchecked':
     return `EffectsUnchecked [${value.value0.map(operation).join(', ')}]`;
+  // A2: the defect's provenance kind and the limitation (spec §6).
+  case 'RecordDefective': return `RecordDefective ${named(value.value0)}`;
+  case 'EffectLimit': return `EffectLimit ${named(value.value0)}`;
   default: return named(value);
   }
 };

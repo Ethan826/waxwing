@@ -78,6 +78,7 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Entailed.Mgu`, `Features.Check.Entailed.Merge`,
   `Features.Check.Entailed.Triangular`,
   `Features.Check.Decide`, `Features.Check.Decide.Shadow`,
+  `Features.Check.Decide.Reason`, `Features.Check.Decide.Reading`,
   `Features.Check.Strategy`, `Features.Check.Strategy.Online`,
   `Features.Check.Strategy.Witness`, `Features.Check.Strategy.HoleContract`,
   `Features.Check.Strategy.ReadBack.Type`, `Domain.Verdict.Certified`,

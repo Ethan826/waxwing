@@ -17,7 +17,7 @@ const Verdict = await load('Domain.Verdict');
 const Search = await load('Domain.Verdict.Search');
 const Effect = await load('Domain.Recorded.Effect');
 const Reason = await load('Features.Check.Decide.Reason');
-const { mutant, provenance } = await defectCases(load);
+const { mutant, healthy, provenance } = await defectCases(load);
 const plain = stubs.recorded.problem(sources.clash);
 const fx032 = stubs.recorded.problem(sources.fx032, 'g');
 const complete = Verdict.ClaimsComplete.value;
@@ -56,16 +56,27 @@ test('C4(a)', () => {
   assert.ok(Effect.eqProvenance.eq(blocked[0].value0)(provenance));
   assert.ok(blocked.slice(1).every(item => item instanceof Verdict.Outside));
   assert.deepEqual(run({ strategies: [accepting()] }, mutant), {
-    verdict: `Unresolved Unsupported RecordDefective${outside}`,
+    verdict: `Unresolved Unsupported RecordDefective AtSite${outside}`,
     attempts: ['Accepted'], searchFaults: [] });
   // `certify`'s `RecordDefect` reads as a decline, not a refused
   // candidate, here and on a problem with no block.
   const refusal = new Search.RecordDefect({ provenance, check: 0 });
   for (const [problem, after] of [[mutant, outside], [plain, '']])
     assert.deepEqual(run({ strategies: [refusing(complete, refusal)] },
-      problem), { verdict: `Unresolved Unsupported RecordDefective${after}`,
+      problem), {
+      verdict: `Unresolved Unsupported RecordDefective AtSite${after}`,
       attempts: ['CheckFailed ClaimsComplete RecordDefect'],
       searchFaults: [] });
+});
+
+// The defect alone suppresses Solved: famw's mutant with its `outside`
+// markers cleared, beside its healthy twin.
+test('C4(a): the record defect alone blocks Solved', () => {
+  const options = () => ({ strategies: [accepting()] });
+  assert.equal(run(options(), { ...mutant, outside: [] }).verdict,
+    'Unresolved Unsupported RecordDefective AtSite');
+  assert.equal(run(options(), { ...healthy, outside: [] }).verdict,
+    'Solved');
 });
 
 // Spec §12 C4(b): with no candidate, or no strategy at all, the block
@@ -73,11 +84,11 @@ test('C4(a)', () => {
 test('C4(b) NoCandidate', () => {
   assert.deepEqual(run({ strategies: [ending(Verdict.Exhausted.value),
     ending(Verdict.Exhausted.value)] }, mutant), {
-    verdict: `Unresolved Unsupported RecordDefective${outside}`,
+    verdict: `Unresolved Unsupported RecordDefective AtSite${outside}`,
     attempts: ['Searched Exhausted', 'Searched Exhausted'],
     searchFaults: [] });
   assert.equal(run({}, mutant).verdict,
-    `Unresolved Unsupported RecordDefective${outside}`);
+    `Unresolved Unsupported RecordDefective AtSite${outside}`);
 });
 
 // Spec §6: a limitation is a decline; with every strategy declining,
@@ -88,11 +99,11 @@ test('limitations decline', () => {
     const refusal = notCertifiable(limitation);
     const options = { strategies: [refusing(complete, refusal),
       refusing(Verdict.Heuristic.value, refusal)] };
-    assert.deepEqual(run(options, plain).searchFaults, []);
-    const reason = reasonOf(options, plain);
-    assert.equal(reason.length, 1);
-    assert.ok(reason[0] instanceof Verdict.EffectLimit);
-    assert.equal(reason[0].value0, limitation);
+    const found = run(options, plain);
+    assert.deepEqual(found.searchFaults, []);
+    assert.equal(found.verdict, 'Unresolved Unsupported EffectLimit '
+      + limitation.constructor.name);
+    assert.equal(reasonOf(options, plain)[0].value0, limitation);
   }
 });
 

@@ -14,7 +14,7 @@ const trusted = [
   'Strategy.Substitution', 'Strategy.Candidate', 'Strategy.Atoms',
   'Strategy.Asked', 'GroundRule', 'Mentions', 'Spine', 'Decide.Open',
   'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Entailed.Triangular',
-  'Decide', 'Decide.Shadow',
+  'Decide', 'Decide.Shadow', 'Decide.Reason', 'Decide.Reading',
   'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
   'Strategy.ReadBack.Type',
   // A2 (plan Task 1): every Strategy.Effects module, as each lands.

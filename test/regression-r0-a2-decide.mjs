@@ -36,7 +36,8 @@ export const defectCases = async load => {
   const mutant = { ...problem, effects: { ...problem.effects,
     obligations: obligations.map((placed, at) =>
       at === index ? flipped(placed) : placed) } };
-  return { stubs, mutant, plain: stubs.recorded.problem(clash),
+  return { stubs, mutant, healthy: problem,
+    plain: stubs.recorded.problem(clash),
     provenance: obligations[index].provenance };
 };
 
@@ -58,12 +59,17 @@ const reasonOf = result => {
 
 export const a2DecideProbes = {
   // Task 12 (spec §6, C4(b)): with no strategy at all, the record defect
-  // still blocks, first, as `Unsupported RecordDefective`.
+  // still blocks, first, as `Unsupported RecordDefective`; and with no
+  // other block, it alone keeps an accepted candidate from Solved.
   'r0-a2-defect-block': async context => {
     const { stubs, mutant } = await defectCases(loader(context));
     const found = reasonOf(stubs.decide(stubs.checking({}), mutant));
-    if (found.slice(0, 2).join(' ') !== 'Unsupported RecordDefective')
-      fail(`a record defect not blocked: ${found.join(' ')}`);
+    const alone = stubs.decide(stubs.checking({ strategies: [
+      stubs.behaviours.accepting()] }), { ...mutant, outside: [] })
+      .value0.verdict.constructor.name;
+    if (found.slice(0, 2).join(' ') !== 'Unsupported RecordDefective'
+      || alone !== 'Unresolved')
+      fail(`a record defect not blocked: ${found.join(' ')}; alone: ${alone}`);
     passed(context);
   },
   // Task 12 (spec §6): a `NotCertifiable` limitation declines; it is not

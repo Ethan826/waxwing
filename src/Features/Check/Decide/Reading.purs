@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- What one attempt says to rule 3 (T-R0a §5.3; Tasks 4.1, 4.2), split
 -- from Features.Check.Decide.Reason. Every classifier names each
 -- constructor it reads: no wildcard arm carries a meaning, so a new

@@ -205,6 +205,10 @@ adding a bypass allowlist.
   - `Features.Check.Decide`: rule 1 blocks `Solved` while an atom is open.
   - `Features.Check.Decide.Shadow`: assembles the one detector `decide`
     uses.
+  - `Features.Check.Decide.Reason`: `blocks` puts A2's record defect
+    first (spec §6); a dropped block lets a defective problem be Solved.
+  - `Features.Check.Decide.Reading`: reads each refusal as a decline or
+    a refused candidate (spec §6); a wrong reading misroutes a refusal.
   - `Features.Check.Strategy`: `checked` takes the verdict's `Valid` and
     compilation from the check's `Certified` alone; a spec has no
     separate witness adapter (BACKLOG R026).
