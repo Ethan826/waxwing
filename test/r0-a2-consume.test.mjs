@@ -51,8 +51,8 @@ mark: written(mark) });
 const mrow = (labels, rigid = null) => ({ labels, tail: rigid === null
   ? Nothing.value : new Just(new Effect.EffRigid(rigid)) });
 const site = (kind, source, target, flags = {}) => ({ site:
-  Effect[kind].value, source, target, marks: flags.marks ?? true,
-bare: flags.bare ?? false });
+  typeof kind === 'string' ? Effect[kind].value : kind, source, target,
+marks: flags.marks ?? true, bare: flags.bare ?? false });
 
 // C10 (spec §12): obligation 2 is h's `AtCallback`, its stage row bound
 // to `State(Int) + ϱ`, ϱ the declared rows' rigid tail.
@@ -151,4 +151,37 @@ test('an unreadable side is refused at the first check', () => {
   const problem = effects('fn g(h: Unit -> Unit with Log): Unit with '
     + 'Log = h(());', 'g');
   refusedAt(judged({}, consumeAt(problem, 2)), 0);
+});
+
+test('a source ending in a hole is refused at the first check', () => {
+  // Defensive: `settle` leaves no hole. Read as rigid, it would reach
+  // the tail check (3) instead.
+  const problem = effects('fn g(h: Unit -> Unit with Log): Unit with '
+    + 'Log = h(());', 'g');
+  refusedAt(judged({ effects: [[problem.flexEff[0],
+    row([label(1, 'M')], { hole: 3 })]] }, consumeAt(problem, 2)), 0);
+});
+
+// A label carrying `Unit -> Unit with Log` at the given mark.
+const unit = new Effect.MBase(Atom.UnitBase.value);
+const carrying = mark => mlabel(2, 'M', [new Effect.MArrow(unit,
+  mrow([mlabel(1, mark)]), unit)]);
+
+test('InstallR ignores top-level marks only', () => {
+  // The closed-R program's InstallR: R = `Log` at N into `Log + ϱ` (M).
+  const problem = effects('fn c(): Int with Log = with handler State(Int) '
+    + '{ get() => 1, put(v) => () } { Log.log(1); State.get() };', 'c');
+  accepted(judged({ effects: [[problem.flexEff[0], row([label(1, 'N')])]] },
+    consumeAt(problem, 1)));
+  // A nested mark still counts: partner 0, arguments 1.
+  refusedAt(judged({}, site('InstallR', mrow([carrying('N')]),
+    mrow([carrying('M')], 0), { marks: false })), 1);
+});
+
+test('a rigid clause row into C reaches Definition 4.2', () => {
+  // ClauseIntoC (bare, marks): `Log` partner 0, edge 1, tail 2; exact
+  // counts `Log` 3, `Ask` 4.
+  refusedAt(judged({}, site(new Effect.ClauseIntoC(0),
+    mrow([mlabel(1, 'M')], 0), mrow([mlabel(1, 'M'), mlabel(0, 'M')], 0),
+    { bare: true })), 4, true);
 });

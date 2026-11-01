@@ -39,7 +39,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst)
 import Domain.Recorded.Effect (MRow, SiteKind(..))
 import Domain.Row (LabelKey)
-import Domain.Verdict.EffectPackage (PLabel, PRow, PTail, PTy)
+import Domain.Verdict.EffectPackage (PLabel, PRow, PTail(..), PTy)
 import Features.Check.Strategy.Effects.Equal (samePTy)
 import Features.Check.Strategy.Effects.Handler (Checks, check, sequenced)
 import Features.Check.Strategy.Effects.Judged (Context, Judged)
@@ -83,15 +83,20 @@ readingAt record = case record.site of
     { arguments: not record.bare, marks: record.marks, tail: false }
 
 -- A keyless label on either side cannot be matched: the run stops at the
--- first check (spec §4.2).
+-- first check (spec §4.2). A source ending in a hole is refused there
+-- too: `settle` leaves no hole in a settled row, so this is defensive and
+-- unreachable from `certify`.
 consumed ∷ Context → Reading → PRow → PRow → Checks
 consumed context reading row target =
   maybe (check false) judged
-    (Tuple <$> traverse keyed source.labels <*> grouped target)
+    (Tuple <$> sourceKeyed <*> grouped target)
   where
   source
     | reading.tail = row
     | otherwise = row { tail = Nothing }
+  sourceKeyed
+    | holeTail source = Nothing
+    | otherwise = traverse keyed source.labels
   keyed label = flip Tuple label <$> key label
   judged (Tuple sourceKeys targetForm) =
     labels sourceKeys targetForm
@@ -99,8 +104,11 @@ consumed context reading row target =
       >=> rigid (const (exact sourceKeys target))
   labels sourceKeys targetForm = sequenced
     (mapWithIndex (paired context reading sourceKeys targetForm) sourceKeys)
-  -- Run only when s ends in a rigid ϱ (settled rows hold no hole).
-  rigid checks = maybe pure checks source.tail
+  -- Run only when s ends in a rigid ϱ.
+  rigid checks = maybe pure (rigidOnly checks) source.tail
+  rigidOnly checks = case _ of
+    PTailRigid variable → checks (PTailRigid variable)
+    PTailHole _ → pure
 
 paired
   ∷ Context
@@ -130,6 +138,13 @@ argumentsEqual context lefts rights =
   length lefts == length rights && all identity (zipWith same lefts rights)
   where
   same left right = isRight (samePTy context left right)
+
+holeTail ∷ PRow → Boolean
+holeTail row = maybe false isHole row.tail
+  where
+  isHole = case _ of
+    PTailHole _ → true
+    PTailRigid _ → false
 
 endsIn ∷ PRow → PTail → Checks
 endsIn target ending = check (target.tail == Just ending)
