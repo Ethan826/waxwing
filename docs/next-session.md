@@ -12,10 +12,12 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. The A2 specification was ruled (§18.139), amended in one
-consistency pass (829ada5) and adversarially reviewed (§18.140: one
-S1, thirteen S2, author items A1-A6). Nothing from the review is fixed;
-a fix pass waits for the author.
+The A2 validator completion wave (dossier §18.148). Read the last
+section of docs/plans/2026-10-30-overnight-ledger.md ("A2 checkpoint
+before a context reset") first: it names the branches, what is done,
+what was running, and the exact next steps. Plan:
+docs/plans/2026-10-31-a2-validator-plan.md; live ledger (git-ignored):
+.superpowers/sdd/2026-10-31-a2-validator-plan/progress.md.
 
 ## Where the work is
 

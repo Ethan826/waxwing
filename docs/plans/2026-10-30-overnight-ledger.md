@@ -475,3 +475,36 @@ InRecord provenance; stricter ResultClauses rule; index-threading
 `Checks`; the spec's tail-is-ordinary rule over the brief). For Task 17's
 records: spec §12 C4's premise is wrong (famw records no AtInstalledC).
 No routine verify has run yet in this stage.
+
+## A2 checkpoint before a context reset (2026-11-01, afternoon)
+
+Integration branch r0-t2-d1 at the commit recording this section (on
+c9b2fbc). Tasks 0-15 implemented, reviewed, integrated, pinned;
+whole-branch review done and its fix wave integrated (9f582a5); records
+§18.145-§18.148. The acceptance verify at 9f582a5 was STOPPED by the
+author (not a result). The author's §18.148 completion wave is running:
+- Wave B (companions, spec rulings, C6, canonical comparison): DONE on
+  branch a2v/companions (worktree .claude/worktrees/on-lane-d), commits
+  9e64c81, 78e2646, 4964258 on c9b2fbc; not yet integrated; report
+  summarized in .superpowers/sdd/2026-10-31-a2-validator-plan/
+  progress.md (git-ignored).
+- Wave A (arity metadata, I3 arity check, record check 5, effect pin):
+  was RUNNING on branch a2v/arity (worktree .claude/worktrees/on-lane-c)
+  at c9b2fbc. After a reset its report is lost: inspect
+  `git log c9b2fbc..a2v/arity` and the worktree's status; its schema
+  document should be docs/plans/2026-11-01-a2-arity-metadata.md.
+Next: (1) finish or review wave A's result (spec reviewer, Opus) and
+wave B's (one scoped review of both additions together is acceptable);
+(2) integrate both onto r0-t2-d1 by cherry-pick (record check numbering
+fixed: 0 flags, 1 references, 2 placement, 3 Fail invariant,
+4 companions, 5 arity; expect conflicts in Record.purs's check list,
+Scope and RecordEntries.Entry, AGENTS.md/engineering.md/structure lists,
+regression-r0-a2 spreads — keep both), re-pin, regenerate the effect pin
+only for the metadata field (wave A shows it), run the needle check
+over all registries; (3) one routine verify alone under the lock;
+(4) record §18.149 and the final report (validator implementation;
+fixture-level differential evidence; deferred corpus checks; current
+certification behavior: Task 16 held, minter under F14). Estimate in
+§18.148; spend so far this wave: wave B about 0.25M. Every controller
+command starts with `cd /Users/ethan/Desktop/waxwing/.claude/worktrees/
+r0-t2-d1 &&` (a lane worktree once received a commit by mistake).
