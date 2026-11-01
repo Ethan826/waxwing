@@ -4,9 +4,13 @@
 // laid over Task 11's honest defaults (`honest`: types Unit, rows
 // closed, terms N) so it is a whole package; cases that judge a
 // hand-built record or two bare types have no declaration and are not
-// here. Then a failing handler (E4's and E5's edges on an accepted
-// package) and rigid-mark cases, so valuations beyond the one empty one
-// run. Every case is [name, problem, input].
+// here. Task 10's cases (C1, C15, C16) are Task 11's sources and
+// packages, already in `validateList`; its own tests judge Dep, not a
+// package. Then a failing handler (E4's and E5's edges on an accepted
+// package), a ResultC against an annotation (Definition 4.1(d), its C
+// closed and holding `Log`) and
+// rigid-mark cases, so valuations beyond the one empty one run. Every
+// case is [name, problem, input].
 import { packageOf } from './r0-a2-package.mjs';
 
 const label = (effect, mark, args = []) => ({ effect, args, mark });
@@ -135,6 +139,13 @@ export const laneList = cases => {
       + 'fn main(): Int = 0;'), 'h', effects => [{ effects: [1, 2, 3].map(
       index => [effects.flexEff[index], row([failE])]),
     marks: effects.positions.map(position => [position, 'M']) }]),
+    // mk()'s ResultC (owned C) against take's annotation C: one `Equal`
+    // under Definition 4.1(d).
+    ...['', 'Log + '].flatMap(written => family(`owned C ${written}`,
+      equalSource(`fn mk(): Handler(nofail Ask with ${written}...s) with `
+        + `pure = handler Ask { ask() => ${written ? 'Log.log(1)' : '()'} };`
+        + `\nfn take(h: Handler(nofail Ask with ${written}...s)): Unit = ();`
+        + '\nfn use(): Unit = take(mk());'), 'use', () => [{}])),
     ...family('rigid call J', equalSource('fn f(): Unit with nofail(k) Log '
       + '= Log.log(1);\nfn g(): Unit with nofail(j) Log = f();'), 'g',
     rigid),

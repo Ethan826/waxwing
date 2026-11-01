@@ -14,11 +14,19 @@ import { laneList } from './r0-a2-mb-lanes.mjs';
 // value, is judged under every valuation of the declaration's rigid
 // marks and compared with `judgeObligations` on the same package.
 // bounded agreement on exercised inputs only; not E12 exhaustiveness,
-// not soundness (the author's D6 ruling). The exercised inputs: Task
+// not soundness; completion and settling (P_c) shared with the
+// validator; a forged position is a `marks` entry, binding marks are
+// never forged (the author's D6 ruling). The exercised inputs: Task
 // 11's case packages, Tasks 7-9's packages over honest defaults
-// (test/r0-a2-mb-lanes.mjs), rigid-mark cases, and one single-term
-// forgery per position of each. A disagreement is a stop for the
-// author: neither side is presumed correct.
+// (test/r0-a2-mb-lanes.mjs), a failing handler, an owned C under
+// Definition 4.1(d), rigid-mark cases, and one single-term forgery per
+// `marks` entry of each. Marks on labels inside bindings are read as
+// constants, so no refusal of a binding mark is counted. The output
+// names the edge kinds exercised on accepted packages, and the E2
+// sites exercised on none. The floors asserted below are the
+// observed counts, guarding against a vacuous run, not derived bounds.
+// A disagreement is a stop for the author: neither side is presumed
+// correct.
 const cases = await validateCases(load);
 const mb = differential(cases);
 const list = [...validateList(cases), ...laneList(cases)];
@@ -30,12 +38,26 @@ const accepts = run => run.validator === 'Right';
 test('accepted packages pass the pinned graph on exercised inputs', t => {
   const valuations = runs.map(run => `${run.valuations.n}:${
     run.valuations.count}`);
+  const accepted = runs.filter(accepts);
+  const kinds = [...new Set(accepted.flatMap(run => [...run.exercised]))]
+    .sort();
   t.diagnostic(`${runs.length} packages (${list.length} cases); ${
-    runs.filter(accepts).length} accepted; n:valuations run ${
+    accepted.length} accepted, ${accepted.filter(run =>
+    run.graph.edges.length + run.graph.equal.length > 0).length
+  } with a non-empty graph; n:valuations run ${
     [...new Set(valuations)].join(' ')}`);
+  t.diagnostic(`edge kinds on accepted packages: ${kinds.join(', ')}`);
+  const unexercised = ['E2 AtCallback', 'E2 AtStage', 'E2 AtApply',
+    'E2 AtPipe', 'E2 AtDeferredRow', 'E2 ClauseIntoC']
+    .filter(kind => !kinds.includes(kind));
+  t.diagnostic(`not on any accepted package: ${unexercised.join(', ')
+  }; binding marks are never forged`);
   for (const run of runs)
     assert.equal(run.valuations.count, 2 ** run.valuations.n, run.name);
-  assert.ok(runs.filter(accepts).length >= 9);
+  assert.ok(accepted.length >= 11);
+  for (const kind of ['E1', 'E2', 'E4', 'E5', 'E6',
+    'E1 Definition 4.1(d)', 'E1 Definition 4.1(d) marks'])
+    assert.ok(kinds.includes(kind), kind);
   assert.ok(runs.some(run => accepts(run) && run.valuations.n >= 2));
   assert.deepEqual(acceptedButFailing(runs), []);
 });
@@ -49,8 +71,13 @@ const markRefusals = families.flatMap(([base, ...forged]) =>
 
 test('refused mark packages fail the pinned graph on exercised inputs',
   t => {
-    t.diagnostic(`${markRefusals.length} mark refusals`);
-    assert.ok(markRefusals.length >= 8);
+    t.diagnostic(`${markRefusals.length} mark refusals in ${new Set(
+      markRefusals.map(run => run.problem)).size} families`);
+    assert.ok(markRefusals.length >= 10);
+    // A term change reaches only an obligation check, never step 0 or I3.
+    for (const run of markRefusals)
+      assert.ok(['ObligationFailed', 'NotCertifiable ForcedTail']
+        .includes(run.validator), `${run.name}: ${run.validator}`);
     const passing = markRefusals.filter(run => run.mb).map(run =>
       `${run.name}: judgeObligations refuses (${run.validator}); `
       + 'the pinned M-B graph holds');
@@ -93,7 +120,7 @@ test('least terms pass on exercised inputs', t => {
     .map(([base]) => base)
     .filter(base => criterion(base.graph).ok);
   t.diagnostic(`${eligible.length} satisfiable cases`);
-  assert.ok(eligible.length >= 9);
+  assert.ok(eligible.length >= 11);
   const refused = eligible.flatMap(base => {
     const least = mb.leastOf(base.problem, base.input, base.graph,
       base.terms);
@@ -106,12 +133,11 @@ test('least terms pass on exercised inputs', t => {
 
 test('agreement scope', t => {
   t.diagnostic(scope);
-  assert.equal(scope, 'bounded agreement on exercised inputs only; '
-    + 'not E12 exhaustiveness, not soundness');
+  assert.ok(scope.startsWith('bounded agreement on exercised inputs '
+    + 'only; not E12 exhaustiveness, not soundness;'));
   const header = readFileSync('test/r0-a2-mb.test.mjs', 'utf8')
     .replace(/\n\/\/ /g, ' ');
-  assert.ok(header.includes('bounded agreement on exercised inputs only; '
-    + 'not E12 exhaustiveness, not soundness'));
+  assert.ok(header.includes(scope));
 });
 
 test('the pinned check runs every valuation of the rigid marks', () => {

@@ -54,6 +54,8 @@ export const collector = m => (problem, pc) => {
   const edges = [];
   const equal = [];
   const gaps = [];
+  // The edge kinds that contributed an edge or an equality here.
+  const exercised = new Set();
   let at = -1;
   const gap = why => gaps.push([at, why]);
   const read = reader(m, pc, gap);
@@ -119,9 +121,12 @@ export const collector = m => (problem, pc) => {
     equal.push([left.label.mark, right.label.mark]);
     const owned = left.clauses !== null || right.clauses !== null;
     eqRow(left.inference, right.inference, { marks: !owned });
-    if (owned)
-      eqRow(left.clauses ?? left.inference, right.clauses ?? right.inference,
-        { marks: true, bare: true });
+    const before = equal.length;
+    if (!owned) return;
+    exercised.add('E1 Definition 4.1(d)');
+    eqRow(left.clauses ?? left.inference, right.clauses ?? right.inference,
+      { marks: true, bare: true });
+    if (equal.length > before) exercised.add('E1 Definition 4.1(d) marks');
   };
   const consume = item => {
     const site = item.site.constructor.name;
@@ -131,6 +136,7 @@ export const collector = m => (problem, pc) => {
       read.mRow(item.target))) {
       if (!bare) args(s.args, rho.args);
       if (marks) edges.push([rho.mark, s.mark]);
+      if (marks) exercised.add(`E2 ${site}`);
     }
   };
   const handlerLit = record => {
@@ -142,7 +148,8 @@ export const collector = m => (problem, pc) => {
     }
   };
   const install = record => {
-    if (record.handler.constructor.name !== 'MHandler') return;
+    if (record.handler.constructor.name !== 'MHandler')
+      return gap('Install over a non-handler type (not read)');
     const handler = read.mTy(record.handler);
     const frame = read.markAt(record.frame);
     const c = handler.clauses ?? handler.inference;
@@ -160,12 +167,17 @@ export const collector = m => (problem, pc) => {
   HandlerLit: value => handlerLit(value.value0),
   Install: value => install(value.value0),
   Defer: value => defer(value.value0) };
+  const edgeKind = { Equal: 'E1', Consume: 'E2', HandlerLit: 'E4',
+    Install: 'E5', Defer: 'E6' };
   problem.effects.obligations.forEach((placed, index) => {
     at = index;
-    kinds[placed.value.constructor.name]?.(placed.value);
+    const name = placed.value.constructor.name;
+    const size = edges.length + equal.length;
+    kinds[name]?.(placed.value);
+    if (edges.length + equal.length > size) exercised.add(edgeKind[name]);
   });
   // Each recorded position's node and its term in P_c.
   const terms = new Map(problem.effects.positions.map(position =>
     [read.markAt(position), read.termAt(position)]));
-  return { graph: { edges, equal }, terms, gaps };
+  return { graph: { edges, equal }, terms, gaps, exercised };
 };

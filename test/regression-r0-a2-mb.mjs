@@ -12,7 +12,9 @@ import { c2c, c7, sources, validateCases }
   from './regression-r0-a2-validate.mjs';
 
 export const scope = 'bounded agreement on exercised inputs only; '
-  + 'not E12 exhaustiveness, not soundness';
+  + 'not E12 exhaustiveness, not soundness; completion and settling '
+  + '(P_c) shared with the validator; a forged position is a `marks` '
+  + 'entry, binding marks are never forged';
 
 // Task 11's case packages (test/r0-a2-cases.test.mjs and
 // test/r0-a2-validate.test.mjs), as [name, problem, input].
@@ -61,24 +63,30 @@ export const differential = cases => {
   // The pinned M-B verdict and the validator's on one package.
   const judgeBoth = (problem, input) => {
     const pc = cases.context(problem, input).package;
-    const { graph, terms, gaps } = collect(problem, pc);
+    const { graph, terms, gaps, exercised } = collect(problem, pc);
     const missing = [...terms].filter(([, term]) => term === undefined);
     const rigid = problem.effects.rigidMarks;
     const valuations = everyValuation(pinned(graph, [...terms.keys()]
       .filter(node => terms.get(node) !== undefined),
     node => terms.get(node)), rigid);
-    return { graph, terms, gaps: [...gaps, ...missing.map(([node]) =>
+    return { graph, terms, exercised, gaps: [...gaps, ...missing.map(([node]) =>
       [-1, `no term at ${node}`])], valuations,
     mb: gaps.length === 0 && missing.length === 0
       && valuations.failing.length === 0,
     validator: describe(cases.judge(problem, input)) };
   };
-  // The case package, then one forgery per position (statements §3: a
-  // position is a package-supplied term). `terms` lists the positions'
-  // nodes in `positions` order.
+  // `terms` lists the positions' nodes in `positions` order, one each.
+  const nodesOf = (problem, terms) => {
+    if (terms.size !== problem.effects.positions.length)
+      throw new Error('two positions share a node');
+    return [...terms.keys()];
+  };
+  // The case package, then one forgery per position: a `marks` entry
+  // (statements §3 also counts the marks on labels inside bindings as
+  // flexible; those are read as constants and never forged).
   const variants = (name, problem, input) => {
     const base = { name, problem, input, ...judgeBoth(problem, input) };
-    const nodes = [...base.terms.keys()];
+    const nodes = nodesOf(problem, base.terms);
     return [base, ...problem.effects.positions.flatMap((position, index) => {
       const term = base.terms.get(nodes[index]);
       if (term === undefined) return [];
@@ -88,10 +96,10 @@ export const differential = cases => {
     })];
   };
   const leastOf = (problem, input, graph, terms) => {
-    const least = leastTerms(graph, [...terms.keys()]);
-    const positions = problem.effects.positions;
-    return positions.reduce((made, position, index) => withTerm(made,
-      position, least.get([...terms.keys()][index])), input);
+    const nodes = nodesOf(problem, terms);
+    const least = leastTerms(graph, nodes);
+    return problem.effects.positions.reduce((made, position, index) =>
+      withTerm(made, position, least.get(nodes[index])), input);
   };
   return { judgeBoth, variants, leastOf, withTerm };
 };
