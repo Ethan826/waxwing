@@ -135,7 +135,8 @@ test('E9 after settling', () => {
   const payload = recordAt(k, 1, 'FailConcrete');
   const judged = image => Sites.failConcreteCheck(context({
     types: [[payload.value0, image]] }))(payload);
-  // A hole settles to Int, which has a key: the predicted divergence.
+  // A hole settles to Int, which has a key: the divergence, observed on
+  // the fixture.
   accepted(judged({ var: { hole: 1 } }));
   refusedAt(judged({ var: { rigid: 0 } }), 0);
   refusedAt(judged({ arrow: ['Int', row([]), 'Int'] }), 0);

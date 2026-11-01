@@ -80,7 +80,8 @@ import Features.Check.Strategy.Effects.RecordCompanions
 import Features.Check.Strategy.Effects.RecordRefs (Refs)
 
 -- The record's domains (spec §4.1), the forced tails F, the flexible
--- variables a `FailConcrete` names and the companions owners require.
+-- variables a `FailConcrete` names, the companions owners require and
+-- the `declared` arities, present only when valid (check 5).
 type Scope =
   { vars ∷ Map Var VarInfo
   , effectRigids ∷ Set VarId
@@ -90,7 +91,7 @@ type Scope =
   , flexTy ∷ Set Var
   , forced ∷ Set EVar
   , concrete ∷ Set Var
-  , arities ∷ Maybe Declarations
+  , declared ∷ Maybe Declarations
   , companions ∷ Companions
   }
 
@@ -139,7 +140,7 @@ defectAt scope entry = map at (findIndex identity checks)
         || any (unforced scope) (entry.refs.effects <> entry.refs.placed)
     , any (payloadWrong scope) entry.refs.payloads
     , maybe false (companionWrong scope.companions) entry.obligation
-    , applicationsWrong scope.arities entry.refs
+    , applicationsWrong scope.declared entry.refs
     ]
 
 referencesKnown ∷ Scope → Refs → Boolean
@@ -194,7 +195,7 @@ scopeOf problem =
   , flexTy: fromFoldable recorded.flexTy
   , forced: fromFoldable (map _.forced (forcedTails problem))
   , concrete: fromFoldable (mapMaybe concreteOn effects.obligations)
-  , arities: validArities problem
+  , declared: validArities problem
   , companions: companionsOf effects.obligations
   }
   where

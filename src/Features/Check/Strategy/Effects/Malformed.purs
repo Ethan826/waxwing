@@ -53,6 +53,10 @@ type Scope =
   , owned ∷ Set EVar
   }
 
+-- Precondition (review M1): the recorded problem has passed record
+-- validation, in particular record check 5, so its declared arities are
+-- valid; check (k) reads them as recorded. `validate` guarantees it by
+-- running `recordDefect` first. A direct caller must do the same.
 malformed ∷ RecordedProblem → EffectPackage → Maybe MalformedReason
 malformed problem package = findMap run checks
   where
@@ -165,8 +169,9 @@ keylessFailIn ∷ Scope → Maybe MalformedReason
 keylessFailIn = firstKey KeylessFail keylessFail
 
 -- (k): the first key's first application, in pre-order, that the
--- declared arities lack or count otherwise. Record validation (step 0)
--- has checked the arities themselves.
+-- declared arities lack or count otherwise. Precondition (`malformed`'s,
+-- review M1): record check 5 has passed, so the arities read here are
+-- valid; `validate` runs `recordDefect` first. No refusal checks it here.
 arityIn ∷ Scope → Maybe MalformedReason
 arityIn scope = findMap faulty scope.parts
   where

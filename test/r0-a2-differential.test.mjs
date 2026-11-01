@@ -8,8 +8,8 @@ import { classify, holeSettledPayloads, render,
 
 // A2 Task 14 (docs/plans/2026-10-31-a2-validator-plan.md): the
 // differential reporter and C6. Fixture evidence only: corpus reporting
-// waits for Task 16 and tranche 2. Every validator acceptance here is
-// fixture-level, so it is labeled "predicted".
+// waits for Task 16 and tranche 2. Every validator result here is
+// fixture-level, so it is labeled "observed on the fixture".
 const Verdict = await load('Domain.Verdict');
 const { cases, k, kInput, two, twoInput } = await reportCases(load);
 const { problemOf, honest, validate, describe, Effect, Maps } = cases;
@@ -58,7 +58,8 @@ test('fixture and corpus kept apart', () => {
   const rows = [classify({ name: 'a', evidence: 'fixture', ...base }),
     classify({ name: 'b', evidence: 'corpus', ...base })];
   assert.deepEqual(rows.map(row => row.evidence), ['fixture', 'corpus']);
-  assert.deepEqual(rows.map(row => row.basis), ['predicted', 'observed']);
+  assert.deepEqual(rows.map(row => row.basis),
+    ['observed on the fixture', 'observed']);
   assert.throws(() => classify({ name: 'c', ...base }), /fixture or corpus/);
   const [fixtureLines, corpusLines] = render(rows).split('corpus evidence:');
   assert.match(fixtureLines, /\ba: Agree/);
@@ -153,7 +154,7 @@ test('C6 field absent: refused at G0, no divergence', () => {
 });
 
 // Field explicitly bound to a hole: settling gives Int, E9 holds and the
-// full validator accepts (run on this fixture): the demonstrated shadow
+// full validator accepts (observed on the fixture): the demonstrated shadow
 // divergence, the only C6 row in the expected-divergence category. The
 // replacement-compatibility decision stays open.
 test('C6 field bound to a hole: the expected divergence', () => {
@@ -162,6 +163,6 @@ test('C6 field bound to a hole: the expected divergence', () => {
   assert.deepEqual(holeSettledPayloads(k, bound), [1]);
   const c6 = fixture('k-bound', refuses('FailNeedsConcrete', 1), k, bound);
   assert.equal(c6.category, 'C6-expected-divergence');
-  assert.match(render([c6]), /predicted validator accepts/);
-  assert.doesNotMatch(render([c6]), /observed/);
+  assert.match(render([c6]), /observed on the fixture: validator accepts/);
+  assert.doesNotMatch(render([c6]), /predicted/);
 });

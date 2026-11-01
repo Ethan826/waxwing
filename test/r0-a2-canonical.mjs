@@ -5,7 +5,9 @@
 // (`Map Var PTy`, `Map Var PRecordRow`, `Map EVar PRow`):
 //   - a record's fields are sorted by label, each label keeping its own
 //     value (RTExpr `Record`, PTy's `{ fields, tails }`);
-//   - a record's tails are compared as a multiset (sorted), none dropped;
+//   - a record's tails keep their order, none dropped (the author approved
+//     record FIELD order only; controller ruling on review I2,
+//     2026-11-01);
 //   - every other array keeps its order and length: effect labels keep
 //     their multiplicity and their occurrence order, same-key and
 //     otherwise (the ruling does not permit reordering labels);
@@ -14,6 +16,9 @@
 // Two values compare equal iff their canonical forms are equal. The
 // property itself stays owed until tranche 2's read-back produces honest
 // packages; this file defines the comparison only.
+// A test helper, not shipped code: it has no restored-defect regression
+// row (review M10). Its mutation check was the development RED of its
+// unit tests, test/r0-a2-canonical.test.mjs.
 import { load } from './r0-generate-support.mjs';
 
 const Maps = await load('Data.Map.Internal');
@@ -22,15 +27,13 @@ const { unfoldableArray } = await load('Data.Unfoldable');
 const isMap = value => ['Leaf', 'Node'].includes(value.constructor.name);
 const isTuple = value => value.constructor.name === 'Tuple';
 const text = value => JSON.stringify(value);
-const byText = (left, right) =>
-  text(left) < text(right) ? -1 : text(left) > text(right) ? 1 : 0;
 
-// Fields as [label, value] pairs sorted by label; tails sorted.
+// Fields as [label, value] pairs sorted by label; tails in order.
 const record = (fields, tails) => ({ record: {
   fields: fields.map(field => [field.value0, canonical(field.value1)])
     .sort((left, right) => left[0] < right[0] ? -1
       : left[0] > right[0] ? 1 : 0),
-  tails: tails.map(canonical).sort(byText) } });
+  tails: tails.map(canonical) } });
 
 const constructed = value => {
   const name = value.constructor.name;
@@ -59,6 +62,6 @@ const canonical = value => {
 
 export const canonicalSubstitution = canonical;
 
-// Equal up to record field order (and record tail order), nothing else.
+// Equal up to record field order, nothing else.
 export const sameSubstitution = (left, right) =>
   text(canonical(left)) === text(canonical(right));

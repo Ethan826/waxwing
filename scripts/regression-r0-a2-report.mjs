@@ -49,11 +49,11 @@ export const a2ReportRows = [
     message: /render merged the fixture and corpus rows/
   },
   {
-    // A corpus row labeled "predicted" like a fixture row.
+    // A corpus row labeled "observed on the fixture" like a fixture row.
     name: 'r0-a2-evidence-basis',
     tree: 'test',
-    edits: edit("item.evidence === 'fixture' ? 'predicted' : 'observed'",
-      "'predicted'"),
+    edits: edit("item.evidence === 'fixture' ? 'observed on the fixture'\n"
+      + "      : 'observed' };", "'observed on the fixture' };"),
     probe: 'r0-a2-evidence-basis',
     message: /a corpus row's basis: expected observed/
   }

@@ -32,6 +32,10 @@ const consoleLabel = { effect: Row.ConsoleEffect.value, args: [],
 const arrow = labels => Maps.singleton(hole(1))(new P.PArrow(pInt,
   { labels, tail: Nothing.value }, pInt));
 
+// A package's record row of `pairs` and `tails`, bound to hole 2.
+const row = (pairs, tails) => Maps.singleton(hole(2))(
+  { fields: fields(pairs), tails });
+
 test('field-order variants are equal', () => {
   const ab = record([['a', bool], ['b', int]]);
   const ba = record([['b', int], ['a', bool]]);
@@ -39,14 +43,21 @@ test('field-order variants are equal', () => {
   // Nested, under an arrow.
   assert.ok(sameSubstitution(sigma(new Atom.Arrow(ab, ba)),
     sigma(new Atom.Arrow(ba, ab))));
-  // A package's record rows, and tails as a multiset.
-  const row = (pairs, tails) => Maps.singleton(hole(2))(
-    { fields: fields(pairs), tails });
+  // A package's record rows, tails in the same order.
   assert.ok(sameSubstitution(row([['x', pInt], ['y', pBool]],
     [hole(3), hole(4)]), row([['y', pBool], ['x', pInt]],
-    [hole(4), hole(3)])));
+    [hole(3), hole(4)])));
   assert.deepEqual(canonicalSubstitution(sigma(ab)),
     canonicalSubstitution(sigma(ba)));
+});
+
+// Review I2 (controller ruling, 2026-11-01): the author approved record
+// field order only, so tails keep their order.
+test('records differing only in tail order are not equal', () => {
+  assert.ok(!sameSubstitution(row([['x', pInt]], [hole(3), hole(4)]),
+    row([['x', pInt]], [hole(4), hole(3)])));
+  assert.ok(!sameSubstitution(sigma(record([], [hole(3), hole(4)])),
+    sigma(record([], [hole(4), hole(3)]))));
 });
 
 test('a moved field value is not equal', () => {

@@ -42,7 +42,7 @@ export const a2ArityRows = [
     // Record check 5 never judges an entry.
     name: 'r0-a2-arity-record',
     file: record,
-    needle: '    , applicationsWrong scope.arities entry.refs\n',
+    needle: '    , applicationsWrong scope.declared entry.refs\n',
     replacement: '    , applicationsWrong Nothing entry.refs\n',
     probe: 'r0-a2-arity-record',
     message: /r0-a2-arity-record: \[\["Cell declared with two",null\]/
@@ -54,7 +54,8 @@ export const a2ArityRows = [
     needle: '    && Map.keys declarations.types == declared\n',
     replacement: '    && Map.size declarations.types >= 0\n',
     probe: 'r0-a2-arity-holders',
-    message: /arity-holders: \[\["a data type not in holders",null\]\]/
+    message: new RegExp('arity-holders: \\[\\["a data type not in '
+      + 'holders",null\\],\\["a declared data type dropped",null\\]\\]')
   },
   {
     // The built-ins' recorded counts unchecked.
@@ -80,8 +81,8 @@ export const a2ArityRows = [
     // Entries judged against invalid arities, so the entry is blamed.
     name: 'r0-a2-arity-blame',
     file: record,
-    needle: '  , arities: validArities problem\n',
-    replacement: '  , arities: Just recorded.effects.declarations\n',
+    needle: '  , declared: validArities problem\n',
+    replacement: '  , declared: Just recorded.effects.declarations\n',
     probe: 'r0-a2-arity-blame',
     message: new RegExp('arity-blame: \\[\\["Fail with two, a Fail label '
       + 'recorded","check 5 appended"\\]\\]')

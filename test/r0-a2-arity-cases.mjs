@@ -115,11 +115,13 @@ export const arityCases = async load => {
 };
 
 // Record check 5 (spec §4.1's fifth bullet) on `f`, which records
-// Cell(Int): appended obligations at a path of their own, and the
-// declarations changed.
+// Cell(Int): appended obligations at a path of their own, the
+// declarations changed, and (review M4) a wrong application in a table
+// entry, `f`'s instance and signature and `g`'s annotation.
 const recordRowsOf = cases => {
   const { Effect, Atom, Row, Maps, Just, Nothing, Origin, Ids } = cases;
   const f = cases.problemOf(sources.cell, 'f');
+  const g = cases.problemOf(sources.unused, 'g');
   const at = new Effect.AtSite({ decl: f.decl, path: { root:
     Origin.InBody.value, steps: [] }, rule: new Origin.ExprRule(1),
   role: Effect.EntryRow.value });
@@ -134,6 +136,13 @@ const recordRowsOf = cases => {
       : Maps.insert(Row.ordEffectRef)(ref)(count)(found.effects) });
   const extraType = found => ({ ...found, types: Maps.insert(
     Ids.ordTypeId)(9)({ types: 0, rows: 0 })(found.types) });
+  // Review M4: Job (type 0), declared in `holders`, left out.
+  const droppedType = found => ({ ...found,
+    types: Maps.delete(Ids.ordTypeId)(0)(found.types) });
+  // One recorded table changed: every entry of `table` mapped by `change`.
+  const tabled = (problem, table, change) => ({ ...problem, effects: {
+    ...problem.effects, [table]: Maps.functorMap.map(change)(
+      problem.effects[table]) } });
   const mint = new Effect.MBase(Atom.IntBase.value);
   const mrow = (...labels) => ({ labels, tail: Nothing.value });
   const mlabel = (effect, ...args) => ({ effect, args,
@@ -146,6 +155,11 @@ const recordRowsOf = cases => {
   const equal = left => new Effect.Equal(left, left);
   const entry = (...labels) => new Effect.Entry(mrow(...labels));
   const failCount = effectsSet(Row.FailEffect.value, 2);
+  // `f`'s instance and signature rows with a label `extra` added.
+  const labelled = (sig, extra) => ({ ...sig, row: { ...sig.row,
+    labels: [...sig.row.labels, extra] } });
+  const signed = extra => ({ ...f, effects: { ...f.effects,
+    signature: labelled(f.effects.signature, extra) } });
   return [
     ['as generated', f, null],
     ['Cell declared with two', declaring(effectsSet(new Row.UserEffect(0),
@@ -171,7 +185,19 @@ const recordRowsOf = cases => {
     ['a negative count', declaring(effectsSet(new Row.UserEffect(1), -1)),
       'check 5 InDeclarations'],
     ['a data type not in holders', declaring(extraType),
-      'check 5 InDeclarations']
+      'check 5 InDeclarations'],
+    ['a declared data type dropped', declaring(droppedType),
+      'check 5 InDeclarations'],
+    ['an instance row: Cell with none', tabled(f, 'instances', sig =>
+      labelled(sig, mcell())), 'check 5 InInstances'],
+    ['an instance row: Cell with two', tabled(f, 'instances', sig =>
+      labelled(sig, mcell(mint, mint))), 'check 5 InInstances'],
+    ['an annotation: Job without arguments', tabled(g, 'annotations', () =>
+      mjob([], [])), 'check 5 InAnnotations'],
+    ['the signature row: Cell with none', signed(mcell()),
+      'check 5 InSignature'],
+    ['the signature row: undeclared', signed(mlabel(new Row.UserEffect(99))),
+      'check 5 InSignature']
   ].map(([name, problem, expected]) =>
     [name, problem, expected, () => defectOf(cases, problem, at)]);
 };

@@ -22,7 +22,11 @@
 -- `UnframedInstall`) violates it unless some owner requires it. The
 -- flags (`marks`, `bare`) are check 0's. Local record consistency only:
 -- this does not show that generation recorded every source site that
--- needs an owner (U6 stays open).
+-- needs an owner (U6 stays open). The table is spread over two places
+-- (review M6): the owner side in `ownerOf` and its helpers (`installed`,
+-- `literalRows`), the companion kinds in `companionKind` and
+-- `companionSite`. A new companion kind needs both: an owner's row that
+-- requires it, and its site in `companionSite`.
 module Features.Check.Strategy.Effects.RecordCompanions
   ( Companions
   , companionWrong

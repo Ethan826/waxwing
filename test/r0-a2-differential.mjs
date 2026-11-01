@@ -7,8 +7,8 @@
 // Inputs now are fixtures. Corpus reporting waits for Task 16 and tranche
 // 2: nothing here reads the corpus, and a `corpus` row is accepted only
 // so the two kinds of evidence stay apart in the output. A validator
-// acceptance on a fixture is "predicted"; only a corpus row says
-// "observed".
+// result on a fixture is labeled "observed on the fixture" (it was run
+// there, nowhere else); a corpus row says "observed".
 //
 // A case: { name, evidence: 'fixture' | 'corpus', today, problem, input,
 // blocks? }. `today` is { accepts: true } or { accepts: false, refusal:
@@ -140,12 +140,13 @@ export const classify = item => {
     ...decided(item, result, defect), ...noted(item, result),
     today: item.today.accepts ? 'accepts' : `refuses ${item.today.refusal}`,
     validator: isRight(result) ? 'accepts' : `refuses ${refusalName(result)}`,
-    basis: item.evidence === 'fixture' ? 'predicted' : 'observed' };
+    basis: item.evidence === 'fixture' ? 'observed on the fixture'
+      : 'observed' };
 };
 
 const line = row => `  ${row.name}: ${row.category}`
   + `${row.kind ? ` (${row.kind})` : ''}; today ${row.today}; `
-  + `${row.basis} validator ${row.validator}`
+  + `${row.basis}: validator ${row.validator}`
   + `${row.obligationsOnly ? `; obligations-only: ${row.obligationsOnly}`
     : ''}${row.defect ? `; defect at ${JSON.stringify(row.defect)}` : ''}`;
 

@@ -120,8 +120,8 @@ entryCheck context row = maybe unread judged (underRow context.package row)
 -- a `Fail` label carrying it. `certify`'s context is already settled;
 -- settling the read payload again, which is idempotent, keeps "after
 -- settling" local to this check. A hole payload settles to `Int` and
--- passes. Predicted: this is a shadow-only expected divergence from
--- today's FailNeedsConcrete (C6; e.g. the audit fixture
+-- passes. Observed on the fixture: this is a shadow-only expected
+-- divergence from today's FailNeedsConcrete (C6; e.g. the audit fixture
 -- fail-needs-concrete-check's `k`), reported by the differential and
 -- decided as a replacement-compatibility question before the new checker
 -- is enabled live. No guard is adopted.

@@ -13,7 +13,12 @@ companion table) and check 5 (arity metadata) added and the
 `ResultClauses` ruling ratified under check 2; §9's two controller
 rulings ratified with their failure ordering; §12 C6's prediction
 corrected; §2.5 and §11's compatibility property stated up to record
-field order with one canonical comparison. Earlier status: **main
+field order with one canonical comparison. Then, after the wave
+review (2026-11-01): §5 item 3 gains check (k) and the bare clause-row
+reading, §5 item 1 the `InDeclarations` entry, §4.1 check 5 is stated
+in full with its blind spot (I1, M3); record tails keep their order in
+the canonical comparison (I2); C6's hole-bound case is "observed on
+the fixture" throughout. Earlier status: **main
 choices approved with amendments (dossier §18.139); this revision
 is the fix pass §18.141 authorized after the adversarial review of §18.140,
 applying rulings A1-A6. Not ready for implementation authorization; no validator
@@ -381,9 +386,33 @@ violation is `RecordDefect`. The checks, numbered by their index j in
   This is local record consistency only: it does not show that
   generation recorded every source site that needs an owner; U6 stays
   open;
-- **5** (added 2026-11-01, §18.148 (1)): declaration metadata and each
-  recorded application's arity against it
-  (docs/plans/2026-11-01-a2-arity-metadata.md);
+- **5** (added 2026-11-01, §18.148 (1); Effects.RecordArity, schema
+  and reading in docs/plans/2026-11-01-a2-arity-metadata.md §2.1,
+  §2.3): two parts.
+  (i) **The declared arities are valid** (`effects.declarations`,
+  Effects.Arity `validDeclarations`): both built-ins are recorded with
+  Resolve's counts (`builtinEffects`: `Fail` 1, `Console` 0); every
+  effect count and every data type's `types` and `rows` count is
+  non-negative; and the data map's key set equals `holders.declared`
+  (recorded independently, ruling K-a), so a declared type dropped
+  from the metadata and an extra one are both defects. A user effect's
+  count has no second record to agree with: only its sign is checked.
+  So a phantom user effect id (an extra `UserEffect` key the program
+  does not declare, with any non-negative count) is **not** detected
+  by this check (review M3, 2026-11-01). Invalid arities are reported
+  once, as the `InDeclarations` entry (§5 item 1), never at an entry
+  that reads them.
+  (ii) **Every recorded application conforms** to valid arities, in
+  every entry (obligations, `instances`, `annotations`, `nodes`,
+  `ambient`, `signature`), by the reading of §5 item 3's check (k):
+  an effect label (its argument count, no rows) or a data type (its
+  type- and row-argument counts; `DataBase t` counts as `t` with 0 and
+  0) whose head is declared with exactly those counts, or, in a clause
+  row C, the bare spelling. C rows in the record: a handler type's
+  `clauses`, the source of `AtInstalledC` and the target of
+  `ClauseIntoC k` (§9's bare sites; the other side of each is a full
+  row). An entry is judged only when (i) holds; with invalid arities
+  no entry has a check-5 defect;
 - a recorded `AtDeferredRow` is **not** a defect (A4): its condition is
   supported (labels-only, §9) and evaluated; it occurs 0 times in the
   corpus (observed, §18.140). Being no table's companion, check 4 does
@@ -431,7 +460,11 @@ One refusal per candidate, the first in this order:
 1. **Record validation** (step 0): recorded order of `obligations`,
    then the other record tables in a fixed order (`instances`,
    `annotations`, `nodes`, `ambient`, `signature`), keys in `Ord`
-   order. `RecordDefect (provenance, j)`, j the index of the violated
+   order, then the declared arities (the `InDeclarations` entry,
+   `InRecord { table: InDeclarations, path: Nothing }`, check 5's
+   validity part only; amended 2026-11-01, §18.148 (1)), then the
+   domain coverage (`InCoverage`, check 1's last clause).
+   `RecordDefect (provenance, j)`, j the index of the violated
    check (§4.1's list order) within that record entry.
 2. **Unsupported** (step 1): the first `Unsupported` obligation in
    recorded order. `NotCertifiable (UnsupportedRecorded kind)
@@ -445,7 +478,41 @@ One refusal per candidate, the first in this order:
    normal forms (`TermJ ∅` is N); (h) a hole number at two sorts;
    (i) solved form: an image naming a variable that is neither a
    declared rigid at its sort nor a hole (A3, all sorts); (j) a keyless
-   `Fail` label in an image. `Malformed reason`.
+   `Fail` label in an image; (k) (added 2026-11-01, §18.148 (1);
+   Effects.Arity, MalformedTerms) an undeclared or wrong-arity
+   application in any key's image, every key of `effects`, `marks`,
+   `types`, `rows` in `Ord` order, unused bindings included, each
+   image read recursively (labels in rows, label arguments, data
+   arguments and rows, a handler's label, R and C, record fields); the
+   first offending application, in pre-order, of the first offending
+   key gives the reason. `Malformed reason`.
+
+   Check (k)'s refusals, with `data Applied = AppliedEffect EffectRef
+   | AppliedData TypeId` (Domain.Verdict.Search): `Undeclared
+   PackageKey Applied` (the head is not in `declarations`) and
+   `WrongArity PackageKey Applied` (it is, with other counts). An
+   application is an effect label (head its `EffectRef`, its argument
+   count, rows 0) or a data type (`PData t args rows`; `PBase
+   (DataBase t)` counts as `t` with 0 and 0). It conforms when its
+   head is declared with exactly its counts, with one relaxation, the
+   bare spelling of a clause row C:
+   - a non-`Fail` label of a C row may have no arguments (C's labels
+     are R's, bare; Generate/Owned.purs `bareLabel`) or its declared
+     count (R-b: the bare reading ignores arguments without erasing
+     them);
+   - a `Fail` label of a C row keeps its one payload, and a top-level
+     data payload may be its head only, `t [] []` (Owned.purs
+     `headOnly`), or full.
+
+   Any other count is wrong; nested applications (inside arguments)
+   are read as anywhere else. C rows in a package: the `clauses: Just
+   C` of a handler type, and the image of an effect key whose role is
+   `HandlerClauses`, `AnnotationClauses _ _` or `ResultClauses` (a
+   forced `ResultClauses` key is refused by (a) first). A `Fail` label
+   with no argument is refused by (j) (keyless) before (k); one with
+   two arguments has a key and is refused by (k). Check (k) reads the
+   arities as recorded; record check 5 (step 0) has validated them,
+   so `malformed` is only meaningful after `recordDefect` passes.
 4. **G0** (step 3): G0's own order, unchanged.
 5. **Obligations** (step 5): obligation index i ascending; obligation
    i is judged completely (conditions and edges) before obligation
@@ -683,15 +750,17 @@ corpus-observed and corpus-derived hold on today's pinned corpus only.
   property is stated **up to record field order (approved by the
   author, 2026-11-01, §18.148 (5))**, with one canonical comparison,
   `canonicalSubstitution` (test/r0-a2-canonical.mjs): record fields
-  sorted by label, each keeping its own value; record tails compared as
-  a multiset, none dropped; hole and other variable identities kept, no
-  renaming; every other sequence, effect labels included, kept in order
-  and length, so effect-label multiplicity and same-key occurrence order
-  are never changed (nor is the order of different keys: the ruling
-  permits field order only); maps read in key order. Its unit tests
-  (test/r0-a2-canonical.test.mjs) equate field-order variants and
-  refuse a moved field value, a changed or dropped hole, a swapped
-  same-key label order and a dropped duplicate label. Related, run:
+  sorted by label, each keeping its own value; hole and other variable
+  identities kept, no renaming; every other sequence, record tails and
+  effect labels included, kept in order and length, so record-tail
+  order, effect-label multiplicity and same-key occurrence order are
+  never changed (nor is the order of different keys: the ruling
+  permits field order only; tails keep their order by the controller's
+  ruling on review I2, 2026-11-01); maps read in key order. Its unit
+  tests (test/r0-a2-canonical.test.mjs) equate field-order variants and
+  refuse records differing only in tail order, a moved field value, a
+  changed or dropped hole, a swapped same-key label order and a dropped
+  duplicate label. Related, run:
   erasure of recorded types matches `recordedWith` over the effect
   pin's corpus (test/r0-a2-erase-corpus.serial.test.mjs).
 - settle∘complete = complete∘settle on F; differ on absent variables
@@ -849,8 +918,8 @@ probe; 9 corpus `FailConcrete`s have a flexible variable payload).
   - **Field explicitly bound to a suitable hole (`PVar (holeVar n)`):
     settling gives `Int`, which has a key, so E9 holds, every other
     obligation holds, and the validator accepts (observed on the
-    fixture; the reporter labels a fixture acceptance "predicted" until
-    corpus reporting).** This is the demonstrated shadow divergence and
+    fixture, as the reporter labels a fixture row; corpus reporting
+    waits for Task 16).** This is the demonstrated shadow divergence and
     the only C6 case in the expected-divergence category. Ruled
     (§18.143, option c): a **shadow-only expected divergence**, kept
     visible in differential reporting; not covered by U4; E9 stays
