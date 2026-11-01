@@ -5188,3 +5188,32 @@ declarations between reason buckets: "Outside FailFamily, Outside
 HandlerType" 9 to 7 (+2 with the suffix), "Outside HandlerType, Outside
 EffectArgument" 11 to 7 (+4), "Outside HandlerType" 97 to 94 (+3);
 totals unchanged, 0 defects, 0 position findings.
+
+## A2 validator: findings from implementation (2026-11-01)
+
+- Today's online read-back σ is not always in sorted-field form: 14 of
+  2820 corpus candidates (25 of 3642 derived runs) have record images
+  with fields out of label order (for example
+  research/composition-assessment/programs/p2.wxw#main,
+  `{reviewed: Bool, age: Int}`). The A2 `erase` sorts fields (spec
+  §2.5), so the owed property "erase of the honest package equals
+  today's read-back" needs "up to record field order" or a ruling. G0
+  is unaffected (Candidate.purs `under` canonicalizes records; by
+  reading). Pinned by test/r0-a2-properties.serial.test.mjs (14).
+- For G0, an absent type variable is not a hole: `validate` checks G0
+  on `erase (settle P_in)`, which does not see completion's fresh
+  holes, so a package leaving a flexible variable absent is refused
+  where the same package binding it to a hole is accepted (C7(b) with
+  y absent; test "G0 reads erase (settle P_in), not erase (P_c)", row
+  r0-a2-g0-input). Today's `certify` behaves the same.
+- Open for the author: spec §10 C6 predicts that `k` with its field
+  variable absent is accepted ("bound to a hole: as absent"); the
+  specified pipeline refuses it at G0 (Unsatisfied) and accepts only the
+  hole-bound package. Either the C6 prediction or G0's projection needs
+  a ruling. The differential reporter records the pipeline's observed
+  behavior (test/r0-a2-differential.test.mjs).
+- The M-B differential (Task 13) found no disagreement on 116 exercised
+  packages, bounded: five E2 sites (AtCallback, AtStage, AtApply, AtPipe,
+  AtDeferredRow) have no accepted-package coverage, binding-label marks
+  are never mutated, and completion and settling are shared with the
+  validator (§18.146).

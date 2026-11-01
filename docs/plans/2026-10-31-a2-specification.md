@@ -3,7 +3,11 @@
 Implementation plan (for review; implementation unauthorized):
 docs/plans/2026-10-31-a2-validator-plan.md.
 
-Status: **main choices approved with amendments (dossier §18.139); this revision
+Status (2026-11-01): **implemented as a non-minting validator, plan Tasks
+0-15 (dossier §18.145-§18.147); Task 16, the minting switch, held, so the
+existing substitution-only `certify` still mints under F14 (joint-checker
+assurance); no soundness claim.** Earlier status: **main choices approved with
+amendments (dossier §18.139); this revision
 is the fix pass §18.141 authorized after the adversarial review of §18.140,
 applying rulings A1-A6. Not ready for implementation authorization; no validator
 exists or is authorized; no soundness claim.** A scoped adversarial re-review of
@@ -668,7 +672,10 @@ claimed: a spurious `CandidateRefused` fault.
 
 **C4. Record defect.** A restored-defect mutant recording
 `AtInstalledC` with `bare: false`, on famw (§12.2: `Fail(Job)` in C
-against `Fail(Job(Int))` in ρ).
+against `Fail(Job(Int))` in ρ). (Correction, 2026-11-01, Task 3: famw
+records no `AtInstalledC`, having no `with`; its bare C meets ρ at
+`ClauseIntoC`. The tests flip `bare` at famw's `ClauseIntoC` and at C1
+`use`'s `AtInstalledC`.)
 - (a) A strategy offers an honest package: pre-search block
   `RecordDefective`; `certify` refuses `RecordDefect` (step 0) and the
   attempt reads `Declines`; verdict Unresolved, reason names

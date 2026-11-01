@@ -5,7 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **Tasks 0-15 and 17 authorized for subagent execution with the
+Status (2026-11-01): **Tasks 0-15 implemented, reviewed and integrated;
+Task 17 records, whole-branch review and acceptance verify in dossier
+§18.147; Task 16 held.** Earlier: **Tasks 0-15 and 17 authorized for
+subagent execution with the
 corrections of dossier §18.145, applied below (2026-11-01); Task 16
 (the minting switch) held until tranche 2 supplies effect packages;
 pushing, a live switch, read-back implementation and any soundness

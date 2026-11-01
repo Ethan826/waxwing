@@ -1,6 +1,11 @@
 # a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
-Status (2026-10-31): tranche 1's recording is accepted (dossier
+Status (2026-11-01): the A2 validator is implemented as a non-minting
+`validate` (docs/plans/2026-10-31-a2-validator-plan.md, dossier §18.147);
+it judges these obligations on hand-built packages; no read-back yet
+produces effect packages, the minting switch (Task 16) is held, and no
+effect-soundness claim is established. Earlier status (2026-10-31):
+tranche 1's recording is accepted (dossier
 §18.138): generation records the obligations of §4 (E1-E6, E8, E9,
 E11; E4 and E5 by Task 9) and they are pinned
 (test/fixtures/r0/effects.json); no validator exists, no effect
