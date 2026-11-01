@@ -10,7 +10,10 @@ The author's 2026-10-31 corrections are applied in §2, E2, E4, E5 and
 specification, docs/plans/2026-10-31-a2-specification.md) are applied
 as dated amendments in §2 (the ResultC row, the two package domains),
 §4 E9 (D7 rejected: E9 stays after settling), §7 (pipeline order and
-routing), §10 (interface) and §13b (citations). They specify the
+routing), §10 (interface) and §13b (citations). The §18.141 fix pass
+(after the review of §18.140) withdraws §7's settle-then-complete
+order for complete-then-settle and amends §2, §4 E9, §7 and §10
+further. They specify the
 validator's interface; no validator exists and none is authorized.
 Earlier status: **approved as a representation by the author at 535b780
 (2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
@@ -408,8 +411,10 @@ and conveys no evidence that the blocked installation is valid); a
 binding for every recorded flexible effect-row variable except the
 forced ResultC tails; type and record-row variables as `certify`
 reads them today. The **completed** domain adds the forced ResultC
-tails, derived from the record and the input. R's extension marks are
-terms inside bindings,
+tails, derived from the record and the input. (§18.141 A2: the
+completed package before defaults keeps the holes the witness contract
+needs; the obligations judge its settled interpretation; A2
+specification §2.4.) R's extension marks are terms inside bindings,
 read only as the last table row says (F7: §R5 judged the `assume`
 reading harmless; a reading through Definition 4.1 equates them with
 another type's C marks, which can only refuse more).
@@ -968,6 +973,11 @@ representation, not E8's specification.
 E9 stays after settling. The live checker is supporting evidence, not
 authority to change the completed-package semantics. U4, the hole
 default, stays open and is not resolved by an E9 exception.)
+(§18.141: "concrete" means the payload, read as a type on the settled
+completed package, has a key, `typeHead` defined: `Int`, `Bool`,
+`Unit`, `Text`, data, a closed record; a keyless `Fail` label in a
+package image is `Malformed`, in a recorded row a failure of the first
+obligation that matches it; A2 specification §4.2.)
 
 **E10, the body's row within the declared row** (E2 with the declared
 row as target; EffectNotAllowed, MustBePure). Settled by reading in 3.5
@@ -1102,16 +1112,29 @@ restrictions, arities, one sort per hole, binding constructor matching
 sort, Console N, the ownership table's single homes, domain exact),
 (b) settle, G0 on `erase`, (c) `validateEffects` E1-E12; 5. routing;
 6. `elaborate` (problem identity, seal, Cov), `build (strip P)`.
-**Amended (author, 2026-10-31, dossier §18.139; order and data flow
-in the A2 specification §4):** `certify` first checks the record's own
-consistency (a `Consume` whose `marks`/`bare` disagree with its site
-kind is a `RecordDefect`), then I3 on the input package, then refuses
-any problem recording an `Unsupported` obligation (`NotCertifiable`),
-then settles the input package, runs G0 on the erasure of the settled
-package, completes the settled package by forcing, and evaluates
-E1-E12 on the completed settled package. It never mints a certificate
-for a problem recording an `Unsupported` obligation, whatever the
-caller's routing.
+~~**Amended (author, 2026-10-31, dossier §18.139):** ... then settles
+the input package, runs G0 on the erasure of the settled package,
+completes the settled package by forcing, and evaluates E1-E12 on the
+completed settled package.~~ (Withdrawn: under that order an absent
+payload variable reached E9 unbound, the pre-default refusal §18.139
+rejected; dossier §18.140 S1-1.)
+**Amended (author, 2026-10-31, dossier §18.141, rulings A2, A3, A5,
+A6; the A2 specification §2.4, §4, §5):** `certify` first validates
+the record (a `Consume` whose `marks`/`bare` disagree with its site
+kind, or a recorded reference outside its permitted domain or sort, is
+a `RecordDefect`; a recorded `AtDeferredRow` is not), then refuses any
+problem recording an `Unsupported` obligation (`NotCertifiable`); both
+read only the problem and precede I3. Then I3 on the input package,
+solved form for every sort included. G0 runs on the erasure of the
+settled input package, a projection specified apart. The input package
+is then **completed before defaults** (absent type and row variables as
+fresh holes, forced ResultC tails as copies of the input image of R's
+tail, one hole numbering), and E1-E12 are evaluated on the **settled
+completed package** (complete, then settle). The certificate retains
+the completed package before defaults; the build witness is derived
+from it, sharing its hole identities. `certify` never mints a
+certificate for a problem with a record defect or an `Unsupported`
+obligation, whatever the caller's routing.
 
 **Routing, pinned to the code (T5-a).**
 - An `Unsupported` obligation is known from the problem before any
@@ -1124,15 +1147,18 @@ caller's routing.
   then suppressed by `solvedUnlessBlocked`, so the verdict is Unresolved
   (§7.1 item 3), never Solved (N3; documentation only, behaviour
   unchanged).
-- **Amended (author, 2026-10-31, dossier §18.139):** two refusals do
-  not advance to another strategy as a repair. A `RecordDefect` fails
-  closed for that recorded problem: no candidate can be certified, the
-  declaration is reported separately as a generation defect, and no
-  other candidate is taken as repairing it. A `NotCertifiable` for an
-  `Unsupported` obligation is the same for every candidate; rule 1
-  already blocks the declaration. The bullet below applies to the
-  candidate-specific refusals (`Malformed`, G0's, `ObligationFailed`,
-  `NotCertifiable` for Definition 4.2 or forcing).
+- **Amended (author, 2026-10-31, dossier §18.139; §18.141 A5, A6):**
+  two refusals do not advance to another strategy as a repair. A
+  `RecordDefect` fails closed for that recorded problem: the record is
+  validated before search, as `unchecked` is, so `decide` blocks Solved
+  with its own `Unsupport` and the shadow differential reports it as a
+  generation defect even when no strategy offers a candidate; `certify`
+  repeats the check as a backstop, and its refusal reads as a decline,
+  not a refused candidate. No other candidate is taken as repairing it.
+  A `NotCertifiable` for an `Unsupported` obligation is the same for
+  every candidate; rule 1 already blocks the declaration. The bullet
+  below applies to the candidate-specific refusals (`Malformed`, G0's,
+  `ObligationFailed`, `NotCertifiable` for Definition 4.2 or forcing).
 - A candidate that fails (a)-(c) is a `CheckRefusal`; Strategy.purs
   `checked` makes it a `CheckFailed` attempt with no solution, and
   `decide`'s rule 2 (`untilVerdict`) continues to the next strategy
@@ -1216,10 +1242,13 @@ Entry MRow | FailConcrete MTy | Unsupported UnsupportedKind`; `bare`
 ignores arguments in the comparison without erasing them (§18.138).
 `SiteFact`s are the package's term map; the package is the A2
 specification's `EffectPackage`, replacing `Substitution` as the
-certificate. `CheckRefusal` gains four categories: `Malformed`,
-`ObligationFailed`, `NotCertifiable` and `RecordDefect` (A2
-specification §6), in place of `Malformed | ObligationFailed
-Obligation` below.
+certificate. (§18.141 A2:) `Certified` retains the completed package
+before defaults, and its `Compilation` is derived from it, so the
+change surface's "unchanged shape" for `Certified` no longer holds;
+the old substitution-only `certify` stops minting. `CheckRefusal`
+gains four categories: `Malformed`, `ObligationFailed`,
+`NotCertifiable` and `RecordDefect` (A2 specification §6), in place
+of `Malformed | ObligationFailed Obligation` below.
 
 `Fields += { obligations ∷ Array Obligation, instances ∷ Map Site
 MTy, annotations ∷ Map Site MTy, rigidMarks, arities, effectRigids,

@@ -67,6 +67,13 @@ Amended (2026-10-31, §18.139): the exact order, with record
 consistency and the `Unsupported` refusal, and which settled
 projection G0 reads, is in the specification §4; G0 runs on the
 erasure of σs before step 3, which adds only effect-row bindings.
+Amended (2026-10-31, §18.141 A2, A3, A6): steps 1-5 are superseded by
+the specification §4. Record validation and the `Unsupported` refusal
+come first; the solved form (step 4) moves before the obligations and
+covers every sort, on the input package; forcing copies the input
+image of R's tail into the completed package before defaults, and the
+obligations read that package settled (complete, then settle), which
+gives the same forced value as σs(t) here.
 
 σf is the substitution checked, and it is the one certified: the
 witness `Certified Valid (Witnessed (strip P))` carries σf, and

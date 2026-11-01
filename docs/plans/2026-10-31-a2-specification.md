@@ -1,494 +1,676 @@
 # A2 specification: the trusted effect validator (2026-10-31)
 
-Status: **main choices approved with amendments (author, 2026-10-31,
-dossier §18.139); this is the consistency pass §18.139 authorized. Not
-ready for implementation authorization; no validator exists or is
-authorized; no soundness claim.** §13's decision table shows each
-row's ruling. The concrete package representation (§2) is
-**proposed**: §18.139 approved one authoritative `EffectPackage` but
-not a type, and the review §18.139 authorizes after this pass is to
-attack §2, §4-§6 and §10. Earlier text of this document (commit
-0469df3) proposed D7, which was rejected; it is recorded in §13 and not
-used anywhere below.
+Status: **main choices approved with amendments (dossier §18.139);
+this revision is the fix pass §18.141 authorized after the adversarial
+review of §18.140, applying rulings A1-A6. Not ready for
+implementation authorization; no validator exists or is authorized; no
+soundness claim.** A scoped adversarial re-review of the repairs and
+their examples follows (§18.141). The concrete package representation
+(§2) is **proposed**, not an approved type. Earlier revisions: 0469df3
+(proposal, D7 since rejected), 829ada5 (consistency pass, reviewed in
+§18.140). §14 maps every §18.140 finding to its repair.
 
 Sources: the A2 packet (docs/plans/2026-10-31-a2-decision-packet.md),
 the options note (docs/plans/2026-10-25-amin-a2-options.md), the
 statements (docs/plans/r0-amin-statements.md, revision 3.6 with §R7b
-and the dated amendments through 2026-10-31), dossier §18.138-§18.139.
-Code citations are to 868756f.
+and the dated amendments through 2026-10-31), dossier §18.138-§18.141,
+the overnight ledger's "A2 specification review". Code citations are to
+d9bd6d7.
 
-**Rulings this document applies** (dossier §18.138, §18.139):
-- R-a. The installed-C `Consume` (`AtInstalledC`) stands for the site's
-  count/pairing and mark-edge conditions only: no argument equality, no
-  row extension, no other tail condition.
-- R-b. `bare: true` ignores arguments in that comparison; it does not
-  erase them; keys, `Fail` heads included, stay determinable.
-- R-c. A non-handler `with` records `Install`; `UnframedInstall` stays
-  a hard certification blocker; no symbolic framing.
-- R-d. Rows mixing recording and validator requirements report
-  "recorded component demonstrated, validation open".
-- §18.139: D1-D6 and D8-D15 approved with amendments; D7 rejected; the
-  four inconsistencies repaired here (§4 data flow, §5 failure
-  ordering, §4 and §6 the entry point, §6 RecordDefect).
+**Rulings applied.** From §18.138: R-a, the installed-C `Consume`
+(`AtInstalledC`) stands for count/pairing and mark edges only; R-b,
+`bare: true` ignores arguments without erasing them; R-c, a non-handler
+`with` records `Install` and `UnframedInstall` is a hard blocker; R-d,
+mixed coverage rows report the recorded part demonstrated, validation
+open. From §18.139: D1-D6, D8-D15 approved with amendments; D7
+rejected (E9 after settling; U4 open). From §18.141:
+- A1. Forcing refusals keep §R7b's `NotCertifiable`; the forced-tail
+  dependency is defined structurally, indirect references included,
+  and described as a dependency, not proof that forcing caused the
+  failure.
+- A2. The authoritative completed, forced package (or an opaque value
+  preserving it) is retained, and the build witness is derived from the
+  same data; the completed package before defaults (keeping the holes
+  the witness contract needs) is distinguished from its settled
+  interpretation, which the obligations judge, with shared hole
+  identities.
+- A3. Unsolved type and record-row images are refused before the
+  obligations, like effect images, by one solved-form definition.
+- A4. A declared, well-formed site lacking demonstrated recording
+  coverage (`AtDeferredRow`) is not a `RecordDefect`; its condition is
+  evaluated when supported.
+- A5. Record references are validated before search, with their sorts
+  and permitted domains (declared rigids, package-owned variables,
+  record-owned forced variables).
+- A6. The record is validated first, then `Unsupported` checked, both
+  independent of candidates and before I3; existing routing
+  distinctions kept.
 
 Labels: **published**, **derived**, **reasoned** (from code or design,
-no run), **bounded**, **observed**, **decided** (the author's),
-**proposed** (this document, not approved), **open**.
+no run), **bounded**, **observed** (a run; who ran it is named),
+**decided**, **proposed**, **owed** (a check not yet run), **open**.
 
 ## 1. Scope and trust
 
-`validateEffects` is `certify`'s step (c). It judges one completed
-package against the recorded problem and searches for nothing; its only
-rewrites are completion (§4: absent type variables as fresh holes, as
-today; forced ResultC tails), both fixed by the record and the input.
-A defect in it can certify a wrong program; a defect in the search can
-only lose acceptances. Waxwing uses the certifying-algorithm pattern in
-a one-sided form: acceptances are certified, refusals mean "cannot
-certify" (§6). The pattern's source was read only through an author's
-slides (§12, partly).
+`certify` judges one input package against the recorded problem and
+searches for nothing. Its only rewrites are completion (§4): absent
+type and row variables become fresh holes, and forced ResultC tails
+become copies of an input image. Both are fixed by the record and the
+input. A defect in it can certify a wrong program; a defect in the
+search can only lose acceptances. The certifying-algorithm pattern is
+used one-sidedly (acceptances certified; a refusal means "cannot
+certify"); its source was read only through an author's slides (§13,
+partly).
 
-Relied on, not established: O-SUB, A1, [FX008-5] points 1-4,
-Definition 4.2's sufficiency, E10's reading, U2, U3, U4 (open; the
-effect-hole default), U6/P1, U8's extension (statements §0e). D6's
-differential tests agreement on the inputs it exercises; it does not
-establish E12's exhaustiveness universally (§18.139).
+Relied on, not established: O-SUB, A1 (the statements' static-rows
+obligation, not ruling A1), [FX008-5] points 1-4, Definition 4.2's
+sufficiency, E10's reading, U2, U3, U4 (the hole default, open), U6/P1,
+U8's extension (statements §0e). D6's differential tests agreement on
+the inputs it exercises; it does not establish E12's exhaustiveness.
 
 ## 2. The package (proposed representation)
 
 ### 2.1 What exists today
 
 - `Substitution = Map Var RTExpr` (src/Features/Check/Strategy/
-  Candidate.purs:31): one map for both sorts; a record-row variable's
-  image is a `Record` term (`generic`'s `fits`, Candidate.purs:33-44).
+  Candidate.purs:31), one map for both sorts; a record-row variable's
+  image is a `Record` term (`generic`, Candidate.purs:33-44).
 - `RTExpr` (src/Domain/Recorded/Atom.purs:52-57): `Base`, `Arrow`,
-  `TVar Var`, `Record fields tails`, `App Head args`; no effect rows,
-  no marks. `Var = RigidVar VarId | FreshVar Path Role` (Atom.purs:36);
-  a hole is `holeVar n` (src/Domain/Recorded/Hole.purs:19-22).
+  `TVar Var`, `Record fields tails`, `App Head args`. Nullary data is
+  `Base (DataBase t)`, other data `App (DataHead t) args`, a handler
+  `App (HandlerHead e) args` (generation:
+  src/Features/Check/Generate/Elab/Recorded.purs:36-40; read-back:
+  src/Features/Check/Strategy/ReadBack/Type.purs, `readType`). G0's
+  equality is syntactic (src/Features/Check/Strategy/Atoms.purs:75-79).
+- `Var = RigidVar VarId | FreshVar Path Role` (Atom.purs:36); hole n is
+  `holeVar n` (src/Domain/Recorded/Hole.purs:19-22).
 - `Witness = { bindings ∷ Map Var Binding, names }`, `Binding = Inline
   RTExpr | Free Int` (src/Domain/Verdict/Witness.purs:25-27), built by
-  `bindingsOf` (src/Features/Check/Strategy/Witness.purs:137-148): an
-  absent flexible variable becomes a fresh `Free` hole numbered after
-  the largest hole in the candidate.
-- The recorded side (src/Domain/Recorded/Effect.purs:40-92):
-  `EVar = EffRigid VarId | EffFresh Path ERole`; `MTy` with `MBase`,
-  `MVar Var`, `MArrow MTy MRow MTy`, `MRecord fields (Array Var)`,
-  `MData TypeId (Array MTy) (Array MRow)`, `MHandler MLabel { inference,
-  clauses ∷ Maybe MRow }`; `MLabel`'s mark is `MarkRef = Written Fixed
-  | At Position`; `MRow`'s tail is `Maybe EVar`.
+  `bindingsOf` (src/Features/Check/Strategy/Witness.purs:137-148):
+  absent flexible variables become fresh `Free` holes numbered after
+  the largest hole in the candidate's type images.
+- `Certified = Certified Valid Compilation`
+  (src/Domain/Verdict/Certified/Internal.purs:13), minted only by
+  `certify` (src/Features/Check/Strategy/Substitution.purs:53-58).
+- The recorded side (src/Domain/Recorded/Effect.purs:40-92): `EVar`,
+  `MTy` (`MBase`, `MVar`, `MArrow MTy MRow MTy`, `MRecord`, `MData
+  TypeId (Array MTy) (Array MRow)`, `MHandler MLabel { inference,
+  clauses ∷ Maybe MRow }`), `MarkRef = Written Fixed | At Position`.
+  Corpus (observed, this pass's probe over 3071 declarations): no
+  recorded `MBase (DataBase _)`; nullary `MData t [] []` is the only
+  spelling of nullary data (16850 distinct objects; §18.140's reviewer
+  counted 52412 occurrences); 375 recorded handler types own a C and
+  171 do not.
 
 ### 2.2 Proposed types
 
-A new trusted Domain module (placeholder name `Domain.Verdict.Effect
-Package`). Sort-correct by construction: one map per sort, so a
-binding's sort is its map's; I3 checks that each key's recorded sort
-matches the map it is in.
+Module `Domain.Verdict.EffectPackage` (Domain; types only; imports
+Domain.Recorded.Atom, Domain.Recorded.Effect, Domain.Row, Domain.Type).
 
 ```purescript
--- A mark term (statements §2): N, M, or the join of named rigid
--- marks. `TermJ` with an empty set is read as `TermN` (norm).
+-- N, M, or the join of named rigid marks; compared on normal forms
+-- (`TermJ ∅` normalizes to `TermN`).
 data Term = TermN | TermM | TermJ (Set String)
 
--- A package type: MTy's constructors, with marks as Terms and with
--- variables restricted to declared rigids and holes (I3's solved
--- form): no FreshVar other than `holeVar n` may occur.
 data PTy
-  = PBase Base
-  | PVar Var                       -- RigidVar at SortType, or a hole
+  = PBase Base                    -- never `DataBase` (I3, canonical)
+  | PVar Var                      -- a declared rigid at SortType, or a hole
   | PArrow PTy PRow PTy
   | PRecord PRecordRow
   | PData TypeId (Array PTy) (Array PRow)
   | PHandler PLabel { inference ∷ PRow, clauses ∷ Maybe PRow }
 
--- Record fields and tails; a tail is a RigidVar at SortRow or a hole.
+-- Fields, and tails that are declared SortRow rigids or holes.
 type PRecordRow = { fields ∷ Array (Tuple String PTy), tails ∷ Array Var }
 
 type PLabel = { effect ∷ EffectRef, args ∷ Array PTy, mark ∷ Term }
 
--- An effect row's tail: a declared effect rigid, or effect hole n.
--- Never a flexible EVar: bindings are in solved form.
 data PTail = PTailRigid VarId | PTailHole Int
 type PRow = { labels ∷ Array PLabel, tail ∷ Maybe PTail }
 
 type EffectPackage =
-  { types ∷ Map Var PTy            -- flexible SortType variables
-  , rows ∷ Map Var PRecordRow      -- flexible SortRow variables
-  , effects ∷ Map EVar PRow        -- package-owned effect-row variables
-  , marks ∷ Map Position Term      -- every recorded position
+  { types ∷ Map Var PTy           -- flexible SortType variables
+  , rows ∷ Map Var PRecordRow     -- flexible SortRow variables
+  , effects ∷ Map EVar PRow       -- package-owned effect-row variables
+  , marks ∷ Map Position Term     -- recorded positions
   }
+
+-- The completed package, before defaults (§2.4); constructor hidden.
+newtype Completed = Completed EffectPackage
 ```
 
-**How marks attach.** A mark inside a binding is the `Term` on that
-`PLabel` (a copy, an extension label, a handled label). A recorded
-type's mark is read through the record: `Written FixedN ↦ TermN`,
-`Written FixedM ↦ TermM`, `Written (FixedRigid k) ↦ TermJ {k}`,
-`At pos ↦ marks[pos]`. The package never names a `Position` inside an
-image; positions are only `marks`' keys, and copies are linked to them
-by recorded E1s (statements §2, "Copies through equations").
+- **Sort-correct by construction**: one map per sort; I3 checks that
+  each key's recorded sort is its map's.
+- **Marks inside bindings** are the `Term` on each `PLabel` (copies,
+  extension labels, handled labels). A recorded mark is read through
+  the record: `Written FixedN ↦ TermN`, `Written FixedM ↦ TermM`,
+  `Written (FixedRigid k) ↦ TermJ {k}`, `At pos ↦ marks[pos]`. No
+  image names a `Position`.
+- **Nullary data has one spelling**, `PData t [] []`, as recorded;
+  `PBase (DataBase t)` is refused as non-canonical. `erase` maps it to
+  `Base (DataBase t)` (§2.5), so the erasure is compatible with today's
+  read-back by a stated property, not only by this case (§11).
+- **An image's handler type may own a C** (`PHandler … clauses: Just`;
+  resolves §18.140's question, proposed). An image C is a copy, not a
+  home: statements §2's three homes stay the literal, the ResultC and
+  the annotation C, and an image copy is joined to its source by the
+  recorded E1 that moved it, under Definition 4.1(d) (clauseRow ≡
+  clauseRow′ with marks and tails). `Install` reads an image C when the
+  installed handler's type is an image that owns one (statements E5:
+  "the owned C if h's type owns one, else R's bare alias"). Reason:
+  today's checker carries C through metas by reference (UnifyParts
+  `unifyClauses`), so honest read-back images would hold it (reasoned);
+  refusing it would force every image to rule J's alias. Case C13.
+- **Holes**: type and record-row holes are `holeVar n`, an effect-row
+  hole `PTailHole n`; one sort per hole number across the three sorts;
+  marks hold no holes.
 
-**Reading a recorded type under a package** (`under P ∷ MTy → PTy`,
-total on the completed domain): `MVar v` to `types[v]` (a rigid stays);
-`MRecord fs ts` appends `rows[t]`'s fields and tails for each flexible
-tail t; an `MRow` whose tail is `EffFresh` appends `effects[v]`'s
-labels and takes its tail; `EffRigid r` becomes `PTailRigid r`.
+**Alternative for the reviewer**: generalize `MTy` over its mark and
+tail types; it changes a pinned recorded type and every generation
+signature. Not chosen.
 
-**Holes.** Type and record-row holes are `holeVar n`, as today. An
-effect-row hole is `PTailHole n`. One sort per hole number across all
-three sorts (I3). Marks have no holes: a missing term is `Malformed`.
+### 2.3 Domains
 
-**Alternative kept for the reviewer:** generalize `MTy` over its mark
-and tail types (`MTyOf mark tail`), so recorded and package types
-share one grammar. It changes a pinned recorded type and every
-generation site's signature; the separate `PTy` costs a second
-grammar and a conversion. Not chosen here; open for the review.
+Let F be the forced tails: every `EffFresh p ResultClauses` that is the
+tail of a ResultC in `instances[p]` (minted by
+src/Features/Check/Generate/Owned.purs:54-56; 17 in the corpus,
+observed by §18.140's reviewer, each its ResultC's tail).
 
-### 2.3 The two domains (D5, ruled)
+- **Input domain** (a strategy supplies it; I3 checks it):
+  `keys effects` = `flexEff` (Effect.purs:191) \ F; `keys marks` =
+  `positions` (Effect.purs:192); `keys types` and `keys rows` ⊆ the
+  problem's flexible variables of each sort (absent allowed, as
+  `generic` and `bindingsOf` allow today).
+- **Completed domain** (judged and certified): every flexible type and
+  row variable, `flexEff` (F included), `positions`.
 
-- **Input domain** (what a strategy supplies; I3 checks it):
-  `keys effects` = `flexEff` (Effect.purs:191) minus the forced tails
-  F; `keys marks` = `positions` (Effect.purs:192) exactly, the unread
-  `Frame p` of a non-handler `with` included; `keys types ∪ keys rows`
-  ⊆ the problem's flexible variables, each in the map of its recorded
-  sort (as `generic` reads a `Substitution` today: an absent variable
-  is allowed and becomes a fresh hole at completion). F is every
-  `EffFresh p ResultClauses` that is the tail of a ResultC in
-  `instances[p]` (Generate/Owned.purs:54-56 mints it). A binding for a
-  member of F is `Malformed (BindsForced v)`.
-- **Completed domain** (what is judged and certified): the input
-  domain plus every absent type or row variable, bound to a fresh hole
-  numbered after the largest hole number in any of the four maps (a
-  named change to `bindingsOf`'s numbering, which today counts type
-  images only), plus F, each `⟨p, result clauses⟩ ↦ P(t)`, t R's tail
-  variable in the same instance result.
+The asymmetry is inherited: absent type and row variables keep today's
+fresh-hole meaning so G0 and the witness do not change; effect
+variables and positions are exact (statements §2, N10; §18.97). A
+well-formed term at the unread frame of a non-handler `with` is
+required by the domain and conveys no evidence that the installation is
+valid (§18.139). Under A6 such a problem is refused before I3 (§4), so
+the requirement is checked by I3's own tests, not seen in `certify`'s
+verdict (C5).
 
-The asymmetry is deliberate and inherited: type and row variables keep
-today's "absent means a fresh hole" rule so G0 and the witness do not
-change; effect variables and positions are exact (statements §2, N10;
-§18.97 "complete position and domain accounting"). A well-formed term
-at an unread frame conveys no evidence that the blocked installation
-is valid (§18.139).
+### 2.4 Completion, settling and hole identities (A2)
 
-### 2.4 Projections and today's types
+- `complete problem P_in = Completed P_cu`, where P_cu is P_in plus:
+  (i) each absent flexible type variable `↦ PVar (holeVar n)` and each
+  absent row variable `↦ { fields: [], tails: [holeVar n] }`, n fresh,
+  assigned in `Ord Var` order from h+1, h the largest hole number in
+  any of P_in's `types`, `rows` and `effects` (marks hold none); (ii)
+  each v ∈ F `↦ P_in.effects[t]`, t R's tail variable in the same
+  instance result (an exact copy, holes keep their numbers).
+- `settle` replaces every hole by lowering's default for its sort
+  pointwise (type `PBase IntBase`, record tail dropped, `PTailHole`
+  dropped so the row closes), as ReadBack.Type `settled` does
+  (ReadBack/Type.purs:88-102).
+- P_c = settle P_cu is the **settled interpretation**: every
+  obligation, E9 included, reads it.
+- **The witness is derived from P_cu**: `witnessOf (Completed P_cu)`
+  is `{ bindings, names: [] }` with, for every flexible variable, `Free
+  n` when its erased image is the bare hole n of its sort, else `Inline
+  (erase image)`, the rule `bindingsOf`'s `binding` applies today
+  (Witness.purs:150-165). Because completion already bound every
+  absent variable, `bindingsOf`'s own fresh numbering is not used: one
+  numbering, completion's, shared by P_cu, the witness's `Free n`, the
+  hole contract and P_c (n settles to n's default).
+- **The certificate retains P_cu**: `Certified Valid Completed`
+  (§7); `certifiedCompilation` derives the witness from it and runs
+  coverage (solved form, hole contract) as today. No second copy of
+  the bindings exists.
+- Relationship: P_c = settle P_cu by definition. On F,
+  settle(complete P_in) and complete(settle P_in) agree (a copy of an
+  image settles as the image does); on absent variables they differ
+  (completing after settling leaves fresh holes unsettled). The order
+  is therefore complete, then settle (statements §7, amended; case C6
+  separates them). Property tests owed (§11).
 
-- `erase ∷ EffectPackage → Substitution`: `types` and `rows` merged
-  into one map; `PArrow a _ r ↦ Arrow (erase a) (erase r)`; `PRecord ↦
-  Record`; `PData id as _ ↦ App (DataHead id) as`; `PHandler l _ ↦ App
-  (HandlerHead l.effect) l.args` (statements §2: recorded atoms erase a
-  handler type to `App (HandlerHead e) args`); effect rows and terms
-  dropped. G0 reads only an erasure (§4).
-- The compilation witness is `substitutionWitness problem (erase
-  P_in)` exactly as today (Witness.purs:55-60), so `build` and the hole
-  contract are unchanged. `Certified` keeps its shape, `Certified Valid
-  Compilation` (src/Domain/Verdict/Certified/Internal.purs:13).
-- "The completed certified package" (D5) is P_cu below: the object the
-  check judged, deterministic from the problem and P_in. Its effect
-  part (forced tails included) is not read by `build`; carrying it in
-  `Certified` for audit is a separate interface choice, not made here.
-- The strategy's certificate changes from `Substitution` to
-  `EffectPackage` (Strategy/Online.purs:72, :156-157).
+### 2.5 Erasure
 
-## 3. The ResultC binding (F1; ruled D5)
+`erase ∷ EffectPackage → Map Var RTExpr` (Features; §8): `types` and
+`rows` merged; `PBase b ↦ Base b`; `PVar v ↦ TVar v`; `PArrow a _ r ↦
+Arrow (erase a) (erase r)`; `PRecord { fields, tails } ↦ Record
+(sortWith fst fields') (sort tails)`; `PData t [] [] ↦ Base (DataBase
+t)`; `PData t as _ ↦ App (DataHead t) (erase as)` otherwise; `PHandler
+l _ ↦ App (HandlerHead l.effect) (erase l.args)`; effect rows and terms
+dropped. This mirrors `recordedWith` (Elab/Recorded.purs:25-42) case
+for case. **Compatibility property (owed):** for every corpus
+declaration the online strategy solves, `erase` of its honest package
+equals today's read-back substitution.
 
-Applied to statements §2 (ResultC row and the domain paragraph, dated
-2026-10-31, §18.139): an input package holds no binding of
-`⟨p, result clauses⟩`; the validator derives it by forcing; supplying
-one is `Malformed`; the completed package includes the derived
-binding; revisit if the provisional restriction is lifted. Forcing is
-deterministic from the record and the input package. The certified
-typing is the forced one; no relation to H′'s live typing is claimed.
-The options note's forcing step 1 was already this; it now cites the
-ruling.
+## 3. The ResultC binding (D5)
 
-## 4. Data flow (repair 1) and the entry point (repair 3)
+Statements §2's ResultC row (amended 2026-10-31, §18.139): an input
+package holds no binding of `⟨p, result clauses⟩`; it is derived by
+forcing; supplying one is `Malformed (BindsForced v)`, checked before
+any other domain fact (§5) so it is reported as such; the completed
+package includes it. Forced bindings are not I3-checked: they are
+copies of input images that I3 has checked, so they are in solved form
+by construction. Revisit if the provisional restriction is lifted.
 
-Notation: P_in the input package; `settle` replaces holes by
-lowering's defaults pointwise (type hole `PBase IntBase`, record tail
-hole dropped, `PTailHole` dropped so the row closes, as ReadBack.Type
-`settled` does for types, Strategy/ReadBack/Type.purs:88-102);
-`complete` adds the completed domain's bindings (§2.3).
+## 4. The pipeline
 
 ```
-certifyEffects problem P_in:
-  0. RecordDefect check     reads the problem only
-  1. I3 on P_in             input domain, sorts, terms, solved form
-  2. Unsupported check      reads the problem only
-  3. P_s  = settle P_in
-     G0 on erase P_s        = today's `map settled unsettled`
-  4. P_cu = complete P_in   absent variables as fresh holes; forced
-                            tails ⟨p, result clauses⟩ ↦ P_in(t)
-     P_c  = settle P_cu     what every obligation reads
-  5. obligations, in recorded order, on P_c; edges collected
-  6. edges and mark equalities judged
-  7. Certified Valid (substitutionWitness problem (erase P_in))
+certify problem P_in:
+  0. record validation   problem only (pre-search block, §6)
+  1. Unsupported check   problem only (rule 1 already blocks)
+  2. I3 on P_in          domain, sorts, canonical forms, terms,
+                         solved form for all sorts (A3), keyless Fail
+  3. G0 on erase (settle P_in)          = today's projection
+  4. P_cu = complete P_in;  P_c = settle P_cu
+  5. obligations on P_c, in recorded order, each judged fully
+  6. Certified Valid (Completed P_cu)
 ```
 
-- **Which settled projection G0 checks:** `erase P_s`, the erasure of
-  the settled input package. It equals today's `map settled
-  (Substitution)` (Strategy/Substitution.purs:53-55) because `erase`
-  and `settle` commute on types and rows and effect holes vanish under
-  `erase` (reasoned; a property test is owed, §11). G0 does not see the
-  completion's fresh holes, as today.
-- **Which package forcing and the obligations read:** forcing builds
-  P_cu from the unsettled input, so a forced binding is a copy of
-  P_in(t), holes included; P_c = settle P_cu. Since forcing copies an
-  image and settling acts pointwise, settle(complete P_in) and
-  complete(settle P_in) agree on F (reasoned), and the forced binding
-  is σs(t) as §R7b states. Every obligation, E9 included, reads P_c:
-  E9 is judged after settling (D7 rejected).
-- **The witness** is built from `erase P_in` as today (holes stay
-  `Free` for the hole contract).
-- **The entry point guarantees (repair 3):** step 2 refuses every
-  candidate of a problem recording an `Unsupported` obligation with
-  `NotCertifiable (UnsupportedRecorded kind) provenance`. No path
-  through `certifyEffects` mints `Certified` for such a problem,
-  whatever the caller does; rule 1's block (Decide/Reason.purs:62-63)
-  remains as routing and is no longer what prevents certification.
+- **G0's projection (kept apart, §18.141):** `erase (settle P_in)`,
+  equal to today's `map settled unsettled` (Substitution.purs:53-55)
+  given `erase`∘`settle` = `settled`∘`erase` (owed). G0 does not see
+  completion's fresh holes or forced tails (effect rows), as today.
+  Owed: G0 accepts `erase P_c` whenever it accepts `erase (settle
+  P_in)`.
+- **The obligations' package:** P_c only.
+- **Entry point (repair 3, A6):** steps 0 and 1 read only the problem
+  and precede I3. A problem with a record defect or an `Unsupported`
+  obligation never reaches step 6, whatever the caller; Decide's rule 1
+  (and the new pre-search block, §6) are routing, not what prevents
+  certification.
+- **No path bypasses effect validation:** `certify` with this signature
+  replaces today's G0-only `certify` as the only minter of `Certified`
+  (§8).
 
-## 5. Failure ordering (repair 2)
+### 4.1 Record validation (step 0; A5, D12)
 
-Refusals are reported one per candidate, deterministically. Steps 0-2
-are **prerequisites**: none of them depends on obligation results.
+Problem-only, before search and again in `certify` as a backstop. A
+violation is `RecordDefect`:
+- every `Consume`'s `marks`/`bare` match §9's site table (corpus:
+  exact match, observed by §18.140's reviewer);
+- every recorded reference is in its permitted domain at its sort:
+  effect variables in `effectRigids` (`EffRigid`), `flexEff` \ F
+  (package-owned) or F (record-owned, and then only as a ResultC tail
+  or in an obligation reading that instance); type variables declared
+  rigid or flexible in `fields.vars` at the sort of their position;
+  positions in `positions`; `FixedRigid k` with k in `rigidMarks`;
+  every `flexEff` member and position referenced somewhere (corpus: two
+  sets agree, observed by §18.140's reviewer);
+- a recorded `AtDeferredRow` is **not** a defect (A4): its condition is
+  supported (labels-only, §9) and evaluated; it occurs 0 times in the
+  corpus (observed, §18.140).
 
-| Step | What fails | Order within the step | Reported as |
+### 4.2 Keys and E9 (D7 rejected; §18.141)
+
+`key` of a label after completion and settling: an effect label's key
+is its effect; a `Fail` label's key is `typeHead` of its payload read
+as a type (src/Domain/Type/Parts.purs:130-138): defined for `Int`,
+`Bool`, `Unit`, `Text`, data, and a closed record; undefined (keyless)
+for a variable (only a declared rigid can remain after settling), an
+arrow, a handler and a record with a tail (a rigid tail after
+settling). These are the cases today's resolver calls keyless
+(src/Features/Resolve/Row.purs:80-92) and `labelKey` leaves `Nothing`
+(src/Domain/Row.purs:99-105).
+
+- **E9** (`FailConcrete ty`): holds iff the payload under P_c has a key.
+- **Every keyless `Fail` label** is disposed of as follows: in a
+  package image, `Malformed (KeylessFail v)` at I3 (decided on the
+  settled payload, a local computation); in a recorded row, a
+  condition failure of the first obligation (recorded order) whose
+  matching reads it, so no keyless label ever reaches matching.
+- A hole payload settles to `Int`, which has a key: E9 holds. Whether
+  that default is right for lowering is U4's question, left open (C6
+  shows a program today refuses that a package could pass here).
+
+## 5. Failure order (repair 2; total)
+
+One refusal per candidate, the first in this order:
+
+1. **Record validation** (step 0): recorded order of `obligations`,
+   then the other record tables in a fixed order (`instances`,
+   `annotations`, `nodes`, `ambient`, `signature`), keys in `Ord`
+   order. `RecordDefect provenance`.
+2. **Unsupported** (step 1): the first `Unsupported` obligation in
+   recorded order. `NotCertifiable (UnsupportedRecorded kind)
+   provenance`.
+3. **I3** (step 2), checks in this order, each over keys in `Ord`
+   order within the maps `effects`, `marks`, `types`, `rows`:
+   (a) `BindsForced v`; (b) a key in the wrong sort's map; (c) a
+   missing key; (d) an extra key; (e) a non-canonical form
+   (`PBase (DataBase _)`); (f) a term naming a mark outside
+   `rigidMarks`; (g) a `Console` or `Fail` label whose term is not N on
+   normal forms (`TermJ ∅` is N); (h) a hole number at two sorts;
+   (i) solved form: an image naming a variable that is neither a
+   declared rigid at its sort nor a hole (A3, all sorts); (j) a keyless
+   `Fail` label in an image. `Malformed reason`.
+4. **G0** (step 3): G0's own order, unchanged.
+5. **Obligations** (step 5): obligation index i ascending; obligation
+   i is judged completely (conditions and edges) before obligation
+   i+1, so an earlier obligation's edge failure is never masked by a
+   later one's condition. Within i, check index j in the order §9 gives
+   per kind, which always puts Definition 4.2's additions last, so a
+   limitation never hides an ordinary failure at the same site.
+
+Every edge and mark equality carries (provenance of i, j). Since every
+mark term is given, an edge is judged when produced; there is no
+separate global edge phase.
+
+**Classification of an obligation failure** (A1; first match):
+- `NotCertifiable RigidExact (provenance, j)`: the failing check is
+  Definition 4.2's addition to E2 (an exact per-key count; ρ ending in
+  ϱ is the tail pass's, ordinary);
+- `NotCertifiable ForcedTail (provenance, j)`: obligation i **depends
+  on a forced tail**: its recorded sides mention a variable of Dep,
+  where Dep is the least set containing F and closed under recorded
+  `Equal` obligations (if an `Equal`'s sides mention a Dep variable,
+  every flexible variable they mention is in Dep). This covers a copy
+  reached through an E1 into an image. It is a dependency, not proof
+  that forcing caused the failure; it over-approximates;
+- `ObligationFailed (provenance, j)` otherwise.
+
+## 6. Refusals and Decide (repair 4, A6)
+
+`CheckRefusal` (src/Domain/Verdict/Search.purs:25-48) gains four
+constructors. Each has one `Reading` (src/Features/Check/Decide/
+Reading.purs:143-150, `refusedWith`); a `Declines` reading is not a
+refused candidate, so it raises no `CandidateRefused` search fault
+(Reading.purs:171-175).
+
+| Refusal | Candidate-dependent? | `Reading` | Decide |
 |---|---|---|---|
-| 0 | a `Consume` whose `marks`/`bare` disagree with §7's site table | recorded order of `obligations` | `RecordDefect provenance` |
-| 1 | I3 on P_in | fixed: (i) map sorts; (ii) missing keys, then extra keys, per map in the order effects, marks, types, rows, keys in `Ord` order; (iii) `BindsForced`; (iv) terms (`TermJ` names in `rigidMarks`; a `Console` or `Fail` label's term `TermN`); (v) one sort per hole; (vi) solved form | `Malformed reason` |
-| 2 | an `Unsupported` obligation recorded | recorded order | `NotCertifiable (UnsupportedRecorded kind) provenance` |
-| 3 | G0 | G0's own order, unchanged | today's `CheckRefusal`s |
-| 4-6 | obligations | **recorded order applies here:** obligation index i first; within i, its structural conditions before its edges and mark equalities, each in generation order j | `ObligationFailed provenance` or `NotCertifiable RigidExact provenance` |
+| `RecordDefect Provenance` | no | `Declines (RecordDefective provenance)` | also a **pre-search block**: `Decide.Reason.blocks` (Reason.purs:41-42) gains `defective problem`, first in the list, beside `unchecked` (:62-63); verdict Unresolved, reason `Unsupported` naming `RecordDefective`; Solved impossible |
+| `NotCertifiable (UnsupportedRecorded kind) Provenance` | no | `Declines (EffectsUnchecked [kind])` | rule 1 already blocks; no search fault |
+| `NotCertifiable RigidExact Provenance`, `NotCertifiable ForcedTail Provenance` | yes | `Declines (EffectLimit limitation)` | next strategy runs; if every strategy declines, the reason is `Unsupported` (Reason.purs:98-104); no search fault |
+| `Malformed MalformedReason` | yes | claimed (`RefusedComplete` / `RefusedHeuristic`) | next strategy runs; a `ClaimsComplete` candidate's refusal is a `CandidateRefused` fault (a read-back defect) |
+| `ObligationFailed Provenance` | yes | claimed | as above |
 
-- **Provenance on edges:** every edge and every mark equality carries
-  the provenance of the obligation that produced it and its index j
-  within that obligation. Step 6 judges all edges, then reports the
-  failure with the least (i, phase, j); an edge from obligation 3 is
-  reported before a condition of obligation 4.
-- **`RigidExact`** is reported exactly when the failing check is
-  Definition 4.2's addition to E2 (exact per-key counts, or ρ ending in
-  ϱ, for a rigid-tailed source); any other failure at the same site is
-  `ObligationFailed`.
-- **Forcing is not a refusal category** (a correction within D10's
-  four categories, proposed). A failing obligation that reads a forced
-  tail cannot be attributed to forcing without evaluating it under a
-  binding the package does not hold; naming forcing as the cause would
-  be blame without evidence (docs/engineering.md, "Blame needs
-  evidence"). Instead every `ObligationFailed` carries a flag
-  `readsForced ∷ Boolean`, a fact about the obligation, not a cause.
-  A6's losses are measured by the shadow differential against live
-  acceptance, not by refusal tags.
-- Solved form for effect bindings and terms is a step-1 refusal (an
-  obligation cannot be read on an unsolved image). For type and row
-  bindings the existing `solvedForm` keeps its current effect, a
-  `NoWitness (UnsolvedImage v)` compilation with `Valid` untouched
-  (Witness.purs:69-75, 86-98): one definition extended to all sorts
-  (D9), two call sites, behavior for types unchanged. The asymmetry is
-  for the reviewer.
+`Unsupport` (src/Domain/Verdict.purs:142-149) gains `RecordDefective
+Provenance` and `EffectLimit Limitation`. Priorities, unchanged where
+they exist: a refuter's `Contradiction` still stands over any block
+(Decide.purs:195-206, `verdictOf`: blocks only suppress Solved); a
+record defect is still reported, because the shadow differential reads
+`blocks` directly and reports `RecordDefective` as a generation defect,
+apart from candidate refusals, whatever the verdict. With every
+strategy returning `NoCandidate`, the block still reports the defect
+(C4b).
 
-## 6. Refusals and routing (repair 4)
+## 7. The certificate (A2)
 
-| Constructor (proposed) | Depends on the candidate? | Decide's handling |
+`Certified = Certified Valid Completed` in
+Domain.Verdict.Certified.Internal (proposed; the constructor stays
+importable only by Domain.Verdict.Certified and
+Features.Check.Strategy.Substitution, AGENTS.md:40-42). Accessors:
+`certifiedValidity`; `certifiedCompilation ∷ Certified → Compilation`
+derives `Witnessed (witnessOf P_cu)` after coverage, or `NoWitness`
+(Certified.purs:14-18 today read stored fields). `certifiedPackage ∷
+Certified → Completed` exposes the retained package read-only for the
+shadow differential and tests. No duplicate mutable copy, no
+serialization, no audit UI (§18.141 A2). Because A3 refuses unsolved
+images at step 2, a `Certified` never pairs an effect `Valid` with a
+`NoWitness (UnsolvedImage v)`; `NoWitness` remains for the hole
+contract and `Uncovered`.
+
+## 8. Module homes
+
+| Module | Content | Layer and rule |
 |---|---|---|
-| `RecordDefect Provenance` | no | **fails closed** for the recorded problem: no further strategy is tried as a repair; verdict Unresolved with a new reason `GenerationDefect`, reported in its own category of the shadow differential, apart from candidate refusals |
-| `NotCertifiable (UnsupportedRecorded kind) Provenance` | no | rule 1 already blocks (`EffectsUnchecked`); strategies and refuters run as today; the reason stays `EffectsUnchecked` (blocks take priority, Decide/Reason.purs:47-50) |
-| `Malformed MalformedReason` | yes | a `CheckFailed` attempt; the next strategy runs |
-| `ObligationFailed { provenance, readsForced }` | yes | as above |
-| `NotCertifiable RigidExact Provenance` | yes | as above; counted apart (a validator limitation, not "invalid program") |
+| Domain.Verdict.EffectPackage (new), with .Internal | §2.2's types; `Completed`'s constructor in .Internal, importable only by Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Package (`complete` is its only builder) | Domain; a new structure rule pins .Internal's importers |
+| Domain.Verdict.Search | `CheckRefusal`'s four constructors; `MalformedReason`, `Limitation` | Domain |
+| Domain.Verdict | `Unsupport += RecordDefective, EffectLimit` | Domain |
+| Domain.Verdict.Certified(.Internal) | `Certified Valid Completed`, accessors | Domain; importers unchanged |
+| Features.Check.Strategy.Effects.Package (new) | `erase`, `under`, `settle`, `complete`, `witnessOf`, `key` | Features (Domain may not import Features, AGENTS.md:18-20); trusted |
+| Features.Check.Strategy.Effects.Record (new) | step 0, the site table; imported by `certify` and Decide.Reason | trusted |
+| Features.Check.Strategy.Effects.Malformed, .Rows, .Handler, .Obligations (new) | steps 2 and 5 | trusted |
+| Features.Check.Strategy.Witness | `solvedForm` extended to all four maps (D9), called by I3 and by coverage | trusted, re-pinned |
+| Features.Check.Strategy.Substitution | the only `certify`, now `RecordedProblem → EffectPackage → Either CheckRefusal Certified`; the G0-only `certify ∷ … → Substitution → …` removed, so nothing mints without effect validation | trusted; still the only Certified.Internal importer besides Certified |
+| Features.Check.Strategy.Online | certificate type `EffectPackage` (Online.purs:72, :156-157) | — |
+| Features.Check.Decide.Reason, .Reading | `defective`, the new readings | trusted |
+| test-only M-B collector | union-find, reachability | unreachable from live compilation |
 
-Applied to statements §7 (dated 2026-10-31): the blanket "a candidate
-that fails (a)-(c) ... continues to the next strategy" now applies to
-the candidate-specific rows only.
+Named changes for any future plan: scripts/trusted-surface.json pins
+for every new or re-pinned trusted module, the structure rules for
+`Completed`'s and the validator modules' importers, AGENTS.md's
+review-required list, and the U8 tests
+(test/r0-u8-solved-form.test.mjs), whose `Certified Valid` +
+`NoWitness` expectations become `Malformed` refusals under A3.
+Elaborate (src/Features/Check/Elaborate.purs:52, :102) calls
+`coverage`, not `certify`; it keeps doing so on the derived witness.
 
-## 7. Reading every recorded obligation kind
+## 9. Reading every recorded obligation kind
 
-As generation records them at 868756f (src/Domain/Recorded/Effect.purs
-`Obligation`, `SiteKind`; Generate/Literal.purs:40-74;
-Generate/Effect.purs:156-193; Generate/Obligation.purs:146-170). Every
-condition is judged on P_c. The `marks`/`bare` columns are the site
-table step 0 checks.
+At d9bd6d7 (src/Domain/Recorded/Effect.purs `Obligation`, `SiteKind`;
+Generate/Literal.purs:40-74; Generate/Effect.purs:156-193;
+Generate/Obligation.purs:146-170). Conditions on P_c. The `marks` and
+`bare` columns are step 0's site table. The last column is the
+within-obligation order j.
 
-| Obligation | marks | bare | Condition on P_c | Edges and equalities |
-|---|---|---|---|---|
-| `Equal lhs rhs` (beside an atom; `ClauseBody` O1; `WithNode` O2) | — | — | structural equality; rows by R-A; handler types by Definition 4.1, rule J; several-tailed records by O6 (proposed in the statements) | `norm` equality per mark pair |
-| `Consume` `AtCall`, `AtPerform`, `AtApply`, `AtPipe`, `AtStage k`, `AtCallback`, `AtFail` | true | false | per-key matching; count(ρ, κ) ≥ count(s, κ); matched arguments equal; closed s: no tail condition; s ending in rigid ϱ: Definition 4.2 | `mark(ρ occ) ⊑ mark(s occ)` per matched pair |
-| `Consume` `AtDefer` (`DeferInto`) | true | false | labels only: s is d's labels, closed | as above |
-| `Consume` `AtDeferredRow` | true | false | labels only | as above. Declared, recorded by no generation rule at 868756f (reasoned from a search of Generate/); settling's deferred rows stay unfinished (§18.138) |
-| `Consume` `ClauseIntoR k` | false | false | as the call row with top-level marks ignored; Definition 4.2 for a rigid c_k | none |
-| `Consume` `ClauseIntoC k` | true | true | matching and counts by key, arguments ignored (R-b); Definition 4.2 for a rigid c_k | per matched pair |
-| `Consume` `InstallR` | false | false | as the call row, marks ignored; Definition 4.2 for a rigid R | none |
-| `Consume` `AtInstalledC` | true | true | **R-a:** C's r-th κ paired with ρ's r-th κ, count(ρ, κ) ≥ count(C, κ); nothing else | `mark(ρ partner) ⊑ mark(C label)` |
-| `HandlerLit { m, inference, clauses, clauseRows }` | — | — | for each c_k = P_c(`clauseRows[k]`) holding a `Fail` label or ending in a rigid ϱ | `M ⊑ term(m)` |
-| `Install { frame, handler, ambient }`, handler an `MHandler` | — | — | m, R, C from `under P_c handler` (C owned, else R itself, rule J) | `term(m) ⊑ f`; each ρ label paired with a C label `⊑ f`; a rigid C tail: `M ⊑ f` and ρ ends in it; every frame, Console included |
-| `Install`, handler not an `MHandler` | — | — | never reached: the same `with` records `UnframedInstall`, so step 2 refuses first (R-c) | none |
-| `Defer { row, enclosing }` | — | — | d = P_c(row): no `Fail` label, no rigid tail | each non-`Fail` label `⊑ N` |
-| `Entry row` | — | — | only Console labels, closed tail (its `EntryTail` bound by the package, then settled) | none |
-| `FailConcrete ty` | — | — | the payload's head under P_c, **after settling** (statements E9; D7 rejected), is concrete | none |
-| `Unsupported kind` | — | — | step 2 | — |
+| Obligation | marks | bare | Condition | Edges | Order j |
+|---|---|---|---|---|---|
+| `Equal lhs rhs` | — | — | structural equality; rows by R-A; handler types by Definition 4.1 (rule J; an image C compared as any C); O6 for several tails (proposed) | `norm` equality per mark pair | pre-order over the type; at a node: constructor and head, then its marks, then children left to right; a row: keys of lhs's normal form in first-occurrence order (count, then each pair: arguments, then mark), extra keys of rhs, then the tail |
+| `Consume` `AtCall`, `AtPerform`, `AtApply`, `AtPipe`, `AtStage k`, `AtCallback`, `AtFail` | true | false | each source label in source order: a partner of its key and rank (key defined, §4.2), arguments equal, edge; then the tail (closed: none; rigid ϱ: ρ ends in ϱ); then Definition 4.2's exact counts | `mark(ρ occ) ⊑ mark(s occ)` | as written in the condition |
+| `Consume` `AtDefer` | true | false | labels only, s closed | as above | per source label |
+| `Consume` `AtDeferredRow` | true | false | labels only (A4: evaluated; 0 recorded) | as above | per source label |
+| `Consume` `ClauseIntoR k` | false | false | as the call row, top-level marks ignored | none | as the call row |
+| `Consume` `ClauseIntoC k` | true | true | as the call row, arguments ignored, keys kept (R-b) | per pair | as the call row |
+| `Consume` `InstallR` | false | false | as the call row, marks ignored | none | as the call row |
+| `Consume` `AtInstalledC` | true | true | R-a: each C label in order: a ρ partner of its key and rank | `mark(ρ partner) ⊑ mark(C label)` | per C label: partner, edge |
+| `HandlerLit` | — | — | — | for each k in order, if c_k holds a `Fail` label or ends in a rigid: `M ⊑ term(m)` | k ascending |
+| `Install`, handler an `MHandler` after `under` | — | — | m, R, C from `under P_c handler` (C owned or image-owned, else R itself) | `term(m) ⊑ f`; each C label's ρ partner `⊑ f`; a rigid C tail: ρ ends in it (condition), `M ⊑ f`; Console frames too | in that order, C labels in order |
+| `Install`, other | — | — | never judged: its `with` records `UnframedInstall` (step 1) | — | — |
+| `Defer { row, enclosing }` | — | — | no `Fail` label, no rigid tail in d | each non-`Fail` label `⊑ N` | conditions, then labels in order |
+| `Entry row` | — | — | each label Console, then a closed tail | — | labels, tail |
+| `FailConcrete ty` | — | — | the payload has a key (§4.2) | — | one |
+| `Unsupported kind` | — | — | step 1 | — | — |
 
-Not obligations of their own: E3 (read through E1), E4′ (through
-`instances`, `annotations`, E1, Definition 4.1, `Install`), E11, E12
-(steps 5-6). Marks: `holds x y` iff `x = N`, `y = M`, or `J S ⊆ J T`
-(statements §5, universal; pairs36 and the oracle, bounded); `norm`
-equality exact for every valuation (reasoned). Rows (R-A): keys by
-`labelKey` (src/Domain/Row.purs:102), grouped normal form (derived; a
-bounded check is owed, §11).
+Marks: `holds x y` iff `x = N`, `y = M`, or `J S ⊆ J T` on normal
+forms (statements §5, universal; pairs36 and the oracle, bounded).
+Rows: grouped normal form by key (derived; bounded check owed, §11).
 
-## 8. Amendments applied in this pass
+## 10. Restrictions
 
-All dated 2026-10-31 and citing §18.139; nothing else in those
-documents was changed.
+From the packet (§3.2 there): T1 Definition 4.2, T2 forcing, T3 solved
+form (now all sorts before obligations, A3), T4 ∅ effect default (U4
+open), T5 invariant marks, T6 bare C, T7 Console N and uniform frames,
+T8 terms N, M, `J S`, T9 `Unsupported` (refused before I3, A6), T10
+`Outside HandlerType`, T11 rule J, T12 first-failure reporting (§5).
+New: an input package may not bind a forced tail; every recorded
+position needs a term; nullary data has one spelling; a keyless `Fail`
+label in an image is malformed; `ForcedTail` over-approximates by Dep.
 
-| Document | Section | Gist |
-|---|---|---|
-| statements | status | names the §18.139 amendments and the sections they touch |
-| statements | §2 ResultC row | input packages hold no `⟨p, result clauses⟩` binding; forced; supplying one is Malformed; completed package includes it (D5) |
-| statements | §2 after N10 | one `EffectPackage`; input and completed domains stated apart; unread frame term required, no evidence (D4, D5) |
-| statements | §4 E9 | D7 rejected; E9 after settling; U4 open |
-| statements | §7 pipeline | order: record consistency, I3, Unsupported refusal, settle, G0 on the settled erasure, completion, obligations; no certificate for an Unsupported problem |
-| statements | §7 routing | RecordDefect fails closed; the "continues to the next strategy" bullet limited to candidate refusals |
-| statements | §10 | the code's `Obligation` (F6), `bare`'s meaning, `EffectPackage`, four refusal categories (D4, D10, D15) |
-| statements | §13b | citation standing: `lift` verified, Gaster-Jones abstract only, `inject` unconfirmed, `mask` unchecked (F4, D15) |
-| options note | status | approval and pointer to this document |
-| options note | forcing step 1 and after step 5 | ratification; the data flow in §4 here |
-| options note | components V0, V2, V3 | "faithful" to "adapted" with the reason and source label (D14) |
-| options note | references, questions | sources checked in the packet; questions 1-3 answered |
+## 11. Owed checks (none run)
 
-## 9. Restrictions
+- `erase`∘`settle` = `settled`∘`erase` over generated well-sorted
+  package types and rows.
+- `erase` of the honest package = today's read-back substitution, on
+  the corpus (the compatibility property for nullary data and every
+  other constructor).
+- settle∘complete = complete∘settle on F; differ on absent variables
+  (C6 is the fixture).
+- G0 accepts `erase P_c` whenever it accepts `erase (settle P_in)`.
+- The grouped normal form against (eq-swap)'s closure on small rows;
+  `norm` equality over every valuation of up to four marks.
+- One fixture per case of §12, one forged package per refusal
+  constructor, one restored-defect proof per obligation kind, and a
+  test that every `SiteKind` has a site-table row.
 
-Unchanged from the packet (§3.2 there): T1 Definition 4.2, T2 forcing,
-T3 solved form, T4 ∅ effect default (U4 open), T5 invariant marks, T6
-bare C, T7 Console N and uniform frames, T8 terms N, M, `J S`, T9
-`Unsupported` kinds (now refused at the entry point), T10 `Outside
-HandlerType`, T11 rule J, T12 first-failure reporting (§5). New here:
-an input package may not bind a forced tail; every recorded position
-needs a term, an unread one included; a record defect fails closed.
-D7's E9-before-settling restriction is not adopted.
+## 12. Distinguishing cases
 
-## 10. Distinguishing cases
+Predictions are for the corrected pipeline; every verdict is
+**reasoned** unless marked observed. "Order" facts marked observed were
+run by §18.140's reviewer or by this pass's probe (read-only, over the
+built output of r0-t2-d1 at d9bd6d7).
 
-Each case gives a concrete program or package, the verdict this
-specification predicts, and what a plausible wrong pipeline or
-interface does. Every verdict is **reasoned** unless marked; nothing
-was run for this pass.
-
-**C1. Forced-tail domain.** Statements §12.1's N1 source: `fn mk():
+**C1. Forced-tail domain.** §12.1's N1 source: `fn mk():
 Handler(nofail Ask with Log + ...s) with pure = handler Ask { ask() =>
 Log.log(1) }; fn use(): Unit with Log = with mk() { defer Ask.ask();
-() };`. At the use p of `mk()`, s occurs only in the result, so the
-ResultC tail is `⟨p, result clauses⟩` ∈ F.
-- Package A binds every package-owned variable and position, nothing
-  for `⟨p, result clauses⟩`, with least terms: passes I3; completion
-  forces the tail to A's image of s's instance slot. E5's edge from
-  C's `Log` partner makes the frame term M, so the `defer`'s demand on
-  `Ask` (`M ⊑ N`) fails: `ObligationFailed { provenance:
-  DeferRegistration, readsForced: false }` (today refuses the program,
-  observed §R5b). With the frame term forged to N instead, the
-  `Install` obligation (recorded before the body's, Generate/Effect.purs
-  `with`, reasoned) fails first on `M ⊑ N`, and it reads C's tail:
-  `readsForced: true`. The flag differs while forcing caused neither
-  refusal, which is why it is a flag and not a cause (§5).
-- Package B = A plus `⟨p, result clauses⟩ ↦ ∅`: `Malformed (BindsForced
-  ⟨p, result clauses⟩)`.
-- Wrong W1, exact domain checked against the completed domain at
-  input: A is `Malformed` (missing key), so every honest package for a
-  fresh-tail use is refused. Wrong W2, forcing overrides a supplied
-  binding: B is read as A (two homes). Wrong W3, the certified package
-  omits F: a re-reader finds `⟨p, result clauses⟩` unbound.
-- Control: `use` with `with nofail Log` (accepted today, observed
-  §R5b): predicted accepted under forcing (reasoned; the stand-in kept
-  r1, r2, r9 but did not run this control).
+() };`. At the use p of `mk()` the ResultC tail is `⟨p, result
+clauses⟩` ∈ F. Recorded order in `use` (observed, reviewer): `Install`
+0, `Defer` 7, `AtDefer` 8, `AtPerform` 9.
+- A: every package-owned variable and position bound, least terms,
+  nothing for `⟨p, result clauses⟩`. `Install` (0) holds with frame
+  term M; `Defer` (7) fails `M ⊑ N` on `Ask`. `Defer`'s sides mention
+  no Dep variable: `ObligationFailed DeferRegistration`. (Today
+  refuses the program, observed §R5b.)
+- A′: A with the frame term forged to N: `Install` (0) fails on its
+  C-partner edge `M ⊑ N`; its handler is the instance result, which
+  mentions `⟨p, result clauses⟩`: `NotCertifiable ForcedTail Install`
+  (a dependency, not a cause).
+- B: A plus a binding for `⟨p, result clauses⟩`: `Malformed
+  (BindsForced ⟨p, result clauses⟩)` (I3 check a), not "extra key".
+- Wrong W1, exact domain against the completed domain at input: A is
+  `Malformed` (missing key). Wrong W2, forcing overrides a supplied
+  binding: B is read as A. Wrong W3, the certificate omits F: now
+  observable, since `Certified` retains P_cu (`certifiedPackage` lacks
+  the forced binding).
 
-**C2. Prerequisite against recorded order.**
+**C2. Prerequisites against recorded order.**
 - (a) §7a's `work` (`fn work(): Unit with Log = { defer Log.log(1); ()
-  }`), package with d's `Log` label term `TermJ {z}`, z not in
-  `rigidMarks`, and otherwise honest: `Malformed` at step 1. Wrong:
-  obligations first, reporting `ObligationFailed`.
-- (b) The same with the honest term M: `Defer` is recorded before its
-  `AtDefer` consumption (Generate/Obligation.purs:149-152); `Defer`'s
-  edge `M ⊑ N` fails, reported `ObligationFailed DeferRegistration`.
-  With the forged term N: `Defer` holds, the consumption's edge `M ⊑
-  N` fails, reported `ObligationFailed DeferInto`. Wrong: an
-  FX008-style pooled graph without provenance refuses both and names
-  neither obligation.
+  }`), d's `Log` term `TermJ {z}`, z not in `rigidMarks`: `Malformed`
+  (I3 f) before any obligation.
+- (b) The same with term M: `Defer` precedes its `AtDefer`
+  (Generate/Obligation.purs:149-152); `ObligationFailed
+  DeferRegistration`. With term N: `ObligationFailed DeferInto`.
+  Wrong: a pooled FX008 graph names neither.
 - (c) `fn work(h: Unit -> Unit with State(Int)): Unit with Log +
-  State(Bool) = { defer Log.log(1); h(()) }` with honest terms:
-  obligation `Defer` (earlier) fails on an edge, the call's `Consume`
-  (later) fails a structural condition (payload `Int` against `Bool`).
-  Reported: `Defer`'s. Wrong "all conditions first, then all edges":
-  reports the call's. (Recorded order follows the block's items;
-  reasoned.)
+  State(Bool) = { defer Log.log(1); h(()) }`, honest terms. Recorded
+  order (observed, reviewer): `Defer` 2, the failing `Consume
+  AtCallback` 7 (h is a callback parameter; its row `State(Int) + ϱ`
+  ends in the rigid ambient). `Defer` (2) fails on an edge: reported
+  `ObligationFailed DeferRegistration`. Wrong "conditions everywhere,
+  then edges" (the previous revision's steps 5 then 6): reports
+  obligation 7.
 
-**C3. Unsupported at the entry point.** FX032's program, `effect Op
-{ fn op(): Int with Log; }; fn g(): Int with Op = Op.op(); fn main():
-Int = 0;`, with a package satisfying every other obligation of `g`:
-`certifyEffects` returns `NotCertifiable (UnsupportedRecorded
-(OperationWithRow …))`; no `Certified` exists. Wrong (routing-
-dependent): `Certified` is minted and only Decide's rule 1 suppresses
-Solved; any other caller of `certify` (Elaborate's re-check, a test,
-a later strategy) holds a certificate for an unchecked problem.
+**C3. Unsupported at the entry point.** FX032's `effect Op { fn op():
+Int with Log; }; fn g(): Int with Op = Op.op(); fn main(): Int = 0;`;
+`Unsupported` is `g`'s obligation 0 (observed, reviewer). Any package,
+from a `ClaimsComplete` strategy: `NotCertifiable (UnsupportedRecorded
+(OperationWithRow …))`, read `Declines (EffectsUnchecked …)`, no
+`CandidateRefused` fault; verdict Unresolved, `EffectsUnchecked`.
+Wrong W1, routing-dependent: a `Certified` minted and only rule 1
+suppressing Solved, so the online strategy's `check` returns a
+certificate for an unchecked problem. Wrong W2, the refusal read as
+claimed: a spurious `CandidateRefused` fault.
 
-**C4. RecordDefect fails closed.** A restored-defect mutant of
-generation recording `AtInstalledC` with `bare: false`, on the famw
-program (statements §12.2, `Fail(Job)` in C against `Fail(Job(Int))`
-in ρ). Predicted: every candidate refused `RecordDefect` at step 0;
-the declaration Unresolved with `GenerationDefect`, reported apart;
-no second strategy tried. Wrong W1, flags trusted: the site is judged
-with argument equality and refused as `ObligationFailed`, a generation
-bug reported as a candidate's failure. Wrong W2, `CheckFailed` and
-continue: a strategy whose package satisfies the mis-recorded
-condition could be certified against the wrong obligation.
+**C4. Record defect.** A restored-defect mutant recording
+`AtInstalledC` with `bare: false`, on famw (§12.2: `Fail(Job)` in C
+against `Fail(Job(Int))` in ρ).
+- (a) A strategy offers an honest package: pre-search block
+  `RecordDefective`; `certify` refuses `RecordDefect` (step 0) and the
+  attempt reads `Declines`; verdict Unresolved, reason names
+  `RecordDefective`; reported as a generation defect.
+- (b) Every strategy returns `NoCandidate`: the block alone reports the
+  defect; verdict Unresolved naming `RecordDefective`.
+- Wrong W1, flags trusted: `AtInstalledC` judged with argument
+  equality refuses famw as `ObligationFailed` (a generation bug shown as
+  a candidate failure). Wrong W2, defect found only in `certify` and
+  read as claimed: the verdict is still not Solved (every strategy uses
+  the same `certify`), but it reads `Inference NoAcceptedCertificate`
+  with spurious `CandidateRefused` faults instead of a generation
+  defect, and in case (b) the defect is not reported at all; it
+  differs only in reporting and routing.
 
-**C5. The unread frame term.** The ledger's probe shape: `fn main():
-Unit with Console = { let h = 1; with h { () } }` (h: Int). Recorded:
-`Install { frame: Frame p, handler: MBase Int, … }` and `Unsupported
-UnframedInstall`. Package without a term for `Frame p`: `Malformed`
-(step 1, missing key). With `TermN` or `TermM`: passes step 1, refused
-`NotCertifiable (UnsupportedRecorded UnframedInstall)` at step 2; the
-two terms give the same verdict. Wrong W1, unread positions optional:
-the missing term passes and domain accounting silently weakens. Wrong
-W2, Unsupported checked before I3: the read-back's missing term is
-never reported. Wrong W3, the term read as evidence (evaluating E5
-with a guessed label): could accept.
+**C5. The unread frame term.** `fn main(): Unit with Console = { let h
+= 1; with h { () } }` (h: Int). Recorded (observed, reviewer):
+`Install` then `Unsupported UnframedInstall`, `positions = [Frame p]`.
+Every package, with or without a term for `Frame p`: `NotCertifiable
+(UnsupportedRecorded UnframedInstall)` (step 1, before I3; A6). I3's
+own test, given this problem directly, reports a missing term as
+`Malformed` and accepts N or M alike. Wrong W1, unread positions
+optional: I3's test accepts the missing term. Wrong W2, the term read
+as evidence of a safe installation: impossible here, since step 1
+precedes any obligation.
 
-**C6. E9 after settling with a hole head.** A package for a
-declaration recording `FailConcrete (MVar v)`, v flexible, with v
-absent from P_in (so a fresh hole at completion) or bound to
-`PVar (holeVar 3)`. On P_c the payload is `Int`, a concrete head: E9
-holds, and `Fail` labels with that payload key on `Int`. Predicted:
-not refused by E9. U4 stays open on whether the default is right for
-lowering. Control: v bound to a declared rigid type variable: E9
-refuses. Wrong W1 (D7, rejected): refuses the hole head. Wrong W2,
-keys computed before settling: the `Fail(hole)` label has no key and
-matching fails or is postponed. Whether a source program produces a
-hole-headed payload is unknown (no program constructed).
+**C6. E9 and the completion order.** The audit fixture
+fail-needs-concrete-check (inferred role): `type E = E; fn k(): Unit
+with Fail(E) = { let go = fn(r) => Fail.fail(r.e); () }; fn main():
+Int = 0;`. Recorded: `FailConcrete (MVar ⟨…, field e⟩)`, `k`'s
+obligation 1, a flexible type variable (observed, this pass's probe;
+9 corpus `FailConcrete`s have a flexible variable payload). Today
+refuses `k`, FailNeedsConcrete (observed, the fixture).
+- Package with the field variable absent: completion binds it to a
+  fresh hole, settling gives `Int`, which has a key: E9 holds. If every
+  other obligation holds, `k` is certified while today refuses it: a
+  correspondence divergence the differential must report, resting on
+  U4 (open), not shown sound or unsound.
+- Settle-then-complete (the statements' order before this pass's
+  amendment): the fresh hole stays unsettled; the payload is a
+  variable; E9 refuses. This separates the two orders.
+- Bound to `PVar (holeVar 3)`: as absent. Bound to a declared rigid
+  type variable: keyless, refused (E9 or an earlier matching
+  obligation, whichever is first in recorded order). Bound to `PArrow
+  …`: keyless after settling; if the field variable appears in an
+  image `Fail` label, `Malformed (KeylessFail)` at I3, otherwise
+  refused like the rigid case.
+- Wrong (D7, rejected): refuses the absent and hole cases.
 
-**C7. Which settled projection.** Statements §12.2's "hole identity":
-`fn g(): Unit = { let k = fn(u: Unit) => (); k(()) }`, the lambda's
-row `PTailHole 3`, the Apply row `PTailHole 4`: both settle to the
-closed row, E1 holds, predicted accepted. Wrong: obligations on P_cu
-(unsettled) compare hole 3 with hole 4 and refuse; or G0 on `erase
-P_in` (unsettled), today's R026 defect for types.
+**C7. Which settled projection.** (a) §12.2's hole identity: `fn g():
+Unit = { let k = fn(u: Unit) => (); k(()) }`, the lambda row
+`PTailHole 3`, the Apply row `PTailHole 4`: both settle to the closed
+row; E1 holds; accepted. Wrong: obligations on P_cu (unsettled) refuse
+(hole 3 ≠ hole 4). (b) A type hole: `fn id2(x: Int): Int = { let g =
+fn(y) => y; g(x) }` (BACKLOG R026's program), y's variable bound to
+`PVar (holeVar 0)`: G0 on `erase (settle P_in)` sees `Int` and
+accepts; wrong G0 on `erase P_in` compares `TVar (holeVar 0)` with
+`Int` syntactically and refuses.
 
-## 11. Implementation outline (not authorized)
+**C8. Nullary data.** `type E = E; fn f(x: E): E = { let g = fn(y) =>
+y; g(x) }`, y's variable bound to `PData E [] []`: `erase` gives `Base
+(DataBase E)`, which G0 compares equal to the recorded atoms' `Base
+(DataBase E)`: accepted by G0. Wrong `erase` to `App (DataHead E) []`:
+G0 refuses (syntactic equality). Bound to `PBase (DataBase E)`:
+`Malformed` (I3 e).
 
-The packet's §7 outline, with: task 1 the `EffectPackage` module, its
-`erase`, `under`, `settle`, `complete`, and their property tests
-(erase∘settle = settle∘erase on types and rows; settle∘complete =
-complete∘settle on F; `under` total on the completed domain); the site
-table as a trusted constant with a test that every `SiteKind` has a row;
-steps 0-2 before any package reading of obligations; the extended
-`solvedForm` and `bindingsOf`'s numbering as named trusted-surface
-changes (D9); the four refusal constructors and `GenerationDefect` with
-Decide's handling (§6); a fixture for each of C1-C7; the M-B collector
-written apart from the validator's (D6), its result stated as agreement
-on exercised inputs only; fixture-only differential until a read-back
-produces effect packages (D13).
+**C9. BindsForced against an extra key.** C1's B is `BindsForced`.
+A binding for an `EffFresh` outside `flexEff` entirely is an extra key
+(I3 d).
 
-## 12. Source verification (unchanged from the packet, §1)
+**C10. Rigid-tailed consumption.** (a) `fn w(h: Unit -> Unit with
+State(Int)): Unit with Log + State(Bool) = h(())`: the `AtCallback`
+consumption fails the payload (ordinary, j earlier) and Definition
+4.2's exact count (`Log` extra, j last): `ObligationFailed`. (b) `fn
+w(h: Unit -> Unit with State(Int)): Unit with Log + State(Int) =
+h(())`: only the exact count fails: `NotCertifiable RigidExact` (an s1
+or p1-like validator limitation; today refuses, FX017, reasoned).
+Wrong: Definition 4.2 checked first reports (a) as `RigidExact`.
+
+**C11. A type image naming an absent flexible variable.** P_in binds a
+type variable x to `PVar y`, y flexible and absent: `Malformed
+(UnsolvedImage x)` at I3 i (A3). Wrong W1: completion binds y to a
+fresh hole and the obligations accept. Wrong W2: today's behavior,
+`Certified Valid` with `NoWitness (UnsolvedImage x)`, an effect
+judgment beside a hidden type defect.
+
+**C12. Console's term.** A package image `Console` label with `TermJ
+∅`: N on normal forms; accepted by I3 g. With `TermJ {k}`: `Malformed`.
+Wrong: syntactic comparison refuses `TermJ ∅`.
+
+**C13. An image that owns a C.** `fn use(b: Bool): Unit with Log = {
+let h = if b then mk() else mk(); with h { defer Ask.ask(); () } }`
+with C1's `mk`. The `if` node's image may be `PHandler … clauses: Just
+C′` (a copy) or `Nothing` (rule J's alias). Both are well-formed; E1
+(the two branch equations) joins C′ to each use's ResultC under
+Definition 4.1(d), or, with `Nothing`, joins the image's R itself;
+`Install` reads C′ or R. With honest least terms both spellings are
+refused at the `Defer`, as C1's A (reasoned). Wrong W1, image C
+refused as `Malformed`: honest images carrying C are lost. Wrong W2,
+image C read by `Install` without the E1s: a forged C′ = ∅ passes the
+frame edges.
+
+**C14. A forced tail's source.** In C1, t (s's instance slot) bound
+to `{ [], PTailHole 5 }`: the forced binding is the same hole 5 (one
+identity); both settle to ∅; the witness has no effect rows. Bound to
+`{ [], PTailRigid r }` (a caller with `...r` in scope): the forced
+binding is r, and E5's rigid-C-tail edge `M ⊑ f` applies. Wrong: a
+forced binding computed from P_s with a fresh hole number gives the
+same verdict but two hole identities; a forced binding defaulting to
+∅ drops `M ⊑ f` (attempt B's shape) and could accept.
+
+## 13. Source verification (unchanged from the packet, §1)
 
 Access date 2026-10-30. Labels exactly as the packet gives them; none
 upgraded.
 
 | Key | Source | Verdict |
 |---|---|---|
-| [BS01] | Baader, Snyder. Unification theory. Handbook of Automated Reasoning I, ch. 8, 2001; §2.2.3 p. 448 read | **verified** for the definition; cited too strongly by the options note (F2, now amended) |
+| [BS01] | Baader, Snyder. Unification theory. Handbook of Automated Reasoning I, ch. 8, 2001; §2.2.3 p. 448 read | **verified** for the definition; the options note's "faithful" amended to "adapted" (F2) |
 | [L05] | Leijen. Extensible records with scoped labels. TFP 2005; draft rev. 76 read (Fig. 1, §3.2, §7.1) | **verified** (draft; TFP text not accessed) |
 | [Tar75] | Tarjan. Efficiency of a good but not linear set union algorithm. JACM 22(2), 1975; Berkeley memo ERL-M434 abstract read | **verified** (memo version) |
 | [BPPS18] | Biernacki, Piróg, Polesiuk, Sieczkowski. Handle with care. PACMPL 2(POPL), 2018; §1 p. 4 read | **verified** for `lift` |
@@ -498,28 +680,56 @@ upgraded.
 | [RM99] | Rehof, Mogensen. Tractable constraints in finite semilattices. SCP 35, 1999 | **not accessible** (publisher 403; secondary abstract consistent) |
 | [DG84] | Dowling, Gallier. Linear-time Horn satisfiability. J. Logic Programming 1(3), 1984 | **not accessible**; not relied on |
 
-## 13. Decision table with rulings (dossier §18.139)
+## 14. Decision table and review ledger
 
-| # | Decision | Ruling | What this pass did | Still open |
-|---|---|---|---|---|
-| D1 | Trusted mark check | approved: M-C | §4 step 6, §7 | — |
-| D2 | Rows | approved: R-A | §7 | the grouped normal form's bounded check |
-| D3 | Interim policy | approved: F14 items 1-3 | options note answered | — |
-| D4 | Package | approved: one authoritative `EffectPackage`; representation still to design | §2 proposes a sort-correct representation; statements §2, §10 amended | the representation's approval (after review) |
-| D5 | ResultC ownership | approved: record-owned forcing; input excludes forced bindings (Malformed if supplied); completed includes them; two domains stated | §2.3, §3; statements §2 amended | revisit if the restriction is lifted |
-| D6 | Differential edges | approved: independent test-only collector, agreement on exercised inputs only, not E12 exhaustiveness | §1, §11 | — |
-| D7 | E9 before defaults | **rejected**: E9 stays after settling; U4 open | removed from §4, §7, §9; statements E9 note; C6 | U4 |
-| D8 | Failure reporting | approved, ordering clarified | §5 | — |
-| D9 | Solved form | approved: extend the existing definition, trusted-surface change named in any plan | §5, §11 | the type/effect asymmetry of §5 for the reviewer |
-| D10 | Refusals | approved: four categories, RecordDefect as ruled | §6; forcing removed as a refusal tag in favor of a `readsForced` flag (proposed correction within the four categories) | the author's view of that correction |
-| D11 | UnframedInstall | approved: stays blocked, no symbolic framing | §4 step 2, §7; C5 | symbolic framing (not authorized) |
-| D12 | Record flags | approved: checked against the site table; inconsistency a record defect | §5 step 0, §6, §7; C4 | — |
-| D13 | Differential before tranche 2 | approved: fixture-only for now | §11 | corpus differential |
-| D14 | Fidelity corrections | approved | options note V0, V2, V3 amended | — |
-| D15 | Citations and stale §10 | approved, qualifications kept | statements §10, §13b amended | — |
-| — | Unused frame positions | ruled: a well-formed term required for every recorded position, conveying no evidence | §2.3, C5 | — |
+The dossier calls the decision table §12; it is this section (§13 in
+the previous revision).
 
-Open after this pass, as before: U2-U8's extension, O-SUB, A1,
-[FX008-5], Definition 4.2's sufficiency, the corpus differential, the
-focused adversarial review §18.139 authorizes, and implementation
-authorization.
+| # | Decision | Ruling | Where now |
+|---|---|---|---|
+| D1 | M-C | approved (§18.139) | §9, §11 |
+| D2 | R-A | approved | §9 |
+| D3 | F14 items 1-3 | approved | options note |
+| D4 | one `EffectPackage` | approved; representation proposed here | §2 |
+| D5 | forced ResultC tails record-owned; two domains | approved | §2.3, §3 |
+| D6 | independent test-only collector | approved; agreement on exercised inputs only | §1 |
+| D7 | E9 before defaults | **rejected** | §4.2 (after settling), C6 |
+| D8 | first-failure reporting | approved; ordering clarified | §5 |
+| D9 | one solved-form definition | approved; with A3 | §5 (I3 i), §8 |
+| D10 | four refusal categories | approved; with A1 | §5, §6 |
+| D11 | UnframedInstall blocked | approved | §4, C5 |
+| D12 | flags checked | approved; with A5 | §4.1 |
+| D13 | fixture-only differential | approved | §11 |
+| D14 | fidelity corrections | approved, applied | options note |
+| D15 | citation, stale §10 | approved, applied | statements §10, §13b |
+
+| §18.140 finding | Repair |
+|---|---|
+| S1-1 statements §7 settle-then-complete | statements §7 amended to complete-then-settle; §2.4, §4; C6 separates |
+| S2 nullary data erasure | §2.2 one spelling, §2.5 `erase` mirrors `recordedWith`; compatibility property owed; C8 |
+| S2 hole numbering | §2.4: completion's numbering over all maps, the witness derived from P_cu, shared identities |
+| S2 type solved form | A3: I3 i for all sorts, before obligations; C11 |
+| S2 E9 concrete, keyless `Fail` | §4.2: `typeHead` defined; every keyless label disposed; C6 variants |
+| S2 steps 5-6 masking, order j | §5 total order, per-obligation judging; §9 order column; C2(c), C10 |
+| S2 I3 order and C1's B | §5 item 3 (a) `BindsForced` first; C1, C9 |
+| S2 Decide readings | §6 table |
+| S2 RecordDefect only via certify | §6 pre-search block; C4(b) |
+| S2 module homes, old minter | §7, §8 |
+| S2 image-owned C | §2.2 allowed as a copy; C13 |
+| S2 `readsForced` | A1: `NotCertifiable ForcedTail` with Dep; §5 |
+| S2 C4 W2 | C4 restated: reporting and routing only |
+| S2 record references | A5: §4.1 |
+| S3 C7 vacuous wrong pipeline | C7(b) with a type hole |
+| S3 C1 W3 unobservable | observable through `certifiedPackage` (A2) |
+| S3 C3 Elaborate | §8: Elaborate calls `coverage`; C3 restated |
+| S3 C2(c) AtCallback, Definition 4.2 | C2(c), C10 |
+| S3 Reason.purs citation | §6 cites `blocks` :41-42, `unchecked` :62-63, `reason` :76-83; `verdictOf` Decide.purs:195-206 |
+| S3 refusal shape | one shape, `(provenance, j)` (§5, §6) |
+| S3 I3 (iv)-(vi) order, `TermJ ∅` | §5 item 3 total; normal forms (g); C12 |
+| S3 table number | noted above |
+| S3 observed orders | C1, C2(c), C3, C5 cite the reviewer's observations |
+| missing cases | C6 (both orders, `PArrow`), C8, C9, C10, C3 (`ClaimsComplete`), C4(b), C13, C11, C12, C14 |
+
+Open after this pass: the scoped re-review (§18.141); U2-U8's
+extension, O-SUB, the statements' A1, [FX008-5], Definition 4.2's
+sufficiency; every owed check of §11; implementation authorization.
