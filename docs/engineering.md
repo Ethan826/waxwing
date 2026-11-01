@@ -170,6 +170,11 @@ adding a bypass allowlist.
   instance class changes (a repurposed value, a swapped instance under
   the same dictionary name) passes it. So every diff to an allowed
   importer needs token review, whether or not the pin moves.
+  scripts/structure-modules.mjs `pinnedSurfaces` adds modules pinned the
+  same way that import no token module: A2's
+  `Domain.Verdict.EffectPackage.Types`, whose only importers are the
+  facade and its Internal. Its record shapes are type synonyms, which
+  neither export list shows, so a changed field moves no pin.
   Review-required trusted surface, since `Valid` carries no payload and
   its soundness rests on all of these (test/structure-trusted.test.mjs
   pins this list and the header marker in each module):

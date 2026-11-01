@@ -11,6 +11,12 @@ const Search = await load('Domain.Verdict.Search');
 const Effect = await load('Domain.Recorded.Effect');
 const Maps = await load('Data.Map.Internal');
 const Recorded = await load('Domain.Recorded');
+const Package = await load('Domain.Verdict.EffectPackage');
+const Atom = await load('Domain.Recorded.Atom');
+const Hole = await load('Domain.Recorded.Hole');
+const Sets = await load('Data.Set');
+const { ordString } = await load('Data.Ord');
+const Unfoldable = await load('Data.Unfoldable');
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Ask { fn ask(): Unit; }; ';
@@ -25,6 +31,13 @@ const closed = `${log}fn mk3(): Handler(nofail Ask with pure) with pure`
   + 'fn use4(): Unit = with mk3() { () }; fn main(): Unit = ();';
 
 const role = variable => variable.value1;
+const instancesOf = problem => Maps.toUnfoldable(Unfoldable.unfoldableArray)(
+  Recorded.fields(problem).effects.instances).map(pair => pair.value1);
+const imageOf = (map, key) => Maps.lookup(Atom.ordVar)(key)(map).value0;
+const fromJust = maybe => maybe.value0;
+const isClosedResultC = sig => sig.result instanceof Effect.MHandler
+  && sig.result.value1.clauses.constructor.name === 'Just'
+  && fromJust(sig.result.value1.clauses).tail.constructor.name === 'Nothing';
 
 test('an empty package round-trips', () => {
   const empty = packageOf({});
@@ -45,7 +58,65 @@ test('forcedTails finds C1\'s tail', () => {
 });
 
 test('a closed ResultC forces nothing', () => {
-  assert.deepEqual(Forced.forcedTails(problemOf(closed, 'use4')), []);
+  const problem = problemOf(closed, 'use4');
+  // The premise: generation records the case, one closed ResultC.
+  assert.equal(instancesOf(problem).filter(isClosedResultC).length, 1);
+  assert.deepEqual(Forced.forcedTails(problem), []);
+});
+
+const row = (labels, tail) => ({ labels, tail });
+const spec = positions => ({
+  types: [
+    [{ hole: 1 }, { arrow: ['Int',
+      row([{ effect: 'Fail', args: [{ data: [3, [], []] }],
+        mark: ['J', 'k', 'j'] }], { hole: 2 }),
+      { record: { fields: [['a', { var: { rigid: 0 } }]],
+        tails: [{ hole: 4 }] } }] }],
+    [{ rigid: 5 }, { handler: [{ effect: 7, args: [], mark: 'M' },
+      { inference: row([], { rigid: 3 }), clauses: null }] }],
+    [{ rigid: 6 }, { handler: [{ effect: 'Console', args: [], mark: 'N' },
+      { inference: row([], null), clauses: row([], { hole: 8 }) }] }],
+    [{ hole: 10 }, { dataBase: 3 }],
+    [{ rigid: 11 }, raw]],
+  rows: [[{ hole: 9 }, { fields: [['b', 'Bool']], tails: [{ rigid: 2 }] }]],
+  effects: [[{ effRigid: 2 }, row([], { rigid: 1 })]],
+  marks: [[positions[0], 'M']]
+});
+const raw = new Package.PVar(Hole.holeVar(3));
+
+test('a non-empty package round-trips', () => {
+  const { positions } = Recorded.fields(problemOf(c1, 'use')).effects;
+  const built = packageOf(spec(positions));
+  assert.deepEqual(['types', 'rows', 'effects', 'marks'].map(name =>
+    Maps.size(built[name])), [5, 1, 1, 1]);
+  const arrow = imageOf(built.types, Hole.holeVar(1));
+  assert.ok(arrow instanceof Package.PArrow);
+  const [fail] = arrow.value1.labels;
+  assert.ok(fail.mark instanceof Package.TermJ);
+  assert.deepEqual(['j', 'k', 'z'].map(name =>
+    Sets.member(ordString)(name)(fail.mark.value0)), [true, true, false]);
+  assert.ok(fromJust(arrow.value1.tail) instanceof Package.PTailHole);
+  assert.ok(arrow.value2 instanceof Package.PRecord);
+  const closedC = imageOf(built.types, new Atom.RigidVar(5));
+  assert.equal(closedC.value1.clauses.constructor.name, 'Nothing');
+  const ownedC = imageOf(built.types, new Atom.RigidVar(6));
+  assert.equal(fromJust(fromJust(ownedC.value1.clauses).tail).value0, 8);
+  const nullary = imageOf(built.types, Hole.holeVar(10));
+  assert.ok(nullary.value0 instanceof Atom.DataBase);
+  assert.equal(imageOf(built.types, new Atom.RigidVar(11)), raw);
+  assert.ok(imageOf(built.rows, Hole.holeVar(9)).tails[0]
+    instanceof Atom.RigidVar);
+});
+
+test('a key of the wrong sort throws', () => {
+  const effectRow = row([], null);
+  for (const wrong of [{ effects: [[{ hole: 9 }, effectRow]] },
+    { effects: [[{ rigid: 9 }, effectRow]] },
+    { types: [[{ effRigid: 1 }, 'Int']] },
+    { types: [[new Effect.EffRigid(1), 'Int']] },
+    { rows: [[{ effRigid: 1 }, { fields: [], tails: [] }]] },
+    { marks: [[{ rigid: 0 }, 'N']] }])
+    assert.throws(() => packageOf(wrong), /key/, JSON.stringify(wrong));
 });
 
 test('the refusals construct', () => {

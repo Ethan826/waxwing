@@ -180,6 +180,33 @@
    "TermN from ../Domain.Verdict.EffectPackage.Types/index.js"
   ]
  },
+ "Domain.Verdict.EffectPackage.Types": {
+  "source": [
+   "EffectPackage",
+   "PLabel",
+   "PRecordRow",
+   "PRow",
+   "PTail(..)",
+   "PTy(..)",
+   "Term(..)"
+  ],
+  "compiled": [
+   "PTailRigid",
+   "PTailHole",
+   "PBase",
+   "PVar",
+   "PArrow",
+   "PRecord",
+   "PData",
+   "PHandler",
+   "TermN",
+   "TermM",
+   "TermJ",
+   "eqTerm",
+   "eqPTail",
+   "eqPTy"
+  ]
+ },
  "Domain.Verdict.Judged": {
   "source": [
    "module Exports",

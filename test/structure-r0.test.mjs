@@ -65,6 +65,22 @@ test('only the facade and Effects.Complete import EffectPackage.Internal',
         [`${name} imports ${internal}`], name);
   });
 
+// A2: the package's types are read through the facade only, so the
+// facade's pinned surface is the one place they enter (Task 1 review).
+test('only the facade and its Internal import EffectPackage.Types', () => {
+  const types = 'Domain.Verdict.EffectPackage.Types';
+  for (const name of ['Domain.Verdict.EffectPackage',
+    'Domain.Verdict.EffectPackage.Internal'])
+    assert.deepEqual(importing(name, types), [], name);
+  for (const name of ['Features.Check.Strategy.Effects.Judged',
+    'Features.Check.Strategy.Effects.Complete',
+    'Features.Check.Strategy.Effects.Package', 'Domain.Verdict.Search',
+    'Domain.Verdict.EffectPackageX', 'Domain.Verdict.EffectPackage.InternalX',
+    'Domain.Verdict.EffectPackage.Types.X'])
+    assert.deepEqual(importing(name, types), [`${name} imports ${types}`],
+      name);
+});
+
 // Only generation builds a recorded problem (T-R0a §2 property 2); the
 // public Domain.Recorded imports the type to re-export it. Anchored, so
 // Features.Check.GenerateX is outside.

@@ -5,7 +5,7 @@ import { foreignFindings, manifestFile, surfaceFindings }
   from './trusted-surface.mjs';
 import { coercionFindings, foreignModules, foreignPinFile,
   foreignSurfaceFindings } from './forgery.mjs';
-import { internalModules, restricts, tokenModules }
+import { internalModules, pinnedSurfaces, restricts, tokenModules }
   from './structure-modules.mjs';
 import { elabFindings } from './structure-elab.mjs';
 import { clockGate } from './structure-clocks.mjs';
@@ -119,7 +119,7 @@ export const tokenAllowed = (name, internal) => internalModules.some(rule =>
   && rule.importers.test(name));
 
 const trusted = name => tokenModules.some(internal =>
-  tokenAllowed(name, internal));
+  tokenAllowed(name, internal)) || pinnedSurfaces.includes(name);
 
 // Each allowed importer present in src/ (by purs graph) or output/, with
 // its source and compiled index.js; a missing one is left undefined.

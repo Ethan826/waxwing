@@ -3,12 +3,14 @@
 // `problemOf` generates one declaration's recorded problem.
 //
 // A package spec is `{ types, rows, effects, marks }`, each optional and
-// a list of [key, value] pairs. A key is a PureScript value (a `Var`,
-// `EVar` or `Position`, typically read from `problemOf`'s problem), or a
-// compact variable: `{ rigid: n }` (`RigidVar (VarId n)`), `{ hole: n }`
-// (`holeVar n`), `{ effRigid: n }` (`EffRigid (VarId n)`). Values:
-//   type   "Int" | "Bool" | "Text" | "Unit" | { var } | { arrow: [t, r, t] }
-//          | { record } | { data: [id, [t], [r]] }
+// a list of [key, value] pairs. Each map parses its own keys and throws
+// on any other: `types` and `rows` take a `Var` value, `{ rigid: n }`
+// (`RigidVar (VarId n)`) or `{ hole: n }` (`holeVar n`); `effects` an
+// `EVar` value or `{ effRigid: n }` (`EffRigid (VarId n)`); `marks` a
+// `Position` value (typically read from `problemOf`'s problem). Values
+// (a type may also be a `PTy` value, passed through):
+//   type   "Int" | "Bool" | "Text" | "Unit" | { dataBase: id } | { var }
+//          | { arrow: [t, r, t] } | { record } | { data: [id, [t], [r]] }
 //          | { handler: [label, { inference: r, clauses: r | null }] }
 //   record { fields: [[name, t]], tails: [var] }
 //   label  { effect: "Fail" | "Console" | n, args: [t], mark: term }
@@ -37,13 +39,31 @@ const clausesOf = value => value === null ? Nothing.value
 const compact = value => value !== null && typeof value === 'object'
   && value.constructor === Object;
 
-const variable = value => {
-  if (!compact(value)) return value;
-  if ('rigid' in value) return new Atom.RigidVar(value.rigid);
-  if ('hole' in value) return Hole.holeVar(value.hole);
-  if ('effRigid' in value) return new Effect.EffRigid(value.effRigid);
-  throw new Error(`no variable form: ${JSON.stringify(value)}`);
+const wrongKey = (sort, value) => {
+  throw new Error(`no ${sort} key form: ${JSON.stringify(value)}`);
 };
+const isAny = (value, constructors) => constructors.some(constructor =>
+  value instanceof constructor);
+
+// A type or record-row variable.
+const variable = value => {
+  if (isAny(value, [Atom.RigidVar, Atom.FreshVar])) return value;
+  if (compact(value) && 'rigid' in value)
+    return new Atom.RigidVar(value.rigid);
+  if (compact(value) && 'hole' in value) return Hole.holeVar(value.hole);
+  return wrongKey('variable', value);
+};
+
+const effectVariable = value => {
+  if (isAny(value, [Effect.EffRigid, Effect.EffFresh])) return value;
+  if (compact(value) && 'effRigid' in value)
+    return new Effect.EffRigid(value.effRigid);
+  return wrongKey('effect variable', value);
+};
+
+const position = value => isAny(value, [Effect.Frame, Effect.Literal,
+  Effect.Opened, Effect.Annotation, Effect.Instantiated]) ? value
+  : wrongKey('position', value);
 
 const term = value => {
   if (value === 'N') return Package.TermN.value;
@@ -71,8 +91,14 @@ const row = value => ({ labels: value.labels.map(label),
 const recordRow = value => ({ fields: value.fields.map(([name, field]) =>
   new Tuple(name, type(field))), tails: value.tails.map(variable) });
 
+const types = [Package.PBase, Package.PVar, Package.PArrow, Package.PRecord,
+  Package.PData, Package.PHandler];
+
 const type = value => {
+  if (isAny(value, types)) return value;
   if (typeof value === 'string') return new Package.PBase(bases[value].value);
+  if ('dataBase' in value)
+    return new Package.PBase(new Atom.DataBase(value.dataBase));
   if ('var' in value) return new Package.PVar(variable(value.var));
   if ('arrow' in value) return new Package.PArrow(type(value.arrow[0]),
     row(value.arrow[1]), type(value.arrow[2]));
@@ -91,8 +117,8 @@ const mapOf = (ord, pairs, key, image) => Maps.fromFoldable(ord)(
 export const packageOf = spec => ({
   types: mapOf(Atom.ordVar, spec.types, variable, type),
   rows: mapOf(Atom.ordVar, spec.rows, variable, recordRow),
-  effects: mapOf(Effect.ordEVar, spec.effects, variable, row),
-  marks: mapOf(Effect.ordPosition, spec.marks, key => key, term)
+  effects: mapOf(Effect.ordEVar, spec.effects, effectVariable, row),
+  marks: mapOf(Effect.ordPosition, spec.marks, position, term)
 });
 
 // The named declaration's recorded problem (a `RecordedProblem` value).

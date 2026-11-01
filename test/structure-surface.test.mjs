@@ -151,6 +151,7 @@ test('the real tree matches its pin and its FFI names no token module',
     // Literal (Task 9, split from Effect).
     // A2 Task 1: Domain.Verdict.EffectPackage, the public module of the
     // `Completed` token (Effects.Complete, its builder, lands in Task 4).
+    // Its Types module is pinned beside them (`pinnedSurfaces`).
     const generate = ['', '.Ambient', '.Assemble', '.Block', '.Body',
       '.Builtin', '.Call', '.Callee', '.Consume', '.Context', '.Control',
       '.Declared', '.Effect',
@@ -167,7 +168,8 @@ test('the real tree matches its pin and its FFI names no token module',
     assert.deepEqual(Object.keys(importers).sort(),
       ['Domain.Elaborating', 'Domain.Elaborating.Build', 'Domain.Recorded',
         'Domain.Verdict', 'Domain.Verdict.Certified',
-        'Domain.Verdict.EffectPackage', 'Domain.Verdict.Judged',
+        'Domain.Verdict.EffectPackage', 'Domain.Verdict.EffectPackage.Types',
+        'Domain.Verdict.Judged',
         'Features.Check.Decide',
         ...generate, 'Features.Check.Refute.Rules',
         'Features.Check.Refute.Theorems',

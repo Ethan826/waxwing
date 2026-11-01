@@ -60,6 +60,10 @@ export const internalModules = [
   { module: 'Domain.Verdict.EffectPackage.Internal',
     importers: new RegExp('^(Domain\\.Verdict\\.EffectPackage'
       + '|Features\\.Check\\.Strategy\\.Effects\\.Complete)$') },
+  // The package's types, split from the facade only because `Completed`
+  // wraps them: every other module reads them through the facade.
+  { module: 'Domain.Verdict.EffectPackage.Types',
+    importers: /^Domain\.Verdict\.EffectPackage(\.Internal)?$/ },
   { module: /^(Domain\.Elaborating|Features\.Check\.Generate)(\.|$)/,
     importers: /^(?!Runtime\.)/ }
 ];
@@ -81,3 +85,8 @@ export const tokenModules = ['Domain.Verdict.Internal',
   'Features.Check.Refute.Rules.Internal', 'Domain.Elaborating.Internal',
   'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Certified.Internal',
   'Domain.Verdict.EffectPackage.Internal'];
+// Modules pinned in scripts/trusted-surface.json beside the allowed
+// importers, though they import no token module: A2's package types,
+// which the token `Completed` wraps (Task 1 review). The pin sees their
+// export names and compiled exports, not a type synonym's record shape.
+export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types'];
