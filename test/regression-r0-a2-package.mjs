@@ -41,5 +41,24 @@ export const a2PackageProbes = {
       ReadBack.settled(Package.eraseTy(type))));
     if (wrong >= 0) fail(`settle does not commute with erase: case ${wrong}`);
     passed(context);
+  },
+  // Task 2 review: settled types hold no hole, inside effect rows too,
+  // which erasure drops (test/r0-a2-erase.test.mjs).
+  'r0-a2-settle-rows': async context => {
+    const load = loader(context);
+    const Package = await load(packageModule);
+    const M = await ptyModules(load);
+    const holesIn = value => {
+      if (value instanceof M.Package.PTailHole) return 1;
+      if (value instanceof M.Atom.FreshVar)
+        return M.Hole.isHole(value) ? 1 : 0;
+      if (value === null || typeof value !== 'object') return 0;
+      return Object.values(value).reduce((sum, part) =>
+        sum + holesIn(part), 0);
+    };
+    const wrong = randomPTys(M, 20261031, 2000).findIndex(type =>
+      holesIn(Package.settleTy(type)) > 0);
+    if (wrong >= 0) fail(`a settled type holds a hole: case ${wrong}`);
+    passed(context);
   }
 };

@@ -1094,6 +1094,26 @@
    "theorems"
   ]
  },
+ "Features.Check.Strategy.Effects.Package": {
+  "source": [
+   "erase",
+   "eraseTy",
+   "key",
+   "settle",
+   "settleTy",
+   "under",
+   "underRow"
+  ],
+  "compiled": [
+   "erase",
+   "eraseTy",
+   "key",
+   "settle",
+   "settleTy",
+   "under",
+   "underRow"
+  ]
+ },
  "Features.Check.Strategy.Substitution": {
   "source": [
    "certify",

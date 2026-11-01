@@ -87,6 +87,9 @@ export const tokenModules = ['Domain.Verdict.Internal',
   'Domain.Verdict.EffectPackage.Internal'];
 // Modules pinned in scripts/trusted-surface.json beside the allowed
 // importers, though they import no token module: A2's package types,
-// which the token `Completed` wraps (Task 1 review). The pin sees their
-// export names and compiled exports, not a type synonym's record shape.
-export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types'];
+// which the token `Completed` wraps (Task 1 review), and Effects.Package,
+// whose frozen readings (`erase`, `settle`, `under`, `key`) every later
+// A2 lane reads (Task 2 review). The pin sees their export names and
+// compiled exports, not a type synonym's record shape or a signature.
+export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
+  'Features.Check.Strategy.Effects.Package'];

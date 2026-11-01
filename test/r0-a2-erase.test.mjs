@@ -70,6 +70,23 @@ test('settle commutes with erase', () => {
       ReadBack.settled(Package.eraseTy(type))), `case ${index}`));
 });
 
+// Every hole in a type, inside effect rows too, which `eraseTy` drops:
+// hole type variables, hole record tails and `PTailHole`s.
+const holesIn = value => {
+  if (value instanceof M.Package.PTailHole) return 1;
+  if (value instanceof Atom.FreshVar) return Hole.isHole(value) ? 1 : 0;
+  if (value === null || typeof value !== 'object') return 0;
+  return Object.values(value).reduce((sum, part) => sum + holesIn(part), 0);
+};
+
+test('settled types hold no hole, effect rows included', () => {
+  const cases = randomPTys(M, 20261031, 2000);
+  // Not vacuous: most generated types hold a hole.
+  assert.ok(cases.filter(type => holesIn(type) > 0).length > 1000);
+  cases.forEach((type, index) => assert.equal(
+    holesIn(Package.settleTy(type)), 0, `case ${index}`));
+});
+
 test('settle closes hole tails and keeps rigid ones', () => {
   const settled = Package.settle(packageOf({
     effects: [[{ effRigid: 1 }, { labels: [], tail: { hole: 3 } }],

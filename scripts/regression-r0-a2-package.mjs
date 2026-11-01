@@ -29,5 +29,17 @@ export const a2PackageRows = [
       + ' row.tails }\n',
     probe: 'r0-a2-settle-order',
     message: /settle does not commute with erase: case \d+/
+  },
+  {
+    // Task 2 review: an arrow's effect row left unsettled; erasure drops
+    // it, so only the hole-free property sees the hole.
+    name: 'r0-a2-settle-rows',
+    file,
+    needle: '    { parameter: settleTy stage.parameter,'
+      + ' row: settleRow stage.row }\n',
+    replacement: '    { parameter: settleTy stage.parameter,'
+      + ' row: stage.row }\n',
+    probe: 'r0-a2-settle-rows',
+    message: /a settled type holds a hole: case \d+/
   }
 ];
