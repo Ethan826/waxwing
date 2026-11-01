@@ -1181,6 +1181,43 @@
    "underRow"
   ]
  },
+ "Features.Check.Strategy.Effects.Record": {
+  "source": [
+   "recordDefect",
+   "siteFlags"
+  ],
+  "compiled": [
+   "recordDefect",
+   "siteFlags"
+  ]
+ },
+ "Features.Check.Strategy.Effects.RecordEntries": {
+  "source": [
+   "Entry",
+   "coverageAt",
+   "entriesOf"
+  ],
+  "compiled": [
+   "coverageAt",
+   "entriesOf"
+  ]
+ },
+ "Features.Check.Strategy.Effects.RecordRefs": {
+  "source": [
+   "Copies",
+   "Refs",
+   "obligationRefs",
+   "rowRefs",
+   "signatureRefs",
+   "tyRefs"
+  ],
+  "compiled": [
+   "obligationRefs",
+   "rowRefs",
+   "signatureRefs",
+   "tyRefs"
+  ]
+ },
  "Features.Check.Strategy.Effects.Rows": {
   "source": [
    "Grouped",
