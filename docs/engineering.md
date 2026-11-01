@@ -229,6 +229,12 @@ adding a bypass allowlist.
   - `Features.Check.Strategy.Effects.Judged`: the result types every A2
     obligation check returns. Every later Features.Check.Strategy.Effects
     module joins this list as it lands.
+  - `Features.Check.Strategy.Effects.Package`: `erase` gives the
+    substitution G0 judges and must agree with generation's
+    `recordedWith`; `settle` gives the defaults every obligation reads,
+    which must be lowering's; `under` reads recorded types and marks
+    through a package; `key` decides which labels match and when a `Fail`
+    label is keyless (spec §2.2, §2.4, §2.5, §4.2).
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.

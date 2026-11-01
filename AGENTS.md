@@ -85,7 +85,8 @@ vertical slice before adding language features. Task tracking is local.
   `Domain.Recorded.Hole`; for A2 (the effect validator), every
   Features.Check.Strategy.Effects module as it lands
   (`Features.Check.Strategy.Effects.Forced`,
-  `Features.Check.Strategy.Effects.Judged`),
+  `Features.Check.Strategy.Effects.Judged`,
+  `Features.Check.Strategy.Effects.Package`),
   `Domain.Verdict.EffectPackage`, `Domain.Verdict.EffectPackage.Internal`
   and `Domain.Verdict.EffectPackage.Types`.
   Review-required lowering boundary (turns a `Judged` solution into checked
