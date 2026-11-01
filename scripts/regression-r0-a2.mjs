@@ -6,10 +6,12 @@ import { a2PackageRows } from './regression-r0-a2-package.mjs';
 import { a2PrereqRows } from './regression-r0-a2-prereq.mjs';
 import { a2JudgeRows } from './regression-r0-a2-judge.mjs';
 import { a2DepRows } from './regression-r0-a2-dep.mjs';
+import { a2CompleteRows } from './regression-r0-a2-complete.mjs';
 
 export const a2Rows = [
   ...a2PackageRows,
   ...a2PrereqRows,
   ...a2JudgeRows,
-  ...a2DepRows
+  ...a2DepRows,
+  ...a2CompleteRows
 ];

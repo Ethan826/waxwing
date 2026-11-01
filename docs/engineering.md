@@ -224,6 +224,10 @@ adding a bypass allowlist.
     and `Domain.Verdict.EffectPackage.Types`: A2's effect package (spec
     §2.2) and the `Completed` token only `complete` builds (spec §2.4);
     the types are split from the facade because `Completed` wraps them.
+  - `Features.Check.Strategy.Effects.Complete`: `complete`, the one
+    builder of `Completed`, gives the completed package whose hole
+    numbers the witness and the hole contract share, and `settledOf` the
+    package every obligation reads (spec §2.4).
   - `Features.Check.Strategy.Effects.Dependency`: Dep, the nodes connected
     to the forced tails by the recorded obligations, and `classify`, which
     turns a failed check into `RigidExact`, `ForcedTail` or an ordinary
