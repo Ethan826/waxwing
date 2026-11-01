@@ -147,6 +147,13 @@ times; the first versions carried estimates, not clock readings.
   refusal tag; the solved-form and domain asymmetries between
   types/rows and effects/marks; `Unsupported` checked after I3; the
   completed package not carried in `Certified`.
+- A2 specification: the author committed the §18.141 pass (a720cc0)
+  and the §18.143 corrections (9045218) by hand; integrated onto
+  r0-t2-d1 by cherry-pick as 85d71a8, 3228901 (author's
+  authorization). One implementation plan authorized (dependencies,
+  lanes, tests, regression proofs, an all-in estimate); drafting
+  delegated to the specification's agent in on-a2 (branch a2/plan at
+  3228901), staged only. Implementation and push unauthorized.
 
 ## Decisions made for review
 
