@@ -7846,3 +7846,36 @@ reviews and corrections without checkpoints and returns once
 (inventory, unresolved mappings, adversarial findings, revised Stage B
 plan); it stops earlier for a required semantic amendment or a
 production change. No push.
+
+### 18.152 Stage A stopped after the inventory (2026-11-01)
+
+Task 1 of the tranche 2 plan ran (with Task 2's research least-term
+implementation), research/t2-read-back-inventory/ (7105f54), corpus-
+observed at 56349c0. Of 3061 resolved corpus declarations, 238 are
+refused by the live checker and 2823 give online candidates (2820 of
+them certified today, 3 refused). For 1372 candidates every required
+effect variable and position is located in the live checker (1087 have
+none); 1451 are not mappable, because the checked IR keeps only a use's
+type slots and result type: a call's instance rows (`EffInst`), the
+opened tails of uses (`OpenedRow`), inert stage rows (`Stage`) and
+instantiated marks have no value indexed by path. Outside the 9
+`UnframedInstall` declarations, every recorded variable meets one live
+value, and live mark metas respect the recorded classes (P2 observed on
+the located positions only). The least-term implementation agrees with
+the bounded mark oracle (0 disagreements on its families, term by term)
+and with Mark.purs `violation` on the corpus; it shares the oracle's
+definition and today's mark store, so this shows fidelity to the
+definition, not independence.
+
+Stopped (§18.151: a required semantic amendment or production change):
+(1) In a local annotation the implicit ambient row is recorded as the
+declaration's rigid (Generate/Marked.purs `effectVar`) but read by the
+live checker as the lambda's own row (Check/Lambda.purs
+`annotationRow`); 11 declarations differ, and an honest package would
+likely fail E1 there (reasoned). Either generation records the
+lambda's row (a production change; the effect pin moves) or the
+statements are amended. (2) Under `NoCandidate` first, 1451 of 2823
+candidates get no package; mapping them needs either a production
+change recording each use's instantiated rows and mark metas by path,
+or completion from the obligations (Q2). (3) `Fail` labels read
+`Unmarked` today (107); the read-back writes N. Task 2 not started.
