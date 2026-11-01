@@ -178,7 +178,9 @@ None yet.
   docs/plans/r0-amin-statements.md,
   docs/plans/2026-10-25-amin-a2-options.md); width 0; probe scripts
   census.mjs and failvar.mjs still in the scratchpad. r0-t2-d1 clean
-  (controller, read-only check). Waits for the author.
+  (controller, read-only check). Waits for the author. Author: leave it
+  staged, keep the probes as evidence, no broad permission rule, no
+  retry; the scoped re-review ran on the staged diff (§18.142).
 
 - Coverage (T14's open questions; controller's provisional handling,
   for the author): (1) the "handler literal's type copied into images"

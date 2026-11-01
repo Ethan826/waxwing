@@ -7448,3 +7448,58 @@ included; named module homes, Decide mappings and the replacement of
 the old certificate-minting path, with no path bypassing effect
 validation; hole numbering and image-owned C resolved; the
 distinguishing cases corrected rather than their predictions kept.
+
+### 18.142 A2 fix pass: staged, not committed; scoped re-review (2026-10-31)
+
+The fix pass of §18.141 is staged in .claude/worktrees/on-a2 (branch
+`a2/fix` at d9bd6d7; the specification, the statements and the
+options note), uncommitted: its commit was one bundled command (delete
+the probe scripts, `git status` in r0-t2-d1, `git commit` in on-a2)
+denied by the auto-mode classifier as "[Modify Shared Resources]" and
+not retried. By the author's direction the probe scripts
+(scratchpad/a2-probes/census.mjs, failvar.mjs) are kept as evidence
+and no broad permission rule is added.
+
+Scoped re-review (the earlier reviewer, read-only, on the staged
+diff): most of §18.140 fixed correctly, all eleven cases written. Four
+S2 remain: N1 (new) `certifiedCompilation ∷ Certified → Compilation`
+cannot run coverage, which needs the `RecordedProblem`
+(Strategy/Witness.purs:69-70, controller confirmed), and a Domain
+accessor cannot import Features; fix: compute the `Compilation` once
+at mint time in Strategy.Substitution and store it beside the retained
+package. N2 (new) C13 is mis-predicted (any non-`MHandler` `with`
+records `UnframedInstall`, so it is refused before I3) and §2.2's
+"Install reads an image C" never applies today; an image C is read
+only through `Equal`. N3 (new) the forced-tail dependency closes over
+`Equal` and variables only and misses frame-mark positions (a rigid
+forced C tail adds `M ⊑ f`, failing a later `Defer`), so "indirect
+references included" is unmet and "over-approximates" is false. N4
+(carried) statements §7 still routes Definition 4.2 and forcing
+refusals to the CandidateRefused search-fault bullet, against
+specification §6's `Declines (EffectLimit)`. S3: `blocks` read by the
+differential stated as fact (only Decide imports it); the forced
+variable placement rule vague (observed: only the clause-row tail of
+copies of `instances[p].result`, in Install 11, AtInstalledC 11, Equal
+6, nodes 17, instances 17); C6's rigid variant impossible for `k`;
+C7(b) gives NoWitness (HoleContract); refusal shape §5 vs §6; hole
+renaming under completion unstated; old-`certify` callers
+test/r0-g0-support.mjs and test/r0-online-support.mjs unnamed; an
+unmatched keyless recorded `Fail` label undisposed; A3's completeness
+impact unmeasured (owed).
+
+For the author: (1) N3, close the dependency over positions (more
+NotCertifiable; C1's A changes) or keep it narrow and state the blind
+spot; (2) C6 is an acceptance widening U4 does not cover: with E9 after
+settling a package can certify `k`, which today refuses
+(FailNeedsConcrete); latent today (online offers no candidate where
+today refuses); options (a) an intended widening, needing U4 to cover
+`Fail` payload defaults and a language-doc change, (b) a labeled
+compatibility-only rule kept apart from E9 (in substance D7), (c) a
+shadow-only expected divergence recorded in the differential, decided
+at replacement; (3) commit the staged pass now as an intermediate
+record with this review, or after N1, N2, N4. Unread-frame test:
+honest and acceptable while UnframedInstall blocks; supplying terms
+for unread frames is untested by the corpus and a named precondition
+for lifting the block. Over-claims found: "over-approximates" (N3);
+the `blocks` sentence; §2.2's image-C sentence. No source label
+upgraded; owed tests labeled owed.
