@@ -459,3 +459,19 @@ edited; the findings wait for the author.
 5. Census, shadow and effect pin tests again.
 6. Records (plan Task 14 status, statements status, closure checklist
    A1 and 2d, progress entry), then the reviews and one routine verify.
+
+## A2 validator execution (§18.145), checkpoint 2026-11-01
+
+Live ledger (git-ignored): .superpowers/sdd/2026-10-31-a2-validator-plan/
+progress.md in this worktree, with each task's brief, report and review.
+On r0-t2-d1 (head f490063): Tasks 0, 1, 2 (foundation), 3 (record
+validation), 4 (completion, witness), 6-9 (terms, rows, E1, E2, site
+checks), 10 (dependency set), each reviewed, fixed and re-reviewed, then
+integrated by cherry-pick and pinned. Running: Task 5 (I3, solved form;
+lane B, worktree on-task14, branch a2v/lane-b2). Remaining: 5, 11, 12,
+13, 14, 15, 17; Task 16 held (§18.145). Rulings for review are in the
+live ledger (Effects.Package.Types module; Witness.bindingsOf export;
+InRecord provenance; stricter ResultClauses rule; index-threading
+`Checks`; the spec's tail-is-ordinary rule over the brief). For Task 17's
+records: spec §12 C4's premise is wrong (famw records no AtInstalledC).
+No routine verify has run yet in this stage.
