@@ -56,7 +56,8 @@ test('G0 monotonicity on fixtures', t => {
   assert.deepEqual(found.violations, []);
   // A package G0 accepts with a variable left flexible is the case the
   // property is about; elsewhere P_c's types are settle P_in's.
-  assert.ok(found.absent.length > 0 && found.completedOnly.length > 0);
+  assert.ok(found.absent.includes('unusedId#f {}'), found.absent.join());
+  assert.ok(found.absent.length >= 2 && found.completedOnly.length > 0);
 });
 
 test('C7(b): G0 accepts; the witness is NoWitness HoleContract', () => {
@@ -80,3 +81,12 @@ test('Dep completeness: a node outside mentions and Dep moves nothing', t => {
   assert.ok(found.distinct.size > 0 && found.failing > 0);
   assert.ok(found.wellFormed > 0);
 });
+
+test('Dep completeness control: the perturbations bite inside mentions',
+  t => {
+    const found = properties.insideTally();
+    t.diagnostic(`fixture-level: ${found.runs} runs inside mentions;`
+      + ` changed by kind ${JSON.stringify(found.changed)}`);
+    for (const kind of ['NodeVar', 'NodeEff', 'NodePos'])
+      assert.ok(found.changed[kind] > 0, kind);
+  });

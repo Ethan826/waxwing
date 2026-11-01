@@ -4,7 +4,8 @@
 // scripts/regression-r0-a2-props.mjs). `propertiesOf` loads nothing but
 // through the loader it is given. Every tally is over the case packages
 // below, so each result is fixture-level.
-import { fail, passed, toolkit } from './regression-r0-amin-support.mjs';
+import { fail, passed, shape, toolkit }
+  from './regression-r0-amin-support.mjs';
 import { absentPair, c2c, c7, sources, validateCases }
   from './regression-r0-a2-validate.mjs';
 
@@ -27,10 +28,10 @@ const declarations = [['c1', 'use'], ['c1', 'mk'], ['c2', 'work'],
   ['id', 'id'], ['c6', 'k'], ['closedC', 'use4'], ['unusedId', 'f'],
   ['unusedShow', 'f']];
 
-// A value's constructors and fields, for structural comparison.
-const shape = value => value !== null && typeof value === 'object'
-  ? [value.constructor.name, ...Object.keys(value).map(key =>
-    [key, shape(value[key])])] : value;
+// Structural equality through the shared `shape` (constructor names and
+// fields). Safe here: the values compared are package images, terms and
+// `Maybe`s of them, PureScript data with no functions or cycles, so
+// equal shapes are equal values.
 export const same = (one, other) =>
   JSON.stringify(shape(one)) === JSON.stringify(shape(other));
 
@@ -199,7 +200,27 @@ export const propertiesOf = async load => {
       });
     return found;
   };
-  return { cases, ...made, completedOf, accepts, g0Tally, depTally };
+  // The potency control: the same perturbations at nodes INSIDE an
+  // obligation's mentions, the changed runs counted by node kind.
+  const insideTally = () => {
+    const found = { runs: 0, changed: { NodeVar: 0, NodeEff: 0, NodePos: 0 } };
+    for (const { problem, input } of made.casePackages)
+      for (const { value } of problem.effects.obligations) {
+        if (value instanceof Effect.Unsupported) continue;
+        const before = judgedOf(problem, input, value);
+        const mentioned = Dependency.mentions(value);
+        for (const node of nodesOf(problem).filter(item =>
+          Sets.member(Dependency.ordNode)(item)(mentioned)))
+          for (const changed of perturbed(problem, input, node)) {
+            found.runs += 1;
+            if (judgedOf(problem, changed, value) !== before)
+              found.changed[node.constructor.name] += 1;
+          }
+      }
+    return found;
+  };
+  return { cases, ...made, completedOf, accepts, g0Tally, depTally,
+    insideTally };
 };
 
 const probe = check => async context => {

@@ -159,6 +159,9 @@ test('hole numerals: completion numbers as bindingsOf (no effect hole)',
       + report(less));
     // Observed 2026-11-01: 2820 candidates (14 reordered), none leaving a
     // variable out; 3642 derived runs (25 reordered), each leaving one.
+    // The recorded field-order finding: today's σ is not always sorted.
+    assert.equal(found.reordered.length, 14, found.reordered.join('; '));
+    assert.ok(less.reordered.length > 0);
     for (const each of [found, less]) {
       assert.deepEqual(each.unlifted.slice(0, 10), []);
       assert.deepEqual(each.differ.slice(0, 10), []);
@@ -167,7 +170,9 @@ test('hole numerals: completion numbers as bindingsOf (no effect hole)',
   });
 
 // No pinned fixture records a witness binding; the `Free n` numerals in
-// tests are listed (hand-built witnesses, not a numbering's output).
+// tests are listed (hand-built witnesses, not a numbering's output). The
+// scan is lexical: a witness pinned only through a hash or a generated
+// output (no literal `Free`) would not show here.
 const filesUnder = dir => readdirSync(dir, { withFileTypes: true })
   .flatMap(entry => entry.isDirectory() ? filesUnder(join(dir, entry.name))
     : [join(dir, entry.name)]);
