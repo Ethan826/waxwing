@@ -7402,3 +7402,49 @@ review; a fix pass waits for the author. Missing distinguishing cases
 (eleven) and property tests (erase/settle commutation, erase of the
 honest package against today's read-back, complete/settle order) are
 listed in docs/plans/2026-10-30-overnight-ledger.md.
+
+### 18.141 A2 fix pass and scoped re-review authorized; A1-A6 ruled (2026-10-31)
+
+The author authorized one specification fix pass covering every S1-S3
+finding of §18.140 and the missing distinguishing cases, then one
+scoped adversarial re-review of those repairs and their examples.
+Documents and isolated specification probes only; unexecuted property
+tests stay labeled owed; no full verify; no source-verification
+verdict or soundness claim upgraded; validator implementation
+unauthorized.
+
+Rulings: A1, forcing refusals keep §R7b's NotCertifiable; the
+forced-tail dependency is defined structurally, indirect references
+included, and described as a dependency, not proof that forcing caused
+the failure. A2, the certificate relationship is not deferred: the
+authoritative completed, forced package (or an opaque representation
+preserving it) is retained and the build witness derived from the same
+data; the completed package before defaults (keeping the holes the
+witness contract needs) is distinguished from its settled
+interpretation, which the obligations judge, with their relationship
+and shared hole identities specified; no duplicate mutable copies,
+public serialization or audit UI required. A3, unsolved type and
+record-row images are refused before obligations, as effect images
+are, by one solved-form definition; a successful effect judgment never
+hides that behind NoWitness. A4, a declared, well-formed site lacking
+demonstrated recording coverage (AtDeferredRow) is not a RecordDefect:
+its condition is evaluated when supported, otherwise an explicit
+NotCertifiable limitation; RecordDefect is reserved for a violated
+record invariant. A5, record references are validated before search,
+with their sorts and permitted domains, distinguishing declared
+rigids, package-owned variables and record-owned forced variables. A6,
+the record is validated first, then Unsupported checked, both
+independent of candidates and before I3, existing routing distinctions
+kept.
+
+Technical repairs in the same pass: the statements' obligation path
+complete-then-settle, the G0 projection kept as separately specified,
+with the order-separating fixture; nullary-data erasure to
+`Base (DataBase t)` with a compatibility property, not a special case
+alone; E9's concrete-head predicate and the disposition of every
+keyless `Fail` label after completion and settling; a total failure
+order, earlier obligations' edges and within-obligation order
+included; named module homes, Decide mappings and the replacement of
+the old certificate-minting path, with no path bypassing effect
+validation; hole numbering and image-owned C resolved; the
+distinguishing cases corrected rather than their predictions kept.
