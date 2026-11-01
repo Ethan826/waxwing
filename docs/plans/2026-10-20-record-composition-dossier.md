@@ -7612,3 +7612,19 @@ final acceptance verify, and a tree changed by review is verified.
 Stops: a differential disagreement or a semantic ambiguity (neither
 implementation presumed correct). Not authorized: push, live switch,
 read-back implementation, a soundness claim.
+
+### 18.146 Task 13 accepted with its limits; finish the stage (2026-11-01)
+
+The author accepted Task 13's scoped review result with its recorded
+limits: no disagreement on the exercised packages; five E2 sites
+(AtCallback, AtStage, AtApply, AtPipe, AtDeferredRow) without
+accepted-package coverage; binding marks never mutated; completion and
+settling shared with the validator. None establishes general
+equivalence or closes those gaps. Directed: proceed with Task 15,
+integration, Task 17's whole-branch review and the final routine
+acceptance verify. The final report distinguishes the validator
+implementation, the fixture-level differential evidence, the deferred
+corpus checks and current certification behavior; Task 16 stays held,
+so the existing minter still operates under F14. Any property failure
+or checker disagreement is reported before the stage counts as
+complete.
