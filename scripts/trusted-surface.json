@@ -120,6 +120,8 @@
    "SecondSpread",
    "ClassF",
    "EffectsUnchecked",
+   "RecordDefective",
+   "EffectLimit",
    "Solved",
    "Contradiction",
    "Unresolved",
@@ -155,6 +157,27 @@
   "compiled": [
    "certifiedCompilation",
    "certifiedValidity"
+  ]
+ },
+ "Domain.Verdict.EffectPackage": {
+  "source": [
+   "module Exports",
+   "module Types",
+   "completedPackage"
+  ],
+  "compiled": [
+   "completedPackage",
+   "PTailHole from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PTailRigid from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PArrow from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PBase from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PData from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PHandler from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PRecord from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "PVar from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "TermJ from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "TermM from ../Domain.Verdict.EffectPackage.Types/index.js",
+   "TermN from ../Domain.Verdict.EffectPackage.Types/index.js"
   ]
  },
  "Domain.Verdict.Judged": {

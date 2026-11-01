@@ -44,7 +44,7 @@ import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
 import Domain.Recorded (AtomId, OutsideKind, RecordedProblem)
 import Domain.Recorded.Atom (Var)
-import Domain.Recorded.Effect (UnsupportedKind)
+import Domain.Recorded.Effect (Provenance, UnsupportedKind)
 import Domain.Type (Ty)
 import Domain.Verdict.Internal
   ( CX
@@ -64,7 +64,7 @@ import Domain.Verdict.Theorem.Internal (TheoremRef) as Exports
 import Domain.Verdict.Theorem.Internal (TheoremRef)
 import Domain.Verdict.Unsound (Unsound)
 import Domain.Verdict.Open (CheckedCX, Question, RefuteRefusal)
-import Domain.Verdict.Search (CheckRefusal, SearchHint)
+import Domain.Verdict.Search (CheckRefusal, Limitation, SearchHint)
 import Domain.Verdict.Witness (Witness)
 
 -- One per declaration, in declaration order; each keeps its problem.
@@ -147,6 +147,11 @@ data Unsupport
   | SecondSpread
   | ClassF Question
   | EffectsUnchecked (Array UnsupportedKind)
+  -- A2 (spec §6): the recorded problem breaks a record invariant at
+  -- that obligation, a pre-search block; and a strategy's decline under
+  -- an effect limitation.
+  | RecordDefective Provenance
+  | EffectLimit Limitation
 
 type LimitAt = { limit ∷ LimitReached, site ∷ Site }
 

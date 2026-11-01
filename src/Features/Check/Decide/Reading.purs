@@ -149,6 +149,12 @@ refusedWith claim = case _ of
   RequirementFails _ → claimed claim
   RequirementUnjudged _ → claimed claim
   NotGeneric → claimed claim
+  -- A2's four (spec §6) read as claimed until A2 Task 12 gives each its
+  -- reading (RecordDefect and NotCertifiable then decline).
+  RecordDefect _ → claimed claim
+  Malformed _ → claimed claim
+  NotCertifiable _ _ → claimed claim
+  ObligationFailed _ → claimed claim
 
 claimed ∷ Claim → Reading
 claimed = case _ of

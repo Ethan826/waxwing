@@ -54,6 +54,12 @@ export const internalModules = [
   { module: 'Domain.Verdict.Certified.Internal',
     importers: new RegExp('^(Domain\\.Verdict\\.Certified'
       + '|Features\\.Check\\.Strategy\\.Substitution)$') },
+  // A2 (spec §2.4, §8; dossier §18.145): a `Completed` package is built
+  // only by `complete`; the facade re-exports the type with a read-only
+  // accessor. Named before Effects.Complete exists (plan Task 1).
+  { module: 'Domain.Verdict.EffectPackage.Internal',
+    importers: new RegExp('^(Domain\\.Verdict\\.EffectPackage'
+      + '|Features\\.Check\\.Strategy\\.Effects\\.Complete)$') },
   { module: /^(Domain\.Elaborating|Features\.Check\.Generate)(\.|$)/,
     importers: /^(?!Runtime\.)/ }
 ];
@@ -68,7 +74,10 @@ export const restricts = (rule, dependency) => (typeof rule.module
 // no client's compiled JS needs theirs. Generate.Elab.Internal is not
 // one: its Functor, Apply and Bind dictionaries are JS any client of
 // `Elab` or `Gen` imports; E4 and E6 guard it from the source.
+// A2 adds EffectPackage.Internal's: `Completed` has no instance, and the
+// package's own types live in EffectPackage.Types, outside the token.
 export const tokenModules = ['Domain.Verdict.Internal',
   'Domain.Recorded.Internal', 'Domain.Verdict.Theorem.Internal',
   'Features.Check.Refute.Rules.Internal', 'Domain.Elaborating.Internal',
-  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Certified.Internal'];
+  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Certified.Internal',
+  'Domain.Verdict.EffectPackage.Internal'];

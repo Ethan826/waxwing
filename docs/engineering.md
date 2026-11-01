@@ -215,6 +215,15 @@ adding a bypass allowlist.
     defaults lowering applies.
   - `Domain.Verdict.Certified` and `Domain.Verdict.Certified.Internal`:
     the token that pairs `Valid` with its witness (BACKLOG R026).
+  - `Domain.Verdict.EffectPackage`, `Domain.Verdict.EffectPackage.Internal`
+    and `Domain.Verdict.EffectPackage.Types`: A2's effect package (spec
+    §2.2) and the `Completed` token only `complete` builds (spec §2.4);
+    the types are split from the facade because `Completed` wraps them.
+  - `Features.Check.Strategy.Effects.Forced`: the forced ResultC tails F
+    and their sources, which completion copies (spec §2.3, §2.4).
+  - `Features.Check.Strategy.Effects.Judged`: the result types every A2
+    obligation check returns. Every later Features.Check.Strategy.Effects
+    module joins this list as it lands.
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.

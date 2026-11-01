@@ -16,8 +16,13 @@ const trusted = [
   'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Entailed.Triangular',
   'Decide', 'Decide.Shadow',
   'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
-  'Strategy.ReadBack.Type'].map(name => `Features.Check.${name}`)
+  'Strategy.ReadBack.Type',
+  // A2 (plan Task 1): every Strategy.Effects module, as each lands.
+  'Strategy.Effects.Forced', 'Strategy.Effects.Judged']
+  .map(name => `Features.Check.${name}`)
   .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal',
+    'Domain.Verdict.EffectPackage', 'Domain.Verdict.EffectPackage.Internal',
+    'Domain.Verdict.EffectPackage.Types',
     'Domain.Recorded.Atom', 'Domain.Recorded.Hole']);
 const generate = 'Features.Check.Generate';
 const lowering = ['Features.Check.Elaborate', 'Domain.Elaborating',

@@ -4,12 +4,23 @@
 -- Domain.Verdict.Open until Task 4.1 gave them representations here.
 module Domain.Verdict.Search
   ( Budget
+  , CheckAt
   , CheckRefusal(..)
+  , Limitation(..)
+  , MalformedReason(..)
+  , PackageKey(..)
   , SearchHint(..)
   ) where
 
 import Prelude
 import Domain.Recorded (AtomId)
+import Domain.Recorded.Atom (Var)
+import Domain.Recorded.Effect
+  ( EVar
+  , Position
+  , Provenance
+  , UnsupportedKind
+  )
 
 -- §4.3: fuel, a depth bound and a key bound. Each strategy and each
 -- refuter search receives the whole value, and nothing it spends is
@@ -46,6 +57,52 @@ data CheckRefusal
   -- variable, binds a row variable to a non-record, or is not
   -- idempotent.
   | NotGeneric
+  -- A2 (spec §6): the recorded problem breaks a record invariant (step
+  -- 0, §4.1) at check j of that obligation; candidate-independent.
+  | RecordDefect CheckAt
+  -- The package breaks an I3 domain or form fact (§4.2, §5 (a)-(j)).
+  | Malformed MalformedReason
+  -- An obligation the validator cannot certify under a stated
+  -- limitation, at check j.
+  | NotCertifiable Limitation CheckAt
+  -- A recorded obligation the package fails, at its check j.
+  | ObligationFailed CheckAt
+
+-- An obligation's provenance and the index of its violated check (§5).
+type CheckAt = { provenance ∷ Provenance, check ∷ Int }
+
+-- A key of one of the package's four maps (spec §2.2).
+data PackageKey
+  = KeyType Var
+  | KeyRow Var
+  | KeyEffect EVar
+  | KeyMark Position
+
+-- I3's reasons (spec §4.2, §5's checks (a)-(j)), each naming its key.
+data MalformedReason
+  = BindsForced EVar
+  | WrongSort PackageKey
+  | MissingKey PackageKey
+  | ExtraKey PackageKey
+  | NonCanonical PackageKey
+  | UnknownMark PackageKey String
+  | NotN PackageKey
+  | HoleTwoSorts Int
+  | UnsolvedImage PackageKey
+  | KeylessFail PackageKey
+
+-- Why an obligation is not certifiable (spec §6): a recorded
+-- unsupported kind, a rigid-tailed exact obligation, or a dependency on
+-- a forced tail (§5.1).
+data Limitation
+  = UnsupportedRecorded UnsupportedKind
+  | RigidExact
+  | ForcedTail
 
 derive instance eqSearchHint ∷ Eq SearchHint
 derive instance ordSearchHint ∷ Ord SearchHint
+derive instance eqPackageKey ∷ Eq PackageKey
+derive instance ordPackageKey ∷ Ord PackageKey
+derive instance eqMalformedReason ∷ Eq MalformedReason
+derive instance eqLimitation ∷ Eq Limitation
+derive instance eqCheckRefusal ∷ Eq CheckRefusal

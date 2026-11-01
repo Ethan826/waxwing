@@ -6,6 +6,7 @@ import { r0CxRows } from './regression-r0-cx.mjs';
 import { r0ElabRows } from './regression-r0-elab.mjs';
 import { r0AminRows } from './regression-r0-amin.mjs';
 import { r0PortRows } from './regression-r0-port.mjs';
+import { a2Rows } from './regression-r0-a2.mjs';
 
 export const r0Rows = [
   {
@@ -240,5 +241,6 @@ export const r0Rows = [
   ...r0CxRows,
   ...r0ElabRows,
   ...r0AminRows,
-  ...r0PortRows
+  ...r0PortRows,
+  ...a2Rows
 ];

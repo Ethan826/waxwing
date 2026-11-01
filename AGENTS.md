@@ -39,7 +39,10 @@ vertical slice before adding language features. Task tracking is local.
   Domain.Verdict.Judged and Features.Check.Decide import
   Domain.Verdict.Judged.Internal; only Domain.Verdict.Certified and
   Features.Check.Strategy.Substitution import
-  Domain.Verdict.Certified.Internal (BACKLOG R026); no Runtime module imports
+  Domain.Verdict.Certified.Internal (BACKLOG R026); only
+  Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Complete
+  import Domain.Verdict.EffectPackage.Internal (A2, §18.145); no Runtime
+  module imports
   Domain.Elaborating* or Features.Check.Generate*. Their re-exports
   keep the allowed form, and scripts/structure-elab.mjs pins their
   export lists (rule E6).
@@ -79,7 +82,12 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy.Witness`, `Features.Check.Strategy.HoleContract`,
   `Features.Check.Strategy.ReadBack.Type`, `Domain.Verdict.Certified`,
   `Domain.Verdict.Certified.Internal`, `Domain.Recorded.Atom`,
-  `Domain.Recorded.Hole`.
+  `Domain.Recorded.Hole`; for A2 (the effect validator), every
+  Features.Check.Strategy.Effects module as it lands
+  (`Features.Check.Strategy.Effects.Forced`,
+  `Features.Check.Strategy.Effects.Judged`),
+  `Domain.Verdict.EffectPackage`, `Domain.Verdict.EffectPackage.Internal`
+  and `Domain.Verdict.EffectPackage.Types`.
   Review-required lowering boundary (turns a `Judged` solution into checked
   IR; reasons in docs/engineering.md): `Features.Check.Elaborate`,
   `Domain.Elaborating`, `Domain.Elaborating.Internal`,

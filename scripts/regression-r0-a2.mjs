@@ -1,0 +1,15 @@
+// A2 validator regression rows (docs/plans/2026-10-31-a2-validator-plan.md,
+// Global Constraints), spread into r0Rows (scripts/regression-r0.mjs); the
+// probes are in test/regression-r0-a2.mjs. One file per lane, each owned
+// by its lane (the plan's "Lanes").
+import { a2PackageRows } from './regression-r0-a2-package.mjs';
+import { a2PrereqRows } from './regression-r0-a2-prereq.mjs';
+import { a2JudgeRows } from './regression-r0-a2-judge.mjs';
+import { a2DepRows } from './regression-r0-a2-dep.mjs';
+
+export const a2Rows = [
+  ...a2PackageRows,
+  ...a2PrereqRows,
+  ...a2JudgeRows,
+  ...a2DepRows
+];

@@ -47,6 +47,24 @@ test('only G0\'s check and its public module import Certified.Internal',
         [`${name} imports ${internal}`], name);
   });
 
+// A2 (spec §2.4, §8; §18.145): only `complete` builds a `Completed`
+// package and only its public module reads it; conversion helpers
+// (Effects.Package), the validator and the minter are refused.
+test('only the facade and Effects.Complete import EffectPackage.Internal',
+  () => {
+    const internal = 'Domain.Verdict.EffectPackage.Internal';
+    for (const name of ['Domain.Verdict.EffectPackage',
+      'Features.Check.Strategy.Effects.Complete'])
+      assert.deepEqual(importing(name, internal), [], name);
+    for (const name of ['Features.Check.Strategy.Effects.Package',
+      'Features.Check.Strategy.Effects.Validate',
+      'Features.Check.Strategy.Substitution', 'Domain.Verdict.Certified',
+      'Domain.Verdict.EffectPackage.Types', 'Domain.Verdict.EffectPackageX',
+      'Features.Check.Strategy.Effects.CompleteX'])
+      assert.deepEqual(importing(name, internal),
+        [`${name} imports ${internal}`], name);
+  });
+
 // Only generation builds a recorded problem (T-R0a §2 property 2); the
 // public Domain.Recorded imports the type to re-export it. Anchored, so
 // Features.Check.GenerateX is outside.
