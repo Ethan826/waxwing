@@ -131,9 +131,11 @@ export const miscRows = [
     // Task 11: rule 1 does not block on an Unsupported obligation.
     name: 'r0-amin-misc-unchecked-block',
     file: 'src/Features/Check/Decide/Reason.purs',
-    needle: 'blocks open problem = ordinary open problem <> unchecked'
+    // Needle updated for Task 12's `defective` block (2026-11-01); the
+    // restored defect, `unchecked` dropped from blocks, is unchanged.
+    needle: '  defective problem <> ordinary open problem <> unchecked'
       + ' problem\n',
-    replacement: 'blocks open problem = ordinary open problem <>'
+    replacement: '  defective problem <> ordinary open problem <>'
       + ' filter (const false) (unchecked problem)\n',
     probe: 'r0-amin-misc-unchecked-block',
     message: /FX032's accepted declaration is not Unresolved/
