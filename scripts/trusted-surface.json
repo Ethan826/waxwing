@@ -1094,6 +1094,73 @@
    "theorems"
   ]
  },
+ "Features.Check.Strategy.Effects.Complete": {
+  "source": [
+   "complete",
+   "settledOf",
+   "witnessOf"
+  ],
+  "compiled": [
+   "complete",
+   "settledOf",
+   "witnessOf"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Consume": {
+  "source": [
+   "ConsumeRecord",
+   "consumeCheck"
+  ],
+  "compiled": [
+   "consumeCheck"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Dependency": {
+  "source": [
+   "Node(..)",
+   "classify",
+   "dependencySet",
+   "mentions"
+  ],
+  "compiled": [
+   "NodeVar",
+   "NodeEff",
+   "NodePos",
+   "classify",
+   "dependencySet",
+   "mentions",
+   "eqNode",
+   "ordNode"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Equal": {
+  "source": [
+   "equalCheck",
+   "samePTy"
+  ],
+  "compiled": [
+   "equalCheck",
+   "samePTy"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Handler": {
+  "source": [
+   "Checks",
+   "Compare",
+   "check",
+   "handlerEqual",
+   "rowEqual",
+   "sequenced",
+   "withMarks"
+  ],
+  "compiled": [
+   "check",
+   "handlerEqual",
+   "rowEqual",
+   "sequenced",
+   "withMarks"
+  ]
+ },
  "Features.Check.Strategy.Effects.Package": {
   "source": [
    "erase",
@@ -1114,6 +1181,45 @@
    "underRow"
   ]
  },
+ "Features.Check.Strategy.Effects.Rows": {
+  "source": [
+   "Grouped",
+   "grouped"
+  ],
+  "compiled": [
+   "grouped"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Sites": {
+  "source": [
+   "HandlerLitRecord",
+   "InstallRecord",
+   "deferCheck",
+   "entryCheck",
+   "failConcreteCheck",
+   "handlerLitCheck",
+   "installCheck"
+  ],
+  "compiled": [
+   "deferCheck",
+   "entryCheck",
+   "failConcreteCheck",
+   "handlerLitCheck",
+   "installCheck"
+  ]
+ },
+ "Features.Check.Strategy.Effects.Term": {
+  "source": [
+   "holds",
+   "norm",
+   "sameTerm"
+  ],
+  "compiled": [
+   "holds",
+   "norm",
+   "sameTerm"
+  ]
+ },
  "Features.Check.Strategy.Substitution": {
   "source": [
    "certify",
@@ -1124,6 +1230,20 @@
    "certify",
    "certifySound",
    "genericSubstitutionSound"
+  ]
+ },
+ "Features.Check.Strategy.Witness": {
+  "source": [
+   "bindingsOf",
+   "coverage",
+   "flexDomain",
+   "substitutionWitness"
+  ],
+  "compiled": [
+   "bindingsOf",
+   "coverage",
+   "flexDomain",
+   "substitutionWitness"
   ]
  }
 }

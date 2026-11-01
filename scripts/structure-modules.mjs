@@ -89,7 +89,17 @@ export const tokenModules = ['Domain.Verdict.Internal',
 // importers, though they import no token module: A2's package types,
 // which the token `Completed` wraps (Task 1 review), and Effects.Package,
 // whose frozen readings (`erase`, `settle`, `under`, `key`) every later
-// A2 lane reads (Task 2 review). The pin sees their export names and
+// A2 lane reads (Task 2 review); the A2 lane modules Task 11 composes,
+// and Strategy.Witness, whose `bindingsOf` export Task 4 added (lane
+// integration, 2026-11-01). The pin sees their export names and
 // compiled exports, not a type synonym's record shape or a signature.
 export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
-  'Features.Check.Strategy.Effects.Package'];
+  'Features.Check.Strategy.Effects.Consume',
+  'Features.Check.Strategy.Effects.Dependency',
+  'Features.Check.Strategy.Effects.Equal',
+  'Features.Check.Strategy.Effects.Handler',
+  'Features.Check.Strategy.Effects.Package',
+  'Features.Check.Strategy.Effects.Rows',
+  'Features.Check.Strategy.Effects.Sites',
+  'Features.Check.Strategy.Effects.Term',
+  'Features.Check.Strategy.Witness'];

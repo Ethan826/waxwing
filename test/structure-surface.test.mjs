@@ -174,8 +174,17 @@ test('the real tree matches its pin and its FFI names no token module',
         'Features.Check.Decide',
         ...generate, 'Features.Check.Refute.Rules',
         'Features.Check.Refute.Theorems',
+        'Features.Check.Strategy.Effects.Complete',
+        'Features.Check.Strategy.Effects.Consume',
+        'Features.Check.Strategy.Effects.Dependency',
+        'Features.Check.Strategy.Effects.Equal',
+        'Features.Check.Strategy.Effects.Handler',
         'Features.Check.Strategy.Effects.Package',
-        'Features.Check.Strategy.Substitution'].sort());
+        'Features.Check.Strategy.Effects.Rows',
+        'Features.Check.Strategy.Effects.Sites',
+        'Features.Check.Strategy.Effects.Term',
+        'Features.Check.Strategy.Substitution',
+        'Features.Check.Strategy.Witness'].sort());
     assert.deepEqual(surfaceFindings(JSON.parse(readFileSync(manifestFile,
       'utf8')), importers), []);
     const files = foreignFiles(filesUnder('src'), 'output');
