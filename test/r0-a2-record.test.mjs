@@ -8,8 +8,8 @@ import { c1, famw, recordCases, siteOf, siteTable }
 // validation, spec §4.1, checks the recorded problem alone. Each mutant
 // changes one recorded fact of a generated problem; `recordDefect`
 // names the first entry violating a check and the check's index (0 site
-// flags, 1 references, 2 forced placement, 3 a forced ResultC tail with
-// R closed, 4 the Fail invariant). The corpus check is
+// flags, 1 references, 2 forced placement and result clauses outside F,
+// 3 the Fail invariant). The corpus check is
 // test/r0-a2-record-corpus.serial.test.mjs.
 const Effect = await load('Domain.Recorded.Effect');
 const Row = await load('Domain.Row');
@@ -65,18 +65,25 @@ test('forced placement', () => {
   defect(Record.recordDefect(cases.strayEntry), 2, cases.entryProvenance);
 });
 
-test('a forced ResultC tail with R closed', () => {
-  const found = Record.recordDefect(cases.closedR);
-  const provenance = defect(found, 3);
-  // A table entry: instances (table 0) at the forcing use's path.
-  assert.ok(provenance instanceof Effect.BesideAtom);
-  assert.equal(provenance.value1.index, 0);
-  assert.ok(Origin.eqPath.eq(provenance.value1.path)(cases.path));
+// Controller ruling: every `⟨q, result clauses⟩` outside F is check 2.
+test('result clauses outside F', () => {
+  // R closed at the forcing use: F omits the tail, and the first
+  // obligation naming it is the defect.
+  const found = defect(Record.recordDefect(cases.closedR), 2);
+  assert.ok(!(found instanceof Effect.InRecord));
+  // With no obligations, the instance entry itself, as `InRecord`.
+  const alone = defect(Record.recordDefect(withEffects(cases.closedR,
+    { obligations: [] })), 2).value0;
+  assert.ok(alone.table instanceof Effect.InInstances);
+  assert.ok(Origin.eqPath.eq(alone.path.value0)(cases.path));
+  // At a path that forces nothing, declared in `flexEff`.
+  const last = cases.elsewhereEntry.effects.obligations.at(-1);
+  defect(Record.recordDefect(cases.elsewhereEntry), 2, last.provenance);
 });
 
 test('Fail invariant', () => {
   nothing(Record.recordDefect(cases.k));
-  defect(Record.recordDefect(cases.unconcrete), 4);
+  defect(Record.recordDefect(cases.unconcrete), 3);
 });
 
 test('AtDeferredRow is no defect', () => {
@@ -104,6 +111,8 @@ test('a reference outside its domain', () => {
 
 test('an unreferenced flexEff member', () => {
   const extra = new Effect.EffFresh(cases.path, new Effect.Clauses(99));
-  defect(Record.recordDefect(withEffects(use,
+  const found = defect(Record.recordDefect(withEffects(use,
     { flexEff: [...use.effects.flexEff, extra] })), 1);
+  assert.ok(found.value0.table instanceof Effect.InCoverage);
+  assert.equal(found.value0.path.constructor.name, 'Nothing');
 });

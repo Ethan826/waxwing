@@ -16,13 +16,18 @@
 --   2  a forced tail v in F outside spec §2.3's placement: v may be only
 --      the clause-row tail of its instance's result and of exact copies
 --      of that result type, or the tail of an `AtInstalledC` source that
---      is an exact copy of that clause row;
---   3  an instance's ResultC whose tail is its own `⟨p, result clauses⟩`
---      while R is closed: F would omit it (Effects.Forced), so check 2
---      would not see it (Task 1 review);
---   4  a `Fail` payload that is a flexible variable with no
+--      is an exact copy of that clause row; or any `⟨q, result clauses⟩`
+--      that is not in F, wherever it occurs (a ResultC at another path,
+--      or one whose R is closed, which Effects.Forced omits; controller
+--      ruling, Task 3);
+--   3  a `Fail` payload that is a flexible variable with no
 --      `FailConcrete` on it, a declared rigid or unknown variable, an
 --      arrow, a handler, or a record with a tail.
+-- These are spec §4.1's four bullets in order. The first version's
+-- separate check 3 (a closed-R ResultC tail) is now part of check 2,
+-- which reaches it first, so the Fail invariant is check 3, not 4. A
+-- defect in a table entry or in the coverage is reported as `InRecord`,
+-- naming the table.
 -- A recorded `AtDeferredRow` is no defect for lacking coverage (A4); its
 -- flags are checked as any site's. Total: every input gives an answer.
 module Features.Check.Strategy.Effects.Record
@@ -39,7 +44,8 @@ import Data.Set (Set, fromFoldable, member, subset)
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (Var, VarInfo, VarSort(..))
 import Domain.Recorded.Effect
-  ( EVar(..)
+  ( ERole(..)
+  , EVar(..)
   , MTy(..)
   , Obligation(..)
   , Position
@@ -101,7 +107,7 @@ flagsWrong ∷ { site ∷ SiteKind, marks ∷ Boolean, bare ∷ Boolean } → Bo
 flagsWrong consume =
   siteFlags consume.site /= { marks: consume.marks, bare: consume.bare }
 
--- Checks 0-4 in order; the first violated one's index.
+-- Checks 0-3 in order; the first violated one's index.
 defectAt ∷ Scope → Entry → Maybe CheckAt
 defectAt scope entry = map at (findIndex identity checks)
   where
@@ -110,7 +116,7 @@ defectAt scope entry = map at (findIndex identity checks)
     [ maybe false flagsWrong entry.consume
     , not (referencesKnown scope entry.refs)
     , any (flip member scope.forced) entry.refs.effects
-    , entry.closedForced
+        || any (unforced scope) (entry.refs.effects <> entry.refs.placed)
     , any (payloadWrong scope) entry.refs.payloads
     ]
 
@@ -126,6 +132,13 @@ referencesKnown scope refs = all (sorted SortType) refs.types
   effectKnown = case _ of
     EffRigid variable → member variable scope.effectRigids
     fresh@(EffFresh _ _) → member fresh scope.flexEff
+
+-- Every `⟨q, result clauses⟩` an entry names is in F, or at a placement
+-- of a member of F, so one outside F is a defect.
+unforced ∷ Scope → EVar → Boolean
+unforced scope variable = case variable of
+  EffFresh _ ResultClauses → not (member variable scope.forced)
+  _ → false
 
 payloadWrong ∷ Scope → MTy → Boolean
 payloadWrong scope = case _ of

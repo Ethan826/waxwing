@@ -80,11 +80,21 @@ export const recordCases = async load => {
     path)({ ...sig, result: new Effect.MHandler(handler.value0,
       { ...handler.value1, inference: { ...handler.value1.inference,
         tail: Nothing.value } }) })(use.effects.instances) });
+  // `⟨q, result clauses⟩` at a path q that forces nothing, declared in
+  // `flexEff` and named by a new `Entry` row.
+  const elsewhere = new Effect.EffFresh({ root: Origin.InBody.value,
+    steps: [] }, Effect.ResultClauses.value);
+  const elsewhereEntry = withEffects(strayEntry, {
+    flexEff: [...use.effects.flexEff, elsewhere],
+    obligations: strayEntry.effects.obligations.map((placed, at, all) =>
+      at < all.length - 1 ? placed : { ...placed, value: new Effect.Entry(
+        { labels: [], tail: new Just(elsewhere) }) }) });
   const k = problemOf(failConcrete, 'k');
   const unconcrete = withEffects(k, { obligations: k.effects.obligations
     .filter(placed => !(placed.value instanceof Effect.FailConcrete)) });
   return { Record, Effect, problemOf, withEffects, consumeAt, consumeWith,
-    use, path, forced, entryProvenance, strayEntry, closedR, k, unconcrete };
+    use, path, forced, entryProvenance, strayEntry, closedR, elsewhereEntry,
+    k, unconcrete };
 };
 
 const fail = message => {
@@ -128,18 +138,22 @@ export const a2PrereqProbes = {
     if (check !== 2) fail(`forced tail in an Entry row: check ${check}`);
     passed(context);
   },
-  // Task 3 (Task 1 review): a ResultC tail forced at p with R closed.
-  'r0-a2-forced-closed': async context => {
-    const { Record, closedR } = await recordCases(loader(context));
-    const check = checkOf(Record.recordDefect(closedR));
-    if (check !== 3) fail(`ResultC tail with R closed: check ${check}`);
+  // Task 3 (controller ruling): a `⟨q, result clauses⟩` outside F is
+  // check 2, at an instance whose R is closed and at another path.
+  'r0-a2-unforced-result-clauses': async context => {
+    const { Record, closedR, elsewhereEntry } =
+      await recordCases(loader(context));
+    const checks = [closedR, elsewhereEntry].map(problem =>
+      checkOf(Record.recordDefect(problem)));
+    if (checks.some(check => check !== 2))
+      fail(`result clauses outside F: checks ${JSON.stringify(checks)}`);
     passed(context);
   },
-  // Task 3: a flexible `Fail` payload with no `FailConcrete` is check 4.
+  // Task 3: a flexible `Fail` payload with no `FailConcrete` is check 3.
   'r0-a2-fail-invariant': async context => {
     const { Record, unconcrete } = await recordCases(loader(context));
     const check = checkOf(Record.recordDefect(unconcrete));
-    if (check !== 4) fail(`Fail payload with no FailConcrete: check ${check}`);
+    if (check !== 3) fail(`Fail payload with no FailConcrete: check ${check}`);
     passed(context);
   }
 };

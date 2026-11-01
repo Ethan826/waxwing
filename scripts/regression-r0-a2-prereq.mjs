@@ -24,14 +24,15 @@ export const a2PrereqRows = [
     message: /forced tail in an Entry row: check null/
   },
   {
-    // Task 3 (Task 1 review): a ResultC tail `⟨p, result clauses⟩` with
-    // R closed, which F omits, accepted.
-    name: 'r0-a2-forced-closed',
+    // Task 3 (controller ruling): `⟨q, result clauses⟩` outside F
+    // accepted, at a closed-R instance or at another path.
+    name: 'r0-a2-unforced-result-clauses',
     file: record,
-    needle: '    , entry.closedForced\n',
-    replacement: '    , false\n',
-    probe: 'r0-a2-forced-closed',
-    message: /ResultC tail with R closed: check null/
+    needle: '        || any (unforced scope)'
+      + ' (entry.refs.effects <> entry.refs.placed)\n',
+    replacement: '        || any (unforced scope) []\n',
+    probe: 'r0-a2-unforced-result-clauses',
+    message: /result clauses outside F: checks \[null,null\]/
   },
   {
     // Task 3: `Fail` payloads unchecked, a flexible one with no

@@ -16,6 +16,7 @@ module Domain.Recorded.Effect
   , Placed
   , Position(..)
   , Provenance(..)
+  , RecordTable(..)
   , SiteRole(..)
   , SiteKind(..)
   , UnsupportedKind(..)
@@ -145,9 +146,24 @@ data Obligation
 -- a consumption, `Entry`, ...), one per (declaration, path, rule, role);
 -- the role includes a `Consumed` ordinal. Every kind's tagged provenance
 -- is distinct within a declaration (§18.124; test/r0-obligations-unique).
+-- `InRecord` is a validator-side report of a record table entry (A2 record
+-- validation, Effects.Record): an entry of one of the tables, keyed by
+-- its path, or the signature or the record's domain coverage, which have
+-- none. Generation never constructs it; no obligation carries it.
 data Provenance
   = BesideAtom RuleId AtomId
   | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }
+  | InRecord { decl ∷ FunctionId, table ∷ RecordTable, path ∷ Maybe Path }
+
+-- The record tables, in spec §5 item 1's order, then the coverage of the
+-- record's domains (`flexEff`, `positions`).
+data RecordTable
+  = InInstances
+  | InAnnotations
+  | InNodes
+  | InAmbient
+  | InSignature
+  | InCoverage
 
 -- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).
 -- `Consumed site n` is an E2 consumption (Task 8): its site kind and its
@@ -226,5 +242,6 @@ derive instance eqMTy ∷ Eq MTy
 derive instance eqSiteKind ∷ Eq SiteKind
 derive instance eqUnsupportedKind ∷ Eq UnsupportedKind
 derive instance eqSiteRole ∷ Eq SiteRole
+derive instance eqRecordTable ∷ Eq RecordTable
 derive instance eqProvenance ∷ Eq Provenance
 derive instance eqObligation ∷ Eq Obligation
