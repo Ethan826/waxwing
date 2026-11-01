@@ -7562,3 +7562,53 @@ tail is ForcedTail; acceptable as a dependency, unstated); §4.1 keeps
 the old vague forced-variable wording beside the new rule; C7(b)'s
 no-witness result is the reviewer's reasoning (label reasoned); C15's
 order can be labeled observed.
+
+### 18.145 A2 plan: subagent execution of Tasks 0-15 and 17 authorized (2026-11-01)
+
+The author chose subagent execution and authorized Tasks 0-15 and 17
+of docs/plans/2026-10-31-a2-validator-plan.md, with corrections; Task
+16 (the minting switch) stays held. No new token cap; actual
+controller, implementer and reviewer spend recorded; durable
+usage-reset checkpoints. Answers: (1) the specification's §2.2
+representation is approved as the encoding (the four package maps, the
+PTy/PRow family, Term, an opaque Completed); sort correctness and
+canonical forms still rest on I3's checks. (2) Task 16 held until
+tranche 2 supplies effect packages; the existing minter stays under
+F14, labeled joint-checker assurance; the new validator is not
+described as protecting current strategy acceptances before the
+switch; Task 17 closes this stage without Task 16 (the dependency
+diagram amended). (3) The record-defect pre-search block may land
+before Task 16, tested independently of whether any strategy offers a
+candidate; no census/window/RT8 movement expected, any movement needs
+explanation and a ruling before re-pinning. (4) A new test-side
+differential reporter; r0-results-diff.mjs keeps its existing results;
+the reporter separates fixture evidence from corpus observations and
+never classifies an arbitrary new widening as the accepted C6
+divergence.
+
+Repairs before the affected tasks: (a) Completed's constructor
+boundary: the facade and Effects.Complete are the importers of the
+package Internal module, the rule and pin named in the commit;
+conversion helpers get no constructor access for convenience. (b) A
+non-minting runner exercising the actual sequence (record validation,
+Unsupported, I3, G0, completion and forcing, settling, obligations,
+witness construction), tested before the switch; Task 16 later wraps
+it; until then its successes are validation results, not Certified
+values. (c) Task 13: graph satisfiability does not show a package's
+terms satisfy the graph; the separating case "satisfiable graph, wrong
+supplied assignment (`p ⊑ N` with `p = M`)" must be rejected; state
+whether candidate terms are pinned into the graph or evaluated under
+the bounded rigid-mark valuations; least-term construction a separate
+property; test labels renamed to the bounded agreement actually
+checked.
+
+Included: the planned trusted-surface additions, the package Internal
+rule, the refusal and reading changes, regression registration and the
+module inventories. Protected: G0's problem pin, the effect pin, live
+acceptance, first diagnostics, generated Go. Focused checks during
+tasks and the planned integration and acceptance verifies, no human
+approval per task; the final integrated change is reviewed before the
+final acceptance verify, and a tree changed by review is verified.
+Stops: a differential disagreement or a semantic ambiguity (neither
+implementation presumed correct). Not authorized: push, live switch,
+read-back implementation, a soundness claim.
