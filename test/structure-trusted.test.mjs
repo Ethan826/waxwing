@@ -19,8 +19,9 @@ const trusted = [
   'Strategy.ReadBack.Type',
   // A2 (plan Task 1): every Strategy.Effects module, as each lands.
   'Strategy.Effects.Complete', 'Strategy.Effects.Dependency',
-  'Strategy.Effects.Forced',
-  'Strategy.Effects.Judged', 'Strategy.Effects.Package']
+  'Strategy.Effects.Forced', 'Strategy.Effects.Judged',
+  'Strategy.Effects.Package', 'Strategy.Effects.Rows',
+  'Strategy.Effects.Term']
   .map(name => `Features.Check.${name}`)
   .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal',
     'Domain.Verdict.EffectPackage', 'Domain.Verdict.EffectPackage.Internal',

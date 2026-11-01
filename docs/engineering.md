@@ -244,6 +244,11 @@ adding a bypass allowlist.
     which must be lowering's; `under` reads recorded types and marks
     through a package; `key` decides which labels match and when a `Fail`
     label is keyless (spec §2.2, §2.4, §2.5, §4.2).
+  - `Features.Check.Strategy.Effects.Rows`: `grouped`, R-A's row normal
+    form, decides which rows are equal up to scoped order; a wrong group
+    makes E1 and E2 relate the wrong labels (spec §9).
+  - `Features.Check.Strategy.Effects.Term`: `norm`, `holds` and
+    `sameTerm` decide every mark edge and mark equality (statements §5).
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.

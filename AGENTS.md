@@ -88,7 +88,9 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy.Effects.Dependency`,
   `Features.Check.Strategy.Effects.Forced`,
   `Features.Check.Strategy.Effects.Judged`,
-  `Features.Check.Strategy.Effects.Package`),
+  `Features.Check.Strategy.Effects.Package`,
+  `Features.Check.Strategy.Effects.Rows`,
+  `Features.Check.Strategy.Effects.Term`),
   `Domain.Verdict.EffectPackage`, `Domain.Verdict.EffectPackage.Internal`
   and `Domain.Verdict.EffectPackage.Types`.
   Review-required lowering boundary (turns a `Judged` solution into checked
