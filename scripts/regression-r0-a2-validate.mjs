@@ -8,8 +8,7 @@ const unsupportedStep = '  refuseWith identity\n'
   + '    (findMap unsupportedIn (fields problem).effects.obligations)\n';
 const i3Step = '  refuseWith Malformed (malformed problem package)\n';
 const judged = '  traverse_ (judgeOne problem context)';
-const classified = '  classified = either'
-  + ' (Left <<< classify (dependencySet problem)';
+const refused = '  refused failure = Left (classify (dependencySet problem)';
 const g0Step = '  validity ← checkSubstitution problem'
   + ' (erase (settle package))\n';
 
@@ -69,8 +68,8 @@ export const a2ValidateRows = [
       },
       {
         file: validate,
-        needle: `${classified} placed) Right\n`,
-        replacement: `${classified} pooled) Right\n`
+        needle: `${refused} placed failure)\n`,
+        replacement: `${refused} pooled failure)\n`
           + '  pooled = fromMaybe placed'
           + ' (head (fields problem).effects.obligations)\n'
       }
@@ -87,6 +86,27 @@ export const a2ValidateRows = [
     replacement: `${g0Step}  prerequisites problem package\n`,
     probe: 'r0-a2-runner-sequence',
     message: /I3 before G0: expected Malformed BindsForced, got Unsatisfied/
+  },
+  {
+    // Task 11's review, spec §4 ("G0 does not see completion's fresh
+    // holes"): G0 judges erase P_c, so an absent variable C7(b)'s G0
+    // refuses is accepted.
+    name: 'r0-a2-g0-input',
+    edits: [
+      {
+        file: substitution,
+        needle: g0Step,
+        replacement: '  validity ← checkSubstitution problem\n'
+          + '    (erase (settledOf (complete problem package)))\n'
+      },
+      {
+        file: substitution,
+        needle: '(complete, witnessOf)\n',
+        replacement: '(complete, settledOf, witnessOf)\n'
+      }
+    ],
+    probe: 'r0-a2-g0-input',
+    message: /G0 on erase \(settle P_in\): expected Unsatisfied, got Right/
   },
   {
     // Task 9's review, spec §4 ("the obligations' package: P_c only"):

@@ -89,4 +89,5 @@ judgeOne problem context placed = case placed.value of
   Unsupported kind → Left (unsupportedAt placed kind)
   where
   classified ∷ Judged → Either CheckRefusal Unit
-  classified = either (Left <<< classify (dependencySet problem) placed) Right
+  classified = either refused Right
+  refused failure = Left (classify (dependencySet problem) placed failure)

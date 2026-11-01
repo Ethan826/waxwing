@@ -86,7 +86,10 @@ certify problem unsettled = map witnessed
 
 -- Each step runs only when the earlier ones hold; completion runs once,
 -- after G0, and its package is the one the obligations and the witness
--- read (spec §4 steps 0-5, §18.141).
+-- read (spec §4 steps 0-5, §18.141). G0 reads erase (settle P_in), not
+-- P_c: it does not see completion's fresh holes, so an absent flexible
+-- variable stays flexible for G0 (test "G0 reads erase (settle P_in)").
+-- Owed (Task 15): G0 accepts erase P_c whenever it accepts this input.
 validate
   ∷ RecordedProblem → EffectPackage → Either CheckRefusal ValidationResult
 validate problem package = do

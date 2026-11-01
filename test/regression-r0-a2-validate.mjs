@@ -56,6 +56,7 @@ export const validateCases = async load => {
     ['Hole', 'Domain.Recorded.Hole'], ['P', 'Domain.Verdict.EffectPackage'],
     ['Forced', 'Features.Check.Strategy.Effects.Forced'],
     ['Witness', 'Features.Check.Strategy.Witness'],
+    ['Package', 'Features.Check.Strategy.Effects.Package'],
     ['Complete', 'Features.Check.Strategy.Effects.Complete'],
     ['Validate', 'Features.Check.Strategy.Effects.Validate'],
     ['Sites', 'Features.Check.Strategy.Effects.Sites'],
@@ -169,6 +170,18 @@ export const c7 = cases => {
   return { problem, input };
 };
 
+// C7(b)'s program with y's variable absent and no type bound: G0 on
+// erase (settle P_in) leaves y flexible and refuses; on erase P_c it
+// would see completion's settled hole and accept (spec §4: G0 does not
+// see completion's fresh holes).
+export const absentPair = cases => {
+  const problem = cases.problemOf(sources.c7b, 'id2');
+  const input = cases.pkg({ effects: problem.effects.flexEff.map(
+    variable => [variable, cases.closed]),
+  marks: problem.effects.positions.map(at => [at, cases.N]) });
+  return { problem, input };
+};
+
 const expect = (actual, expected, label) => {
   if (actual !== expected) fail(`${label}: expected ${expected}, got ${
     actual}`);
@@ -219,6 +232,12 @@ export const a2ValidateProbes = {
       cases.Effect.ordEVar)(forced)(cases.closed)(input.effects) };
     expect(cases.describe(cases.validate(problem, both)),
       'Malformed BindsForced', 'I3 before G0');
+  }),
+  // Task 11 (review): G0 reads erase (settle P_in), not erase P_c.
+  'r0-a2-g0-input': probe(cases => {
+    const { problem, input } = absentPair(cases);
+    expect(cases.describe(cases.validate(problem, input)), 'Unsatisfied',
+      'G0 on erase (settle P_in)');
   }),
   // Task 11 (Task 9's review): obligations read settle (complete P_in).
   'r0-a2-judge-settled': probe(cases => {

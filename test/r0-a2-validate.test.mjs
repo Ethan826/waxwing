@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { load } from './r0-generate-support.mjs';
-import { c2c, c7, sources, validateCases }
+import { absentPair, c2c, c7, sources, validateCases }
   from './regression-r0-a2-validate.mjs';
 
 // A2 Task 11 (docs/plans/2026-10-31-a2-validator-plan.md): the
@@ -108,6 +108,21 @@ test('obligations are judged on settle (complete P_in)', () => {
   const { problem, input } = c7(cases);
   assert.equal(describe(judge(problem, input)), 'Right');
   assert.equal(describe(validate(problem, input)), 'Right');
+});
+
+test('G0 reads erase (settle P_in), not erase (P_c)', () => {
+  // y absent: G0 refuses y flexible, though completion's hole for y
+  // settles to a type the obligations, and G0 on erase P_c, accept.
+  const { problem, input } = absentPair(cases);
+  assert.equal(describe(prerequisites(problem, input)), 'Right');
+  assert.equal(describe(validate(problem, input)), 'Unsatisfied');
+  assert.equal(describe(judge(problem, input)), 'Right');
+  const settledIn = cases.Package.erase(cases.Package.settle(input));
+  const completed = cases.Package.erase(cases.Complete.settledOf(
+    cases.Complete.complete(problem)(input)));
+  const certify = cases.Substitution.certify(problem);
+  assert.equal(certify(settledIn).constructor.name, 'Left');
+  assert.equal(certify(completed).constructor.name, 'Right');
 });
 
 test('judged alone, an Unsupported gets the prerequisite refusal', () => {
