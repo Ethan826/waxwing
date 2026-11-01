@@ -50,6 +50,10 @@ const unsettled = (problem, input) =>
 const flexible = problem => pairs(view(problem).vars)
   .filter(([, info]) => info.quant instanceof Atom.Exists);
 
+// The two orders give the obligations different payloads: this separates
+// the stages that read obligations, not end-to-end outcomes. With the
+// field absent the pipeline refuses `k` at G0 (dossier §18.148 (4);
+// test/r0-a2-differential.test.mjs "C6 field absent").
 test('C6 order separates', () => {
   const problem = problemOf(c6, 'k');
   const [payload] = view(problem).effects.obligations

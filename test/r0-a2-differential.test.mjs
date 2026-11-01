@@ -134,32 +134,34 @@ test('a record defect is a generation defect under any verdict', () => {
   }
 });
 
-test('C6 fixture', () => {
-  // `k` with the field variable absent. The full validator refuses it at
-  // G0 (Unsatisfied: G0 reads erase (settle P_in), where the field stays
-  // flexible), though the prerequisites and the recorded obligations
-  // accept it. This records the pipeline's observed behavior. OPEN
-  // QUESTION (with the author): spec C6 predicts the validator accepts
-  // such a package; G0's projection refuses it. Not decided here, and the
-  // Owed Task 15 property (G0 on erase P_c accepts whatever G0 accepts)
-  // runs the other way and does not cover this case.
+// Spec §12 C6, as ruled (dossier §18.148 (4)): two cases, two tests.
+// Field binding absent: the pipeline refuses `k` at G0 (Unsatisfied: G0
+// reads erase (settle P_in), where the field stays flexible), observed.
+// No end-to-end acceptance is claimed, and it is not the divergence;
+// the obligations-only note is a separately labeled stage reading.
+test('C6 field absent: refused at G0, no divergence', () => {
   const absent = kInput(null);
   assert.equal(describe(validate(k, absent)), 'Unsatisfied');
   const row = fixture('k-absent', refuses('FailNeedsConcrete', 1), k,
     absent);
-  assert.deepEqual([row.category, row.kind], ['Agree',
-    'Unsatisfied']);
+  assert.deepEqual([row.category, row.kind], ['Agree', 'Unsatisfied']);
+  assert.notEqual(row.category, 'C6-expected-divergence');
   assert.equal(row.obligationsOnly, 'accepts');
   assert.match(render([row]),
     /refuses Unsatisfied; obligations-only: accepts/);
   assert.doesNotMatch(render([row]), /validator accepts/);
-  // The field bound to a hole in the package: the full validator accepts,
-  // predicted (fixture-level), the C6 example.
+});
+
+// Field explicitly bound to a hole: settling gives Int, E9 holds and the
+// full validator accepts (run on this fixture): the demonstrated shadow
+// divergence, the only C6 row in the expected-divergence category. The
+// replacement-compatibility decision stays open.
+test('C6 field bound to a hole: the expected divergence', () => {
   const bound = kInput(hole);
   assert.equal(describe(validate(k, bound)), 'Right');
+  assert.deepEqual(holeSettledPayloads(k, bound), [1]);
   const c6 = fixture('k-bound', refuses('FailNeedsConcrete', 1), k, bound);
   assert.equal(c6.category, 'C6-expected-divergence');
-  assert.notEqual(c6.category, 'Agree');
   assert.match(render([c6]), /predicted validator accepts/);
   assert.doesNotMatch(render([c6]), /observed/);
 });
