@@ -91,14 +91,18 @@ export const tokenModules = ['Domain.Verdict.Internal',
 // whose frozen readings (`erase`, `settle`, `under`, `key`) every later
 // A2 lane reads (Task 2 review); the A2 lane modules Task 11 composes,
 // and Strategy.Witness, whose `bindingsOf` export Task 4 added (lane
-// integration, 2026-11-01). The pin sees their export names and
-// compiled exports, not a type synonym's record shape or a signature.
+// integration, 2026-11-01); Effects.Forced and Effects.Judged, which
+// feed `complete` and `validate` (whole-branch review, 2026-11-01). The
+// pin sees their export names and compiled exports, not a type synonym's
+// record shape or a signature.
 export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
   'Features.Check.Decide.Reading', 'Features.Check.Decide.Reason',
   'Features.Check.Strategy.Effects.Consume',
   'Features.Check.Strategy.Effects.Dependency',
   'Features.Check.Strategy.Effects.Equal',
+  'Features.Check.Strategy.Effects.Forced',
   'Features.Check.Strategy.Effects.Handler',
+  'Features.Check.Strategy.Effects.Judged',
   'Features.Check.Strategy.Effects.Malformed',
   'Features.Check.Strategy.Effects.MalformedTerms',
   'Features.Check.Strategy.Effects.Package',

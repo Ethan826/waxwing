@@ -152,7 +152,8 @@ test('the real tree matches its pin and its FFI names no token module',
     // A2 Task 1: Domain.Verdict.EffectPackage, the public module of the
     // `Completed` token (Effects.Complete, its builder, lands in Task 4).
     // Its Types module is pinned beside them (`pinnedSurfaces`), and A2
-    // Task 2's Effects.Package.
+    // Task 2's Effects.Package; the whole-branch review adds
+    // Effects.Forced and Effects.Judged.
     const generate = ['', '.Ambient', '.Assemble', '.Block', '.Body',
       '.Builtin', '.Call', '.Callee', '.Consume', '.Context', '.Control',
       '.Declared', '.Effect',
@@ -179,7 +180,9 @@ test('the real tree matches its pin and its FFI names no token module',
         'Features.Check.Strategy.Effects.Consume',
         'Features.Check.Strategy.Effects.Dependency',
         'Features.Check.Strategy.Effects.Equal',
+        'Features.Check.Strategy.Effects.Forced',
         'Features.Check.Strategy.Effects.Handler',
+        'Features.Check.Strategy.Effects.Judged',
         'Features.Check.Strategy.Effects.Malformed',
         'Features.Check.Strategy.Effects.MalformedTerms',
         'Features.Check.Strategy.Effects.Package',

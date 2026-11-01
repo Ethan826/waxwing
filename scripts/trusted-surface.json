@@ -1185,6 +1185,15 @@
    "samePTy"
   ]
  },
+ "Features.Check.Strategy.Effects.Forced": {
+  "source": [
+   "Forced",
+   "forcedTails"
+  ],
+  "compiled": [
+   "forcedTails"
+  ]
+ },
  "Features.Check.Strategy.Effects.Handler": {
   "source": [
    "Checks",
@@ -1202,6 +1211,14 @@
    "sequenced",
    "withMarks"
   ]
+ },
+ "Features.Check.Strategy.Effects.Judged": {
+  "source": [
+   "Context",
+   "Failure",
+   "Judged"
+  ],
+  "compiled": []
  },
  "Features.Check.Strategy.Effects.Malformed": {
   "source": [
