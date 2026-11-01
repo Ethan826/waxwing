@@ -743,9 +743,15 @@ type ValidationResult =
 validate
   ∷ RecordedProblem → EffectPackage → Either CheckRefusal ValidationResult
 ```
-`validate` reuses G0's existing check (the function today's `certify`
-calls before minting) and `coverage` (Strategy/Witness.purs); it
-constructs no `Certified`.
+`validate` lives in Features.Check.Strategy.Substitution, beside
+`certify` (pre-flight ruling, 2026-11-01): that module is the only one
+that mints `Valid` (its header; scripts/structure.mjs), and G0's check
+`checkSubstitution` is not exported. Effects/Validate.purs exports
+`prerequisites` and `judgeObligations`; Substitution composes them with
+`checkSubstitution`, `complete`, `settledOf`, `witnessOf` and
+`coverage` (Strategy/Witness.purs), and exports `validate` and
+`ValidationResult`; it constructs no `Certified`. Files: Task 11 also
+modifies Strategy/Substitution.purs (trusted; re-pin named).
 `prerequisites`: `recordDefect`, then the first `Unsupported`
 (`NotCertifiable (UnsupportedRecorded k) {provenance, check: 0}`), then
 `malformed`. `judgeObligations`: per obligation in recorded order, one
