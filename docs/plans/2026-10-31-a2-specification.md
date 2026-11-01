@@ -317,8 +317,9 @@ violation is `RecordDefect`:
   exact match, observed by §18.140's reviewer);
 - every recorded reference is in its permitted domain at its sort:
   effect variables in `effectRigids` (`EffRigid`), `flexEff` \ F
-  (package-owned) or F (record-owned, and then only as a ResultC tail
-  or in an obligation reading that instance); type variables declared
+  (package-owned) or F (record-owned; where it may occur is §2.3's
+  placement rule, which replaces this bullet's older wording, 2026-10-31,
+  §18.144); type variables declared
   rigid or flexible in `fields.vars` at the sort of their position;
   positions in `positions`; `FixedRigid k` with k in `rigidMarks`;
   every `flexEff` member and position referenced somewhere (corpus: two
@@ -452,6 +453,11 @@ binding: that would need evaluating under a binding the package does not hold.
 The earlier wording ("over-approximates", closure over `Equal` and variables
 only) is withdrawn: it missed frame positions. Cases C1, C15 and C16 separate
 direct dependency, dependency through a frame, and an unrelated failure.
+
+Coarseness (2026-10-31, §18.144): where the ambient tail is flexible (in
+`main` and lambda bodies), every obligation sharing that tail mentions a
+Dep member, so every such obligation is `ForcedTail`. This is acceptable
+as a dependency and was previously unstated.
 
 ## 6. Refusals and Decide (repair 4, A6)
 
@@ -733,7 +739,8 @@ row; E1 holds; accepted. Wrong: obligations on P_cu (unsettled) refuse
 fn(y) => y; g(x) }` (BACKLOG R026's program), y's variable bound to
 `PVar (holeVar 0)`: G0 on `erase (settle P_in)` sees `Int` and
 accepts, and the stored compilation is `NoWitness (HoleContract …)`
-(§18.142's reviewer; not run in this pass): `Certified Valid` without
+(§18.142's reviewer; not run in this pass; label: reasoned, 2026-10-31,
+§18.144): `Certified Valid` without
 a witness, so not compilable. Wrong G0 on `erase P_in` compares `TVar
 (holeVar 0)` with `Int` syntactically and refuses at G0, a different
 outcome.
@@ -810,8 +817,9 @@ F, its source t s's instance slot.
   `e`, so `Install` asks `M ⊑ f`; with f = M, `Install` holds and the
   `Defer` fails `M ⊑ N` on `Ask`: **`NotCertifiable ForcedTail
   DeferRegistration`**, through the frame. Wrong W4 (Dep over `Equal`
-  and variables only): `ObligationFailed`. (Recorded order assumed as
-  C1's, `Install` before the body: reasoned.)
+  and variables only): `ObligationFailed`. (Recorded order: `Install`
+  0, `Defer` 7, observed by §18.144's probe, 2026-10-31; before that,
+  assumed as C1's, `Install` before the body.)
 
 **C16. An unrelated failure.** `fn use3(): Unit with Log = { defer
 Log.log(1); with mk() { () } }`, honest least terms. The first `defer`
@@ -820,8 +828,11 @@ d and the declared ambient row, whose marks are written and whose tail
 is rigid; d reaches nothing else: not in Dep. Reported
 **`ObligationFailed DeferRegistration`**, though the declaration also
 holds a forced tail. Wrong: classifying every failure in a declaration
-with a forced tail as `ForcedTail`. (Recorded order: the block's items
-in order, reasoned.)
+with a forced tail as `ForcedTail`. (Recorded order, corrected
+2026-10-31, §18.144: a `with` that is a block's result records
+`Install`, `InstallR` and `AtInstalledC` before the preceding `defer`'s
+obligations, not the block's items in order; the reported failure is
+unchanged because those three hold.)
 
 C1's A′ is the direct dependency (`Install` itself mentions the forced
 tail); C1's A and C15 are dependencies through a frame; C16 is
