@@ -11,6 +11,7 @@ import { a2ValidateRows } from './regression-r0-a2-validate.mjs';
 import { a2MbRows } from './regression-r0-a2-mb.mjs';
 import { a2ReportRows } from './regression-r0-a2-report.mjs';
 import { a2PropsRows } from './regression-r0-a2-props.mjs';
+import { a2ArityRows } from './regression-r0-a2-arity.mjs';
 
 export const a2Rows = [
   ...a2PackageRows,
@@ -21,5 +22,6 @@ export const a2Rows = [
   ...a2ValidateRows,
   ...a2MbRows,
   ...a2ReportRows,
-  ...a2PropsRows
+  ...a2PropsRows,
+  ...a2ArityRows
 ];

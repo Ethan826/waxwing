@@ -88,9 +88,15 @@ export const malformedCases = async load => {
   const mainEffects = main.effects.flexEff.map(variable =>
     [variable, closed]);
   // `entailed`'s problem (x, y flexible types; r, s rows; p, q rigids)
-  // with an effect problem: no effect variables or positions.
+  // with an effect problem: no effect variables or positions, and the
+  // declared arities its images use (§18.148 (1)): the built-ins and a
+  // nullary data type 7.
+  const Ids = await load('Domain.Ids');
+  const declarations = { effects: mapOf(Row.ordEffectRef,
+    [[Row.FailEffect.value, 1], [Row.ConsoleEffect.value, 0]]),
+  types: mapOf(Ids.ordTypeId, [[7, { types: 0, rows: 0 }]]) };
   const typed = (effects = {}) => ({ ...entailed({}),
-    effects: { ...Effect.emptyEffects, ...effects } });
+    effects: { ...Effect.emptyEffects, declarations, ...effects } });
   const types = pairs => pkg({ types: pairs });
   const consoleType = mark =>
     labelled(label(Row.ConsoleEffect.value, [], mark));

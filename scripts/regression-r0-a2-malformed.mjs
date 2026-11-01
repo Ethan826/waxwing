@@ -45,8 +45,8 @@ export const a2MalformedRows = [
     // effect image passes I3.
     name: 'r0-a2-keyless-image',
     file: malformed,
-    needle: '    , unsolvedImage\n    , keylessFailIn\n    ]\n',
-    replacement: '    , unsolvedImage\n    ]\n',
+    needle: '    , unsolvedImage\n    , keylessFailIn\n    , arityIn\n',
+    replacement: '    , unsolvedImage\n    , arityIn\n',
     probe: 'r0-a2-keyless-image',
     message: /r0-a2-keyless-image: \[\["keyless","Nothing"\]\]/
   }

@@ -29,6 +29,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
 import Domain.Ids (EffectId)
+import Domain.Recorded.Arity (Declarations, noDeclarations)
 import Domain.Recorded.Atom (Base(..), Var)
 import Domain.Recorded.Origin (AtomId, Path, RuleId)
 import Domain.Resolved (FunctionId)
@@ -40,11 +41,10 @@ import Domain.Type (TypeId, VarId)
 -- of the node that minted it and its role there.
 data EVar = EffRigid VarId | EffFresh Path ERole
 
--- `AnnotationClauses j k`: parameter j's annotation, k-th eligible
--- handler occurrence in it (pre-order). `EntryTail`: `main`'s inferable
--- top-level ambient tail (§18.124 ruling 2), any open top-level tail,
--- a written `...r` included; carried by and minted at the result root
--- by Generate.Body alone.
+-- `AnnotationClauses j k`: parameter j's annotation, k-th eligible handler
+-- occurrence in it (pre-order). `EntryTail`: `main`'s inferable top-level
+-- ambient tail (§18.124 ruling 2), any open top-level tail, a written `...r`
+-- included; carried by and minted at the result root by Generate.Body alone.
 data ERole
   = EffInst VarId
   | EffectOf
@@ -155,14 +155,15 @@ data Provenance
   | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }
   | InRecord { decl ∷ FunctionId, table ∷ RecordTable, path ∷ Maybe Path }
 
--- The record tables, in spec §5 item 1's order, then the coverage of the
--- record's domains (`flexEff`, `positions`).
+-- The record tables in spec §5 item 1's order, the declared arities
+-- (check 5), then the coverage of the record's `flexEff` and `positions`.
 data RecordTable
   = InInstances
   | InAnnotations
   | InNodes
   | InAmbient
   | InSignature
+  | InDeclarations
   | InCoverage
 
 -- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).
@@ -207,6 +208,7 @@ type EffectProblem =
   , flexEff ∷ Array EVar
   , positions ∷ Array Position
   , signature ∷ InstanceSig -- the declaration's own, marked as declared
+  , declarations ∷ Declarations -- the program's arities (Recorded.Arity)
   }
 
 -- `signature` is the fold's start: every generated declaration records its
@@ -228,6 +230,7 @@ emptyEffects =
       , row: { labels: [], tail: Nothing }
       , result: MBase UnitBase
       }
+  , declarations: noDeclarations
   }
 
 derive instance eqEVar ∷ Eq EVar

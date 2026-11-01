@@ -147,6 +147,13 @@ prefix (each case agrees on the prefix).
 | Effects.RecordArity (new, trusted) | record check 5 and the declarations entry |
 | Effects.Record | one list line (check 5), the declarations entry |
 
+Implementation note: on this branch Effects.Record's check list holds a
+`false` placeholder at index 4, so check 5 has its fixed index before the
+companion check (index 4) lands; integration replaces the placeholder
+with that check. Test fixtures that assemble a problem by hand pass the
+new `Header.declarations` (the built-ins only where a validator reads
+them).
+
 ## 4. Pins
 
 The effect pin moves for every declaration (new field). Evidence owed in

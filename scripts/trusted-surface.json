@@ -709,12 +709,14 @@
    "OperationShape",
    "calleeOf",
    "ctorShape",
+   "declarationsOf",
    "effectSorts",
    "operationShape"
   ],
   "compiled": [
    "calleeOf",
    "ctorShape",
+   "declarationsOf",
    "effectSorts",
    "operationShape"
   ]
@@ -1136,6 +1138,24 @@
    "theorems"
   ]
  },
+ "Features.Check.Strategy.Effects.Arity": {
+  "source": [
+   "Application",
+   "ArityFault(..)",
+   "arityFault",
+   "dataApplication",
+   "labelApplication",
+   "validDeclarations"
+  ],
+  "compiled": [
+   "Unknown",
+   "Miscounted",
+   "arityFault",
+   "dataApplication",
+   "labelApplication",
+   "validDeclarations"
+  ]
+ },
  "Features.Check.Strategy.Effects.Complete": {
   "source": [
    "complete",
@@ -1275,6 +1295,18 @@
   "compiled": [
    "recordDefect",
    "siteFlags"
+  ]
+ },
+ "Features.Check.Strategy.Effects.RecordArity": {
+  "source": [
+   "applicationsWrong",
+   "declarationsDefect",
+   "validArities"
+  ],
+  "compiled": [
+   "applicationsWrong",
+   "declarationsDefect",
+   "validArities"
   ]
  },
  "Features.Check.Strategy.Effects.RecordEntries": {

@@ -81,7 +81,8 @@ export const r0AminProbes = {
       new Out.SignatureAt(Origin.Path({ root: Origin.InResult.value,
         steps: [] }), signature)];
     const holders = { declared: Set.empty, holding: Set.empty };
-    const result = Assemble.assemble({ decl: 0, holders })(
+    const result = Assemble.assemble({ decl: 0, holders,
+      declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });
     if (result.constructor.name !== 'Left')
       fail('a duplicate NodeAt write went undetected');

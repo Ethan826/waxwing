@@ -8,6 +8,7 @@ module Test.ElabScope.Common
   ) where
 
 import Data.Set as Set
+import Domain.Recorded.Arity (noDeclarations)
 import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
 import Domain.Resolved (FunctionId(..))
@@ -18,6 +19,7 @@ header ∷ Header
 header =
   { decl: FunctionId 0
   , holders: { declared: Set.empty, holding: Set.empty }
+  , declarations: noDeclarations
   }
 
 site ∷ CheckedName

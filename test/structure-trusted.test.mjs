@@ -18,12 +18,14 @@ const trusted = [
   'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
   'Strategy.ReadBack.Type',
   // A2 (plan Task 1): every Strategy.Effects module, as each lands.
+  'Strategy.Effects.Arity',
   'Strategy.Effects.Complete', 'Strategy.Effects.Consume',
   'Strategy.Effects.Dependency', 'Strategy.Effects.Equal',
   'Strategy.Effects.Forced', 'Strategy.Effects.Handler',
   'Strategy.Effects.Judged', 'Strategy.Effects.Malformed',
   'Strategy.Effects.MalformedTerms', 'Strategy.Effects.Package',
-  'Strategy.Effects.Record', 'Strategy.Effects.RecordEntries',
+  'Strategy.Effects.Record', 'Strategy.Effects.RecordArity',
+  'Strategy.Effects.RecordEntries',
   'Strategy.Effects.RecordRefs', 'Strategy.Effects.Rows',
   'Strategy.Effects.Sites', 'Strategy.Effects.Term',
   'Strategy.Effects.Validate']

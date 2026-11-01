@@ -3,7 +3,8 @@
 -- hints and a check's refusal. They were uninhabited in
 -- Domain.Verdict.Open until Task 4.1 gave them representations here.
 module Domain.Verdict.Search
-  ( Budget
+  ( Applied(..)
+  , Budget
   , CheckAt
   , CheckRefusal(..)
   , Limitation(..)
@@ -21,6 +22,8 @@ import Domain.Recorded.Effect
   , Provenance
   , UnsupportedKind
   )
+import Domain.Row (EffectRef)
+import Domain.Type (TypeId)
 
 -- §4.3: fuel, a depth bound and a key bound. Each strategy and each
 -- refuter search receives the whole value, and nothing it spends is
@@ -78,7 +81,9 @@ data PackageKey
   | KeyEffect EVar
   | KeyMark Position
 
--- I3's reasons (spec §4.2, §5's checks (a)-(j)), each naming its key.
+-- I3's reasons (spec §4.2, §5's checks (a)-(j)), each naming its key;
+-- (k), an application the declared arities lack or count otherwise
+-- (§18.148 (1)), naming its key and the application's head.
 data MalformedReason
   = BindsForced EVar
   | WrongSort PackageKey
@@ -90,6 +95,11 @@ data MalformedReason
   | HoleTwoSorts Int
   | UnsolvedImage PackageKey
   | KeylessFail PackageKey
+  | Undeclared PackageKey Applied
+  | WrongArity PackageKey Applied
+
+-- An application's head: an effect label's effect or a data type.
+data Applied = AppliedEffect EffectRef | AppliedData TypeId
 
 -- Why an obligation is not certifiable (spec §6): a recorded
 -- unsupported kind, a rigid-tailed exact obligation, or a dependency on
@@ -103,6 +113,7 @@ derive instance eqSearchHint ∷ Eq SearchHint
 derive instance ordSearchHint ∷ Ord SearchHint
 derive instance eqPackageKey ∷ Eq PackageKey
 derive instance ordPackageKey ∷ Ord PackageKey
+derive instance eqApplied ∷ Eq Applied
 derive instance eqMalformedReason ∷ Eq MalformedReason
 derive instance eqLimitation ∷ Eq Limitation
 derive instance eqCheckRefusal ∷ Eq CheckRefusal

@@ -45,6 +45,7 @@ import Features.Check.Generate.Inputs
   , Tables
   ) as Exports
 import Features.Check.Generate.Inputs as Inputs
+import Features.Check.Generate.Lookup (declarationsOf)
 import Features.Check.Generate.Static.Rules as Static
 
 -- D1 spec §3.5 (R0 Task 7.1b): the declaration's recorded problem and
@@ -63,7 +64,11 @@ generate
   → FunctionDecl
   → Either GenerationFault (Elaborating Checked.FunctionDecl)
 generate tables signatures function =
-  seal { decl: function.id, holders: holdersOf tables }
+  seal
+    { decl: function.id
+    , holders: holdersOf tables
+    , declarations: declarationsOf tables
+    }
     (generateIn tables signatures function)
 
 generationInputs ∷ Resolved.Program → Inputs

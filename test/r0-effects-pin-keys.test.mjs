@@ -18,7 +18,7 @@ test('movedKeys: added, removed and changed digests', () => {
 
 const fields = ['obligations', 'instances', 'annotations', 'nodes',
   'rigidMarks', 'effectRigids', 'arities', 'ambient', 'flexEff',
-  'positions', 'signature'];
+  'positions', 'signature', 'declarations'];
 const emptyOf = names => Object.fromEntries(names.map(name => [name, []]));
 
 test('the encoder refuses a field it does not encode, or a missing one',

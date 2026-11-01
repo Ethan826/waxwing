@@ -4,8 +4,9 @@
 -- package is read. `recordDefect` visits the record's entries in spec §5
 -- item 1's order (obligations as recorded, then `instances`,
 -- `annotations`, `nodes`, `ambient`, `signature`, keys in `Ord` order,
--- then the domain coverage) and gives the first entry that violates a
--- check, with the index of its first violated check:
+-- then the declared arities, then the domain coverage) and gives the
+-- first entry that violates a check, with the index of its first
+-- violated check:
 --   0  a `Consume`'s `marks`/`bare` differ from the site table (spec §9);
 --   1  a reference outside its permitted domain at its sort: type and
 --      record-row variables in `vars` at their position's sort, effect
@@ -22,8 +23,12 @@
 --      ruling, Task 3);
 --   3  a `Fail` payload that is a flexible variable with no
 --      `FailConcrete` on it, a declared rigid or unknown variable, an
---      arrow, a handler, or a record with a tail.
--- These are spec §4.1's four bullets in order. A defect in a table entry
+--      arrow, a handler, or a record with a tail;
+--   5  an effect label or data type the recorded arities lack or count
+--      otherwise, judged only when the arities are valid; for the
+--      `InDeclarations` entry, invalid arities (Effects.RecordArity;
+--      dossier §18.148 (1)).
+-- These are spec §4.1's bullets in order. A defect in a table entry
 -- or in the coverage is reported as `InRecord`, naming the table.
 -- A recorded `AtDeferredRow` is no defect for lacking coverage (A4); its
 -- flags are checked as any site's. Total: every input gives an answer.
@@ -57,7 +62,13 @@ import Features.Check.Strategy.Effects.RecordEntries
   , coverageAt
   , entriesOf
   )
+import Features.Check.Strategy.Effects.RecordArity
+  ( applicationsWrong
+  , declarationsDefect
+  , validArities
+  )
 import Features.Check.Strategy.Effects.RecordRefs (Refs)
+import Domain.Recorded.Arity (Declarations)
 
 -- The record's domains (spec §4.1), the forced tails F and the flexible
 -- variables a `FailConcrete` names.
@@ -70,6 +81,7 @@ type Scope =
   , flexTy ∷ Set Var
   , forced ∷ Set EVar
   , concrete ∷ Set Var
+  , arities ∷ Maybe Declarations
   }
 
 -- The site table, spec §9. No wildcard: a new site fails to compile.
@@ -93,8 +105,9 @@ siteFlags = case _ of
 
 recordDefect ∷ RecordedProblem → Maybe CheckAt
 recordDefect problem =
-  maybe' coverage Just (findMap (defectAt scope) entries)
+  maybe' declared Just (findMap (defectAt scope) entries)
   where
+  declared _ = maybe' coverage Just (declarationsDefect problem)
   recorded = fields problem
   scope = scopeOf problem
   entries = entriesOf problem
@@ -104,7 +117,7 @@ flagsWrong ∷ { site ∷ SiteKind, marks ∷ Boolean, bare ∷ Boolean } → Bo
 flagsWrong consume =
   siteFlags consume.site /= { marks: consume.marks, bare: consume.bare }
 
--- Checks 0-3 in order; the first violated one's index.
+-- Checks 0-5 in order; the first violated one's index.
 defectAt ∷ Scope → Entry → Maybe CheckAt
 defectAt scope entry = map at (findIndex identity checks)
   where
@@ -115,6 +128,8 @@ defectAt scope entry = map at (findIndex identity checks)
     , any (flip member scope.forced) entry.refs.effects
         || any (unforced scope) (entry.refs.effects <> entry.refs.placed)
     , any (payloadWrong scope) entry.refs.payloads
+    , false -- check 4 (companions) lands in parallel and replaces this
+    , applicationsWrong scope.arities entry.refs
     ]
 
 referencesKnown ∷ Scope → Refs → Boolean
@@ -169,6 +184,7 @@ scopeOf problem =
   , flexTy: fromFoldable recorded.flexTy
   , forced: fromFoldable (map _.forced (forcedTails problem))
   , concrete: fromFoldable (mapMaybe concreteOn effects.obligations)
+  , arities: validArities problem
   }
   where
   recorded = fields problem

@@ -7,7 +7,11 @@
 -- mark term (a label's or a mark key's own) or a `DataBase` base. The
 -- term checks: (f) a mark outside `rigidMarks`, (g) a `Console` or `Fail`
 -- label whose term is not N on normal forms (`TermJ ∅` is N, Effects.Term
--- `norm`), (j) a `Fail` label keyless after settling (§4.2).
+-- `norm`), (j) a `Fail` label keyless after settling (§4.2). Each part
+-- list also holds the image's applications, in pre-order, for (k)
+-- (Effects.Arity): a clause row C's labels are read bare, both a handler
+-- type's `clauses` and the image of a C variable (a literal's or an
+-- annotation's `clauses`, or a ResultC).
 module Features.Check.Strategy.Effects.MalformedTerms
   ( Parts
   , holesOf
@@ -19,7 +23,7 @@ module Features.Check.Strategy.Effects.MalformedTerms
   ) where
 
 import Prelude
-import Data.Array (any, concatMap, find, mapMaybe)
+import Data.Array (any, concatMap, find, length, mapMaybe)
 import Data.Foldable (foldMap)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), isNothing, maybe)
@@ -27,6 +31,7 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..), snd)
 import Domain.Recorded.Atom (Base(..), Var, VarSort(..))
+import Domain.Recorded.Effect (ERole(..), EVar(..))
 import Domain.Recorded.Hole (holeIndex)
 import Domain.Row (EffectRef(..))
 import Domain.Type (TypeId)
@@ -40,6 +45,11 @@ import Domain.Verdict.EffectPackage
   , Term(..)
   )
 import Domain.Verdict.Search (PackageKey(..))
+import Features.Check.Strategy.Effects.Arity
+  ( Application
+  , dataApplication
+  , labelApplication
+  )
 import Features.Check.Strategy.Effects.Package (key, settleTy)
 import Features.Check.Strategy.Effects.Term (norm)
 
@@ -49,11 +59,12 @@ type Parts =
   , labels ∷ Array PLabel
   , terms ∷ Array Term
   , dataBases ∷ Array TypeId
+  , applications ∷ Array Application
   }
 
 keyedParts ∷ EffectPackage → Array (Tuple PackageKey Parts)
 keyedParts package =
-  map (keyed KeyEffect rowParts) (Map.toUnfoldable package.effects)
+  map effectKeyed (Map.toUnfoldable package.effects)
     <> map (keyed KeyMark termParts) (Map.toUnfoldable package.marks)
     <> map (keyed KeyType tyParts) (Map.toUnfoldable package.types)
     <> map (keyed KeyRow recordParts) (Map.toUnfoldable package.rows)
@@ -114,6 +125,19 @@ tailHoles = mapMaybe hole
     PTailHole index → Just index
     PTailRigid _ → Nothing
 
+effectKeyed ∷ Tuple EVar PRow → Tuple PackageKey Parts
+effectKeyed (Tuple found image)
+  | clauseVariable found = Tuple (KeyEffect found) (clauseRowParts image)
+  | otherwise = Tuple (KeyEffect found) (rowParts image)
+
+-- A C row's variable: a literal's, an annotation's or a ResultC's.
+clauseVariable ∷ EVar → Boolean
+clauseVariable = case _ of
+  EffFresh _ HandlerClauses → true
+  EffFresh _ (AnnotationClauses _ _) → true
+  EffFresh _ ResultClauses → true
+  _ → false
+
 keyed
   ∷ ∀ k a. (k → PackageKey) → (a → Parts) → Tuple k a → Tuple PackageKey Parts
 keyed made parts (Tuple found image) = Tuple (made found) (parts image)
@@ -128,29 +152,75 @@ alwaysN = case _ of
   UserEffect _ → false
 
 none ∷ Parts
-none = { vars: [], tails: [], labels: [], terms: [], dataBases: [] }
+none =
+  { vars: []
+  , tails: []
+  , labels: []
+  , terms: []
+  , dataBases: []
+  , applications: []
+  }
 
 tyParts ∷ PTy → Parts
 tyParts = case _ of
-  PBase (DataBase owner) → none { dataBases = [ owner ] }
+  PBase (DataBase owner) → none
+    { dataBases = [ owner ]
+    , applications = [ dataApplication false owner 0 0 ]
+    }
   PBase _ → none
   PVar variable → none { vars = [ Tuple SortType variable ] }
   PArrow parameter row result →
     tyParts parameter <> rowParts row <> tyParts result
   PRecord row → recordParts row
-  PData _ arguments rows → foldMap tyParts arguments <> foldMap rowParts rows
+  PData owner arguments rows → dataParts false owner arguments rows
   PHandler label rows → labelParts label <> rowParts rows.inference
-    <> foldMap rowParts rows.clauses
+    <> foldMap clauseRowParts rows.clauses
 
 recordParts ∷ PRecordRow → Parts
 recordParts row = foldMap (tyParts <<< snd) row.fields
   <> none { vars = map (Tuple SortRow) row.tails }
 
+dataParts ∷ Boolean → TypeId → Array PTy → Array PRow → Parts
+dataParts bare owner arguments rows =
+  none
+    { applications =
+        [ dataApplication bare owner (length arguments) (length rows) ]
+    }
+    <> foldMap tyParts arguments
+    <> foldMap rowParts rows
+
 rowParts ∷ PRow → Parts
-rowParts row = foldMap labelParts row.labels <> maybe none tailed row.tail
+rowParts row = rowWith false row
+
+-- A clause row C: its labels bare (Effects.Arity).
+clauseRowParts ∷ PRow → Parts
+clauseRowParts row = rowWith true row
+
+rowWith ∷ Boolean → PRow → Parts
+rowWith inClause row = foldMap (labelWith inClause) row.labels
+  <> maybe none tailed row.tail
   where
   tailed found = none { tails = [ found ] }
 
 labelParts ∷ PLabel → Parts
-labelParts label = none { labels = [ label ], terms = [ label.mark ] }
-  <> foldMap tyParts label.args
+labelParts label = labelWith false label
+
+-- In C, a `Fail` label's data payload may be its head only.
+labelWith ∷ Boolean → PLabel → Parts
+labelWith inClause label =
+  none
+    { labels = [ label ]
+    , terms = [ label.mark ]
+    , applications =
+        [ labelApplication inClause label.effect (length label.args) ]
+    }
+    <> foldMap argument label.args
+  where
+  argument
+    | inClause && label.effect == FailEffect = payloadParts
+    | otherwise = tyParts
+
+payloadParts ∷ PTy → Parts
+payloadParts = case _ of
+  PData owner arguments rows → dataParts true owner arguments rows
+  other → tyParts other

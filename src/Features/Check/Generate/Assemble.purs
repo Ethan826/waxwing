@@ -2,8 +2,9 @@
 -- A recorded problem from what generation wrote (T-R0b §10; moved from
 -- Features.Check.Generate unchanged in R0 Task 7.1a, so that D1's `seal`
 -- assembles its problem the same way): the variables by quantifier and
--- sort, the entries as written, `q` empty, and the declaration and the
--- program's holder set (ruling K-a) from the header.
+-- sort, the entries as written, `q` empty, and the declaration, the
+-- program's holder set (ruling K-a) and its declared arities (§18.148
+-- (1), Generate.Lookup `declarationsOf`) from the header.
 module Features.Check.Generate.Assemble
   ( Header
   , assemble
@@ -17,6 +18,7 @@ import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Foldable (foldl)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
+import Domain.Recorded.Arity (Declarations)
 import Domain.Recorded.Atom (Holders, Quant(..), Var, VarInfo, VarSort(..))
 import Domain.Recorded.Effect (EffectProblem, emptyEffects)
 import Domain.Recorded.Internal (RecordedProblem(..))
@@ -25,7 +27,8 @@ import Domain.Resolved (FunctionId)
 import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Out (EffectItem(..), Out)
 
-type Header = { decl ∷ FunctionId, holders ∷ Holders }
+type Header =
+  { decl ∷ FunctionId, holders ∷ Holders, declarations ∷ Declarations }
 
 -- A second write of one keyed kind at one path is a generation fault,
 -- found on the item list before any map is built (equal values too); so
@@ -86,7 +89,8 @@ assembled header out items = RecordedProblem
   , vars
   , types: Map.fromFoldable out.types
   , holders: header.holders
-  , effects: listed items (foldl addItem emptyEffects items)
+  , effects: (listed items (foldl addItem emptyEffects items))
+      { declarations = header.declarations }
   }
   where
   vars = Map.fromFoldable out.vars

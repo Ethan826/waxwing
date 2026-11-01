@@ -5,7 +5,8 @@ import { load, resolved } from './r0-generate-support.mjs';
 import { effectsOf } from './r0-effects-canonical.mjs';
 
 // R0 amin tranche 1, Task 1: the effect problem's types, recorded
-// empty (Task 19 adds `signature`: eleven keys). Contents are not
+// empty (Task 19 adds `signature`, A2's arity wave `declarations`, the
+// program's declared arities: twelve keys). Contents are not
 // asserted for generated problems, so a later
 // task that fills `effects` never weakens these tests.
 const Recorded = await load('Domain.Recorded');
@@ -14,9 +15,9 @@ const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Elaborating = await load('Domain.Elaborating');
 
-const keys = ['ambient', 'annotations', 'arities', 'effectRigids',
-  'flexEff', 'instances', 'nodes', 'obligations', 'positions',
-  'rigidMarks', 'signature'];
+const keys = ['ambient', 'annotations', 'arities', 'declarations',
+  'effectRigids', 'flexEff', 'instances', 'nodes', 'obligations',
+  'positions', 'rigidMarks', 'signature'];
 
 test('emptyEffects is empty', () => {
   assert.deepEqual(effectsOf(Effect.emptyEffects), {
@@ -24,7 +25,8 @@ test('emptyEffects is empty', () => {
     rigidMarks: [], effectRigids: [], arities: [], ambient: [],
     flexEff: [], positions: [],
     signature: { parameters: [], row: { labels: [], tail: { Nothing: [] } },
-      result: { MBase: [{ UnitBase: [] }] } } });
+      result: { MBase: [{ UnitBase: [] }] } },
+    declarations: { effects: [], types: [] } });
 });
 
 test('every generated declaration carries an effects record', () => {

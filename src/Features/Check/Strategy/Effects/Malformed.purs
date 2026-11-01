@@ -1,12 +1,13 @@
 -- trusted surface: every diff needs token review; see docs/engineering.md
--- I3 (A2 spec §5 item 3): the input package's domain and forms, checked
--- before G0 and any obligation; the first failing check, in the order
--- (a)-(j), each over the maps effects, marks, types, rows with keys in
--- `Ord` order. The input domain (§2.3): `effects` exactly `flexEff`
--- minus the forced tails F, `marks` exactly `positions` (the unread
--- frame of a non-handler `with` included), `types` and `rows` any
--- subset of the flexible variables of their sort. Binding a member of F
--- is `BindsForced` (§3), checked first so it is never read as an extra
+-- I3 (A2 spec §5 item 3): the input package's domain and forms, checked before
+-- G0 and any obligation; the first failing check, in the order (a)-(j), then
+-- (k) (dossier §18.148 (1): an undeclared or miscounted application,
+-- Effects.Arity), each over the maps effects, marks, types, rows with keys in
+-- `Ord` order, every binding read, used or not. The input domain (§2.3):
+-- `effects` exactly `flexEff` minus the forced tails F, `marks` exactly
+-- `positions` (the unread frame of a non-handler `with` included), `types` and
+-- `rows` any subset of the flexible variables of their sort. Binding a member
+-- of F is `BindsForced` (§3), checked first so it is never read as an extra
 -- key. A missing source of a forced tail is a missing key, which
 -- Effects.Complete's forcing relies on.
 module Features.Check.Strategy.Effects.Malformed
@@ -26,6 +27,11 @@ import Domain.Recorded.Atom (Var, VarSort(..))
 import Domain.Recorded.Effect (EVar)
 import Domain.Verdict.EffectPackage (EffectPackage)
 import Domain.Verdict.Search (MalformedReason(..), PackageKey(..))
+import Features.Check.Strategy.Effects.Arity
+  ( Application
+  , ArityFault(..)
+  , arityFault
+  )
 import Features.Check.Strategy.Effects.Forced (forcedTails)
 import Features.Check.Strategy.Effects.MalformedTerms
   ( Parts
@@ -72,6 +78,7 @@ malformed problem package = findMap run checks
     , holeTwoSorts
     , unsolvedImage
     , keylessFailIn
+    , arityIn
     ]
 
 -- (a)
@@ -156,6 +163,22 @@ unsolvedImage scope = UnsolvedImage <$> unsolvedKey scope.problem scope.package
 -- (j)
 keylessFailIn ∷ Scope → Maybe MalformedReason
 keylessFailIn = firstKey KeylessFail keylessFail
+
+-- (k): the first key's first application, in pre-order, that the
+-- declared arities lack or count otherwise. Record validation (step 0)
+-- has checked the arities themselves.
+arityIn ∷ Scope → Maybe MalformedReason
+arityIn scope = findMap faulty scope.parts
+  where
+  faulty (Tuple found parts) = findMap (reasonAt found) parts.applications
+  reasonAt found application =
+    reasonOf found application <$> arityFault declarations application
+  declarations = scope.view.effects.declarations
+
+reasonOf ∷ PackageKey → Application → ArityFault → MalformedReason
+reasonOf found application = case _ of
+  Unknown → Undeclared found application.applied
+  Miscounted → WrongArity found application.applied
 
 -- The first present, in the maps' order.
 firstOf ∷ ∀ a. Array (Maybe a) → Maybe a

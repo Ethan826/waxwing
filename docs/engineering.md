@@ -240,6 +240,12 @@ adding a bypass allowlist.
     and `Domain.Verdict.EffectPackage.Types`: A2's effect package (spec
     §2.2) and the `Completed` token only `complete` builds (spec §2.4);
     the types are split from the facade because `Completed` wraps them.
+  - `Features.Check.Strategy.Effects.Arity`: the declared arities as
+    I3's check (k) and record check 5 read them (dossier §18.148 (1)):
+    which applications conform, the bare spelling of a clause row's
+    labels, and which recorded arities are valid; a wrong reading lets
+    an undeclared effect or a malformed application in an unconstrained
+    row through, or refuses the record's own bare C rows.
   - `Features.Check.Strategy.Effects.Complete`: `complete`, the one
     builder of `Completed`, gives the completed package whose hole
     numbers the witness and the hole contract share, and `settledOf` the
@@ -267,10 +273,12 @@ adding a bypass allowlist.
     module joins this list as it lands.
   - `Features.Check.Strategy.Effects.Malformed` and
     `Features.Check.Strategy.Effects.MalformedTerms`: I3 (spec §5 item
-    3), the input package's domain and forms in the order (a)-(j); a
-    check they miss lets a package outside the domain, an unknown or
-    non-N mark, a two-sort hole, an unsolved image or a keyless `Fail`
-    label reach completion and the obligations, which assume them.
+    3), the input package's domain and forms in the order (a)-(j), then
+    (k), arity (§18.148 (1)); a check they miss lets a package outside
+    the domain, an unknown or non-N mark, a two-sort hole, an unsolved
+    image, a keyless `Fail` label or an undeclared or miscounted
+    application reach completion and the obligations, which assume
+    them.
   - `Features.Check.Strategy.Effects.Package`: `erase` gives the
     substitution G0 judges and must agree with generation's
     `recordedWith`; `settle` gives the defaults every obligation reads,
@@ -301,6 +309,8 @@ adding a bypass allowlist.
     and the `Fail` invariant, over every recorded entry in spec §5's
     order; a check they miss lets a generation defect reach the
     obligation checks, which trust the record.
+    `Features.Check.Strategy.Effects.RecordArity` adds check 5, the
+    recorded arities and every recorded application against them.
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.

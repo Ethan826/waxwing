@@ -21,6 +21,7 @@ export const elabFrom = async load => {
     Apply: 'Control.Apply', Applicative: 'Control.Applicative',
     Bind: 'Control.Bind', Traversable: 'Data.Traversable',
     Out: 'Features.Check.Generate.Out',
+    Lookup: 'Features.Check.Generate.Lookup',
     Effect: 'Domain.Recorded.Effect' }))
     m[key] = await load(name);
   const { Atom, Origin, Core, Row, Internal, Tuple, Maybe } = m;
@@ -78,8 +79,10 @@ export const elabFrom = async load => {
     slots: (steps, written) => m.Gen.slots(path(...steps))(written.map(
       ([slotSort, type]) => new Tuple.Tuple(slotSort, type)))
   };
+  // No declared type or effect: the built-ins' arities only.
   const header = decl => ({ decl, holders: { declared: m.Set.empty,
-    holding: m.Set.empty } });
+    holding: m.Set.empty }, declarations: m.Lookup.declarationsOf(
+    { types: [], ctors: [], effects: [] }) });
   // Assembly requires one SignatureAt per declaration, so a hand-built
   // generator is followed by the unit signature's write.
   const signature = { parameters: [], row: { labels: [],

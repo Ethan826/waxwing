@@ -153,7 +153,8 @@ test('the real tree matches its pin and its FFI names no token module',
     // `Completed` token (Effects.Complete, its builder, lands in Task 4).
     // Its Types module is pinned beside them (`pinnedSurfaces`), and A2
     // Task 2's Effects.Package; the whole-branch review adds
-    // Effects.Forced and Effects.Judged.
+    // Effects.Forced and Effects.Judged; the arity wave (§18.148 (1))
+    // Effects.Arity and Effects.RecordArity.
     const generate = ['', '.Ambient', '.Assemble', '.Block', '.Body',
       '.Builtin', '.Call', '.Callee', '.Consume', '.Context', '.Control',
       '.Declared', '.Effect',
@@ -176,6 +177,7 @@ test('the real tree matches its pin and its FFI names no token module',
         'Features.Check.Decide.Reading', 'Features.Check.Decide.Reason',
         ...generate, 'Features.Check.Refute.Rules',
         'Features.Check.Refute.Theorems',
+        'Features.Check.Strategy.Effects.Arity',
         'Features.Check.Strategy.Effects.Complete',
         'Features.Check.Strategy.Effects.Consume',
         'Features.Check.Strategy.Effects.Dependency',
@@ -187,6 +189,7 @@ test('the real tree matches its pin and its FFI names no token module',
         'Features.Check.Strategy.Effects.MalformedTerms',
         'Features.Check.Strategy.Effects.Package',
         'Features.Check.Strategy.Effects.Record',
+        'Features.Check.Strategy.Effects.RecordArity',
         'Features.Check.Strategy.Effects.RecordEntries',
         'Features.Check.Strategy.Effects.RecordRefs',
         'Features.Check.Strategy.Effects.Rows',

@@ -10,7 +10,7 @@ const healthyUnfoldable = await import('../output/Data.Unfoldable/index.js');
 
 const names = ['obligations', 'instances', 'annotations', 'nodes',
   'rigidMarks', 'effectRigids', 'arities', 'ambient', 'flexEff',
-  'positions', 'signature'];
+  'positions', 'signature', 'declarations'];
 
 // The encoder over one build's Data.Map and Data.Unfoldable. A map is
 // recognized by that build's own constructors, so a regression probe

@@ -50,7 +50,8 @@ export const signatureProbes = {
     const effects = [new Out.SignatureAt(path, sig),
       new Out.SignatureAt(path, sig)];
     const holders = { declared: Set.empty, holding: Set.empty };
-    const result = Assemble.assemble({ decl: 0, holders })(
+    const result = Assemble.assemble({ decl: 0, holders,
+      declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });
     if (result.constructor.name !== 'Left')
       fail('a duplicate SignatureAt write went undetected');
@@ -73,7 +74,8 @@ export const signatureProbes = {
     const unit = { parameters: [], row: { labels: [], tail: Nothing.value },
       result: new Effect.MBase(Atom.UnitBase.value) };
     const holders = { declared: Set.empty, holding: Set.empty };
-    const assemble = effects => Assemble.assemble({ decl: 0, holders })(
+    const assemble = effects => Assemble.assemble({ decl: 0, holders,
+      declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });
     const signatureOf = result => JSON.stringify(shape(Recorded.fields(
       result.value0).effects.signature));

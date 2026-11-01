@@ -8,6 +8,7 @@ module Features.Check.Generate.Lookup
   , OperationShape
   , calleeOf
   , ctorShape
+  , declarationsOf
   , effectSorts
   , operationShape
   ) where
@@ -15,8 +16,11 @@ module Features.Check.Generate.Lookup
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
+import Data.Map as Map
 import Data.Maybe (Maybe, maybe)
+import Data.Tuple (Tuple(..))
 import Domain.Ids (EffectId(..), TypeId(..))
+import Domain.Recorded.Arity (Declarations)
 import Domain.Resolved (CtorId(..), FunctionId, Joined, Ty, VarId)
 import Domain.Row (EffectRef(..))
 import Domain.Syntax (Sort(..))
@@ -82,6 +86,26 @@ effectSorts tables = case _ of
     <$> note UnknownBuiltinEffect (Array.find (isRef ref) builtinEffects)
   typeSorts = map (const TypeSort)
   isRef wanted found = found.ref == wanted
+
+-- The program's declared arities (A2 arity metadata, dossier §18.148
+-- (1)): each declared effect's parameter count, as `effectSorts` reads
+-- it, and the built-ins' from Resolve's table; each data type's type
+-- parameters (record-row ones among them) and effect-row parameters, the
+-- two argument lists of Resolve's `TData`.
+declarationsOf ∷ Tables → Declarations
+declarationsOf tables =
+  { effects: Map.fromFoldable
+      (Array.mapWithIndex declared tables.effects <> map builtin builtinEffects)
+  , types: Map.fromFoldable (Array.mapWithIndex typed tables.types)
+  }
+  where
+  declared index info =
+    Tuple (UserEffect (EffectId index)) (Array.length info.parameters)
+  builtin found = Tuple found.ref (Array.length found.parameters)
+  typed index info = Tuple (TypeId index)
+    { types: Array.length info.parameters
+    , rows: Array.length info.rowParameters
+    }
 
 operationShape ∷ Tables → EffectId → Int → Gen OperationShape
 operationShape tables effect@(EffectId index) operation = do
