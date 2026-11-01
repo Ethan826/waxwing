@@ -20,29 +20,56 @@
 -- acceptance a strategy can offer, so the witness is always built from
 -- what this check judged. `checkSubstitution`, which yields a bare
 -- `Valid`, is no longer exported (BACKLOG R030): `certify` is the only
--- entry, and a substitution without holes settles to itself.
+-- entry besides `validate` (below), and a substitution without holes
+-- settles to itself.
 -- `certifySound` names `certify`'s statement: G0's check
 -- (`genericSubstitutionSound`) plus C1 and C2 of
 -- docs/plans/r0-certify-argument.md, argued with checks, not proved.
+--
+-- `validate` is A2's non-minting runner (dossier §18.145 (b); spec §4):
+-- record validation, the first `Unsupported`, I3 (Effects.Validate
+-- `prerequisites`), G0's check on `erase (settle P_in)`, completion
+-- once, the obligations on the settled completed package
+-- (`judgeObligations`), then the witness of the completed package and
+-- `coverage`. It lives here because only this module mints `Valid`.
+-- Its success is a validation result, never a `Certified` value: it
+-- constructs none, and `certify` is unchanged until the minting switch
+-- (plan Task 16), which will wrap it.
 module Features.Check.Strategy.Substitution
-  ( certify
+  ( ValidationResult
+  , certify
   , certifySound
   , genericSubstitutionSound
+  , validate
   ) where
 
 import Prelude
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Traversable (traverse_)
 import Domain.Recorded (RecordedProblem, fields)
-import Domain.Verdict (StatementRef(..))
+import Domain.Verdict (Compilation(..), StatementRef(..))
 import Domain.Verdict.Certified.Internal (Certified(..))
+import Domain.Verdict.EffectPackage (Completed, EffectPackage)
 import Domain.Verdict.Internal (Valid(..))
 import Domain.Verdict.Search (CheckRefusal(..))
 import Features.Check.Strategy.Asked (requirementUnder)
 import Features.Check.Strategy.Atoms (atomUnder, facts)
 import Features.Check.Strategy.Candidate (Substitution, generic)
+import Features.Check.Strategy.Effects.Complete (complete, witnessOf)
+import Features.Check.Strategy.Effects.Package (erase, settle)
+import Features.Check.Strategy.Effects.Validate
+  ( judgeObligations
+  , prerequisites
+  )
 import Features.Check.Strategy.ReadBack.Type (settled)
-import Features.Check.Strategy.Witness (substitutionWitness)
+import Features.Check.Strategy.Witness
+  ( coverage
+  , flexDomain
+  , substitutionWitness
+  )
+
+type ValidationResult =
+  { validity ∷ Valid, completed ∷ Completed, compilation ∷ Compilation }
 
 genericSubstitutionSound ∷ StatementRef
 genericSubstitutionSound = StatementRef "genericSubstitutionSound"
@@ -56,6 +83,33 @@ certify problem unsettled = map witnessed
   where
   witnessed validity =
     Certified validity (substitutionWitness problem unsettled)
+
+-- Each step runs only when the earlier ones hold; completion runs once,
+-- after G0, and its package is the one the obligations and the witness
+-- read (spec §4 steps 0-5, §18.141).
+validate
+  ∷ RecordedProblem → EffectPackage → Either CheckRefusal ValidationResult
+validate problem package = do
+  prerequisites problem package
+  validity ← checkSubstitution problem (erase (settle package))
+  validated problem validity (complete problem package)
+
+validated
+  ∷ RecordedProblem
+  → Valid
+  → Completed
+  → Either CheckRefusal ValidationResult
+validated problem validity completed = do
+  judgeObligations problem completed
+  Right { validity, completed, compilation: compiledFrom problem completed }
+
+-- As `substitutionWitness`: offered only if `coverage` accepts it.
+compiledFrom ∷ RecordedProblem → Completed → Compilation
+compiledFrom problem completed =
+  either NoWitness (const (Witnessed witness))
+    (coverage (flexDomain problem) problem witness)
+  where
+  witness = witnessOf problem completed
 
 checkSubstitution
   ∷ RecordedProblem → Substitution → Either CheckRefusal Valid

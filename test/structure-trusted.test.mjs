@@ -25,7 +25,8 @@ const trusted = [
   'Strategy.Effects.MalformedTerms', 'Strategy.Effects.Package',
   'Strategy.Effects.Record', 'Strategy.Effects.RecordEntries',
   'Strategy.Effects.RecordRefs', 'Strategy.Effects.Rows',
-  'Strategy.Effects.Sites', 'Strategy.Effects.Term']
+  'Strategy.Effects.Sites', 'Strategy.Effects.Term',
+  'Strategy.Effects.Validate']
   .map(name => `Features.Check.${name}`)
   .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal',
     'Domain.Verdict.EffectPackage', 'Domain.Verdict.EffectPackage.Internal',

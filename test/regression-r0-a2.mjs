@@ -6,11 +6,13 @@ import { a2PrereqProbes } from './regression-r0-a2-prereq.mjs';
 import { a2JudgeProbes } from './regression-r0-a2-judge.mjs';
 import { a2DepProbes } from './regression-r0-a2-dep.mjs';
 import { a2CompleteProbes } from './regression-r0-a2-complete.mjs';
+import { a2ValidateProbes } from './regression-r0-a2-validate.mjs';
 
 export const r0A2Probes = {
   ...a2PackageProbes,
   ...a2PrereqProbes,
   ...a2JudgeProbes,
   ...a2DepProbes,
-  ...a2CompleteProbes
+  ...a2CompleteProbes,
+  ...a2ValidateProbes
 };

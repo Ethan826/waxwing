@@ -179,7 +179,9 @@ adding a bypass allowlist.
   its soundness rests on all of these (test/structure-trusted.test.mjs
   pins this list and the header marker in each module):
   - `Features.Check.Strategy.Substitution`: mints `Valid` and
-    `Certified`; G0's check, and `certify`, the online strategy's.
+    `Certified`; G0's check, and `certify`, the online strategy's;
+    `validate`, A2's runner, returns a `Valid` without a `Certified`
+    (dossier §18.145 (b)).
   - `Features.Check.Strategy.Candidate`: `generic` and `under` define the
     candidate every judgement is taken under.
   - `Features.Check.Strategy.Atoms`: judges each `B` atom against `D`; an
@@ -273,6 +275,13 @@ adding a bypass allowlist.
     decides which `Fail` payloads have a key (statements §4, spec §9).
   - `Features.Check.Strategy.Effects.Term`: `norm`, `holds` and
     `sameTerm` decide every mark edge and mark equality (statements §5).
+  - `Features.Check.Strategy.Effects.Validate`: `prerequisites` (record
+    validation, the first `Unsupported`, I3) and `judgeObligations`,
+    each obligation in recorded order by its kind's check on the settled
+    completed package, the first failure classified; a wrong order or
+    package reports the wrong refusal or accepts a package a step should
+    refuse (spec §4, §5). Strategy.Substitution's `validate` composes them
+    with G0, completion and coverage.
   - `Features.Check.Strategy.Effects.Record`,
     `Features.Check.Strategy.Effects.RecordEntries` and
     `Features.Check.Strategy.Effects.RecordRefs`: record validation (spec
