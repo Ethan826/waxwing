@@ -224,6 +224,11 @@ adding a bypass allowlist.
     and `Domain.Verdict.EffectPackage.Types`: A2's effect package (spec
     §2.2) and the `Completed` token only `complete` builds (spec §2.4);
     the types are split from the facade because `Completed` wraps them.
+  - `Features.Check.Strategy.Effects.Dependency`: Dep, the nodes connected
+    to the forced tails by the recorded obligations, and `classify`, which
+    turns a failed check into `RigidExact`, `ForcedTail` or an ordinary
+    failure; a missed edge reports an unrelated failure as ordinary
+    (spec §5.1).
   - `Features.Check.Strategy.Effects.Forced`: the forced ResultC tails F
     and their sources, which completion copies (spec §2.3, §2.4).
   - `Features.Check.Strategy.Effects.Judged`: the result types every A2
