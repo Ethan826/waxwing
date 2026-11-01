@@ -79,7 +79,10 @@ bindsForced ∷ Scope → Maybe MalformedReason
 bindsForced scope = BindsForced <$>
   find (flip Set.member scope.forced) (Map.keys scope.package.effects)
 
--- (b): only a type or row key can carry the other sort.
+-- (b): only a type or row key can carry the other sort. A choice: a
+-- declared rigid of the other sort used as a key is `WrongSort`, not
+-- `ExtraKey`, since each key's recorded sort must be its map's (§2.2);
+-- a rigid of the map's own sort is an extra key (d).
 wrongSort ∷ Scope → Maybe MalformedReason
 wrongSort scope = WrongSort <$> firstOf
   [ sorted KeyType SortRow scope.package.types

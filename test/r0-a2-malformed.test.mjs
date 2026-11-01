@@ -65,6 +65,10 @@ test('a forced tail\'s source missing is a missing key', () => {
 
 test('C11 unsolved type image', () => {
   is(typed(), types([[v('x'), new P.PVar(v('y'))]]), unsolved('x'));
+  // Still refused with y bound: a non-hole flexible variable in an
+  // image is unsolved (spec §5 (i)).
+  is(typed(), types([[v('x'), new P.PVar(v('y'))], [v('y'), int]]),
+    unsolved('x'));
   is(typed(), types([[v('x'), new P.PVar(v('p'))]]), null);
   // A record tail naming an absent flexible row, at a row key.
   is(typed(), pkg({ rows: [[v('r'), record([], [v('s')])]] }),
@@ -114,9 +118,16 @@ test('HoleTwoSorts', () => {
   is(typed(), pkg({ types: [[v('x'), hole(3)]],
     rows: [[v('r'), record([], [Hole.holeVar(3)])]] }),
   new Search.HoleTwoSorts(3));
+  // A record-row hole and an effect-tail hole.
+  is(typed(), pkg({ types: [[v('y'), arrow(holeRow(5))]],
+    rows: [[v('r'), record([], [Hole.holeVar(5)])]] }),
+  new Search.HoleTwoSorts(5));
   is(typed(), types([[v('x'), hole(3)], [v('y'), arrow(holeRow(4))]]),
     null);
 });
+
+const failWith = payload => types([[v('x'),
+  labelled(label(Row.FailEffect.value, [payload], N))]]);
 
 test('keyless Fail in an image', () => {
   const [first] = cases.owned;
@@ -126,8 +137,17 @@ test('keyless Fail in an image', () => {
   is(use, pkg({ effects: failing, marks: terms }),
     new Search.KeylessFail(reason.keyEffect(first)));
   // A hole payload settles to `Int`, which has a key.
-  is(typed(), types([[v('x'), labelled(label(Row.FailEffect.value,
-    [hole(0)], N))]]), null);
+  is(typed(), failWith(hole(0)), null);
+  // Keyless after settling (§4.2): a declared rigid, a handler, a record
+  // with a rigid tail; a hole tail settles closed, which has a key.
+  const handler = new P.PHandler(label(Row.ConsoleEffect.value, [], N),
+    { inference: closed, clauses: cases.Nothing.value });
+  for (const payload of [new P.PVar(v('p')), handler,
+    new P.PRecord(record([['a', int]], [v('q')]))])
+    is(typed(), failWith(payload),
+      new Search.KeylessFail(reason.keyType('x')));
+  is(typed(), failWith(new P.PRecord(record([['a', int]],
+    [Hole.holeVar(0)]))), null);
 });
 
 test('checks run in order (a)-(j), maps effects, marks, types, rows', () => {
