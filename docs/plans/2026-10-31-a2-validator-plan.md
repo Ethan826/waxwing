@@ -5,8 +5,15 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **a plan for the author's review; implementation, pushing and
-the minting-path switch (Task 16) unauthorized.** Nothing here
+Status: **Tasks 0-15 and 17 authorized for subagent execution with the
+corrections of dossier §18.145, applied below (2026-11-01); Task 16
+(the minting switch) held until tranche 2 supplies effect packages;
+pushing, a live switch, read-back implementation and any soundness
+claim unauthorized.** Until Task 16 the existing substitution-only
+`certify` stays the minter under F14 item 1, joint-checker assurance;
+the new validator does not protect current strategy acceptances, and
+its successes are validation results, not `Certified` values.
+Earlier status: a plan for the author's review. Nothing here
 discharges a soundness obligation. Executing this plan builds a
 checker of the recorded obligations; whether those obligations
 establish effect safety or abort safety rests on obligations that stay
@@ -53,9 +60,12 @@ docs/plans/2026-10-25-amin-a2-options.md.
   live in Features.
 - Token rules: only Domain.Verdict.Certified and
   Features.Check.Strategy.Substitution import
-  Domain.Verdict.Certified.Internal; only Domain.Verdict.EffectPackage
-  and Features.Check.Strategy.Effects.Package import
-  Domain.Verdict.EffectPackage.Internal (new structure rule, Task 1).
+  Domain.Verdict.Certified.Internal; only the facade
+  Domain.Verdict.EffectPackage and Features.Check.Strategy.Effects.Complete
+  (which constructs `Completed`) import
+  Domain.Verdict.EffectPackage.Internal (new structure rule, Task 1,
+  named with its pin in the commit; §18.145). Conversion helpers get no
+  constructor access for convenience.
 - Every new or changed trusted module carries the `-- trusted surface`
   header; its export changes are re-pinned with
   `node scripts/trusted-surface-pin.mjs` in the same commit, the pin
@@ -186,7 +196,16 @@ Input classes no specification case names, most likely first:
 
 ## Open questions before execution
 
-Each needs the author's answer; the tasks they block say so.
+Answered by the author, 2026-11-01 (dossier §18.145): (1) yes, §2.2's
+representation is approved as the encoding; sort correctness and
+canonical forms still rest on I3's checks; (2) (a): Task 16 held until
+tranche 2 supplies effect packages, the existing minter kept under F14
+as joint-checker assurance; Task 17 closes this stage without Task 16;
+(3) yes: the record-defect block lands before Task 16, tested
+independently of whether any strategy offers a candidate, no
+census/window/RT8 movement expected (any movement explained and ruled
+before re-pinning); (4) a new test-side reporter; r0-results-diff.mjs
+keeps its existing results. The questions as asked:
 
 1. **Representation.** Is the specification §2.2 representation
    (`Term`, `PTy`, `PRow`, `PTail`, `PRecordRow`, `PLabel`, the four
@@ -225,7 +244,8 @@ T1 types+stubs ─► T2 erase/settle/under/key ─┬─► Lane A: T4
                                              └─► Lane D: T10
                     {T4, T5, T7, T8, T9, T10} ─► T11 (validator)
                     T11 ─► {T13 M-B, T14 differential, T15 properties}
-                    {T11, T12, T13, T14, T15} ─► T16 (GATED, Q2) ─► T17
+                    {T11, T12, T13, T14, T15} ─► T17
+                    T16 (HELD until tranche 2; not part of this stage)
 ```
 
 - Interfaces agreed before lanes split: Tasks 1 and 2's Produces
@@ -245,8 +265,9 @@ T1 types+stubs ─► T2 erase/settle/under/key ─┬─► Lane A: T4
 - Integration order: T0, T1, T2 on the integration branch; then lanes
   A, B (T3, T5), C, D in parallel worktrees, merged in the order D, A,
   B, C (smallest first), one re-pin per merge; T11; then T12, T13, T14,
-  T15 (parallel; disjoint files); a routine verify; T16 only on the
-  author's ruling; T17.
+  T15 (parallel; disjoint files); T17's whole-branch review, then its
+  acceptance verify (a tree the review changes is verified). T16 is
+  held (§18.145).
 
 ## File Structure
 
@@ -705,13 +726,26 @@ else `ObligationFailed`.
 
 **Files:** create Effects/Validate.purs, test/r0-a2-validate.test.mjs,
 test/r0-a2-cases.test.mjs; rows `r0-a2-unsupported-before-i3`,
-`r0-a2-recorded-order`, `r0-a2-edge-provenance`.
+`r0-a2-recorded-order`, `r0-a2-edge-provenance`,
+`r0-a2-runner-sequence`.
 
 **Interfaces (produces):**
 ```purescript
 prerequisites ∷ RecordedProblem → EffectPackage → Either CheckRefusal Unit
 judgeObligations ∷ RecordedProblem → Completed → Either CheckRefusal Unit
+-- §18.145 (b): the non-minting runner, the whole sequence Task 16
+-- will later wrap: record validation, Unsupported, I3, G0 on
+-- erase (settle P_in), complete once, settle, the obligations, then
+-- the witness and coverage. Its success is a validation result,
+-- never a Certified value.
+type ValidationResult =
+  { validity ∷ Valid, completed ∷ Completed, compilation ∷ Compilation }
+validate
+  ∷ RecordedProblem → EffectPackage → Either CheckRefusal ValidationResult
 ```
+`validate` reuses G0's existing check (the function today's `certify`
+calls before minting) and `coverage` (Strategy/Witness.purs); it
+constructs no `Certified`.
 `prerequisites`: `recordDefect`, then the first `Unsupported`
 (`NotCertifiable (UnsupportedRecorded k) {provenance, check: 0}`), then
 `malformed`. `judgeObligations`: per obligation in recorded order, one
@@ -727,9 +761,15 @@ check function from Tasks 7, 8, 9, the first failure classified by Task
   with `if`: `UnframedInstall`); "C1 A, A′, B" (end to end through
   `prerequisites` and `judgeObligations`: `ForcedTail
   DeferRegistration`, `ForcedTail Install`, `BindsForced`); "C15",
-  "C16" (end to end); "empty effect package certifies a pure
+  "C16" (end to end); "empty effect package validates a pure
   declaration" (Review Focus 1: `fn id(x: Int): Int = x`, empty maps:
-  both `Right`).
+  both `Right`, and `validate` gives a `ValidationResult`); "runner
+  sequence" (§18.145 (b): through `validate`, a record defect wins over
+  `Unsupported`, which wins over a malformed package, which wins over
+  a G0 refusal, which wins over an obligation failure; a package
+  passing every step yields `Witnessed` or `NoWitness` exactly as
+  `coverage` says on the completed package); "no Certified" (a source
+  scan finds no `Certified` construction in Effects/*.purs).
 - [ ] **Step 2-4:** build, FAIL, implement, PASS; rows: I3 before
   `Unsupported`; conditions everywhere before edges (C2(c) reports 7);
   edges without provenance.
@@ -739,6 +779,9 @@ check function from Tasks 7, 8, 9, the first failure classified by Task
 ### Task 12 (lane B): Decide readings and the record-defect block
 
 Blocked on open question 3.
+
+Authorized before Task 16 (§18.145 (3)). The block is tested
+independently of whether any strategy offers a candidate.
 
 **Files:** modify Decide/Reason.purs, Decide/Reading.purs,
 test/r0-decide.test.mjs (or the existing Decide test named by the
@@ -777,25 +820,54 @@ k) _ → Declines (EffectsUnchecked [k])`; `NotCertifiable l _ → Declines
 (union-find, reachability, FX008 step 5's criterion, least terms per
 class), test/r0-a2-mb.test.mjs; row `r0-a2-mb-detects` (test tree).
 
-- [ ] **Step 1: tests:** "soundness direction" (for every case package
-  of Tasks 7, 8-11 and every single-term forgery of it, 1 per position:
-  if `judgeObligations` accepts, the M-B graph is satisfiable);
-  "completeness direction" (for each case problem whose M-B graph is
-  satisfiable, the least-term package passes `judgeObligations`'s mark
-  part); "agreement scope" (the test's header and output say
-  "agreement on exercised inputs only; not E12 exhaustiveness").
+Graph satisfiability alone does not show that a particular package's
+terms satisfy the graph (§18.145 (c)). The independent check therefore
+evaluates the supplied package: each candidate term is pinned into the
+graph as the value of its position, and the pinned graph is judged
+under every valuation of the declaration's rigid marks (2^n
+valuations for n names in `rigidMarks`; the test reports n and the
+count it ran; every case runs all its valuations, nothing is
+skipped). Least-term construction is a separate
+property.
+
+- [ ] **Step 1: tests:** "accepted packages pass the pinned graph on
+  exercised inputs" (for every case package of Tasks 7, 8-11 and every
+  single-term forgery of it, 1 per position: if `judgeObligations`
+  accepts, the pinned M-B graph holds under every rigid valuation);
+  "refused mark packages fail the pinned graph on exercised inputs"
+  (the converse for mark refusals); "a satisfiable graph with a wrong
+  assignment is refused" (separating case: a graph whose only
+  constraint is `p ⊑ N`, package term `p = M`: the graph is
+  satisfiable, the pinned graph fails, and `judgeObligations` refuses);
+  "least terms pass on exercised inputs" (for each case problem whose
+  unpinned graph is satisfiable, the least-term package passes
+  `judgeObligations`'s mark part); "agreement scope" (the test's header
+  and output say "bounded agreement on exercised inputs only; not E12
+  exhaustiveness, not soundness").
 - [ ] **Step 2:** run against a validator with one edge kind dropped
-  (the row): the soundness direction fails.
+  (the row): the first test fails. A disagreement in either direction
+  is a stop for the author; neither implementation is presumed
+  correct.
 - [ ] **Step 3: commit.** Corpus runs wait for tranche 2.
 
 ### Task 14: differential reporter and C6
 
-Blocked on open question 4 (the plan assumes a new reporter).
+A new test-side reporter (§18.145 (4)); scripts/r0-results-diff.mjs
+keeps its existing results. The reporter separates fixture evidence
+from corpus observations, and classifies a case as
+`C6-expected-divergence` only when today's refusal is FailNeedsConcrete
+at a recorded `FailConcrete` whose payload's head was a hole settled to
+the default and every other check agrees; any other widening is
+`ValidatorWider`, never C6.
 
 **Files:** create test/r0-a2-differential.mjs,
 test/r0-a2-differential.test.mjs.
 
-- [ ] **Step 1: tests:** "categories" (Agree; ValidatorStricter with
+- [ ] **Step 1: tests:** "an unrelated widening is not C6" (a fixture
+  where the validator accepts a program today refuses for another
+  reason: `ValidatorWider`); "fixture and corpus kept apart" (every
+  row carries `evidence: fixture | corpus`); "categories" (Agree;
+  ValidatorStricter with
   `Malformed`, `ObligationFailed`, `NotCertifiable` kind; ValidatorWider;
   `C6-expected-divergence` when today's verdict is FailNeedsConcrete
   and the validator accepts with a `FailConcrete` whose payload settled
@@ -828,7 +900,11 @@ test/r0-a2-properties.serial.test.mjs.
 - [ ] **Step 2-3:** run; PASS or record the counts; commit. Each
   result is labeled bounded or corpus-observed.
 
-### Task 16: switch the minting path (GATED, open question 2)
+### Task 16: switch the minting path (HELD, §18.145; not in this stage)
+
+Held until tranche 2's read-back supplies effect packages. When it
+runs, it wraps Task 11's tested `validate` rather than introducing new
+orchestration.
 
 **Files:** Domain/Verdict/Certified.purs, Certified/Internal.purs,
 Strategy/Substitution.purs, Strategy/Online.purs (certificate
@@ -867,9 +943,12 @@ A2 row, specification and packet status lines.
   waits for tranche 2, every owed check still owed, the open
   obligations (O-SUB, A1, P4, [FX008-5], Definition 4.2's
   sufficiency, U2-U8, U4) and the C6 decision.
-- [ ] **Step 2:** one routine verify (lock, alone); then the
-  whole-branch review (obligation semantics; gates, pins, live).
-- [ ] **Step 3: commit.**
+- [ ] **Step 2:** the whole-branch review first (obligation
+  semantics; gates, pins, live), its fixes, then one routine acceptance
+  verify (lock, alone) on the reviewed tree; a tree changed after the
+  verify is verified again (§18.145).
+- [ ] **Step 3: commit.** Records state that Task 16 is held and that
+  the existing minter remains joint-checker assurance under F14.
 
 ## Estimate
 
