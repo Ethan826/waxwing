@@ -15,6 +15,16 @@ export const a2PrereqRows = [
     message: /site flags differ from spec §9: AtInstalledC/
   },
   {
+    // Task 3 review: references read without their sort, so a type
+    // variable at row sort and a record tail at type sort are accepted.
+    name: 'r0-a2-record-refs',
+    file: record,
+    needle: '  hasSort sort info = info.sort == sort\n',
+    replacement: '  hasSort _ _ = true\n',
+    probe: 'r0-a2-record-refs',
+    message: /references at the wrong sort: type variable at row sort,record/
+  },
+  {
     // Task 3: forced tails anywhere, spec §2.3's placement unchecked.
     name: 'r0-a2-forced-placement',
     file: record,

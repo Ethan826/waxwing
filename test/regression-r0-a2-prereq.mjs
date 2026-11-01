@@ -97,6 +97,60 @@ export const recordCases = async load => {
     k, unconcrete };
 };
 
+// Check 1's and check 3's branches, each by one mutant of `k`: obligation
+// 0 replaced by an obligation naming the wrong reference, so the defect
+// is at obligation 0's provenance. Each is [problem, expected check].
+export const referenceMutants = async (load, k) => {
+  const Effect = await load('Domain.Recorded.Effect');
+  const Atom = await load('Domain.Recorded.Atom');
+  const Row = await load('Domain.Row');
+  const Origin = await load('Domain.Recorded.Origin');
+  const Maps = await load('Data.Map.Internal');
+  const { unfoldableArray } = await load('Data.Unfoldable');
+  const { Just, Nothing } = await load('Data.Maybe');
+  const vars = Maps.toUnfoldable(unfoldableArray)(k.vars);
+  const ofSort = sort => vars.find(pair => pair.value1.sort instanceof sort);
+  const typed = ofSort(Atom.SortType);
+  const typeVar = typed.value0;
+  const rowVar = ofSort(Atom.SortRow).value0;
+  const [first, ...rest] = k.effects.obligations;
+  const firstIs = (value, change) => ({ ...k, ...change, effects:
+    { ...k.effects, obligations: [{ ...first, value }, ...rest] } });
+  const unit = new Effect.MBase(Atom.UnitBase.value);
+  const closed = { labels: [], tail: Nothing.value };
+  const equal = type => new Effect.Equal(type, unit);
+  const tailed = variable => new Effect.Entry({ labels: [],
+    tail: new Just(variable) });
+  const markN = new Effect.Written(Effect.FixedN.value);
+  const failing = payload => new Effect.Entry({ labels: [{
+    effect: Row.FailEffect.value, args: [payload], mark: markN }],
+  tail: Nothing.value });
+  // A declared rigid type variable, `k` having none.
+  const rigid = new Atom.RigidVar(77);
+  const declared = { vars: Maps.insert(Atom.ordVar)(rigid)(
+    { ...typed.value1, quant: new Atom.Forall(77) })(k.vars) };
+  const consoleLabel = { effect: Row.ConsoleEffect.value, args: [],
+    mark: markN };
+  return { provenance: first.provenance, cases: {
+    'type variable at row sort': [firstIs(equal(new Effect.MVar(rowVar))), 1],
+    'record tail at type sort':
+      [firstIs(equal(new Effect.MRecord([], [typeVar]))), 1],
+    'undeclared type variable': [firstIs(equal(new Effect.MVar(rigid))), 1],
+    'EffRigid outside effectRigids':
+      [firstIs(tailed(new Effect.EffRigid(999))), 1],
+    'EffFresh outside flexEff': [firstIs(tailed(new Effect.EffFresh(
+      { root: Origin.InBody.value, steps: [] }, new Effect.Clauses(99)))), 1],
+    'rigid Fail payload':
+      [firstIs(failing(new Effect.MVar(rigid)), declared), 3],
+    'arrow Fail payload':
+      [firstIs(failing(new Effect.MArrow(unit, closed, unit))), 3],
+    'handler Fail payload': [firstIs(failing(new Effect.MHandler(consoleLabel,
+      { inference: closed, clauses: Nothing.value }))), 3],
+    'open-record Fail payload':
+      [firstIs(failing(new Effect.MRecord([], [rowVar]))), 3]
+  } };
+};
+
 const fail = message => {
   console.error(message);
   process.exit(1);
@@ -129,6 +183,21 @@ export const a2PrereqProbes = {
     });
     if (wrong.length > 0)
       fail(`site flags differ from spec §9: ${wrong.map(row => row[0])}`);
+    passed(context);
+  },
+  // Task 3: a type variable at row sort and a record tail at type sort
+  // are check 1 at obligation 0.
+  'r0-a2-record-refs': async context => {
+    const load = loader(context);
+    const { Record, Effect, k } = await recordCases(load);
+    const { provenance, cases } = await referenceMutants(load, k);
+    const wrong = ['type variable at row sort', 'record tail at type sort']
+      .filter(name => {
+        const found = Record.recordDefect(cases[name][0]);
+        return checkOf(found) !== 1
+          || !Effect.eqProvenance.eq(found.value0.provenance)(provenance);
+      });
+    if (wrong.length > 0) fail(`references at the wrong sort: ${wrong}`);
     passed(context);
   },
   // Task 3: a forced tail outside its placement is check 2.

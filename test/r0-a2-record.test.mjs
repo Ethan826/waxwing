@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
-import { c1, famw, recordCases, siteOf, siteTable }
+import { c1, famw, recordCases, referenceMutants, siteOf, siteTable }
   from './regression-r0-a2-prereq.mjs';
 
 // A2 Task 3 (docs/plans/2026-10-31-a2-validator-plan.md): record
@@ -115,4 +115,17 @@ test('an unreferenced flexEff member', () => {
     { flexEff: [...use.effects.flexEff, extra] })), 1);
   assert.ok(found.value0.table instanceof Effect.InCoverage);
   assert.equal(found.value0.path.constructor.name, 'Nothing');
+});
+
+// Every branch of check 1 (sorts, undeclared variables, effect variables)
+// and of check 3 (each refused payload form), one mutant of `k` each.
+test('each reference and payload branch', async () => {
+  const { provenance, cases: mutants } = await referenceMutants(load, cases.k);
+  for (const [name, [problem, check]] of Object.entries(mutants)) {
+    const found = Record.recordDefect(problem);
+    assert.equal(found.constructor.name, 'Just', name);
+    assert.equal(found.value0.check, check, name);
+    assert.ok(Effect.eqProvenance.eq(found.value0.provenance)(provenance),
+      name);
+  }
 });

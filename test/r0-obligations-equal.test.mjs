@@ -90,6 +90,10 @@ const compare = (at, problem, found) => {
     if (site !== null) found.siteKinds[site] = (found.siteKinds[site] ?? 0) + 1;
   }
   for (const item of obligations) {
+    // `InRecord` names a record table entry for the validator (A2 Task
+    // 3); generation never gives it to an obligation.
+    if (kindOf(item) === 'InRecord')
+      found.problems.push(`${at}: an obligation with InRecord provenance`);
     if (kindOf(item) === 'BesideAtom' && ruleName(item.provenance.value0)
       !== ruleName(item.rule))
       found.problems.push(`${at}: provenance rule differs from the rule`);

@@ -23,11 +23,8 @@
 --   3  a `Fail` payload that is a flexible variable with no
 --      `FailConcrete` on it, a declared rigid or unknown variable, an
 --      arrow, a handler, or a record with a tail.
--- These are spec §4.1's four bullets in order. The first version's
--- separate check 3 (a closed-R ResultC tail) is now part of check 2,
--- which reaches it first, so the Fail invariant is check 3, not 4. A
--- defect in a table entry or in the coverage is reported as `InRecord`,
--- naming the table.
+-- These are spec §4.1's four bullets in order. A defect in a table entry
+-- or in the coverage is reported as `InRecord`, naming the table.
 -- A recorded `AtDeferredRow` is no defect for lacking coverage (A4); its
 -- flags are checked as any site's. Total: every input gives an answer.
 module Features.Check.Strategy.Effects.Record
