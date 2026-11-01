@@ -6,9 +6,12 @@
 -- the one builder of `Completed`. `settledOf` is P_c = settle P_cu, the
 -- package every obligation reads. Completion runs before settling, so
 -- its fresh holes settle too (case C6 separates the two orders).
+-- `witnessOf` reads the same completed package, so the witness's `Free n`
+-- is completion's hole n (§18.141: one numbering).
 module Features.Check.Strategy.Effects.Complete
   ( complete
   , settledOf
+  , witnessOf
   ) where
 
 import Prelude
@@ -21,6 +24,7 @@ import Data.Tuple (Tuple(..), snd)
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (Var, VarInfo, VarSort(..))
 import Domain.Recorded.Hole (holeIndex, holeVar)
+import Domain.Verdict.Witness (Witness)
 import Domain.Verdict.EffectPackage
   ( EffectPackage
   , PLabel
@@ -32,8 +36,8 @@ import Domain.Verdict.EffectPackage
   )
 import Domain.Verdict.EffectPackage.Internal (Completed(..))
 import Features.Check.Strategy.Effects.Forced (forcedTails)
-import Features.Check.Strategy.Effects.Package (settle, underRow)
-import Features.Check.Strategy.Witness (flexDomain)
+import Features.Check.Strategy.Effects.Package (erase, settle, underRow)
+import Features.Check.Strategy.Witness (bindingsOf, flexDomain)
 
 -- Fresh holes are numbered from h + 1, h the largest hole number in the
 -- input's `types`, `rows` and `effects` (marks hold none), so completion
@@ -44,6 +48,17 @@ complete problem package =
 
 settledOf ∷ Completed → EffectPackage
 settledOf = settle <<< completedPackage
+
+-- Spec §2.4: `Free n` when a variable's erased image is the bare hole n
+-- of its sort, else `Inline`, by `bindingsOf`'s own `binding` rule.
+-- `bindingsOf` numbers fresh holes only for flexible variables its
+-- substitution leaves out; `complete` bound every flexible type and row
+-- variable and `erase` keeps both maps, so that numbering never runs.
+witnessOf ∷ RecordedProblem → Completed → Witness
+witnessOf problem completed =
+  { bindings: bindingsOf problem (erase (completedPackage completed))
+  , names: []
+  }
 
 -- (i): the absent variables of each sort, together in `Ord Var` order,
 -- as today's `bindingsOf` numbers them.
@@ -89,7 +104,9 @@ nextHole package = maybe 0 (_ + 1) (maximum found)
 -- (ii): each forced tail's binding is its source's image in the input,
 -- read as `underRow` reads a recorded tail (a rigid source is itself),
 -- holes keeping their numbers. A source absent from the input leaves its
--- forced tail unbound: I3's domain check refuses that input first.
+-- forced tail unbound: the validator runs I3 before completion (spec §4,
+-- steps 2 and 4), and I3's domain check refuses such an input, so no
+-- judged package reaches here with it.
 forceAll ∷ RecordedProblem → EffectPackage → EffectPackage → EffectPackage
 forceAll problem input package =
   package { effects = foldl force package.effects (forcedTails problem) }

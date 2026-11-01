@@ -42,5 +42,17 @@ export const a2CompleteRows = [
     replacement: '    <> concatMap recordHoles (fromFoldable package.rows)\n',
     probe: 'r0-a2-hole-numbering',
     message: /numbering injective: fresh holes [\d,]+ not above h = 9/
+  },
+  {
+    // Spec §2.4, §18.141: the witness read from the settled package, so
+    // completion's holes are lost to their defaults.
+    name: 'r0-a2-witness-holes',
+    file,
+    needle: '  { bindings: bindingsOf problem (erase (completedPackage'
+      + ' completed))\n',
+    replacement: '  { bindings: bindingsOf problem (erase (settledOf'
+      + ' completed))\n',
+    probe: 'r0-a2-witness-holes',
+    message: /witness shares holes: a completed variable is Inline/
   }
 ];

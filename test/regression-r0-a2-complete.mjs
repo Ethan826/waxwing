@@ -106,5 +106,18 @@ export const a2CompleteProbes = {
     if (low.length > 0)
       fail(`numbering injective: fresh holes ${low} not above h = 9`);
     passed(context);
+  },
+  // Spec §2.4: the witness is read from the completed package, so an
+  // absent variable's binding is `Free`, completion's hole.
+  'r0-a2-witness-holes': async context => {
+    const M = await modulesOf(context);
+    const problem = M.problemOf(c6, 'k');
+    const witness = M.Complete.witnessOf(problem)(
+      M.Complete.complete(problem)(M.packageOf({})));
+    const inline = M.Maps.toUnfoldable(M.unfoldable)(witness.bindings)
+      .filter(pair => pair.value1.constructor.name !== 'Free');
+    if (inline.length > 0)
+      fail('witness shares holes: a completed variable is Inline');
+    passed(context);
   }
 };

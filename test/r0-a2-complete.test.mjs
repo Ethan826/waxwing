@@ -155,3 +155,29 @@ test('closed ResultC forces nothing', () => {
   assert.equal(Maps.size(completed.effects), flexEff.length);
   assert.equal(Maps.size(completed.effects), Maps.size(input.effects));
 });
+
+test('witness shares holes', () => {
+  const problem = problemOf(c6, 'k');
+  const completed = Complete.complete(problem)(packageOf({}));
+  const witness = Complete.witnessOf(problem)(completed);
+  const domain = flexible(problem);
+  // The premise: every variable is absent, so every one is completed.
+  assert.ok(domain.length >= 3);
+  assert.equal(Maps.size(witness.bindings), domain.length);
+  assert.deepEqual(witness.names, []);
+  for (const entry of domain) {
+    const bound = fromJust(Maps.lookup(Atom.ordVar)(entry[0])(
+      witness.bindings));
+    assert.equal(bound.constructor.name, 'Free');
+    assert.equal(bound.value0,
+      freshHole(Facade.completedPackage(completed), entry));
+  }
+});
+
+// The validator runs I3 before completion, and I3 refuses this input.
+test('an absent forced source leaves its tail unbound', () => {
+  const problem = problemOf(c1, 'use');
+  const [{ forced }] = Forced.forcedTails(problem);
+  const completed = unsettled(problem, packageOf({}));
+  assert.equal(effectOf(completed, forced).constructor.name, 'Nothing');
+});

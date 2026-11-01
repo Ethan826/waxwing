@@ -15,7 +15,8 @@
 -- the solved form and the hole contract included (Strategy.HoleContract),
 -- and otherwise the reason is the compilation's.
 module Features.Check.Strategy.Witness
-  ( coverage
+  ( bindingsOf
+  , coverage
   , flexDomain
   , substitutionWitness
   ) where
