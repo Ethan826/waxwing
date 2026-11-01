@@ -1161,6 +1161,33 @@
    "withMarks"
   ]
  },
+ "Features.Check.Strategy.Effects.Malformed": {
+  "source": [
+   "malformed"
+  ],
+  "compiled": [
+   "malformed"
+  ]
+ },
+ "Features.Check.Strategy.Effects.MalformedTerms": {
+  "source": [
+   "Parts",
+   "holesOf",
+   "keyedParts",
+   "keylessFail",
+   "notN",
+   "twoSortHoles",
+   "unknownMark"
+  ],
+  "compiled": [
+   "holesOf",
+   "keyedParts",
+   "keylessFail",
+   "notN",
+   "twoSortHoles",
+   "unknownMark"
+  ]
+ },
  "Features.Check.Strategy.Effects.Package": {
   "source": [
    "erase",
@@ -1274,13 +1301,15 @@
    "bindingsOf",
    "coverage",
    "flexDomain",
-   "substitutionWitness"
+   "substitutionWitness",
+   "unsolvedKey"
   ],
   "compiled": [
    "bindingsOf",
    "coverage",
    "flexDomain",
-   "substitutionWitness"
+   "substitutionWitness",
+   "unsolvedKey"
   ]
  }
 }
