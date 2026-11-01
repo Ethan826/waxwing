@@ -86,13 +86,21 @@ test('Fail invariant', () => {
   defect(Record.recordDefect(cases.unconcrete), 3);
 });
 
+// A copy of the `AtDefer` as an `AtDeferredRow`, added beside it: since
+// check 4 (dossier §18.148 (2)), replacing the `AtDefer` would also
+// delete `Defer`'s required companion, a defect of its own.
 test('AtDeferredRow is no defect', () => {
   const index = consumeAt(use, Effect.AtDefer);
   assert.ok(index >= 0);
-  const deferred = consumeWith(use, index, consume =>
+  const copied = consumeWith(use, index, consume =>
     ({ ...consume, site: Effect.AtDeferredRow.value }));
-  assert.deepEqual([deferred.effects.obligations[index].value.value0.marks,
-    deferred.effects.obligations[index].value.value0.bare], [true, false]);
+  const added = copied.effects.obligations[index];
+  const deferred = withEffects(use, { obligations:
+    [...use.effects.obligations, { ...added, provenance: new Effect.AtSite(
+      { ...added.provenance.value0,
+        role: new Effect.Consumed(Effect.AtDeferredRow.value, 0) }) }] });
+  assert.deepEqual([added.value.value0.marks, added.value.value0.bare],
+    [true, false]);
   nothing(Record.recordDefect(deferred));
 });
 

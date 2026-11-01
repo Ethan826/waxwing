@@ -178,8 +178,8 @@ adding a bypass allowlist.
   `.Reason`, the A2 lane modules under
   `Features.Check.Strategy.Effects` that `complete` and `validate`
   compose (Consume, Dependency, Equal, Forced, Handler, Judged,
-  Malformed, MalformedTerms, Package, Record, RecordEntries,
-  RecordRefs, Rows, Sites, Term, Validate), and
+  Malformed, MalformedTerms, Package, Record, RecordCompanions,
+  RecordEntries, RecordRefs, Rows, Sites, Term, Validate), and
   `Features.Check.Strategy.Witness`. Record shapes there are type
   synonyms, which neither export list shows, so a changed field moves
   no pin.
@@ -303,12 +303,15 @@ adding a bypass allowlist.
     refuse (spec §4, §5). Strategy.Substitution's `validate` composes them
     with G0, completion and coverage.
   - `Features.Check.Strategy.Effects.Record`,
+    `Features.Check.Strategy.Effects.RecordCompanions`,
     `Features.Check.Strategy.Effects.RecordEntries` and
     `Features.Check.Strategy.Effects.RecordRefs`: record validation (spec
-    §4.1): the site table, the record's domains, forced-tail placement
-    and the `Fail` invariant, over every recorded entry in spec §5's
-    order; a check they miss lets a generation defect reach the
-    obligation checks, which trust the record.
+    §4.1): the site table, the record's domains, forced-tail placement,
+    the `Fail` invariant and the companion table (the consumptions or
+    `UnframedInstall` each `Install`, `HandlerLit` and `Defer` requires,
+    dossier §18.148 (2)), over every recorded entry in spec §5's order;
+    a check they miss lets a generation defect reach the obligation
+    checks, which trust the record.
     `Features.Check.Strategy.Effects.RecordArity` adds check 5, the
     recorded arities and every recorded application against them.
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is

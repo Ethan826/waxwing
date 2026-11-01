@@ -1309,6 +1309,17 @@
    "validArities"
   ]
  },
+ "Features.Check.Strategy.Effects.RecordCompanions": {
+  "source": [
+   "Companions",
+   "companionWrong",
+   "companionsOf"
+  ],
+  "compiled": [
+   "companionWrong",
+   "companionsOf"
+  ]
+ },
  "Features.Check.Strategy.Effects.RecordEntries": {
   "source": [
    "Entry",

@@ -93,7 +93,9 @@ export const tokenModules = ['Domain.Verdict.Internal',
 // and Strategy.Witness, whose `bindingsOf` export Task 4 added (lane
 // integration, 2026-11-01); Effects.Forced and Effects.Judged, which
 // feed `complete` and `validate` (whole-branch review, 2026-11-01);
-// Effects.Arity and Effects.RecordArity, the arity checks (§18.148 (1)). The
+// Effects.Arity and Effects.RecordArity, the arity checks (§18.148 (1));
+// Effects.RecordCompanions, record validation's check 4 (dossier
+// §18.148 (2)). The
 // pin sees their export names and compiled exports, not a type synonym's
 // record shape or a signature.
 export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
@@ -110,6 +112,7 @@ export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
   'Features.Check.Strategy.Effects.Package',
   'Features.Check.Strategy.Effects.Record',
   'Features.Check.Strategy.Effects.RecordArity',
+  'Features.Check.Strategy.Effects.RecordCompanions',
   'Features.Check.Strategy.Effects.RecordEntries',
   'Features.Check.Strategy.Effects.RecordRefs',
   'Features.Check.Strategy.Effects.Rows',

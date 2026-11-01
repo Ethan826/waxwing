@@ -4,7 +4,8 @@
 -- then the tables `instances`, `annotations`, `nodes`, `ambient` and
 -- `signature`, keys in `Ord` order. Each entry carries where a defect in
 -- it is reported (an obligation's provenance, or `InRecord` naming the
--- table and key), its consume flags if it is a `Consume` and what it
+-- table and key), its consume flags if it is a `Consume`, the obligation
+-- itself if it is one (for check 4, Effects.RecordCompanions) and what it
 -- references (Effects.RecordRefs, which reads the forcing instances'
 -- results as the copies the placement rule allows).
 module Features.Check.Strategy.Effects.RecordEntries
@@ -44,6 +45,7 @@ type Entry =
   { provenance ∷ Provenance
   , consume ∷ Maybe { site ∷ SiteKind, marks ∷ Boolean, bare ∷ Boolean }
   , refs ∷ Refs
+  , obligation ∷ Maybe (Placed Obligation)
   }
 
 entriesOf ∷ RecordedProblem → Array Entry
@@ -65,7 +67,7 @@ entriesOf problem = map obligationEntry effects.obligations
   copies = copiesOf problem
   obligationEntry placed =
     (plain placed.provenance (obligationRefs copies placed.value))
-      { consume = consumeOf placed }
+      { consume = consumeOf placed, obligation = Just placed }
   instanceEntry (Tuple path sig) =
     tableEntry decl InInstances (Tuple path (signatureRefs copies sig))
 
@@ -92,7 +94,8 @@ tableEntry decl table (Tuple path refs) =
   plain (InRecord { decl, table, path: Just path }) refs
 
 plain ∷ Provenance → Refs → Entry
-plain provenance refs = { provenance, consume: Nothing, refs }
+plain provenance refs =
+  { provenance, consume: Nothing, refs, obligation: Nothing }
 
 consumeOf
   ∷ Placed Obligation

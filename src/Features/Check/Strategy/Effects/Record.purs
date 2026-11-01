@@ -24,6 +24,10 @@
 --   3  a `Fail` payload that is a flexible variable with no
 --      `FailConcrete` on it, a declared rigid or unknown variable, an
 --      arrow, a handler, or a record with a tail;
+--   4  an `Install`, `HandlerLit` or `Defer` lacking exactly one of each
+--      companion its table row requires, or with an identity not the
+--      table's, or a companion no owner requires
+--      (Effects.RecordCompanions; dossier §18.148 (2)).
 --   5  an effect label or data type the recorded arities lack or count
 --      otherwise, judged only when the arities are valid; for the
 --      `InDeclarations` entry, invalid arities (Effects.RecordArity;
@@ -44,6 +48,7 @@ import Data.Map (Map, lookup)
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Set (Set, fromFoldable, member, subset)
 import Domain.Recorded (RecordedProblem, fields)
+import Domain.Recorded.Arity (Declarations)
 import Domain.Recorded.Atom (Var, VarInfo, VarSort(..))
 import Domain.Recorded.Effect
   ( ERole(..)
@@ -57,21 +62,25 @@ import Domain.Resolved (FunctionId)
 import Domain.Type (VarId)
 import Domain.Verdict.Search (CheckAt)
 import Features.Check.Strategy.Effects.Forced (forcedTails)
-import Features.Check.Strategy.Effects.RecordEntries
-  ( Entry
-  , coverageAt
-  , entriesOf
-  )
 import Features.Check.Strategy.Effects.RecordArity
   ( applicationsWrong
   , declarationsDefect
   , validArities
   )
+import Features.Check.Strategy.Effects.RecordEntries
+  ( Entry
+  , coverageAt
+  , entriesOf
+  )
+import Features.Check.Strategy.Effects.RecordCompanions
+  ( Companions
+  , companionWrong
+  , companionsOf
+  )
 import Features.Check.Strategy.Effects.RecordRefs (Refs)
-import Domain.Recorded.Arity (Declarations)
 
--- The record's domains (spec §4.1), the forced tails F and the flexible
--- variables a `FailConcrete` names.
+-- The record's domains (spec §4.1), the forced tails F, the flexible
+-- variables a `FailConcrete` names and the companions owners require.
 type Scope =
   { vars ∷ Map Var VarInfo
   , effectRigids ∷ Set VarId
@@ -82,6 +91,7 @@ type Scope =
   , forced ∷ Set EVar
   , concrete ∷ Set Var
   , arities ∷ Maybe Declarations
+  , companions ∷ Companions
   }
 
 -- The site table, spec §9. No wildcard: a new site fails to compile.
@@ -128,7 +138,7 @@ defectAt scope entry = map at (findIndex identity checks)
     , any (flip member scope.forced) entry.refs.effects
         || any (unforced scope) (entry.refs.effects <> entry.refs.placed)
     , any (payloadWrong scope) entry.refs.payloads
-    , false -- check 4 (companions) lands in parallel and replaces this
+    , maybe false (companionWrong scope.companions) entry.obligation
     , applicationsWrong scope.arities entry.refs
     ]
 
@@ -185,6 +195,7 @@ scopeOf problem =
   , forced: fromFoldable (map _.forced (forcedTails problem))
   , concrete: fromFoldable (mapMaybe concreteOn effects.obligations)
   , arities: validArities problem
+  , companions: companionsOf effects.obligations
   }
   where
   recorded = fields problem
