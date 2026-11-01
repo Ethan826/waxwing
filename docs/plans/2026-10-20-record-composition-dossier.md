@@ -7537,3 +7537,28 @@ check; kept visible in differential reporting. The unread-frame
 requirement stays the named precondition. The "[Modify Shared
 Resources]" denial stays unresolved: no agent retries the commit or
 the cleanup; the probes are kept. Implementation unauthorized.
+
+### 18.144 A2 corrections staged; targeted confirmation (2026-10-31)
+
+The §18.143 pass is staged in .claude/worktrees/on-a2 (branch
+`a2/fix`, HEAD a720cc0; docs/plans/2026-10-31-a2-specification.md and
+docs/plans/r0-amin-statements.md; the options note unchanged),
+uncommitted for the author's own commit. Targeted confirmation (the
+same reviewer, read-only, with a probe left at
+scratchpad/a2-confirm/dep.mjs): N1, N2, N3, N4 and C6 fixed as ruled,
+specification and statements consistent on them; no S1 or S2 added;
+the staged diff fit for the author's commit. Observed by the probe:
+`use`'s Defer (obligation 7) depends through `Frame p`; C1 A gives
+`NotCertifiable ForcedTail DeferRegistration`, A′ `ForcedTail
+Install`; C15's Definition 4.2 reasoning holds and its order (Install
+0, Defer 7) is observed; C16's prediction holds. The forcing edge
+v → t is correct and harmless; "shared holes relate nothing after
+settling" is correct for the obligations. Five S3 left, optional:
+C16's order note is false (a `with` that is a block's result records
+Install, InstallR and AtInstalledC before the preceding `defer`'s
+obligations); the dependency set is coarse where the ambient tail is
+flexible (in `main` and lambda bodies every obligation sharing that
+tail is ForcedTail; acceptable as a dependency, unstated); §4.1 keeps
+the old vague forced-variable wording beside the new rule; C7(b)'s
+no-witness result is the reviewer's reasoning (label reasoned); C15's
+order can be labeled observed.
