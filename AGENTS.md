@@ -86,7 +86,9 @@ vertical slice before adding language features. Task tracking is local.
   Features.Check.Strategy.Effects module as it lands
   (`Features.Check.Strategy.Effects.Complete`,
   `Features.Check.Strategy.Effects.Dependency`,
+  `Features.Check.Strategy.Effects.Equal`,
   `Features.Check.Strategy.Effects.Forced`,
+  `Features.Check.Strategy.Effects.Handler`,
   `Features.Check.Strategy.Effects.Judged`,
   `Features.Check.Strategy.Effects.Package`,
   `Features.Check.Strategy.Effects.Rows`,

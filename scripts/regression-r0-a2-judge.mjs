@@ -5,6 +5,7 @@
 const effects = 'src/Features/Check/Strategy/Effects';
 const term = `${effects}/Term.purs`;
 const rows = `${effects}/Rows.purs`;
+const handler = `${effects}/Handler.purs`;
 
 export const a2JudgeRows = [
   {
@@ -61,5 +62,58 @@ export const a2JudgeRows = [
     ],
     probe: 'r0-a2-row-order',
     message: /E1 order lost: State\(Int\) \+ State\(Bool\) groups as its swap/
+  },
+  {
+    // Task 7: E1 compares rows without marks, so a forged N nested in an
+    // image equals a written plain `Log` (statements §12.2, T3-a).
+    name: 'r0-a2-equal-marks',
+    file: handler,
+    needle: 'withMarks = { arguments: true, marks: true }\n',
+    replacement: 'withMarks = { arguments: true, marks: false }\n',
+    probe: 'r0-a2-equal-marks',
+    message: /E1 marks: an image's N equals a written M/
+  },
+  {
+    // Task 7: Definition 4.1(c) compares R ignoring its marks (revision
+    // 3.2's reading), so attempt A is accepted (statements §12.2).
+    name: 'r0-a2-def41-c',
+    file: handler,
+    needle: '      rowEqual same withMarks left.inference'
+      + ' right.inference\n',
+    replacement: '      rowEqual same marksIgnored left.inference'
+      + ' right.inference\n',
+    probe: 'r0-a2-def41-c',
+    message: /attempt A accepted: R's N equals R's M without a C/
+  },
+  {
+    // Task 7: Definition 4.1(d) compares clause rows without their
+    // tails, so attempt B's ResultC tail forged to ∅ meets g's alias tail
+    // r (statements §12.2).
+    name: 'r0-a2-def41-d-tail',
+    edits: [
+      {
+        file: handler,
+        needle: 'import Data.Maybe (Maybe, fromMaybe, isNothing, maybe)\n',
+        replacement: 'import Data.Maybe (Maybe(..), fromMaybe, isNothing,'
+          + ' maybe)\n'
+      },
+      {
+        file: handler,
+        needle: '        >=> rowEqual same bare (clauseRow left) (clauseRow'
+          + ' right)\n',
+        replacement: '        >=> rowEqual same bare (untailed left) (untailed'
+          + ' right)\n'
+      },
+      {
+        file: handler,
+        needle: '      clauseRow rows = fromMaybe rows.inference'
+          + ' rows.clauses\n',
+        replacement: '      clauseRow rows = fromMaybe rows.inference'
+          + ' rows.clauses\n'
+          + '      untailed rows = (clauseRow rows) { tail = Nothing }\n'
+      }
+    ],
+    probe: 'r0-a2-def41-d-tail',
+    message: /attempt B accepted: x owning C ∅ meets both sides/
   }
 ];

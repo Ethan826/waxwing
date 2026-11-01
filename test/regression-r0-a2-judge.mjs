@@ -35,6 +35,34 @@ const valueAt = (spec, high) => spec === 'N' ? 0 : spec === 'M' ? 1
 const below = (left, right) => valuations.every(high =>
   valueAt(left, high) <= valueAt(right, high));
 
+// Settled types for E1 probes (test/r0-a2-equal.test.mjs): `Ask` is
+// effect 0 and `Log` effect 1; a row closed or ending in rigid 0.
+const equalModules = async load => {
+  const Types = await load('Domain.Verdict.EffectPackage');
+  const Row = await load('Domain.Row');
+  const { Just, Nothing } = await load('Data.Maybe');
+  const unit = new Types.PBase((await load('Domain.Recorded.Atom'))
+    .UnitBase.value);
+  const Equal = await load(`${effects}.Equal`);
+  const { empty } = await load('Data.Map.Internal');
+  const context = { package: { types: empty, rows: empty, effects: empty,
+    marks: empty }, rigidMarks: [] };
+  const label = (effect, mark) => ({ effect: new Row.UserEffect(effect),
+    args: [], mark: mark === 'N' ? Types.TermN.value : Types.TermM.value });
+  const row = (labels, rigid) => ({ labels, tail: rigid
+    ? new Just(new Types.PTailRigid(0)) : Nothing.value });
+  return {
+    log: mark => label(1, mark),
+    row,
+    arrow: labels => new Types.PArrow(unit, row(labels, true), unit),
+    ask: (inference, clauses) => new Types.PHandler(label(0, 'N'),
+      { inference, clauses: clauses === null ? Nothing.value
+        : new Just(clauses) }),
+    same: (left, right) => Equal.samePTy(context)(left)(right)
+      .constructor.name === 'Right'
+  };
+};
+
 export const a2JudgeProbes = {
   // Task 6: `J ∅` normalizes to N, so `J ∅ ⊑ N` holds.
   'r0-a2-norm': async context => {
@@ -71,6 +99,34 @@ export const a2JudgeProbes = {
     const bools = state(Atom.BoolBase);
     if (shape([ints, bools]) === shape([bools, ints]))
       fail('E1 order lost: State(Int) + State(Bool) groups as its swap');
+    passed(context);
+  },
+  // Task 7, statements §12.2 T3-a: an image's N nested in a row against
+  // a written plain `Log` (M) is refused.
+  'r0-a2-equal-marks': async context => {
+    const E = await equalModules(loader(context));
+    if (E.same(E.arrow([E.log('M')]), E.arrow([E.log('N')])))
+      fail("E1 marks: an image's N equals a written M");
+    passed(context);
+  },
+  // Task 7, attempt A: neither type owns a C, so R's marks count.
+  'r0-a2-def41-c': async context => {
+    const E = await equalModules(loader(context));
+    if (E.same(E.ask(E.row([E.log('N')], true), null),
+      E.ask(E.row([E.log('M')], true), null)))
+      fail("attempt A accepted: R's N equals R's M without a C");
+    passed(context);
+  },
+  // Task 7, attempt B: the ResultC's tail forged to ∅ against g's alias
+  // tail r; whatever x is, one of the two `Equal`s refuses.
+  'r0-a2-def41-d-tail': async context => {
+    const E = await equalModules(loader(context));
+    const r = E.row([], true);
+    const resultC = E.ask(r, E.row([], false));
+    const g = E.ask(r, null);
+    const x = E.ask(r, E.row([], false));
+    if (E.same(resultC, x) && E.same(g, x))
+      fail('attempt B accepted: x owning C ∅ meets both sides');
     passed(context);
   }
 };

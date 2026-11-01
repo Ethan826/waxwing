@@ -233,8 +233,15 @@ adding a bypass allowlist.
     turns a failed check into `RigidExact`, `ForcedTail` or an ordinary
     failure; a missed edge reports a dependent failure as ordinary, an
     extra edge an unrelated one as `ForcedTail` (spec §5.1).
+  - `Features.Check.Strategy.Effects.Equal`: `equalCheck` and `samePTy`
+    decide E1, `Equal` obligations, by structural equality on the settled
+    package, and report the failing check's place in spec §9's order.
   - `Features.Check.Strategy.Effects.Forced`: the forced ResultC tails F
     and their sources, which completion copies (spec §2.3, §2.4).
+  - `Features.Check.Strategy.Effects.Handler`: `handlerEqual` is
+    Definition 4.1 with rule J and `rowEqual` R-A's row equality; a wrong
+    reading lets a handler value reach an installation with C or marks
+    other than its type's (statements §4).
   - `Features.Check.Strategy.Effects.Judged`: the result types every A2
     obligation check returns. Every later Features.Check.Strategy.Effects
     module joins this list as it lands.
