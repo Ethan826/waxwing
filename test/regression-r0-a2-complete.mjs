@@ -107,17 +107,32 @@ export const a2CompleteProbes = {
       fail(`numbering injective: fresh holes ${low} not above h = 9`);
     passed(context);
   },
-  // Spec §2.4: the witness is read from the completed package, so an
-  // absent variable's binding is `Free`, completion's hole.
+  // Spec §2.4: the witness is read from the completed package, so each
+  // absent variable's binding is `Free n`, n completion's hole, which
+  // the effect hole 9 puts at 10 or above.
   'r0-a2-witness-holes': async context => {
     const M = await modulesOf(context);
     const problem = M.problemOf(c6, 'k');
-    const witness = M.Complete.witnessOf(problem)(
-      M.Complete.complete(problem)(M.packageOf({})));
-    const inline = M.Maps.toUnfoldable(M.unfoldable)(witness.bindings)
-      .filter(pair => pair.value1.constructor.name !== 'Free');
-    if (inline.length > 0)
-      fail('witness shares holes: a completed variable is Inline');
+    const [effect] = M.Recorded.fields(problem).effects.flexEff;
+    const completed = M.Complete.complete(problem)(M.packageOf({ effects:
+      [[effect, M.tailRow(new M.Facade.PTailHole(9))]] }));
+    const witness = M.Complete.witnessOf(problem)(completed);
+    const holeOf = variable => {
+      const image = M.Maps.lookup(M.Atom.ordVar)(variable);
+      const typed = image(M.Facade.completedPackage(completed).types);
+      return typed.constructor.name === 'Just'
+        ? M.Hole.holeIndex(typed.value0.value0).value0
+        : M.Hole.holeIndex(image(M.Facade.completedPackage(completed)
+          .rows).value0.tails[0]).value0;
+    };
+    for (const pair of M.Maps.toUnfoldable(M.unfoldable)(witness.bindings)) {
+      if (pair.value1.constructor.name !== 'Free')
+        fail('witness shares holes: a completed variable is Inline');
+      const hole = holeOf(pair.value0);
+      if (pair.value1.value0 !== hole || hole < 10)
+        fail(`witness shares holes: Free ${pair.value1.value0}`
+          + ` against completion's hole ${hole}`);
+    }
     passed(context);
   }
 };

@@ -148,6 +148,15 @@ test('numbering injective', () => {
 
 test('closed ResultC forces nothing', () => {
   const problem = problemOf(closedC, 'use4');
+  // The premise: one instance result owns a C whose tail is closed, and
+  // nothing is forced.
+  const closedResults = pairs(view(problem).effects.instances)
+    .map(([, sig]) => sig.result)
+    .filter(result => result instanceof Effect.MHandler
+      && result.value1.clauses.constructor.name === 'Just'
+      && fromJust(result.value1.clauses).tail.constructor.name === 'Nothing');
+  assert.equal(closedResults.length, 1);
+  assert.deepEqual(Forced.forcedTails(problem), []);
   const flexEff = view(problem).effects.flexEff;
   const input = packageOf({ effects: flexEff.map(variable =>
     [variable, { labels: [], tail: null }]) });
@@ -158,10 +167,15 @@ test('closed ResultC forces nothing', () => {
 
 test('witness shares holes', () => {
   const problem = problemOf(c6, 'k');
-  const completed = Complete.complete(problem)(packageOf({}));
+  // An effect hole above every other hole, so completion numbers from 10
+  // while a witness numbering P_in's type images itself would from 0.
+  const [effect] = view(problem).effects.flexEff;
+  const completed = Complete.complete(problem)(packageOf({ effects:
+    [[effect, { labels: [], tail: { hole: 9 } }]] }));
   const witness = Complete.witnessOf(problem)(completed);
   const domain = flexible(problem);
-  // The premise: every variable is absent, so every one is completed.
+  // The premise: every type and row variable is absent, so every one is
+  // completed.
   assert.ok(domain.length >= 3);
   assert.equal(Maps.size(witness.bindings), domain.length);
   assert.deepEqual(witness.names, []);
@@ -169,6 +183,7 @@ test('witness shares holes', () => {
     const bound = fromJust(Maps.lookup(Atom.ordVar)(entry[0])(
       witness.bindings));
     assert.equal(bound.constructor.name, 'Free');
+    assert.ok(bound.value0 >= 10, `Free ${bound.value0}`);
     assert.equal(bound.value0,
       freshHole(Facade.completedPackage(completed), entry));
   }

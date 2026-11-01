@@ -54,5 +54,20 @@ export const a2CompleteRows = [
       + ' completed))\n',
     probe: 'r0-a2-witness-holes',
     message: /witness shares holes: a completed variable is Inline/
+  },
+  {
+    // Spec §2.4, §18.141: the witness read without completion's fresh
+    // holes, so `bindingsOf` numbers them itself from the type images.
+    // The fixture's input binds no type or row variable, so this is the
+    // witness of `erase` P_in there.
+    name: 'r0-a2-witness-from-input',
+    file,
+    needle: '  { bindings: bindingsOf problem (erase (completedPackage'
+      + ' completed))\n',
+    replacement: '  { bindings: bindingsOf problem (erase'
+      + ' ((completedPackage completed)\n'
+      + '      { types = Map.empty, rows = Map.empty }))\n',
+    probe: 'r0-a2-witness-holes',
+    message: /witness shares holes: Free 0 against completion's hole 1\d/
   }
 ];
