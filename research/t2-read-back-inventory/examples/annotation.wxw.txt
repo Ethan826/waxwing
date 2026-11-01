@@ -1,0 +1,12 @@
+effect Log { fn log(n: Int): Unit; };
+effect Tick { fn tick(): Unit; };
+fn implicitRow(): Unit with Tick = {
+  let inst = fn(h: Handler(Log)) => with h { Log.log(1) };
+  inst(handler Log { log(n) => Tick.tick() })
+};
+fn pureRow(): Unit with Tick = {
+  let inst = fn(h: Handler(Log with pure)) => with h { Log.log(1) };
+  inst(handler Log { log(n) => () })
+};
+fn main(): Unit with Console = with handler Tick { tick() => Console.print(5) }
+  { implicitRow(); pureRow() };

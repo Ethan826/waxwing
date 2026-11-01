@@ -1,0 +1,6 @@
+effect Log { fn log(n: Int): Unit; };
+fn work(): Unit with Log = Log.log(1);
+fn notMain(): Unit with Console = with handler Log { log(n) => Console.print(n) }
+  { work() };
+fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) }
+  { work() };

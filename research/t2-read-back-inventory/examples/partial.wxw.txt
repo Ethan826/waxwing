@@ -1,0 +1,8 @@
+effect Log { fn log(n: Int): Unit; };
+fn add(x: Int, y: Int): Int with Log = { Log.log(x); x + y };
+fn apply(f: Int -> Int with Log, x: Int): Int with Log = f(x);
+fn partial(): Int with Log = apply(add(1), 2);
+fn reference(): Int with Log = { let f = add; f(1, 2) };
+fn piped(): Int with Log = 5 |> add(1);
+fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) }
+  { Console.print(partial() + reference() + piped()) };
