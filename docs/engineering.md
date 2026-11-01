@@ -258,6 +258,11 @@ adding a bypass allowlist.
   - `Features.Check.Strategy.Effects.Rows`: `grouped`, R-A's row normal
     form, decides which rows are equal up to scoped order; a wrong group
     makes E1 and E2 relate the wrong labels (spec §9).
+  - `Features.Check.Strategy.Effects.Sites`: the site checks E4, E5,
+    E6, E8 and E9 (`HandlerLit`, `Install`, `Defer`, `Entry`,
+    `FailConcrete`); a dropped own-abort, frame or deferral demand lets
+    a handler that may fail run where failure is not allowed, and E9
+    decides which `Fail` payloads have a key (statements §4, spec §9).
   - `Features.Check.Strategy.Effects.Term`: `norm`, `holds` and
     `sameTerm` decide every mark edge and mark equality (statements §5).
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is

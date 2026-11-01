@@ -22,7 +22,8 @@ const trusted = [
   'Strategy.Effects.Dependency', 'Strategy.Effects.Equal',
   'Strategy.Effects.Forced', 'Strategy.Effects.Handler',
   'Strategy.Effects.Judged', 'Strategy.Effects.Package',
-  'Strategy.Effects.Rows', 'Strategy.Effects.Term']
+  'Strategy.Effects.Rows', 'Strategy.Effects.Sites',
+  'Strategy.Effects.Term']
   .map(name => `Features.Check.${name}`)
   .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal',
     'Domain.Verdict.EffectPackage', 'Domain.Verdict.EffectPackage.Internal',

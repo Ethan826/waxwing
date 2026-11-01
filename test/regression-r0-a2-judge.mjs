@@ -88,6 +88,29 @@ const consumeModules = async load => {
   };
 };
 
+// Site records at one path under a package of the given marks, effects
+// and types (test/r0-a2-sites.test.mjs): `Log` is effect 1.
+const sitesModules = async load => {
+  const [Effect, Types, Row, Atom, Hole, Maps, Origin, Foldable, Tuples,
+    { Just, Nothing }, Sites] = await Promise.all(['Domain.Recorded.Effect',
+    'Domain.Verdict.EffectPackage', 'Domain.Row', 'Domain.Recorded.Atom',
+    'Domain.Recorded.Hole', 'Data.Map.Internal', 'Domain.Recorded.Origin',
+    'Data.Foldable', 'Data.Tuple', 'Data.Maybe', `${effects}.Sites`].map(load));
+  const map = (ord, pairs = []) => Maps.fromFoldable(ord)(
+    Foldable.foldableArray)(pairs.map(([k, v]) => new Tuples.Tuple(k, v)));
+  const written = (effect, mark) => ({ effect, args: [],
+    mark: new Effect.Written(Effect[`Fixed${mark}`].value) });
+  return { Effect, Types, Row, Hole, Just, Sites, written,
+    closed: labels => ({ labels, tail: Nothing.value }),
+    path: { root: Origin.InBody.value, steps: [] },
+    int: new Types.PBase(Atom.IntBase.value),
+    log: mark => written(new Row.UserEffect(1), mark),
+    context: spec => ({ package: { types: map(Atom.ordVar, spec.types),
+      rows: Maps.empty, effects: map(Effect.ordEVar, spec.effects),
+      marks: map(Effect.ordPosition, spec.marks) }, rigidMarks: [] })
+  };
+};
+
 export const a2JudgeProbes = {
   // Task 6: `J ∅` normalizes to N, so `J ∅ ⊑ N` holds.
   'r0-a2-norm': async context => {
@@ -183,6 +206,45 @@ export const a2JudgeProbes = {
       C.row([C.label(1, 'M'), C.label(0, 'M')]), false);
     if (found.constructor.name !== 'Right')
       fail('AtDefer read a tail condition');
+    passed(context);
+  },
+  // Task 9: a Console frame (N) whose C label's ρ partner is at M.
+  'r0-a2-console-frame': async context => {
+    const S = await sitesModules(loader(context));
+    const frame = new S.Effect.Frame(S.path);
+    const handler = new S.Effect.MHandler(
+      S.written(S.Row.ConsoleEffect.value, 'N'),
+      { inference: S.closed([]), clauses: new S.Just(S.closed([S.log('N')])) });
+    const found = S.Sites.installCheck(S.context({
+      marks: [[frame, S.Types.TermN.value]] }))(
+      { frame, handler, ambient: S.closed([S.log('M')]) });
+    if (found.constructor.name !== 'Left' || found.value0.check !== 1)
+      fail(`Console frame skipped: ${JSON.stringify(found)}`);
+    passed(context);
+  },
+  // Task 9: a clause row `Fail(Int)` under own-abort mark N.
+  'r0-a2-own-abort': async context => {
+    const S = await sitesModules(loader(context));
+    const m = new S.Effect.Literal(S.path);
+    const clause = new S.Effect.EffFresh(S.path, new S.Effect.Clauses(0));
+    const found = S.Sites.handlerLitCheck(S.context({
+      marks: [[m, S.Types.TermN.value]], effects: [[clause, S.closed([{
+        effect: S.Row.FailEffect.value, args: [S.int], mark: S.Types.TermN
+          .value }])]] }))(
+      { m, inference: clause, clauses: clause, clauseRows: [clause] });
+    if (found.constructor.name !== 'Left')
+      fail('a Fail clause row asked no M ⊑ m');
+    passed(context);
+  },
+  // Task 9, C6: a payload whose image is a hole settles to Int.
+  'r0-a2-e9-key': async context => {
+    const S = await sitesModules(loader(context));
+    const payload = S.Hole.holeVar(2);
+    const found = S.Sites.failConcreteCheck(S.context({
+      types: [[payload, new S.Types.PVar(S.Hole.holeVar(1))]] }))(
+      new S.Effect.MVar(payload));
+    if (found.constructor.name !== 'Right')
+      fail('E9 refused a hole payload before settling');
     passed(context);
   }
 };

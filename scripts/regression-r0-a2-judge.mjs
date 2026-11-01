@@ -7,6 +7,7 @@ const term = `${effects}/Term.purs`;
 const rows = `${effects}/Rows.purs`;
 const handler = `${effects}/Handler.purs`;
 const consume = `${effects}/Consume.purs`;
+const sites = `${effects}/Sites.purs`;
 
 export const a2JudgeRows = [
   {
@@ -158,5 +159,47 @@ export const a2JudgeRows = [
     replacement: '  AtDefer → labelsOnly { tail = true }\n',
     probe: 'r0-a2-labels-only',
     message: /AtDefer read a tail condition/
+  },
+  {
+    // Task 9: today's Frames guard restored, a Console frame skipped
+    // (statements §4 E5, §18.86: Console frames are counted), so a
+    // Console frame's ρ partner at M is accepted under the frame's N.
+    name: 'r0-a2-console-frame',
+    file: sites,
+    needle: '    PHandler label rows → run\n',
+    replacement: '    PHandler label _\n'
+      + '      | label.effect == ConsoleEffect → Right unit\n'
+      + '    PHandler label rows → run\n',
+    probe: 'r0-a2-console-frame',
+    message: /Console frame skipped/
+  },
+  {
+    // Task 9: E4's own-abort edge dropped for a clause row holding
+    // `Fail`, so `M ⊑ m` is not asked (statements §4 E4).
+    name: 'r0-a2-own-abort',
+    file: sites,
+    needle: 'aborts row = any failing row.labels || rigidTail row\n',
+    replacement: 'aborts row = rigidTail row\n',
+    probe: 'r0-a2-own-abort',
+    message: /a Fail clause row asked no M ⊑ m/
+  },
+  {
+    // Task 9: E9 judged before settling, so C6's hole payload is keyless
+    // and refused (spec §4.2: E9 stays after settling).
+    name: 'r0-a2-e9-key',
+    edits: [
+      {
+        file: sites,
+        needle: '  , settleTy\n',
+        replacement: ''
+      },
+      {
+        file: sites,
+        needle: 'args: [ settleTy payload ]',
+        replacement: 'args: [ payload ]'
+      }
+    ],
+    probe: 'r0-a2-e9-key',
+    message: /E9 refused a hole payload before settling/
   }
 ];

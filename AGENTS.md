@@ -93,6 +93,7 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy.Effects.Judged`,
   `Features.Check.Strategy.Effects.Package`,
   `Features.Check.Strategy.Effects.Rows`,
+  `Features.Check.Strategy.Effects.Sites`,
   `Features.Check.Strategy.Effects.Term`),
   `Domain.Verdict.EffectPackage`, `Domain.Verdict.EffectPackage.Internal`
   and `Domain.Verdict.EffectPackage.Types`.
