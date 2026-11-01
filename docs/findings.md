@@ -5200,18 +5200,25 @@ totals unchanged, 0 defects, 0 position findings.
   today's read-back" needs "up to record field order" or a ruling. G0
   is unaffected (Candidate.purs `under` canonicalizes records; by
   reading). Pinned by test/r0-a2-properties.serial.test.mjs (14).
+  Decided (author, 2026-11-01, dossier §18.148 (5)): up to record field
+  order, by one canonical comparison (test/r0-a2-canonical.mjs, spec
+  §11) that keeps field values, tails, hole identities and every effect
+  label's multiplicity and order. The property stays owed until tranche
+  2.
 - For G0, an absent type variable is not a hole: `validate` checks G0
   on `erase (settle P_in)`, which does not see completion's fresh
   holes, so a package leaving a flexible variable absent is refused
   where the same package binding it to a hole is accepted (C7(b) with
   y absent; test "G0 reads erase (settle P_in), not erase (P_c)", row
   r0-a2-g0-input). Today's `certify` behaves the same.
-- Open for the author: spec §10 C6 predicts that `k` with its field
-  variable absent is accepted ("bound to a hole: as absent"); the
-  specified pipeline refuses it at G0 (Unsatisfied) and accepts only the
-  hole-bound package. Either the C6 prediction or G0's projection needs
-  a ruling. The differential reporter records the pipeline's observed
-  behavior (test/r0-a2-differential.test.mjs).
+- Spec §12 C6 predicted that `k` with its field variable absent is
+  accepted ("bound to a hole: as absent"); the specified pipeline
+  refuses it at G0 (Unsatisfied) and accepts only the hole-bound
+  package. Decided (author, 2026-11-01, dossier §18.148 (4)): the
+  prediction is corrected and G0's projection kept; absent is refused at
+  G0, hole-bound is the demonstrated expected divergence, in two tests
+  (test/r0-a2-differential.test.mjs). The replacement-compatibility
+  decision stays open.
 - The M-B differential (Task 13) found no disagreement: 116 packages
   run; compared on 11 accepted (validator accepts ⇒ M-B holds) and 10
   mark refusals (validator refuses ⇒ M-B fails); other refusals not

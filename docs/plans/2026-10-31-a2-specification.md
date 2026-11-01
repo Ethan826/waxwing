@@ -7,8 +7,14 @@ docs/plans/2026-10-31-a2-validator-plan.md.
 Status (2026-11-01): **implemented as a non-minting validator, plan Tasks
 0-15 (dossier §18.145-§18.147); Task 16, the minting switch, held, so the
 existing substitution-only `certify` still mints under F14 (joint-checker
-assurance); no soundness claim.** Earlier status: **main choices approved with
-amendments (dossier §18.139); this revision
+assurance); no soundness claim.** Amended 2026-11-01 for the completion
+wave (dossier §18.148 (2)-(5)): §4.1's checks numbered, with check 4 (the
+companion table) and check 5 (arity metadata) added and the
+`ResultClauses` ruling ratified under check 2; §9's two controller
+rulings ratified with their failure ordering; §12 C6's prediction
+corrected; §2.5 and §11's compatibility property stated up to record
+field order with one canonical comparison. Earlier status: **main
+choices approved with amendments (dossier §18.139); this revision
 is the fix pass §18.141 authorized after the adversarial review of §18.140,
 applying rulings A1-A6. Not ready for implementation authorization; no validator
 exists or is authorized; no soundness claim.** A scoped adversarial re-review of
@@ -272,7 +278,9 @@ l _ ↦ App (HandlerHead l.effect) (erase l.args)`; effect rows and terms
 dropped. This mirrors `recordedWith` (Elab/Recorded.purs:25-42) case
 for case. **Compatibility property (owed):** for every corpus
 declaration the online strategy solves, `erase` of its honest package
-equals today's read-back substitution.
+equals today's read-back substitution, up to record field order
+(approved 2026-11-01, §18.148 (5)), compared by the one canonical
+comparison of §11.
 
 ## 3. The ResultC binding (D5)
 
@@ -317,10 +325,12 @@ certify problem P_in:
 ### 4.1 Record validation (step 0; A5, D12)
 
 Problem-only, before search and again in `certify` as a backstop. A
-violation is `RecordDefect`:
-- every `Consume`'s `marks`/`bare` match §9's site table (corpus:
+violation is `RecordDefect`. The checks, numbered by their index j in
+`RecordDefect (provenance, j)` (§5 item 1; amended 2026-11-01, dossier
+§18.148, which added checks 4 and 5 and ratified check 2's last clause):
+- **0**: every `Consume`'s `marks`/`bare` match §9's site table (corpus:
   exact match, observed by §18.140's reviewer);
-- every recorded reference is in its permitted domain at its sort:
+- **1**: every recorded reference is in its permitted domain at its sort:
   effect variables in `effectRigids` (`EffRigid`), `flexEff` \ F
   (package-owned) or F (record-owned; where it may occur is §2.3's
   placement rule, which replaces this bullet's older wording, 2026-10-31,
@@ -329,15 +339,55 @@ violation is `RecordDefect`:
   positions in `positions`; `FixedRigid k` with k in `rigidMarks`;
   every `flexEff` member and position referenced somewhere (corpus: two
   sets agree, observed by §18.140's reviewer);
-- every forced tail v ∈ F occurs only where §2.3's placement rule
-  allows (§18.143);
-- every recorded `Fail` label with a flexible-variable payload has a
+- **2**: every forced tail v ∈ F occurs only where §2.3's placement rule
+  allows (§18.143); and **ratified (author, 2026-11-01, §18.148 (3))**: a
+  `⟨q, result clauses⟩` (`ResultClauses`) variable outside the
+  record-derived forced set F is a `RecordDefect`, wherever it occurs (a
+  ResultC at another path, or one whose R is closed, which forcing
+  omits). Implemented failure ordering, kept: it is check 2 of the first
+  entry in §5 item 1's order that names it (an obligation, else the
+  table entry, as `InRecord`), so checks 0 and 1 of that entry, and any
+  earlier entry's defect, are reported first;
+- **3**: every recorded `Fail` label with a flexible-variable payload has a
   `FailConcrete` on that variable, and no recorded `Fail` payload is a
   declared rigid variable, an arrow, a handler or a record with a tail
   (§4.2, §18.143);
+- **4** (added 2026-11-01, §18.148 (2); Effects.RecordCompanions): every
+  owner obligation has the companions this table requires, each exactly
+  once, and every companion has an owner. A companion's identity is the
+  owner's declaration, path and rule with the companion's role; it
+  records a site, a source and a target (flags are check 0's):
+
+  | Owner (rule, role) | Companion role | Records | Source | Target |
+  |---|---|---|---|---|
+  | `Install` over `MHandler` R C (E21, `InstallSite`) | `Consumed InstallR 0` | `Consume InstallR` | R (`inference`) | the `Install`'s `ambient` ρ |
+  | same | `Consumed AtInstalledC 0` | `Consume AtInstalledC` | the owned C, else R (rule J) | ρ |
+  | `Install` over any other type (E21, `InstallSite`) | `UnframedWith` | `Unsupported UnframedInstall` | — | — |
+  | `HandlerLit` (E20, `LiteralSite`), per clause row c_k | `Consumed (ClauseIntoR k) 0` | `Consume (ClauseIntoR k)` | c_k alone | R alone (`inference`) |
+  | same | `Consumed (ClauseIntoC k) 0` | `Consume (ClauseIntoC k)` | c_k alone | C alone (`clauses`) |
+  | `Defer` (E16, `DeferRegistration`) | `DeferInto` | `Consume AtDefer` | d alone (`row`) | the `Defer`'s `enclosing` |
+
+  ("Alone": the row of that variable with no labels, as generation
+  records it.) An owner violates check 4 unless its own rule and role
+  are the table's and each companion it requires occurs exactly once; a
+  companion-kind obligation (`Consume` at `InstallR`, `AtInstalledC`,
+  `ClauseIntoR k`, `ClauseIntoC k` or `AtDefer`, or an `Unsupported
+  UnframedInstall`) violates it unless some owner requires it. Each
+  owner is recorded before its companions, so a missing, miswired or
+  duplicated companion is reported at the owner's provenance, and a
+  companion whose owner is absent, or which is stray beside an intact
+  one, at its own. Corpus: no defect over the effect pin's 3071
+  declarations (observed, test/r0-a2-record-corpus.serial.test.mjs).
+  This is local record consistency only: it does not show that
+  generation recorded every source site that needs an owner; U6 stays
+  open;
+- **5** (added 2026-11-01, §18.148 (1)): declaration metadata and each
+  recorded application's arity against it
+  (docs/plans/2026-11-01-a2-arity-metadata.md);
 - a recorded `AtDeferredRow` is **not** a defect (A4): its condition is
   supported (labels-only, §9) and evaluated; it occurs 0 times in the
-  corpus (observed, §18.140).
+  corpus (observed, §18.140). Being no table's companion, check 4 does
+  not read it.
 
 ### 4.2 Keys and E9 (D7 rejected; §18.141)
 
@@ -574,9 +624,26 @@ Rows: grouped normal form by key (derived; bounded check owed, §11).
 Notes on the implementation (2026-11-01, whole-branch review; dossier
 §18.147):
 
-- A C label with no ρ partner currently fails `Install` as well as
-  `AtInstalledC`. A controller ruling, pending the author's
-  ratification (§18.147).
+- **Ratified (author, 2026-11-01, §18.148 (3)):** a C label lacking its
+  required ambient (ρ) partner fails `Install`, not only
+  `AtInstalledC`. Implemented failure ordering, kept: generation
+  records `Install` before its `InstallR` and `AtInstalledC` (§4.1 check
+  4), so `Install` reports first, at the check of that C label (j = 1 +
+  its index among C's labels, after j 0, `term(m) ⊑ f`, and the earlier
+  C labels' checks); it is classified by §5 (`ForcedTail` when `Install`
+  depends on a forced tail, else `ObligationFailed`). `AtInstalledC`
+  keeps the same condition as its own, reached only if `Install` holds.
+- **Ratified (author, 2026-11-01, §18.148 (3)):** same-key labels with
+  unequal argument counts are refused, never zipped over their common
+  prefix. Implemented failure ordering, kept: `Equal` (rows, Effects.
+  Handler `argumentsEqual`) and `Consume` (Effects.Consume
+  `argumentsEqual`) fail at the matched pair's argument check, the
+  index that pair's arguments would start at; for two handler types the
+  handled label's count is part of the head check (`sameHead`). A
+  malformed arity may be refused earlier: a recorded application's at
+  step 0 (§4.1 check 5), a package's at I3 (`Malformed`;
+  docs/plans/2026-11-01-a2-arity-metadata.md, §18.148 (1)); the
+  obligation-level check stays as a defensive check.
 - Recorded `Fail` and `Console` labels are assumed `Written FixedN` by
   generation (Generate/Marked.purs:130 writes them so). The validator
   relies on that; step 0 does not check it.
@@ -609,17 +676,30 @@ corpus-observed and corpus-derived hold on today's pinned corpus only.
   (test/r0-a2-erase.test.mjs "settle commutes with erase").
 - `erase` of the honest package = today's read-back substitution, on
   the corpus (the compatibility property for nullary data and every
-  other constructor). **Still owed.** It needs "up to record field
-  order" or a ruling: today's σ has record fields out of label order
-  in 14 of 2820 corpus candidates, and `erase` sorts them
-  (docs/findings.md; test/r0-a2-properties.serial.test.mjs). Related,
-  run: erasure of recorded types matches `recordedWith` over the
-  effect pin's corpus (test/r0-a2-erase-corpus.serial.test.mjs).
+  other constructor). **Still owed** until tranche 2's read-back
+  produces honest packages. Today's σ has record fields out of label
+  order in 14 of 2820 corpus candidates, and `erase` sorts them
+  (docs/findings.md; test/r0-a2-properties.serial.test.mjs), so the
+  property is stated **up to record field order (approved by the
+  author, 2026-11-01, §18.148 (5))**, with one canonical comparison,
+  `canonicalSubstitution` (test/r0-a2-canonical.mjs): record fields
+  sorted by label, each keeping its own value; record tails compared as
+  a multiset, none dropped; hole and other variable identities kept, no
+  renaming; every other sequence, effect labels included, kept in order
+  and length, so effect-label multiplicity and same-key occurrence order
+  are never changed (nor is the order of different keys: the ruling
+  permits field order only); maps read in key order. Its unit tests
+  (test/r0-a2-canonical.test.mjs) equate field-order variants and
+  refuse a moved field value, a changed or dropped hole, a swapped
+  same-key label order and a dropped duplicate label. Related, run:
+  erasure of recorded types matches `recordedWith` over the effect
+  pin's corpus (test/r0-a2-erase-corpus.serial.test.mjs).
 - settle∘complete = complete∘settle on F; differ on absent variables
   (C6 is the fixture). **Run, fixture-level:** equal on F for C1 and
   C15 (test/r0-a2-properties.test.mjs "complete/settle order"); differ
   on C6's absent variable (test/r0-a2-complete.test.mjs "C6 order
-  separates").
+  separates"; a stage reading only: G0 refuses that package end to
+  end, §12 C6).
 - G0 accepts `erase P_c` whenever it accepts `erase (settle P_in)`.
   **Run, fixture-level** over the case packages
   (test/r0-a2-properties.test.mjs "G0 monotonicity on fixtures").
@@ -758,39 +838,45 @@ E; fn k(): Unit with Fail(E) = { let go = fn(r) => Fail.fail(r.e); ()
 probe; 9 corpus `FailConcrete`s have a flexible variable payload).
 - **Old checker (observed):** today refuses `k`, FailNeedsConcrete
   (the fixture's recorded verdict).
-- **Validator (predicted):** with the field variable absent from P_in,
-  completion binds it to a fresh hole, settling gives `Int`, which has
-  a key: E9 holds. If every other obligation also holds, the
-  validator would accept a candidate for `k`. Labeled predicted until a
-  complete candidate passes every specified check; latent today, since
-  the online strategy offers no candidate where today's checker refuses
-  (§18.142). Ruled (§18.143, option c): a **shadow-only expected
-  divergence**, kept visible in differential reporting, recorded as a
-  replacement-compatibility decision to resolve before the new checker
-  is enabled live; not covered by U4; E9 stays after settling; no
-  language widening and no D7-like guard.
-- **Order separation:** settle-then-complete (the statements' order
+- **Corrected (author, 2026-11-01, §18.148 (4); G0's projection
+  unchanged).** The earlier prediction (the absent field accepted, "bound
+  to a hole: as absent") is withdrawn. Two cases, two tests
+  (test/r0-a2-differential.test.mjs):
+  - **Field binding absent: refused at G0 (observed, fixture).** G0
+    reads `erase (settle P_in)`, where the field variable stays
+    flexible, and refuses `k` (`Unsatisfied`) before any obligation; no
+    end-to-end acceptance, and not a divergence (today also refuses).
+  - **Field explicitly bound to a suitable hole (`PVar (holeVar n)`):
+    settling gives `Int`, which has a key, so E9 holds, every other
+    obligation holds, and the validator accepts (observed on the
+    fixture; the reporter labels a fixture acceptance "predicted" until
+    corpus reporting).** This is the demonstrated shadow divergence and
+    the only C6 case in the expected-divergence category. Ruled
+    (§18.143, option c): a **shadow-only expected divergence**, kept
+    visible in differential reporting; not covered by U4; E9 stays
+    after settling; no language widening and no D7-like guard. The
+    replacement-compatibility decision stays open, to resolve before
+    the new checker is enabled live. Latent today: the online strategy
+    offers no candidate where today's checker refuses (§18.142).
+- **Order separation (obligation-reading stages only):** on the
+  absent-field package, settle-then-complete (the statements' order
   before §18.141) leaves the fresh hole unsettled, the payload a
-  variable, and E9 refuses. Complete-then-settle gives the acceptance
-  above.
-- The field variable bound to `PVar (holeVar 3)`: as absent. Bound to
-  `PArrow …`: its settled value has no key, so the `FailConcrete`
-  refuses, or an earlier obligation whose matching reads the `Fail`
-  label it heads, whichever is first in recorded order. (I3 j applies
-  only to a `Fail` label written inside a package image, not to this
-  type binding.)
+  variable, so E9 would refuse; complete-then-settle gives the payload
+  `Int`, so E9 would hold (test/r0-a2-complete.test.mjs "C6 order
+  separates"). This distinguishes what the obligations read; it claims
+  no end-to-end acceptance, since G0 refuses that package first.
+- The field variable bound to `PArrow …`: its settled value has no key,
+  so the `FailConcrete` refuses, or an earlier obligation whose matching
+  reads the `Fail` label it heads, whichever is first in recorded order.
+  (I3 j applies only to a `Fail` label written inside a package image,
+  not to this type binding.)
 - **Rigid variant**, impossible for `k`, which declares no type
   parameter: a declaration with one, `fn k2(x: a): Unit = { let go =
   fn(r) => Fail.fail(r.e); () }`, field variable bound to `PVar
   (RigidVar a)`: keyless after settling, refused as the arrow case
   (reasoned; k2's recording not probed).
-- Wrong (D7, rejected): refuses the absent and hole cases.
-- **Note (2026-11-01, implementation):** the specified pipeline
-  refuses `k` with its field variable absent at G0 (Unsatisfied),
-  before E9 is reached: G0 reads `erase (settle P_in)`, which does not
-  see completion's hole. Only the hole-bound package is accepted. The
-  prediction above or G0's projection needs a ruling; the question is
-  open for the author (docs/findings.md, A2 section; dossier §18.147).
+- Wrong (D7, rejected): refuses the hole-bound case (the absent case is
+  refused at G0 either way).
 
 **C7. Which settled projection.** (a) §12.2's hole identity: `fn g():
 Unit = { let k = fn(u: Unit) => (); k(()) }`, the lambda row
