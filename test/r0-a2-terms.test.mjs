@@ -12,6 +12,7 @@ const Term = await load('Features.Check.Strategy.Effects.Term');
 const Rows = await load('Features.Check.Strategy.Effects.Rows');
 const Row = await load('Domain.Row');
 const Atom = await load('Domain.Recorded.Atom');
+const Hole = await load('Domain.Recorded.Hole');
 const Types = await load('Domain.Verdict.EffectPackage');
 const Sets = await load('Data.Set');
 const { Just, Nothing } = await load('Data.Maybe');
@@ -74,7 +75,8 @@ test('join subset', () => {
 });
 
 // Rows over effects A = 1 and B = 2, each label of one argument, Int or
-// Bool, every mark N, closed or ending in one rigid tail.
+// Bool, closed or ending in one rigid tail. Marks are outside this
+// oracle: every mark is N.
 const labelSpecs = [[1, 'Int'], [1, 'Bool'], [2, 'Int'], [2, 'Bool']];
 const sequences = length => length === 0 ? [[]]
   : sequences(length - 1).flatMap(row =>
@@ -147,6 +149,10 @@ test('grouped refuses a keyless Fail label and keys Fail by head', () => {
     args: [arg], mark: Types.TermN.value }], tail: Nothing.value });
   const keyless = failRow(new Types.PVar(new Atom.RigidVar(3)));
   assert.equal(Rows.grouped(keyless).constructor.name, 'Nothing');
+  // An unsettled hole payload is keyless too: `grouped` reads settled
+  // rows only, so this `Nothing` is no keyless refusal.
+  const unsettled = failRow(new Types.PVar(Hole.holeVar(4)));
+  assert.equal(Rows.grouped(unsettled).constructor.name, 'Nothing');
   const { keyed } = fromJust(Rows.grouped(failRow(
     new Types.PBase(bases.Int))));
   assert.ok(keyed[0].value0 instanceof Row.FailKey);

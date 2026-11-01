@@ -2,11 +2,17 @@
 -- R-A's row normal form (spec §9; statements §4): rows are equal up to
 -- scoped-label order (Leijen 2005, eq-swap: adjacent labels of distinct
 -- keys commute), labels compared by key as Leijen 2017 §3 does. A row's
--- normal form groups its labels by key, keys ascending, each key's labels
--- in row order (a scoped label's occurrences never commute), and keeps the
--- tail. Keys are Effects.Package's `key`, on settled labels (spec §4.2);
--- `Nothing` when a label is keyless. Equal grouped forms against
--- eq-swap's closure, bounded, is test/r0-a2-terms.test.mjs.
+-- normal form groups its labels by key, each key's labels in row order (a
+-- scoped label's occurrences never commute), and keeps the tail.
+-- Keys ascend by `Ord LabelKey`, a canonical order only: spec §9's
+-- first-occurrence order is a reporting order Task 7 derives from the
+-- row, never from `keyed`. Keys are Effects.Package's `key`; the input
+-- must be settled (spec §4.2), since `Nothing` on an unsettled row (a
+-- hole `Fail` payload) is no evidence of a keyless refusal. Never compare
+-- `Grouped` values with derived `==`: `grouped` decides equal keys and
+-- per-key lengths; arguments go through R-A recursively and marks
+-- through `sameTerm`. Equal grouped forms against eq-swap's closure,
+-- bounded, is test/r0-a2-terms.test.mjs.
 module Features.Check.Strategy.Effects.Rows
   ( Grouped
   , grouped

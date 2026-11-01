@@ -29,11 +29,16 @@ export const a2JudgeRows = [
     message: /holds disagrees with every valuation at \["J","k"\] ⊑ "N"/
   },
   {
-    // Task 6: labels keyed by payload as well as effect, so labels of
-    // one effect with different arguments commute: multiset row equality
-    // (statements §12.2 "E1 order").
+    // Task 6: multiset grouping: each key's labels sorted by their
+    // payload's head instead of kept in row order, so labels of one effect
+    // with different arguments commute (statements §12.2 "E1 order").
     name: 'r0-a2-row-order',
     edits: [
+      {
+        file: rows,
+        needle: 'import Data.Map as Map\n',
+        replacement: 'import Data.Array (sortWith)\nimport Data.Map as Map\n'
+      },
       {
         file: rows,
         needle: 'import Domain.Row (LabelKey)\n',
@@ -42,8 +47,16 @@ export const a2JudgeRows = [
       {
         file: rows,
         needle: '  keyed label = flip Tuple [ label ] <$> key label\n',
-        replacement: '  keyed label = flip Tuple [ label ]'
-          + ' <$> key label { effect = FailEffect }\n'
+        replacement: '  keyed label = flip Tuple [ label ] <$> key label\n'
+          + '  payloadHead label = key label { effect = FailEffect }\n'
+      },
+      {
+        file: rows,
+        needle: '    { keyed: Map.toUnfoldable (Map.fromFoldableWith'
+          + ' (flip append) pairs)\n',
+        replacement: '    { keyed: map (map (sortWith payloadHead))'
+          + ' (Map.toUnfoldable (Map.fromFoldableWith (flip append)'
+          + ' pairs))\n'
       }
     ],
     probe: 'r0-a2-row-order',
