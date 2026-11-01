@@ -94,8 +94,9 @@ const candidatesOf = ({ origin, source }) => {
 };
 const candidates = (await loadCorpus()).flatMap(candidatesOf);
 
-// Record fields by label and tails in `Ord Var` order, at every depth:
-// `erase` writes records so (spec §2.5); today's σ need not.
+// Record fields by label, at every depth: `erase` writes records so
+// (spec §2.5); today's σ need not. Tails keep their order: the author
+// approved field order only (§18.148 (5); spec §11).
 const canonical = ty => {
   if (ty instanceof Atom.Arrow)
     return new Atom.Arrow(canonical(ty.value0), canonical(ty.value1));
@@ -105,8 +106,7 @@ const canonical = ty => {
   const fields = ty.value0.map(field => new Tuple(field.value0,
     canonical(field.value1))).sort((one, other) =>
     one.value0 < other.value0 ? -1 : Number(one.value0 > other.value0));
-  return new Atom.Record(fields, [...ty.value1].sort((one, other) =>
-    Atom.ordVar.compare(one)(other).constructor.name === 'LT' ? -1 : 1));
+  return new Atom.Record(fields, ty.value1);
 };
 const sameImage = order => (one, other) => Atom.eqRTExpr.eq(order(one))(
   order(other));

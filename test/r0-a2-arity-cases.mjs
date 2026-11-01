@@ -188,6 +188,10 @@ const recordRowsOf = cases => {
       'check 5 InDeclarations'],
     ['a declared data type dropped', declaring(droppedType),
       'check 5 InDeclarations'],
+    // A stated blind spot (spec §4.1 check 5, review M3): an extra user
+    // effect id is not detected; this row pins that it is accepted.
+    ['a phantom user effect id', declaring(effectsSet(
+      new Row.UserEffect(99), 2)), null],
     ['an instance row: Cell with none', tabled(f, 'instances', sig =>
       labelled(sig, mcell())), 'check 5 InInstances'],
     ['an instance row: Cell with two', tabled(f, 'instances', sig =>
