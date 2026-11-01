@@ -13,12 +13,14 @@
 -- labelled choice: no checked-IR hole stands for it). A binding alone
 -- establishes nothing: the witness is offered only if Cov accepts it,
 -- the solved form and the hole contract included (Strategy.HoleContract),
--- and otherwise the reason is the compilation's.
+-- and otherwise the reason is the compilation's. `unsolvedKey` is the
+-- same solved form over an A2 effect package, I3's check (i) (D9).
 module Features.Check.Strategy.Witness
   ( bindingsOf
   , coverage
   , flexDomain
   , substitutionWitness
+  , unsolvedKey
   ) where
 
 import Prelude
@@ -47,8 +49,14 @@ import Domain.Recorded (Fields, RecordedProblem, fields)
 import Domain.Recorded.Atom (Quant(..), RTExpr(..), Var, VarInfo, VarSort(..))
 import Domain.Recorded.Hole (holeIndex, holeVar)
 import Domain.Verdict (Compilation(..), NoWitnessReason(..))
+import Domain.Verdict.EffectPackage (EffectPackage, PTail(..))
+import Domain.Verdict.Search (PackageKey)
 import Domain.Verdict.Witness (Binding(..), Witness)
 import Features.Check.Strategy.Candidate (Substitution)
+import Features.Check.Strategy.Effects.MalformedTerms
+  ( keyedParts
+  , twoSortHoles
+  )
 import Features.Check.Strategy.HoleContract (holeContract)
 import Features.Check.Spine (spine)
 import Features.Check.Strategy.ReadBack.Type (holesIn)
@@ -98,6 +106,21 @@ solvedForm problem witness =
     Set.fromFoldable (concatMap (holesOfSort sort <<< snd) found)
   breaks (Tuple _ seen) = any (outside view twoSorts) seen
 
+-- D9 (A2 spec §5 (i), ruling A3): the same solved form over a package's
+-- images, every sort. Type and record-row variables are judged by
+-- `outside`, as `solvedForm` judges a witness's; an effect-row tail is a
+-- declared effect rigid or a hole of one sort (`outsideTail`). Holes are
+-- counted across the three sorts. The key named is the first whose image
+-- breaks it, maps effects, marks, types, rows, keys in `Ord` order.
+unsolvedKey ∷ RecordedProblem → EffectPackage → Maybe PackageKey
+unsolvedKey problem package = fst <$> find breaks found
+  where
+  view = fields problem
+  found = keyedParts package
+  twoSorts = twoSortHoles (map snd found)
+  breaks (Tuple _ parts) = any (outside view twoSorts) parts.vars
+    || any (outsideTail view twoSorts) parts.tails
+
 -- Each variable occurrence of a binding's image with its position's sort.
 occurrencesOf ∷ Fields → Var → Binding → Array (Tuple VarSort Var)
 occurrencesOf view variable = case _ of
@@ -134,6 +157,11 @@ outside view twoSorts (Tuple sort variable) =
   declared = case sort of
     SortType → view.rigidTy
     SortRow → view.rigidRow
+
+outsideTail ∷ Fields → Set Int → PTail → Boolean
+outsideTail view twoSorts = case _ of
+  PTailRigid variable → not (elem variable view.effects.effectRigids)
+  PTailHole hole → Set.member hole twoSorts
 
 bindingsOf ∷ RecordedProblem → Substitution → Map.Map Var Binding
 bindingsOf problem candidate =

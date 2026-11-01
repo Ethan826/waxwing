@@ -91,6 +91,8 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy.Effects.Forced`,
   `Features.Check.Strategy.Effects.Handler`,
   `Features.Check.Strategy.Effects.Judged`,
+  `Features.Check.Strategy.Effects.Malformed`,
+  `Features.Check.Strategy.Effects.MalformedTerms`,
   `Features.Check.Strategy.Effects.Package`,
   `Features.Check.Strategy.Effects.Record`,
   `Features.Check.Strategy.Effects.RecordEntries`,

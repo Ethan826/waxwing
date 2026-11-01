@@ -212,6 +212,8 @@ adding a bypass allowlist.
     reaches the verdict or the witness.
   - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
     builds the witness here, so a wrong binding is a wrong compilation.
+    Its solved form is also A2's I3 check (i) over packages,
+    `unsolvedKey`, through the one `outside` predicate (spec D9).
   - `Features.Check.Strategy.HoleContract`: decides which holes may stay
     to be defaulted; a wrong judgement admits a default that breaks an
     atom.
@@ -249,6 +251,12 @@ adding a bypass allowlist.
   - `Features.Check.Strategy.Effects.Judged`: the result types every A2
     obligation check returns. Every later Features.Check.Strategy.Effects
     module joins this list as it lands.
+  - `Features.Check.Strategy.Effects.Malformed` and
+    `Features.Check.Strategy.Effects.MalformedTerms`: I3 (spec §5 item
+    3), the input package's domain and forms in the order (a)-(j); a
+    check they miss lets a package outside the domain, an unknown or
+    non-N mark, a two-sort hole, an unsolved image or a keyless `Fail`
+    label reach completion and the obligations, which assume them.
   - `Features.Check.Strategy.Effects.Package`: `erase` gives the
     substitution G0 judges and must agree with generation's
     `recordedWith`; `settle` gives the defaults every obligation reads,

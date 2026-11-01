@@ -21,7 +21,8 @@ const trusted = [
   'Strategy.Effects.Complete', 'Strategy.Effects.Consume',
   'Strategy.Effects.Dependency', 'Strategy.Effects.Equal',
   'Strategy.Effects.Forced', 'Strategy.Effects.Handler',
-  'Strategy.Effects.Judged', 'Strategy.Effects.Package',
+  'Strategy.Effects.Judged', 'Strategy.Effects.Malformed',
+  'Strategy.Effects.MalformedTerms', 'Strategy.Effects.Package',
   'Strategy.Effects.Record', 'Strategy.Effects.RecordEntries',
   'Strategy.Effects.RecordRefs', 'Strategy.Effects.Rows',
   'Strategy.Effects.Sites', 'Strategy.Effects.Term']

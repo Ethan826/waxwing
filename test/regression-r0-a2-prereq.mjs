@@ -5,6 +5,7 @@
 // test/r0-a2-record.test.mjs uses it with the healthy build.
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { a2MalformedProbes } from './regression-r0-a2-malformed.mjs';
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Ask { fn ask(): Unit; }; ';
@@ -224,5 +225,7 @@ export const a2PrereqProbes = {
     const check = checkOf(Record.recordDefect(unconcrete));
     if (check !== 3) fail(`Fail payload with no FailConcrete: check ${check}`);
     passed(context);
-  }
+  },
+  // Task 5's probes (test/regression-r0-a2-malformed.mjs).
+  ...a2MalformedProbes
 };
