@@ -51,5 +51,16 @@ export const a2DepRows = [
     replacement: '    , foldMap mentions obligations\n',
     probe: 'r0-a2-dep-unrelated',
     message: /C16 unrelated: expected ObligationFailed, got ForcedTail/
+  },
+  {
+    // Task 10 (whole-branch review): the forced source admitted
+    // unfiltered, so a rigid source enters Dep.
+    name: 'r0-a2-dep-rigid-source',
+    file,
+    needle: 'sourceNodes entry = effectNode entry.source\n',
+    replacement: 'sourceNodes entry ='
+      + ' Set.singleton (NodeEff entry.source)\n',
+    probe: 'r0-a2-dep-rigid-source',
+    message: /rigid source: a rigid node entered Dep/
   }
 ];

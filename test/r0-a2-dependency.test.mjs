@@ -12,6 +12,9 @@ const Effect = await load('Domain.Recorded.Effect');
 const Recorded = await load('Domain.Recorded');
 const Sets = await load('Data.Set');
 const { unfoldableArray } = await load('Data.Unfoldable');
+const Maps = await load('Data.Map.Internal');
+const Origin = await load('Domain.Recorded.Origin');
+const { Just } = await load('Data.Maybe');
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Ask { fn ask(): Unit; }; ';
@@ -132,6 +135,38 @@ test('forcing edge: a source mentioned alone is in Dep (fixture)', () => {
     && Effect.ordEVar.compare(node.value0)(source).constructor.name === 'EQ'));
   const result = classifyAt(problem, indexOfKind(problem, 'Consume', 0));
   assert.equal(limitation(result), 'ForcedTail');
+});
+
+// C16 with its forcing instance's R tail made rigid (a hand-built
+// fixture: generation instantiates a callee's tail fresh at each use, so
+// no source program tried gives a rigid source). `effectNode` drops it.
+// `mentions` drops rigid variables too, so the classification holds even
+// with the filter removed; the Dep membership is what the row detects.
+const rigidSource = () => {
+  const full = problemOf(c16, 'use3');
+  const effects = Recorded.fields(full).effects;
+  const [{ forced }] = Forced.forcedTails(full);
+  const path = forced.value0;
+  const sig = Maps.lookup(Origin.ordPath)(path)(effects.instances).value0;
+  const handler = sig.result;
+  const rigid = new Effect.EffRigid(7);
+  const result = new Effect.MHandler(handler.value0, { ...handler.value1,
+    inference: { ...handler.value1.inference, tail: new Just(rigid) } });
+  const instances = Maps.insert(Origin.ordPath)(path)({ ...sig, result })(
+    effects.instances);
+  return { ...full, effects: { ...effects, instances } };
+};
+
+test('rigid source: never in Dep; unrelated stays ordinary (fixture)', () => {
+  const problem = rigidSource();
+  const [{ source }] = Forced.forcedTails(problem);
+  assert.ok(source instanceof Effect.EffRigid);
+  const dep = members(Dependency.dependencySet(problem));
+  assert.ok(dep.length > 0);
+  assert.deepEqual(dep.filter(node => node instanceof Dependency.NodeEff
+    && node.value0 instanceof Effect.EffRigid), []);
+  const result = classifyAt(problem, indexOfKind(problem, 'Defer'));
+  assert.equal(refusal(result), 'ObligationFailed');
 });
 
 test('mentions: Unsupported has none', () => {

@@ -80,5 +80,36 @@ export const a2DepProbes = {
       fail(`C16 unrelated: expected ObligationFailed, got ${
         describe(result)}`);
     passed(context);
+  },
+  // Task 10: C16 with its forcing instance's R tail made rigid (a
+  // hand-built fixture; generation instantiates that tail fresh).
+  'r0-a2-dep-rigid-source': async context => {
+    const { load, fieldsOf } = await toolkit(context);
+    const Dependency = await load(
+      'Features.Check.Strategy.Effects.Dependency');
+    const Forced = await load('Features.Check.Strategy.Effects.Forced');
+    const Effect = await load('Domain.Recorded.Effect');
+    const Maps = await load('Data.Map.Internal');
+    const Origin = await load('Domain.Recorded.Origin');
+    const { Just } = await load('Data.Maybe');
+    const { unfoldableArray } = await load('Data.Unfoldable');
+    const Sets = await load('Data.Set');
+    const full = fieldsOf(c16, 'use3');
+    const path = Forced.forcedTails(full)[0].forced.value0;
+    const sig = Maps.lookup(Origin.ordPath)(path)(full.effects.instances)
+      .value0;
+    const handler = sig.result;
+    const result = new Effect.MHandler(handler.value0, { ...handler.value1,
+      inference: { ...handler.value1.inference,
+        tail: new Just(new Effect.EffRigid(7)) } });
+    const problem = { ...full, effects: { ...full.effects,
+      instances: Maps.insert(Origin.ordPath)(path)({ ...sig, result })(
+        full.effects.instances) } };
+    const dep = Sets.toUnfoldable(unfoldableArray)(
+      Dependency.dependencySet(problem));
+    if (dep.some(node => node instanceof Dependency.NodeEff
+      && node.value0 instanceof Effect.EffRigid))
+      fail('rigid source: a rigid node entered Dep');
+    passed(context);
   }
 };
