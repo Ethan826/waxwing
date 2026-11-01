@@ -13,7 +13,8 @@ as dated amendments in §2 (the ResultC row, the two package domains),
 routing), §10 (interface) and §13b (citations). The §18.141 fix pass
 (after the review of §18.140) withdraws §7's settle-then-complete
 order for complete-then-settle and amends §2, §4 E9, §7 and §10
-further. They specify the
+further; the §18.143 correction pass amends §4 E9 (C6), §7 (N4) and
+§10 (N1). They specify the
 validator's interface; no validator exists and none is authorized.
 Earlier status: **approved as a representation by the author at 535b780
 (2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
@@ -978,6 +979,15 @@ completed package, has a key, `typeHead` defined: `Int`, `Bool`,
 `Unit`, `Text`, data, a closed record; a keyless `Fail` label in a
 package image is `Malformed`, in a recorded row a failure of the first
 obligation that matches it; A2 specification §4.2.)
+(Author, 2026-10-31, dossier §18.143, C6: a candidate whose `Fail`
+payload is a hole passes E9 at the type default, so the validator can
+accept a declaration today refuses with FailNeedsConcrete, e.g. the
+audit fixture fail-needs-concrete-check's `k`; predicted, latent while
+the online strategy offers no candidate there. This is a shadow-only
+expected divergence, reported by the differential and recorded as a
+replacement-compatibility decision to resolve before the new checker
+is enabled live. It is not covered by U4; E9 stays after settling;
+no language widening and no compatibility guard are adopted.)
 
 **E10, the body's row within the declared row** (E2 with the declared
 row as target; EffectNotAllowed, MustBePure). Settled by reading in 3.5
@@ -1156,9 +1166,17 @@ obligation, whatever the caller's routing.
   repeats the check as a backstop, and its refusal reads as a decline,
   not a refused candidate. No other candidate is taken as repairing it.
   A `NotCertifiable` for an `Unsupported` obligation is the same for
-  every candidate; rule 1 already blocks the declaration. The bullet
+  every candidate; rule 1 already blocks the declaration. ~~The bullet
   below applies to the candidate-specific refusals (`Malformed`, G0's,
-  `ObligationFailed`, `NotCertifiable` for Definition 4.2 or forcing).
+  `ObligationFailed`, `NotCertifiable` for Definition 4.2 or
+  forcing).~~ **Amended (author, 2026-10-31, dossier §18.143 N4; A2
+  specification §6):** a `NotCertifiable` for Definition 4.2
+  (`RigidExact`) or for a dependency on a forced tail (`ForcedTail`)
+  is candidate-specific: the next strategy runs, but the refusal reads
+  as a decline, `Declines (EffectLimit …)`, never as a refused
+  candidate, so it raises no `CandidateRefused` search fault; if every
+  strategy declines, the reason is `Unsupported`. The bullet below
+  applies only to `Malformed`, G0's refusals and `ObligationFailed`.
 - A candidate that fails (a)-(c) is a `CheckRefusal`; Strategy.purs
   `checked` makes it a `CheckFailed` attempt with no solution, and
   `decide`'s rule 2 (`untilVerdict`) continues to the next strategy
@@ -1243,8 +1261,11 @@ ignores arguments in the comparison without erasing them (§18.138).
 `SiteFact`s are the package's term map; the package is the A2
 specification's `EffectPackage`, replacing `Substitution` as the
 certificate. (§18.141 A2:) `Certified` retains the completed package
-before defaults, and its `Compilation` is derived from it, so the
-change surface's "unchanged shape" for `Certified` no longer holds;
+before defaults, and its `Compilation` is derived from it (§18.143
+N1: computed once in `certify` at mint time, where the recorded
+problem and coverage are available, and stored beside the package;
+Domain accessors return stored fields), so the change surface's
+"unchanged shape" for `Certified` no longer holds;
 the old substitution-only `certify` stops minting. `CheckRefusal`
 gains four categories: `Malformed`, `ObligationFailed`,
 `NotCertifiable` and `RecordDefect` (A2 specification §6), in place
