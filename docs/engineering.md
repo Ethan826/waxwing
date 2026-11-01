@@ -227,8 +227,8 @@ adding a bypass allowlist.
   - `Features.Check.Strategy.Effects.Dependency`: Dep, the nodes connected
     to the forced tails by the recorded obligations, and `classify`, which
     turns a failed check into `RigidExact`, `ForcedTail` or an ordinary
-    failure; a missed edge reports an unrelated failure as ordinary
-    (spec §5.1).
+    failure; a missed edge reports a dependent failure as ordinary, an
+    extra edge an unrelated one as `ForcedTail` (spec §5.1).
   - `Features.Check.Strategy.Effects.Forced`: the forced ResultC tails F
     and their sources, which completion copies (spec §2.3, §2.4).
   - `Features.Check.Strategy.Effects.Judged`: the result types every A2

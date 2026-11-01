@@ -11,9 +11,14 @@ const c1 = `${log}fn mk(): Handler(nofail Ask with Log + ...s) with pure`
   + 'fn use(): Unit with Log = with mk() { defer Ask.ask(); () }; '
   + 'fn main(): Unit = ();';
 
-const classified = (Dependency, problem, index) => Dependency.classify(
-  Dependency.dependencySet(problem))(problem.effects.obligations[index])(
-  { check: 3, limit: false });
+const c16 = `${log}fn mk(): Handler(nofail Ask with Log + ...s) with pure`
+  + ' = handler Ask { ask() => Log.log(1) }; '
+  + 'fn use3(): Unit with Log = { defer Log.log(1); with mk() { () } }; '
+  + 'fn main(): Unit = ();';
+
+const classified = (Dependency, problem, index, limit = false) =>
+  Dependency.classify(Dependency.dependencySet(problem))(
+    problem.effects.obligations[index])({ check: 3, limit });
 const kindIndex = (problem, kind) => problem.effects.obligations
   .findIndex(placed => placed.value.constructor.name === kind);
 const describe = result => result.constructor.name === 'NotCertifiable'
@@ -49,6 +54,31 @@ export const a2DepProbes = {
       kindIndex(problem, 'Consume'));
     if (describe(result) !== 'ForcedTail')
       fail(`forcing edge: expected ForcedTail, got ${describe(result)}`);
+    passed(context);
+  },
+  // Task 10, "limit wins": a limit failure on a Dep-touching obligation.
+  'r0-a2-dep-limit-first': async context => {
+    const { load, fieldsOf } = await toolkit(context);
+    const Dependency = await load(
+      'Features.Check.Strategy.Effects.Dependency');
+    const problem = fieldsOf(c1, 'use');
+    const result = classified(Dependency, problem,
+      kindIndex(problem, 'Defer'), true);
+    if (describe(result) !== 'RigidExact')
+      fail(`limit wins: expected RigidExact, got ${describe(result)}`);
+    passed(context);
+  },
+  // Task 10, C16: `use3`'s first Defer is outside Dep.
+  'r0-a2-dep-unrelated': async context => {
+    const { load, fieldsOf } = await toolkit(context);
+    const Dependency = await load(
+      'Features.Check.Strategy.Effects.Dependency');
+    const problem = fieldsOf(c16, 'use3');
+    const result = classified(Dependency, problem,
+      kindIndex(problem, 'Defer'));
+    if (describe(result) !== 'ObligationFailed')
+      fail(`C16 unrelated: expected ObligationFailed, got ${
+        describe(result)}`);
     passed(context);
   }
 };

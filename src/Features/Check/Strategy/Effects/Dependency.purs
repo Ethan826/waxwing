@@ -65,11 +65,12 @@ dependencySet problem = fixpoint step start
   forced = forcedTails problem
   start = Set.fromFoldable (map forcedNode forced)
   obligations = map _.value (fields problem).effects.obligations
+  -- Each v in F is in the start set, so `isForced` always holds; it is
+  -- the forcing edge's guard, kept so the edge reads as v → t.
   step dep = Set.unions
     [ dep
     , foldMap mentions (Array.filter (dependsOn dep) obligations)
-    , Set.fromFoldable
-        (map sourceNode (Array.filter (isForced dep) forced))
+    , foldMap sourceNodes (Array.filter (isForced dep) forced)
     ]
   isForced dep entry = Set.member (forcedNode entry) dep
 
@@ -84,8 +85,9 @@ fixpoint step dep = settled (step dep)
 forcedNode ∷ Forced → Node
 forcedNode entry = NodeEff entry.forced
 
-sourceNode ∷ Forced → Node
-sourceNode entry = NodeEff entry.source
+-- Through `effectNode`, so a rigid source never enters Dep.
+sourceNodes ∷ Forced → Set Node
+sourceNodes entry = effectNode entry.source
 
 -- `limit` first; else the obligation mentions a Dep member; else an
 -- ordinary failure (spec §5, classification of an obligation failure).

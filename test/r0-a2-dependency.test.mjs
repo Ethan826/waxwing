@@ -90,7 +90,7 @@ test('limit wins for an unrelated obligation too', () => {
   assert.equal(limitation(result), 'RigidExact');
 });
 
-test('Dep holds F and the forcing edge reaches the source', () => {
+test('Dep holds F and the source (C1; Install also mentions it)', () => {
   const problem = problemOf(c1, 'use');
   const dep = members(Dependency.dependencySet(problem));
   const effs = dep.filter(node => node instanceof Dependency.NodeEff);
@@ -119,7 +119,8 @@ test('C16: the first Defer mentions no Dep member', () => {
 test('forcing edge: a source mentioned alone is in Dep (fixture)', () => {
   // C1 without its Install (a hand-edited problem): only the Consume at
   // index 1 mentions the source t, so only the forcing edge v -> t
-  // reaches it.
+  // reaches it. On the programs tried (C1, and `{ let h = mk(); () }`)
+  // the edge changed Dep but no classification.
   const full = problemOf(c1, 'use');
   const install = indexOfKind(full, 'Install');
   const kept = obligationsOf(full).filter((_, at) => at !== install);

@@ -26,10 +26,30 @@ export const a2DepRows = [
     // no obligation that also mentions v is outside Dep.
     name: 'r0-a2-dep-forcing-edge',
     file,
-    needle: '        (map sourceNode (Array.filter (isForced dep) forced))\n',
-    replacement: '        (map sourceNode'
-      + ' (Array.filter (isForced dep) (Array.take 0 forced)))\n',
+    needle: '    , foldMap sourceNodes (Array.filter (isForced dep) forced)\n',
+    replacement: '    , foldMap sourceNodes'
+      + ' (Array.filter (isForced dep) (Array.take 0 forced))\n',
     probe: 'r0-a2-dep-forcing-edge',
     message: /forcing edge: expected ForcedTail, got/
+  },
+  {
+    // Task 10, "limit wins": ForcedTail checked before `limit`.
+    name: 'r0-a2-dep-limit-first',
+    file,
+    needle: 'classify dep placed failure = case failure.limit of\n',
+    replacement: 'classify dep placed failure ='
+      + ' case failure.limit && not (dependsOn dep placed.value) of\n',
+    probe: 'r0-a2-dep-limit-first',
+    message: /limit wins: expected RigidExact, got ForcedTail/
+  },
+  {
+    // Task 10, C16: Dep closed over every obligation, mentioned or not.
+    name: 'r0-a2-dep-unrelated',
+    file,
+    needle: '    , foldMap mentions'
+      + ' (Array.filter (dependsOn dep) obligations)\n',
+    replacement: '    , foldMap mentions obligations\n',
+    probe: 'r0-a2-dep-unrelated',
+    message: /C16 unrelated: expected ObligationFailed, got ForcedTail/
   }
 ];
