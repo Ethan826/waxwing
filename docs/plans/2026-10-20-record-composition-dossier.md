@@ -7628,3 +7628,45 @@ corpus checks and current certification behavior; Task 16 stays held,
 so the existing minter still operates under F14. Any property failure
 or checker disagreement is reported before the stage counts as
 complete.
+
+### 18.147 A2 validator implemented; whole-branch review; open decisions (2026-11-01)
+
+Plan docs/plans/2026-10-31-a2-validator-plan.md, Tasks 0-15 implemented
+by subagents, each reviewed and re-reviewed, integrated on r0-t2-d1 by
+cherry-pick (f09dd73..d36b54d) and pinned; Task 16 held, so the existing
+substitution-only `certify` still mints under F14 (joint-checker
+assurance) and the new validator protects no current strategy
+acceptance. What exists: `Substitution.validate`, a non-minting runner
+(record validation, Unsupported, I3, G0 on erase (settle P_in),
+completion, settled obligations, witness and coverage) over Effects
+modules for every obligation kind, and Decide readings with a
+record-defect block before search. Evidence is fixture-level on
+hand-built packages plus corpus-observed record and erasure checks; no
+read-back yet produces effect packages, so the corpus differential and
+the honest-package compatibility property stay owed (tranche 2). The
+M-B differential compared the validator and the independent checker on
+11 accepted packages and 10 mark refusals and found no disagreement;
+other refusals were not compared; its further limits are §18.146's.
+Integration verify passed at 7842441 after two failed, repaired runs
+(controller errors: pins committed in a lane worktree; a stale needle).
+The acceptance verify follows the review fixes and is recorded below.
+
+Whole-branch review (two fresh reviewers): no Critical; gates add
+coverage only; live compilation, G0's problem pin, the effect pin, first
+diagnostics, census/window/RT8 fixtures unchanged. Open for the author
+(not fixed; the validator stays fail-closed on every probed path except
+as noted): (1) statements §7 puts arities in I3 (labels' declared
+effect and argument count; data argument and row counts) but spec §5
+dropped them; a probe validated a package binding an undeclared effect
+label and a wrong-arity label in an unconstrained row; add an I3 check
+(needs effect and data arities recorded) or amend statements §7 and
+spec §5. (2) Record validation does not check that an obligation's
+companions were recorded (Install's InstallR and AtInstalledC; a
+literal's ClauseIntoR/C; Defer's AtDefer); a probe validated a record
+with C15's InstallR removed; add a step-0 check or record the reliance
+on generation (U6). (3) Ratify or not three fail-closed controller
+rulings not in the spec: any ResultClauses variable outside F is a
+RecordDefect; a C label with no partner fails Install; same-key labels
+with unequal argument counts are refused. (4) The C6-absent question
+(docs/findings.md). (5) The owed compatibility property needs "up to
+record field order" (14 corpus candidates; docs/findings.md).
