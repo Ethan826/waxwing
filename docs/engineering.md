@@ -265,6 +265,13 @@ adding a bypass allowlist.
     decides which `Fail` payloads have a key (statements §4, spec §9).
   - `Features.Check.Strategy.Effects.Term`: `norm`, `holds` and
     `sameTerm` decide every mark edge and mark equality (statements §5).
+  - `Features.Check.Strategy.Effects.Record`,
+    `Features.Check.Strategy.Effects.RecordEntries` and
+    `Features.Check.Strategy.Effects.RecordRefs`: record validation (spec
+    §4.1): the site table, the record's domains, forced-tail placement
+    and the `Fail` invariant, over every recorded entry in spec §5's
+    order; a check they miss lets a generation defect reach the
+    obligation checks, which trust the record.
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.
