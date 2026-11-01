@@ -6,6 +6,7 @@
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { a2MalformedProbes } from './regression-r0-a2-malformed.mjs';
+import { a2DecideProbes } from './regression-r0-a2-decide.mjs';
 
 const log = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Ask { fn ask(): Unit; }; ';
@@ -226,6 +227,8 @@ export const a2PrereqProbes = {
     if (check !== 3) fail(`Fail payload with no FailConcrete: check ${check}`);
     passed(context);
   },
-  // Task 5's probes (test/regression-r0-a2-malformed.mjs).
-  ...a2MalformedProbes
+  // Task 5's and Task 12's probes (test/regression-r0-a2-malformed.mjs,
+  // test/regression-r0-a2-decide.mjs).
+  ...a2MalformedProbes,
+  ...a2DecideProbes
 };

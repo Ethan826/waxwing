@@ -29,7 +29,7 @@ import Domain.Verdict
   , StrategyName
   , Unsupport(..)
   )
-import Domain.Verdict.Search (CheckRefusal(..))
+import Domain.Verdict.Search (CheckRefusal(..), Limitation(..))
 
 -- A `RequirementOpen` refusal reads as a decline (G-A-i(f), §3.2(a)),
 -- not as a refused candidate.
@@ -140,6 +140,8 @@ searchEnded = case _ of
 -- G0's refusals other than `RequirementOpen` are refused candidates;
 -- `RequirementUnjudged` among them, so a guard/check disagreement on a
 -- `ClaimsComplete` candidate is visible as a `CandidateRefused` fault.
+-- A2's (spec §6): a record defect and a limitation decline, so they
+-- raise no fault; `Malformed` and `ObligationFailed` are refused.
 refusedWith ∷ Claim → CheckRefusal → Reading
 refusedWith claim = case _ of
   RequirementOpen _ → Declines RequirementAtoms
@@ -149,12 +151,18 @@ refusedWith claim = case _ of
   RequirementFails _ → claimed claim
   RequirementUnjudged _ → claimed claim
   NotGeneric → claimed claim
-  -- A2's four (spec §6) read as claimed until A2 Task 12 gives each its
-  -- reading (RecordDefect and NotCertifiable then decline).
-  RecordDefect _ → claimed claim
+  RecordDefect at → Declines (RecordDefective at.provenance)
   Malformed _ → claimed claim
-  NotCertifiable _ _ → claimed claim
+  NotCertifiable limitation _ → Declines (limited limitation)
   ObligationFailed _ → claimed claim
+
+-- A recorded unsupported kind is rule 1's `EffectsUnchecked`; the
+-- candidate-dependent limitations are `EffectLimit`.
+limited ∷ Limitation → Unsupport
+limited = case _ of
+  UnsupportedRecorded kind → EffectsUnchecked [ kind ]
+  RigidExact → EffectLimit RigidExact
+  ForcedTail → EffectLimit ForcedTail
 
 claimed ∷ Claim → Reading
 claimed = case _ of

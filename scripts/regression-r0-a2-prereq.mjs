@@ -1,9 +1,10 @@
 // A2 lane regression rows (docs/plans/2026-10-31-a2-validator-plan.md),
 // spread into a2Rows (scripts/regression-r0-a2.mjs); probes in
 // test/regression-r0-a2-prereq.mjs. Each restores one defect in a whole,
-// compiling form. Task 5's rows are in scripts/regression-r0-a2-malformed.mjs,
-// spread here.
+// compiling form. Task 5's rows are in scripts/regression-r0-a2-malformed.mjs
+// and Task 12's in scripts/regression-r0-a2-decide.mjs, spread here.
 import { a2MalformedRows } from './regression-r0-a2-malformed.mjs';
+import { a2DecideRows } from './regression-r0-a2-decide.mjs';
 
 const record = 'src/Features/Check/Strategy/Effects/Record.purs';
 
@@ -57,5 +58,6 @@ export const a2PrereqRows = [
     probe: 'r0-a2-fail-invariant',
     message: /Fail payload with no FailConcrete: check null/
   },
-  ...a2MalformedRows
+  ...a2MalformedRows,
+  ...a2DecideRows
 ];

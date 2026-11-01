@@ -12,12 +12,13 @@ import Data.Array (all, filter, mapMaybe, nubEq, null)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (any)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (ReqAtom, Role(..), Var(..))
 import Domain.Recorded.Effect (Obligation, Placed, UnsupportedKind)
 import Domain.Recorded.Effect as Recorded
 import Domain.Recorded.Origin (Entry)
+import Domain.Verdict.Search (CheckAt)
 import Domain.Verdict
   ( Attempt
   , InferenceFailure(..)
@@ -36,10 +37,23 @@ import Features.Check.Decide.Reading
   , refusedComplete
   , searchFault
   )
+import Features.Check.Strategy.Effects.Record (recordDefect)
 
--- Rule 1 and 1′ and §3.2(a), then the unchecked effects below.
+-- A2's record defect first (spec §6), then rule 1 and 1′ and §3.2(a),
+-- then the unchecked effects below.
 blocks ∷ Array (Entry ReqAtom) → RecordedProblem → Array Unsupport
-blocks open problem = ordinary open problem <> unchecked problem
+blocks open problem =
+  defective problem <> ordinary open problem <> unchecked problem
+
+-- A2 spec §4.1 and §6: record validation before any search. A problem
+-- that breaks a record invariant blocks Solved whatever a strategy
+-- offers, and is reported even when no strategy offers a candidate
+-- (C4(b)). It reads the problem alone, as `certify`'s step 0 does.
+defective ∷ RecordedProblem → Array Unsupport
+defective problem = maybe [] defect (recordDefect problem)
+  where
+  defect ∷ CheckAt → Array Unsupport
+  defect at = [ RecordDefective at.provenance ]
 
 -- Rule 1: every `outside` kind (decided, Q3). Rule 1′: a `spread j`
 -- with j ≥ 2 (decided, Q4). §3.2(a): `open`, the `BQ` atoms whose
