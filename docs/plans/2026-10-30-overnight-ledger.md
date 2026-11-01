@@ -508,3 +508,10 @@ certification behavior: Task 16 held, minter under F14). Estimate in
 §18.148; spend so far this wave: wave B about 0.25M. Every controller
 command starts with `cd /Users/ethan/Desktop/waxwing/.claude/worktrees/
 r0-t2-d1 &&` (a lane worktree once received a commit by mistake).
+
+## A2 completion wave integrated (2026-11-01, evening)
+
+Wave A was still running at the reset and finished (8e89b99 after its
+schema b6157b7); wave B cherry-picked after it (222bf9b, 8dbbf15,
+fa5d9e3); one scoped review, fixes 6c563e1 and ad3557b. Acceptance
+verify passed at ad3557b. Record: dossier §18.149.

@@ -12,10 +12,11 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-The A2 validator completion wave (dossier §18.148). Read the last
-section of docs/plans/2026-10-30-overnight-ledger.md ("A2 checkpoint
-before a context reset") first: it names the branches, what is done,
-what was running, and the exact next steps. Plan:
+Nothing. The A2 completion wave (dossier §18.148) is integrated and
+its acceptance verify passed at ad3557b (§18.149). Task 16 (the
+minting switch) is held for the author; performance qualification has
+not been run. Open for the author: different-key label order in the
+canonical comparison, the C6-absent replacement decision, U6. Plan:
 docs/plans/2026-10-31-a2-validator-plan.md; live ledger (git-ignored):
 .superpowers/sdd/2026-10-31-a2-validator-plan/progress.md.
 
@@ -43,6 +44,9 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
+- A2 acceptance verify **passed** at ad3557b (§18.149): parallel
+  3218/3218, serial 209/209, regression proofs 336/336, growth ratio
+  2.274 against 3.0.
 - Routine acceptance verify **passed** at 4ca1097 (§18.137): parallel
   3013/3013, serial 204/204, regression proofs 264/264, growth ratio
   2.278 against 3.0. Failed runs kept: aaa9c9b and 5540ce0 (§18.137).

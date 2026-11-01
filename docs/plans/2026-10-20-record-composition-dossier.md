@@ -7718,3 +7718,60 @@ rulings, C6, canonical comparison, about 0.4-0.6M with review and fix
 round), one scoped Opus review of the wave (about 0.2M), integration and
 one routine verify (controller, about 0.1M): about 1.2-1.7M all in,
 3-5 hours of wall clock.
+
+### 18.149 Completion wave integrated; acceptance verify passed (2026-11-01)
+
+§18.148's wave is integrated on r0-t2-d1 by cherry-pick, no merge
+commits: arity b6157b7 (schema, written before code) and 8e89b99; the
+companion check, C6 and canonical comparison 222bf9b, 8dbbf15 and
+fa5d9e3; review fixes 6c563e1 and ad3557b. Record checks are numbered
+0 flags, 1 references, 2 placement, 3 Fail invariant, 4 companions,
+5 arity. The trusted surface was re-pinned by script (the
+RecordCompanions entry identical to the lane's); the effect pin moved
+only for the `declarations` field: re-encoding the integrated build with
+that field dropped reproduces c9b2fbc's pin byte for byte (3071
+declarations, 998 programs). G0's problem pin, first diagnostics and
+generated Go, census, window and RT8 did not move.
+
+One scoped Opus review of both waves: items (1)-(5) met, no Critical.
+Fixed: the spec now states I3 check (k) after (a)-(j) (`Undeclared`,
+`WrongArity`, `Applied`, the bare clause-row reading), the
+`InDeclarations` entry after the tables and before coverage, and check
+5 in full; the canonical comparison keeps record tails in order (the
+lane had sorted them, a relaxation (5) did not approve; the one unit
+assertion that encoded the multiset reading was changed with it); the
+compatibility property's own comparison no longer sorts tails and still
+holds on the corpus (2820 candidates, 3642 derived runs, 0 not lifted);
+`malformed`'s precondition stated; check-5 fixtures in instances,
+annotations and signature and for a dropped declared type; C6's
+hole-bound case worded "observed on the fixture" throughout. Stated,
+not fixed: a phantom user effect id in the metadata is not detected
+(spec §4.1; a must-pass row pins that it is accepted); a duplicated
+owner is not a check-4 defect; check 4 is quadratic per declaration
+(performance is separate); the check-4 table is split across `ownerOf`
+and `companionSite`; the canonical comparison keeps different-key label
+order, stricter than (5) requires (for the author).
+
+Routine `npm run verify` at ad3557b, alone under the lock, passed:
+parallel 3218/3218, serial 209/209 (partialFirst growth 2.274 against
+3), regression proofs 336/336; log
+.build/evidence/2026-11-01-a2-completion-verify. Performance
+qualification not run. Every registered needle matched once before the
+run (386 in 336 rows).
+
+What this establishes, kept apart. Validator implementation: record
+checks 0-5, I3 (a)-(k), G0, completion, settled obligations, witness
+and coverage, fail-closed on every probed path. Fixture-level
+differential evidence: §18.146-§18.147's M-B comparison and the C6
+fixtures; check (k) on honest packages rests on fixture packages.
+Deferred corpus checks: no read-back yet produces effect packages, so
+the corpus differential and the honest-package compatibility property
+stay owed (tranche 2); U6 stays open. Current certification: Task 16
+held, the existing substitution-only minter still certifies under F14,
+and the new validator protects no strategy acceptance. No soundness
+claim.
+
+Spend against §18.148's 1.2-1.7M: subagents about 0.99M (arity 0.33M,
+companions 0.25M, scoped review 0.17M, fix wave 0.15M, re-review
+0.10M), controller not metered, roughly 0.1-0.2M; about 1.1-1.2M in
+all.
