@@ -7,9 +7,11 @@ import { load } from './r0-generate-support.mjs';
 // each node's recorded marked type (`effects.nodes`), lifted to a `PTy`
 // here, erases (`eraseTy`, spec §2.5) to the `RTExpr` generation recorded
 // at the same path (`types`, Elab/Recorded.purs `recordedWith`). Lifted
-// only when every mark is `Written` (an `At` mark needs a package) and
-// every effect-row tail is rigid or absent: a fresh tail has no `PTail`
-// form without choosing one, so those nodes are counted, not lifted.
+// only when every mark is `Written`: an `At` mark needs a package, so
+// those nodes are counted and left out. A fresh effect-row tail
+// (`EffFresh`) is lifted to a hole `PTailHole n`, one number per distinct
+// variable in a declaration: a fixture-side encoding only, which cannot
+// change the comparison, because `eraseTy` drops every effect row.
 // Corpus-wide, hence serial.
 const Package = await load('Features.Check.Strategy.Effects.Package');
 const Types = await load('Domain.Verdict.EffectPackage');
@@ -33,10 +35,20 @@ const label = value => {
   return { effect: value.effect, args: value.args.map(lift),
     mark: term(value.mark.value0) };
 };
+// Fresh effect variables to hole numbers, per declaration.
+let holes = Maps.empty;
+const holeOf = variable => {
+  const found = Maps.lookup(Effect.ordEVar)(variable)(holes);
+  if (found instanceof Just) return found.value0;
+  const number = Maps.size(holes);
+  holes = Maps.insert(Effect.ordEVar)(variable)(number)(holes);
+  return number;
+};
 const tail = maybe => {
   if (maybe instanceof Nothing) return maybe;
-  if (!(maybe.value0 instanceof Effect.EffRigid)) throw unliftable;
-  return new Just(new Types.PTailRigid(maybe.value0.value0));
+  if (maybe.value0 instanceof Effect.EffRigid)
+    return new Just(new Types.PTailRigid(maybe.value0.value0));
+  return new Just(new Types.PTailHole(holeOf(maybe.value0)));
 };
 const row = value => ({ labels: value.labels.map(label),
   tail: tail(value.tail) });
@@ -67,7 +79,7 @@ const nodesOf = fields => Maps.toUnfoldable(unfoldableArray)(
 
 const tally = async () => {
   const build = await healthyBuild();
-  const found = { nodes: 0, compared: 0, skipped: 0, wrong: [] };
+  const found = { nodes: 0, compared: 0, atMarks: 0, wrong: [] };
   for (const { origin, source } of await sourcesOf()) {
     const program = build.program(source);
     if (program === null) continue;
@@ -75,13 +87,14 @@ const tally = async () => {
     for (const decl of program.functions) {
       const result = build.Generate.generate(tables)(signatures)(decl);
       if (result.constructor.name !== 'Right') continue;
+      holes = Maps.empty;
       const fields = build.Recorded.fields(
         build.Elaborating.problem(result.value0));
       for (const { value0: path, value1: mty } of nodesOf(fields)) {
         found.nodes += 1;
         const recorded = Maps.lookup(Origin.ordPath)(path)(fields.types);
         const type = lifted(mty);
-        if (type === null) { found.skipped += 1; continue; }
+        if (type === null) { found.atMarks += 1; continue; }
         found.compared += 1;
         if (recorded instanceof Nothing || !Atom.eqRTExpr.eq(
           Package.eraseTy(type))(recorded.value0))
@@ -94,8 +107,10 @@ const tally = async () => {
 
 test('erase matches recordedWith', async () => {
   const found = await tally();
-  // Observed 2026-11-01: 140959 nodes, 138600 lifted.
+  // Observed 2026-11-01: 140959 nodes, 140458 compared, 501 with an `At`
+  // mark. Every node is compared or has an `At` mark: no skipped class.
   assert.ok(found.compared > 130000, JSON.stringify(found));
-  assert.ok(found.skipped < found.nodes / 50, JSON.stringify(found));
+  assert.equal(found.compared + found.atMarks, found.nodes);
+  assert.ok(found.atMarks < found.nodes / 100, JSON.stringify(found));
   assert.deepEqual(found.wrong.slice(0, 10), []);
 });
