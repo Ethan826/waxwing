@@ -94,6 +94,7 @@ export const tokenModules = ['Domain.Verdict.Internal',
 // integration, 2026-11-01). The pin sees their export names and
 // compiled exports, not a type synonym's record shape or a signature.
 export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
+  'Features.Check.Decide.Reading', 'Features.Check.Decide.Reason',
   'Features.Check.Strategy.Effects.Consume',
   'Features.Check.Strategy.Effects.Dependency',
   'Features.Check.Strategy.Effects.Equal',
@@ -107,4 +108,5 @@ export const pinnedSurfaces = ['Domain.Verdict.EffectPackage.Types',
   'Features.Check.Strategy.Effects.Rows',
   'Features.Check.Strategy.Effects.Sites',
   'Features.Check.Strategy.Effects.Term',
+  'Features.Check.Strategy.Effects.Validate',
   'Features.Check.Strategy.Witness'];

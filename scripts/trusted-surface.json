@@ -232,6 +232,48 @@
    "untilVerdict"
   ]
  },
+ "Features.Check.Decide.Reading": {
+  "source": [
+   "Reading(..)",
+   "byStrategy",
+   "declined",
+   "declines",
+   "limitAt",
+   "reading",
+   "refused",
+   "refusedComplete",
+   "searchFault"
+  ],
+  "compiled": [
+   "Declines",
+   "RanOut",
+   "RefusedComplete",
+   "RefusedHeuristic",
+   "Searching",
+   "RefuterRanOut",
+   "NotAStrategy",
+   "byStrategy",
+   "declined",
+   "declines",
+   "limitAt",
+   "reading",
+   "refused",
+   "refusedComplete",
+   "searchFault"
+  ]
+ },
+ "Features.Check.Decide.Reason": {
+  "source": [
+   "blocks",
+   "reason",
+   "searchFaults"
+  ],
+  "compiled": [
+   "blocks",
+   "reason",
+   "searchFaults"
+  ]
+ },
  "Features.Check.Generate": {
   "source": [
    "module Exports",
@@ -1284,16 +1326,29 @@
    "sameTerm"
   ]
  },
+ "Features.Check.Strategy.Effects.Validate": {
+  "source": [
+   "judgeObligations",
+   "prerequisites"
+  ],
+  "compiled": [
+   "judgeObligations",
+   "prerequisites"
+  ]
+ },
  "Features.Check.Strategy.Substitution": {
   "source": [
+   "ValidationResult",
    "certify",
    "certifySound",
-   "genericSubstitutionSound"
+   "genericSubstitutionSound",
+   "validate"
   ],
   "compiled": [
    "certify",
    "certifySound",
-   "genericSubstitutionSound"
+   "genericSubstitutionSound",
+   "validate"
   ]
  },
  "Features.Check.Strategy.Witness": {
