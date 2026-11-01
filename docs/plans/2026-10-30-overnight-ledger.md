@@ -167,6 +167,19 @@ None yet.
 
 ## Stops and open questions
 
+- A2 fix pass (§18.141) STOPPED on a denied tool call. The agent ran one
+  Bash command that removed its probe directory
+  (scratchpad/a2-probes), ran `git status --short` in r0-t2-d1 and ran
+  `git commit` in on-a2. Denied by the auto-mode classifier, reason
+  "[Modify Shared Resources]"; not retried, and the controller did not
+  perform it either. State: on-a2, branch `a2/fix` at d9bd6d7, three
+  files edited and staged, uncommitted
+  (docs/plans/2026-10-31-a2-specification.md,
+  docs/plans/r0-amin-statements.md,
+  docs/plans/2026-10-25-amin-a2-options.md); width 0; probe scripts
+  census.mjs and failvar.mjs still in the scratchpad. r0-t2-d1 clean
+  (controller, read-only check). Waits for the author.
+
 - Coverage (T14's open questions; controller's provisional handling,
   for the author): (1) the "handler literal's type copied into images"
   row becomes a fixture row only when Task 9's identity tests (A1-A5,
