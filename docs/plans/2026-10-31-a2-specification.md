@@ -1,5 +1,8 @@
 # A2 specification: the trusted effect validator (2026-10-31)
 
+Implementation plan (for review; implementation unauthorized):
+docs/plans/2026-10-31-a2-validator-plan.md.
+
 Status: **main choices approved with amendments (dossier §18.139); this revision
 is the fix pass §18.141 authorized after the adversarial review of §18.140,
 applying rulings A1-A6. Not ready for implementation authorization; no validator
