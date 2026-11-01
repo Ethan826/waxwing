@@ -1,10 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
-import { packageOf } from './r0-a2-package.mjs';
-import { validateCases, sources, c2c }
-  from './regression-r0-a2-validate.mjs';
-import { classify, obligationsOnly, holeSettledPayloads, render,
+import { sources, c2c } from './regression-r0-a2-validate.mjs';
+import { reportCases, hole } from './regression-r0-a2-report.mjs';
+import { classify, holeSettledPayloads, render,
   summarize, categories } from './r0-a2-differential.mjs';
 
 // A2 Task 14 (docs/plans/2026-10-31-a2-validator-plan.md): the
@@ -12,33 +11,12 @@ import { classify, obligationsOnly, holeSettledPayloads, render,
 // waits for Task 16 and tranche 2. Every validator acceptance here is
 // fixture-level, so it is labeled "predicted".
 const Verdict = await load('Domain.Verdict');
-const cases = await validateCases(load);
+const { cases, k, kInput, two, twoInput } = await reportCases(load);
 const { problemOf, honest, validate, describe, Effect, Maps } = cases;
 const accepts = { accepts: true };
-const refuses = refusal => ({ accepts: false, refusal });
+const refuses = (refusal, at) => ({ accepts: false, refusal, at });
 const fixture = (name, today, problem, input, more = {}) => classify({
   name, evidence: 'fixture', today, problem, input, ...more });
-
-// The audit fixture fail-needs-concrete-check's `k` (C6). Flexible types:
-// Param (the lambda's record), Res, Field (r.e's payload), Rest (a tail).
-const kSource = 'type E = E; fn k(): Unit with Fail(E) = '
-  + '{ let go = fn(r) => Fail.fail(r.e); () }; fn main(): Int = 0;';
-const k = problemOf(kSource, 'k');
-const [param, res, field, rest] = cases.flexTypes(k);
-const hole = { var: { hole: 7 } };
-const failOf = payload => ({ labels: [{ effect: 'Fail', args: [payload],
-  mark: 'N' }], tail: null });
-// The lambda's row is `Fail(payload)`, so the consumption lines up; the
-// field variable is bound to `image`, or left out when that is null.
-const kInput = (image, payload = hole) => {
-  const given = packageOf({
-    types: [[res, 'Unit'], [param, { record: { fields: [['e', payload]],
-      tails: [] } }], ...(image === null ? [] : [[field, image]])],
-    rows: [[rest, { fields: [], tails: [] }]],
-    effects: [[k.effects.flexEff[0], failOf(payload)]] });
-  return { ...honest(k), types: given.types, rows: given.rows,
-    effects: given.effects };
-};
 
 test('an unrelated widening is not C6', () => {
   // The validator accepts `id`; today refuses it for another reason.
@@ -49,15 +27,29 @@ test('an unrelated widening is not C6', () => {
   const concrete = kInput('Int', 'Int');
   assert.equal(describe(validate(k, concrete)), 'Right');
   assert.deepEqual(holeSettledPayloads(k, concrete), []);
-  const named = fixture('k-concrete', refuses('FailNeedsConcrete'), k,
+  const named = fixture('k-concrete', refuses('FailNeedsConcrete', 1), k,
     concrete);
   assert.equal(named.category, 'ValidatorWider');
   // A hole payload, but today's refusal is another one.
   const settled = kInput(hole);
-  const other = fixture('k-other', refuses('NofailOnFail'), k, settled);
+  const other = fixture('k-other', refuses('NofailOnFail', 1), k, settled);
   assert.equal(other.category, 'ValidatorWider');
   // And today accepting it is Agree, never C6.
   assert.equal(fixture('k-ok', accepts, k, settled).category, 'Agree');
+});
+
+test('C6 is tied to the obligation today refuses at', () => {
+  // Obligations 1 and 4 are k's two FailConcretes: 1 is bound to Int, 4
+  // is a hole. The validator accepts the package.
+  assert.equal(describe(validate(two, twoInput)), 'Right');
+  assert.deepEqual(holeSettledPayloads(two, twoInput), [4]);
+  const at = index => fixture('two', refuses('FailNeedsConcrete', index),
+    two, twoInput).category;
+  assert.equal(at(1), 'ValidatorWider');
+  assert.equal(at(4), 'C6-expected-divergence');
+  // No named site: not C6.
+  assert.equal(fixture('two', refuses('FailNeedsConcrete'), two, twoInput)
+    .category, 'ValidatorWider');
 });
 
 test('fixture and corpus kept apart', () => {
@@ -94,8 +86,10 @@ test('categories', () => {
   const id = problemOf(sources.id, 'id');
   assert.equal(fixture('both', accepts, id, honest(id)).category, 'Agree');
   const g = problemOf(sources.c3, 'g');
-  assert.equal(fixture('both-refuse', refuses('Other'), g, honest(g))
-    .category, 'Agree');
+  const both = fixture('both-refuse', refuses('Other'), g, honest(g));
+  assert.deepEqual([both.category, both.kind], ['Agree',
+    'NotCertifiable']);
+  assert.equal(summarize([both]).fixture['Agree/NotCertifiable'], 1);
   const use = problemOf(sources.c1, 'use');
   const [forced] = cases.forcedOf(use);
   assert.deepEqual(kindOf('m', use, withEffect(honest(use), forced)),
@@ -107,11 +101,10 @@ test('categories', () => {
     ['ValidatorStricter', 'NotCertifiable']);
   const wrong = honest(use, { types: () => new cases.P.PBase(
     cases.Atom.BoolBase.value) });
-  assert.deepEqual(kindOf('p', use, wrong),
-    ['ValidatorStricter', 'Prerequisite']);
+  assert.deepEqual(kindOf('p', use, wrong), ['ValidatorStricter', 'G0']);
   assert.equal(fixture('w', refuses('X'), id, honest(id)).category,
     'ValidatorWider');
-  const heldBack = fixture('c', refuses('FailNeedsConcrete'), k,
+  const heldBack = fixture('c', refuses('FailNeedsConcrete', 1), k,
     kInput(hole));
   assert.equal(heldBack.category, 'C6-expected-divergence');
   assert.deepEqual(categories, ['Agree', 'ValidatorStricter',
@@ -122,39 +115,51 @@ test('a record defect is a generation defect under any verdict', () => {
   const g = problemOf(sources.c3, 'g');
   const bad = flagged(g);
   const input = honest(g);
-  assert.equal(describe(validate(bad, input)), 'RecordDefect');
-  for (const today of [accepts, refuses('FailNeedsConcrete')])
-    assert.equal(fixture('d', today, bad, input).category,
-      'GenerationDefect');
-  // A RecordDefective block does the same beside any validator result.
+  const refusal = validate(bad, input);
+  assert.equal(describe(refusal), 'RecordDefect');
+  const known = refusal.value0.value0.provenance;
+  for (const today of [accepts, refuses('FailNeedsConcrete', 1)]) {
+    const row = fixture('d', today, bad, input);
+    assert.equal(row.category, 'GenerationDefect');
+    assert.match(render([row]), /defect at \{"AtSite"/);
+  }
+  // A RecordDefective block does the same beside any validator result,
+  // and the output names the block's provenance.
   const id = problemOf(sources.id, 'id');
-  const block = new Verdict.RecordDefective(
-    id.effects.obligations[0]?.provenance);
-  for (const today of [accepts, refuses('Other')])
-    assert.equal(fixture('b', today, id, honest(id),
-      { blocks: [block] }).category, 'GenerationDefect');
+  const block = new Verdict.RecordDefective(known);
+  for (const today of [accepts, refuses('Other')]) {
+    const row = fixture('b', today, id, honest(id), { blocks: [block] });
+    assert.equal(row.category, 'GenerationDefect');
+    assert.match(render([row]), /defect at \{"AtSite"/);
+  }
 });
 
 test('C6 fixture', () => {
-  // Field absent: the prerequisites and the recorded obligations accept
-  // the package that judges only `k`'s obligations (fixture-level).
+  // `k` with the field variable absent. The full validator refuses it at
+  // G0 (Unsatisfied: G0 reads erase (settle P_in), where the field stays
+  // flexible), though the prerequisites and the recorded obligations
+  // accept it. This records the pipeline's observed behavior. OPEN
+  // QUESTION (with the author): spec C6 predicts the validator accepts
+  // such a package; G0's projection refuses it. Not decided here, and the
+  // Owed Task 15 property (G0 on erase P_c accepts whatever G0 accepts)
+  // runs the other way and does not cover this case.
   const absent = kInput(null);
-  assert.equal(describe(obligationsOnly(k, absent)), 'Right');
-  const named = holeSettledPayloads(k, absent);
-  assert.deepEqual(named.map(index => k.effects.obligations[index].value
-    .constructor.name), ['FailConcrete']);
-  const row = fixture('k', refuses('FailNeedsConcrete'), k, absent,
-    { result: obligationsOnly(k, absent) });
-  assert.equal(row.category, 'C6-expected-divergence');
-  assert.notEqual(row.category, 'Agree');
-  assert.match(render([row]), /predicted validator accepts/);
-  assert.doesNotMatch(render([row]), /observed/);
-  // The full runner refuses the absent field at G0 (it reads P_in; Owed
-  // Task 15), so the row above is not the full validator's.
   assert.equal(describe(validate(k, absent)), 'Unsatisfied');
-  // The field bound to a hole in the package: the full validator accepts.
+  const row = fixture('k-absent', refuses('FailNeedsConcrete', 1), k,
+    absent);
+  assert.deepEqual([row.category, row.kind], ['Agree',
+    'Unsatisfied']);
+  assert.equal(row.obligationsOnly, 'accepts');
+  assert.match(render([row]),
+    /refuses Unsatisfied; obligations-only: accepts/);
+  assert.doesNotMatch(render([row]), /validator accepts/);
+  // The field bound to a hole in the package: the full validator accepts,
+  // predicted (fixture-level), the C6 example.
   const bound = kInput(hole);
   assert.equal(describe(validate(k, bound)), 'Right');
-  assert.equal(fixture('k-bound', refuses('FailNeedsConcrete'), k, bound)
-    .category, 'C6-expected-divergence');
+  const c6 = fixture('k-bound', refuses('FailNeedsConcrete', 1), k, bound);
+  assert.equal(c6.category, 'C6-expected-divergence');
+  assert.notEqual(c6.category, 'Agree');
+  assert.match(render([c6]), /predicted validator accepts/);
+  assert.doesNotMatch(render([c6]), /observed/);
 });

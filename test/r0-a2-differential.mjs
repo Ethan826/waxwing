@@ -11,20 +11,24 @@
 // "observed".
 //
 // A case: { name, evidence: 'fixture' | 'corpus', today, problem, input,
-// result?, blocks? }. `today` is { accepts: true } or { accepts: false,
-// refusal: <diagnostic name> }; `result` defaults to `validate`; `blocks`
-// are the Decide blocks, only for a `RecordDefective` among them.
+// blocks? }. `today` is { accepts: true } or { accepts: false, refusal:
+// <diagnostic name>, at? }, `at` the index in problem.effects.obligations
+// of the obligation today refuses at. Every row is classified on the full
+// `Substitution.validate` result; the result of a partial pipeline is
+// never the validator's. `blocks` are the Decide blocks, read only for a
+// `RecordDefective` among them.
 //
 // Categories:
-//   Agree                   both accept, or both refuse (reasons unread)
+//   Agree                   both accept, or both refuse (the kind names
+//                           the validator's refusal)
 //   ValidatorStricter       today accepts, the validator refuses; kind is
 //                           Malformed | ObligationFailed | NotCertifiable
-//                           | Prerequisite (a G0 refusal)
+//                           | G0 (a refusal of Substitution's G0 check)
 //   ValidatorWider          today refuses, the validator accepts
-//   C6-expected-divergence  ValidatorWider only when today's refusal is
-//                           FailNeedsConcrete at a recorded FailConcrete
-//                           whose payload head is a hole settled to the
-//                           default, the validator accepting (spec C6)
+//   C6-expected-divergence  today's refusal is FailNeedsConcrete at (`at`)
+//                           a recorded FailConcrete whose payload head is
+//                           a hole settled to the default, the validator
+//                           accepting (spec C6)
 //   GenerationDefect        a RecordDefect refusal or a RecordDefective
 //                           block, under any verdict (spec §6)
 import { load } from './r0-generate-support.mjs';
@@ -45,14 +49,19 @@ export const categories = ['Agree', 'ValidatorStricter', 'ValidatorWider',
 const nameOf = value => value.constructor.name;
 const isRight = result => nameOf(result) === 'Right';
 const refusalName = result => nameOf(result.value0);
+const g0Refusals = ['Unsatisfied', 'Undefined', 'NotEntailed',
+  'RequirementOpen', 'RequirementFails', 'RequirementUnjudged',
+  'NotGeneric'];
+const checkRefusals = ['Malformed', 'ObligationFailed', 'NotCertifiable'];
 
 // The default a settled hole takes (ReadBack `settled`, W §1.5).
 const isInt = ty => ty instanceof P.PBase
   && ty.value0 instanceof Atom.IntBase;
 
-// The validator's acceptance short of the witness: prerequisites, then
-// the recorded obligations judged on the completed package, as `validate`
-// minus G0 (which reads P_in, not P_c: the Owed Task 15 item).
+// Prerequisites, then the recorded obligations judged on the completed
+// package: `validate` minus G0, which reads P_in, not P_c. It is shown
+// only as a separately labeled note beside a refusal, never as the
+// validator's result.
 export const obligationsOnly = (problem, input) => {
   const first = Validate.prerequisites(problem)(input);
   return isRight(first) ? Validate.judgeObligations(problem)(
@@ -81,33 +90,54 @@ export const holeSettledPayloads = (problem, input) => {
       : []);
 };
 
-const defective = (result, blocks) =>
-  (!isRight(result) && refusalName(result) === 'RecordDefect')
-  || blocks.some(block => nameOf(block) === 'RecordDefective');
+// A provenance as plain data, for the output.
+const plain = value => {
+  if (Array.isArray(value)) return value.map(plain);
+  if (value === null || typeof value !== 'object') return value;
+  return value.constructor === Object ? Object.fromEntries(
+    Object.keys(value).map(name => [name, plain(value[name])]))
+    : { [nameOf(value)]: Object.keys(value).map(name =>
+      plain(value[name])) };
+};
 
-const kindOf = result => ['Malformed', 'ObligationFailed', 'NotCertifiable']
-  .includes(refusalName(result)) ? refusalName(result) : 'Prerequisite';
+const defectOf = (result, blocks) => {
+  const block = blocks.find(item => nameOf(item) === 'RecordDefective');
+  if (block !== undefined) return block.value0;
+  return !isRight(result) && refusalName(result) === 'RecordDefect'
+    ? result.value0.value0.provenance : undefined;
+};
+
+const kindOf = result => {
+  const name = refusalName(result);
+  if (checkRefusals.includes(name)) return name;
+  if (g0Refusals.includes(name)) return 'G0';
+  throw new Error(`no differential kind for the refusal ${name}`);
+};
 
 const wider = item => item.today.refusal === 'FailNeedsConcrete'
-  && holeSettledPayloads(item.problem, item.input).length > 0
-  ? { category: 'C6-expected-divergence' }
-  : { category: 'ValidatorWider' };
+  && holeSettledPayloads(item.problem, item.input).includes(item.today.at)
+  ? { category: 'C6-expected-divergence' } : { category: 'ValidatorWider' };
 
-const decided = (item, result) => {
-  if (defective(result, item.blocks ?? [])) return { category:
-    'GenerationDefect' };
+const decided = (item, result, defect) => {
+  if (defect !== undefined) return { category: 'GenerationDefect',
+    defect: plain(defect) };
   if (isRight(result)) return item.today.accepts ? { category: 'Agree' }
     : wider(item);
   return item.today.accepts ? { category: 'ValidatorStricter',
-    kind: kindOf(result) } : { category: 'Agree' };
+    kind: kindOf(result) } : { category: 'Agree', kind: refusalName(result) };
 };
+
+const noted = (item, result) => isRight(result) ? {} : {
+  obligationsOnly: isRight(obligationsOnly(item.problem, item.input))
+    ? 'accepts' : 'refuses' };
 
 export const classify = item => {
   if (!evidences.includes(item.evidence))
     throw new Error(`evidence is fixture or corpus: ${item.evidence}`);
-  const result = item.result ?? validatorOf(item.problem, item.input);
+  const result = validatorOf(item.problem, item.input);
+  const defect = defectOf(result, item.blocks ?? []);
   return { name: item.name, evidence: item.evidence,
-    ...decided(item, result),
+    ...decided(item, result, defect), ...noted(item, result),
     today: item.today.accepts ? 'accepts' : `refuses ${item.today.refusal}`,
     validator: isRight(result) ? 'accepts' : `refuses ${refusalName(result)}`,
     basis: item.evidence === 'fixture' ? 'predicted' : 'observed' };
@@ -115,14 +145,24 @@ export const classify = item => {
 
 const line = row => `  ${row.name}: ${row.category}`
   + `${row.kind ? ` (${row.kind})` : ''}; today ${row.today}; `
-  + `${row.basis} validator ${row.validator}`;
+  + `${row.basis} validator ${row.validator}`
+  + `${row.obligationsOnly ? `; obligations-only: ${row.obligationsOnly}`
+    : ''}${row.defect ? `; defect at ${JSON.stringify(row.defect)}` : ''}`;
 
 // One section per kind of evidence, never merged.
 export const render = rows => evidences.flatMap(evidence => [
   `${evidence} evidence:`,
   ...rows.filter(row => row.evidence === evidence).map(line)]).join('\n');
 
+const countOf = (rows, evidence, matches) => rows.filter(row =>
+  row.evidence === evidence && matches(row)).length;
+
+// Per evidence: each category, and each category with a kind as
+// `Category/kind`, so refusals that agree stay separable.
 export const summarize = rows => Object.fromEntries(evidences.map(
-  evidence => [evidence, Object.fromEntries(categories.map(category =>
-    [category, rows.filter(row => row.evidence === evidence
-      && row.category === category).length]))]));
+  evidence => [evidence, Object.fromEntries([
+    ...categories.map(category => [category, countOf(rows, evidence,
+      row => row.category === category)]),
+    ...[...new Set(rows.filter(row => row.kind).map(row =>
+      `${row.category}/${row.kind}`))].map(label => [label, countOf(rows,
+      evidence, row => `${row.category}/${row.kind}` === label)])])]));
