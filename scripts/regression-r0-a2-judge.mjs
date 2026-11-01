@@ -6,6 +6,7 @@ const effects = 'src/Features/Check/Strategy/Effects';
 const term = `${effects}/Term.purs`;
 const rows = `${effects}/Rows.purs`;
 const handler = `${effects}/Handler.purs`;
+const consume = `${effects}/Consume.purs`;
 
 export const a2JudgeRows = [
   {
@@ -115,5 +116,47 @@ export const a2JudgeRows = [
     ],
     probe: 'r0-a2-def41-d-tail',
     message: /attempt B accepted: x owning C ∅ meets both sides/
+  },
+  {
+    // Task 8: Definition 4.2's exact counts checked before the labels, so
+    // C10(a)'s payload failure is reported as a limitation (spec §5, §12).
+    name: 'r0-a2-def42-last',
+    edits: [
+      {
+        file: consume,
+        needle: '    labels sourceKeys targetForm\n',
+        replacement: '    rigid (const (exact sourceKeys target))\n'
+          + '      >=> labels sourceKeys targetForm\n'
+      },
+      {
+        file: consume,
+        needle: '      >=> rigid (const (exact sourceKeys target))\n',
+        replacement: ''
+      }
+    ],
+    probe: 'r0-a2-def42-last',
+    message: /C10\(a\) reported as a limitation/
+  },
+  {
+    // Task 8: the installed-C site compares label arguments (ruling
+    // 2026-10-31: pairing and its edge only), so famw is refused.
+    name: 'r0-a2-installed-c-only',
+    file: consume,
+    needle: '  AtInstalledC → { arguments: false, marks: record.marks,'
+      + ' tail: false }\n',
+    replacement: '  AtInstalledC → { arguments: true, marks: record.marks,'
+      + ' tail: false }\n',
+    probe: 'r0-a2-installed-c-only',
+    message: /famw refused at the installed-C site/
+  },
+  {
+    // Task 8: `defer` reads its row's tail (statements §4 E2: labels
+    // only), so a rigid-tailed d asks the enclosing row to end in it.
+    name: 'r0-a2-labels-only',
+    file: consume,
+    needle: '  AtDefer → labelsOnly\n',
+    replacement: '  AtDefer → labelsOnly { tail = true }\n',
+    probe: 'r0-a2-labels-only',
+    message: /AtDefer read a tail condition/
   }
 ];

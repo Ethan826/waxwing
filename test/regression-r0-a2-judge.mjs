@@ -63,6 +63,31 @@ const equalModules = async load => {
   };
 };
 
+// Recorded rows with written marks, read under the empty package
+// (test/r0-a2-consume.test.mjs): `Ask` effect 0, `Log` 1, `State` 2.
+const consumeModules = async load => {
+  const Effect = await load('Domain.Recorded.Effect');
+  const Row = await load('Domain.Row');
+  const Atom = await load('Domain.Recorded.Atom');
+  const { Just, Nothing } = await load('Data.Maybe');
+  const { empty } = await load('Data.Map.Internal');
+  const Consume = await load(`${effects}.Consume`);
+  const context = { package: { types: empty, rows: empty, effects: empty,
+    marks: empty }, rigidMarks: [] };
+  const base = name => new Effect.MBase(Atom[name].value);
+  return {
+    base,
+    job: args => new Effect.MData(3, args, []),
+    label: (effect, mark, args = []) => ({ effect: effect === 'Fail'
+      ? Row.FailEffect.value : new Row.UserEffect(effect), args,
+    mark: new Effect.Written(Effect[`Fixed${mark}`].value) }),
+    row: (labels, rigid = null) => ({ labels, tail: rigid === null
+      ? Nothing.value : new Just(new Effect.EffRigid(rigid)) }),
+    judged: (kind, source, target, bare) => Consume.consumeCheck(context)(
+      { site: Effect[kind].value, source, target, marks: true, bare })
+  };
+};
+
 export const a2JudgeProbes = {
   // Task 6: `J ∅` normalizes to N, so `J ∅ ⊑ N` holds.
   'r0-a2-norm': async context => {
@@ -127,6 +152,37 @@ export const a2JudgeProbes = {
     const x = E.ask(r, E.row([], false));
     if (E.same(resultC, x) && E.same(g, x))
       fail('attempt B accepted: x owning C ∅ meets both sides');
+    passed(context);
+  },
+  // Task 8, C10(a): the payload (j 1) fails before Definition 4.2's
+  // exact count, so the failure is ordinary.
+  'r0-a2-def42-last': async context => {
+    const C = await consumeModules(loader(context));
+    const state = payload => C.label(2, 'M', [C.base(payload)]);
+    const found = C.judged('AtCallback', C.row([state('IntBase')], 0),
+      C.row([C.label(1, 'M'), state('BoolBase')], 0), false);
+    if (found.constructor.name !== 'Left' || found.value0.limit
+      || found.value0.check !== 1)
+      fail(`C10(a) reported as a limitation: ${JSON.stringify(found)}`);
+    passed(context);
+  },
+  // Task 8, famw: `Fail(Job)` in C against `Fail(Job(Int))` in ρ.
+  'r0-a2-installed-c-only': async context => {
+    const C = await consumeModules(loader(context));
+    const found = C.judged('AtInstalledC',
+      C.row([C.label('Fail', 'N', [C.job([])])]),
+      C.row([C.label('Fail', 'N', [C.job([C.base('IntBase')])])], 0), true);
+    if (found.constructor.name !== 'Right')
+      fail('famw refused at the installed-C site');
+    passed(context);
+  },
+  // Task 8: `Log + ϱ` deferred into a closed `Log + Ask`: labels only.
+  'r0-a2-labels-only': async context => {
+    const C = await consumeModules(loader(context));
+    const found = C.judged('AtDefer', C.row([C.label(1, 'M')], 4),
+      C.row([C.label(1, 'M'), C.label(0, 'M')]), false);
+    if (found.constructor.name !== 'Right')
+      fail('AtDefer read a tail condition');
     passed(context);
   }
 };

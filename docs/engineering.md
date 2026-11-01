@@ -233,6 +233,10 @@ adding a bypass allowlist.
     turns a failed check into `RigidExact`, `ForcedTail` or an ordinary
     failure; a missed edge reports a dependent failure as ordinary, an
     extra edge an unrelated one as `ForcedTail` (spec §5.1).
+  - `Features.Check.Strategy.Effects.Consume`: `consumeCheck` decides
+    E2, `Consume` obligations, with Definition 4.2's exact counts last
+    and alone marked as a limitation; a wrong reading lets an effect
+    reach a handler or row that does not allow it (statements §4).
   - `Features.Check.Strategy.Effects.Equal`: `equalCheck` and `samePTy`
     decide E1, `Equal` obligations, by structural equality on the settled
     package, and report the failing check's place in spec §9's order.

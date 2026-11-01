@@ -85,6 +85,7 @@ vertical slice before adding language features. Task tracking is local.
   `Domain.Recorded.Hole`; for A2 (the effect validator), every
   Features.Check.Strategy.Effects module as it lands
   (`Features.Check.Strategy.Effects.Complete`,
+  `Features.Check.Strategy.Effects.Consume`,
   `Features.Check.Strategy.Effects.Dependency`,
   `Features.Check.Strategy.Effects.Equal`,
   `Features.Check.Strategy.Effects.Forced`,
