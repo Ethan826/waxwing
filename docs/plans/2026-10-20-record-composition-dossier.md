@@ -7503,3 +7503,37 @@ for unread frames is untested by the corpus and a named precondition
 for lifting the block. Over-claims found: "over-approximates" (N3);
 the `blocks` sentence; §2.2's image-C sentence. No source label
 upgraded; owed tests labeled owed.
+
+### 18.143 A2: the four S2s to fix before commit; N3 and C6 ruled (2026-10-31)
+
+The author committed the staged pass by hand (a720cc0 on `a2/fix`) as
+an intermediate record and authorized one document correction pass
+for §18.142's four S2s, with a targeted confirmation of those fixes
+(not a whole-specification review); the result is staged for the
+author's own commit. N1: the proposed repair accepted: the
+`Compilation` is computed in Strategy.Substitution, where the
+`RecordedProblem` and coverage are available, and stored beside the
+authoritative completed package; Domain accessors only return stored
+data; how this avoids recompleting or renumbering holes is specified.
+N2: C13 corrected to the Unsupported-first pipeline, two claims kept
+apart: the program is blocked by UnframedInstall; an image-owned C can
+be examined through `Equal` in an isolated obligation fixture, not
+presented as end-to-end certification, and Install is not said to read
+an image's C. N3: the dependency is closed over positions too, with
+explicit, documented dependency edges (the variable-to-frame-to-Defer
+route and other mark dependencies); C1's expected classification
+updated; separating cases for direct dependency, dependency through a
+frame, and an unrelated failure; NotCertifiable denotes dependency on
+the provisional restriction, not proof that forcing caused the
+failure. N4: statements §7 aligned with the decline/effect-limit
+routing; these refusals are not search faults. C6: option (c), a
+shadow-only expected divergence; E9 stays after settling; neither a
+language widening nor a D7-like compatibility guard; the claim that U4
+covers it removed; recorded as a replacement-compatibility decision to
+resolve before the new checker is enabled live; the observed
+old-checker refusal kept apart from the validator's acceptance,
+labeled predicted until a complete candidate passes every specified
+check; kept visible in differential reporting. The unread-frame
+requirement stays the named precondition. The "[Modify Shared
+Resources]" denial stays unresolved: no agent retries the commit or
+the cleanup; the probes are kept. Implementation unauthorized.
