@@ -7775,3 +7775,40 @@ Spend against §18.148's 1.2-1.7M: subagents about 0.99M (arity 0.33M,
 companions 0.25M, scoped review 0.17M, fix wave 0.15M, re-review
 0.10M), controller not metered, roughly 0.1-0.2M; about 1.1-1.2M in
 all.
+
+### 18.150 A2 validator stage accepted (2026-11-01)
+
+The author accepted the A2 validator implementation stage through Tasks
+0-15 and 17, on the routine verify at ad3557b (parallel 3218, serial
+209, regression proofs 336; performance qualification not run). The
+evidence stays separated: the fixture-level validation and differential
+results are accepted; honest effect-package compatibility and the
+corpus differential remain owed.
+
+Rulings. (1) Different-key label order: the current comparison stays
+for the erased-substitution compatibility property, which permits
+record-field reordering only (erasure drops effect rows); no generic
+helper is broadened to reorder arbitrary arrays. A future comparison of
+full effect packages uses R-A's semantic row equality: distinct keys
+commute; same-key occurrence order, multiplicity, arguments, marks and
+tails stay significant. Documented in spec §11 and
+test/r0-a2-canonical.mjs; no acceptance run is needed for the wording.
+(2) The tail-order correction is ratified: changing the assertion and
+the comparison to preserve tails implements (5) of §18.148 rather than
+weakening a test. (3) Limitations stay explicit: the declaration
+metadata is trusted input from generation; accepting a fabricated
+declaration inside it does not let packages invent undeclared labels,
+and the correctness of the recorded declaration environment remains a
+generation obligation (spec §4.1 check 5). A duplicated owner is not
+thereby valid; its detection is a named record-invariant follow-up
+(BACKLOG R034 (10)). The quadratic companion scan is a performance
+qualification issue, with no performance claim (R034 (11)). (4) C6's
+replacement-compatibility decision stays open and Task 16 stays held;
+the new validator protects no current strategy acceptance and F14
+remains the operative assurance.
+
+Next: one coherent tranche 2 read-back plan (producing effect packages,
+exercising I3 on honest corpus packages, running the deferred
+compatibility property and differential, and specifying the activation
+gate). This acceptance authorizes neither its implementation nor a
+push.

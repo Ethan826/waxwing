@@ -5,7 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-01): **Tasks 0-15 implemented, reviewed and integrated;
+Status (2026-11-01, evening): **Tasks 0-15 and 17 ACCEPTED by the
+author (dossier §18.150; routine verify passed at ad3557b, §18.149;
+performance qualification not run); Task 16 held.** Before that:
+**Tasks 0-15 implemented, reviewed and integrated;
 Task 17 records, whole-branch review and acceptance verify in dossier
 §18.147; Task 16 held.** Earlier: **Tasks 0-15 and 17 authorized for
 subagent execution with the

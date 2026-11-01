@@ -12,11 +12,11 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. The A2 completion wave (dossier §18.148) is integrated and
-its acceptance verify passed at ad3557b (§18.149). Task 16 (the
-minting switch) is held for the author; performance qualification has
-not been run. Open for the author: different-key label order in the
-canonical comparison, the C6-absent replacement decision, U6. Plan:
+Nothing. The A2 validator stage (Tasks 0-15 and 17) is ACCEPTED
+(dossier §18.150; verify at ad3557b, §18.149). Task 16 held; C6's
+replacement decision and U6 open; performance not run. Next: write the
+tranche 2 read-back plan (§18.150 "Next"); its implementation is not
+authorized. A2 plan:
 docs/plans/2026-10-31-a2-validator-plan.md; live ledger (git-ignored):
 .superpowers/sdd/2026-10-31-a2-validator-plan/progress.md.
 

@@ -399,7 +399,12 @@ violation is `RecordDefect`. The checks, numbered by their index j in
   count has no second record to agree with: only its sign is checked.
   So a phantom user effect id (an extra `UserEffect` key the program
   does not declare, with any non-negative count) is **not** detected
-  by this check (review M3, 2026-11-01). Invalid arities are reported
+  by this check (review M3, 2026-11-01). The metadata is trusted input
+  from generation: accepting a fabricated declaration inside it does
+  not let a package invent undeclared labels (check (k) refuses any
+  label the metadata lacks), and the correctness of the recorded
+  declaration environment stays a generation obligation (author,
+  §18.150). Invalid arities are reported
   once, as the `InDeclarations` entry (§5 item 1), never at an entry
   that reads them.
   (ii) **Every recorded application conforms** to valid arities, in
@@ -755,8 +760,16 @@ corpus-observed and corpus-derived hold on today's pinned corpus only.
   effect labels included, kept in order and length, so record-tail
   order, effect-label multiplicity and same-key occurrence order are
   never changed (nor is the order of different keys: the ruling
-  permits field order only; tails keep their order by the controller's
-  ruling on review I2, 2026-11-01); maps read in key order. Its unit
+  permits field order only; tails keep their order, the controller's
+  ruling on review I2 ratified by the author, §18.150); maps read in key
+  order. The author kept this comparison for the erased-substitution
+  property (§18.150): it permits record-field reordering only, and
+  erasure drops effect rows, so label order never reaches it. It is not
+  to be broadened into a helper that reorders arbitrary arrays. A
+  future comparison of full effect packages uses R-A's semantic row
+  equality instead: labels with distinct keys commute, while same-key
+  occurrence order, multiplicity, arguments, marks and tails stay
+  significant. Its unit
   tests (test/r0-a2-canonical.test.mjs) equate field-order variants and
   refuse records differing only in tail order, a moved field value, a
   changed or dropped hole, a swapped same-key label order and a dropped

@@ -7,12 +7,17 @@
 //     value (RTExpr `Record`, PTy's `{ fields, tails }`);
 //   - a record's tails keep their order, none dropped (the author approved
 //     record FIELD order only; controller ruling on review I2,
-//     2026-11-01);
+//     ratified by the author, §18.150);
 //   - every other array keeps its order and length: effect labels keep
 //     their multiplicity and their occurrence order, same-key and
 //     otherwise (the ruling does not permit reordering labels);
 //   - variables, holes included, keep their identity: no renaming;
 //   - a map is read in its keys' `Ord` order.
+// It serves the erased-substitution property only (author, §18.150):
+// erasure drops effect rows, so label order never reaches it. Do not
+// broaden it to reorder arbitrary arrays; comparing full effect packages
+// takes R-A's semantic row equality (distinct keys commute; same-key
+// order, multiplicity, arguments, marks and tails stay significant).
 // Two values compare equal iff their canonical forms are equal. The
 // property itself stays owed until tranche 2's read-back produces honest
 // packages; this file defines the comparison only.
