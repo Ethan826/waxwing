@@ -14,11 +14,13 @@
 // kind (every entry under every key). Corpus-observed.
 import { createHash } from 'node:crypto';
 
-// Coverage, corpus-observed (Task 6's run): every entry under every key
-// of the finished traces, summed over the corpus's declarations. A
-// dropped `traced`, `appliedAt` or `pipedAt` call moves a count; a change
-// is reviewed, never re-pinned to pass.
-export const pinnedEntries = { uses: 40287, applied: 815, piped: 160 };
+// Coverage, corpus-observed (Task 6's and 6b's runs): every entry under
+// every key of the finished traces, summed over the corpus's
+// declarations. A dropped recorder call (`traced`, `appliedAt`,
+// `pipedAt`, Clauses `file`, Defer `checkDefer`, Install `install`) moves
+// a count; a change is reviewed, never re-pinned to pass.
+export const pinnedEntries = { uses: 40287, applied: 815, piped: 160,
+  clauses: 220, deferrals: 51, installations: 208 };
 
 const sha = text => createHash('sha256').update(text).digest('hex');
 
@@ -57,7 +59,8 @@ export const traceRun = async (load, corpus) => {
   const sizes = map => Maps.toUnfoldable(unfoldableArray)(map)
     .reduce((sum, item) => sum + item.value1.length, 0);
   const digests = {};
-  const counts = { uses: 0, applied: 0, piped: 0 };
+  const counts = Object.fromEntries(Object.keys(pinnedEntries).map(kind =>
+    [kind, 0]));
   const repeated = [];
   const outcome = found => {
     if (found.constructor.name !== 'Right')

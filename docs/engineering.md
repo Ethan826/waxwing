@@ -63,9 +63,11 @@ adding a bypass allowlist.
   language-cst-parser, as the style gate): a use of the record label
   `trace` (accessor, update, literal field or pun, record pattern) only
   in Scheme `start`, DeclarationUse `traced`, Apply `appliedAt` and
-  `pipedAt` and Function `checkFunction`, in pinned counts; Check/Trace
-  exports `Trace` without its constructor; no instance of any class on
-  `Trace`; `finish` imported by Check/Function alone, not re-exported.
+  `pipedAt`, Clauses `file`, Defer `checkDefer`, Install `install` and
+  Function `checkFunction`, in pinned counts; Check/Trace exports `Trace`
+  without its constructor; no instance of any class on `Trace`; `finish`
+  imported by Check/Function alone, not re-exported; Check/Trace/Types
+  imported by Check/Trace alone.
   An unparsed module fails, and a floor on modules read stops an empty
   scan. test/structure-trace.test.mjs holds the must-fail and near-miss
   probes. Blind: a label reached through a type-level string, and a

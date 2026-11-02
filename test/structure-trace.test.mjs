@@ -69,22 +69,27 @@ test('an instance on Trace fails, derived or written', () => {
 });
 
 test('Trace exported with its constructor fails', () => {
-  for (const exported of ['  ( Trace(..)', '  ( Trace(Trace)',
-    '  ( module Features.Check.Trace\n  , Trace'])
-    fails(replaced(trace, '  ( Trace\n', `${exported}\n`),
+  for (const exported of ['  , Trace(..)', '  , Trace(Trace)',
+    '  , module Features.Check.Trace\n  , Trace'])
+    fails(replaced(trace, '  , Trace\n', `${exported}\n`),
       /must export Trace without its constructor/);
   fails(replaced(trace, /module Features\.Check\.Trace\n[\s\S]*?\n {2}\) where/
     .exec(sources[trace])[0], 'module Features.Check.Trace where'),
   /must export Trace without its constructor/);
 });
 
-test('finish imported outside Check/Function fails', () => {
+test('finish or Trace.Types imported outside their owner fails', () => {
   for (const imported of ['import Features.Check.Trace (finish)',
     'import Features.Check.Trace as Trace',
     'import Features.Check.Trace hiding (emptyTrace)'])
     fails(replaced(unify, 'import Data.Array as Array\n',
       `import Data.Array as Array\n${imported}\n`),
     /Unify imports Features\.Check\.Trace's finish/);
+  for (const imported of ['import Features.Check.Trace.Types (Traced)',
+    'import Features.Check.Trace.Types as Types'])
+    fails(replaced(unify, 'import Data.Array as Array\n',
+      `import Data.Array as Array\n${imported}\n`),
+    /Unify imports Features\.Check\.Trace\.Types/);
   fails(replaced(fn, '(Rechecked, environment, recheck)',
     '(Rechecked, environment, finish, recheck)'),
   /Function re-exports finish/);

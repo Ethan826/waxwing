@@ -7,8 +7,9 @@
 // label `trace` (accessor path, record update, literal field or pun,
 // record pattern) appears only in the allowlisted declarations below, in
 // exactly the counts listed: State's field is written by Scheme `start`,
-// appended to by DeclarationUse `traced` and Apply `appliedAt` and
-// `pipedAt`, and read once, by Function `checkFunction`, as `finish`'s
+// appended to by DeclarationUse `traced`, Apply `appliedAt` and
+// `pipedAt`, Clauses `file`, Defer `checkDefer` and Install `install`
+// (Task 6b), and read once, by Function `checkFunction`, as `finish`'s
 // argument after every check has run (that declaration's literal field
 // is `Rechecked`'s). A listed entry that no longer matches is a finding
 // too. (3) Features.Check.Trace exists, has an export list, and exports
@@ -17,7 +18,9 @@
 // Generic, the design's four, and Newtype or any other, since a method
 // could read it); TraceKey's are allowed. (5) `finish` is brought into
 // scope (named, open or hiding import) by Features.Check.Function alone,
-// which re-exports nothing of it.
+// which re-exports nothing of it. (6) Features.Check.Trace.Types (the
+// trace's types and helpers, Task 6b) is imported by Features.Check.Trace
+// alone.
 //
 // Limits (reasoned). The gate sees syntax: a label reached through a
 // type-level string (a `Proxy "trace"` with a record library; none is a
@@ -27,6 +30,7 @@
 // constructor's unqualified name, so a different type named Trace
 // counts too (fails closed). The floor stops an empty or truncated scan.
 export const traceModule = 'Features.Check.Trace';
+export const typesModule = 'Features.Check.Trace.Types';
 export const finishImporter = 'Features.Check.Function';
 export const traceType = 'Trace';
 // Falls only with the owner's approval.
@@ -41,6 +45,12 @@ export const traceAllowed = [
   [`${check}.Apply`, 'appliedAt', 'accessor', 1],
   [`${check}.Apply`, 'pipedAt', 'update', 1],
   [`${check}.Apply`, 'pipedAt', 'accessor', 1],
+  [`${check}.Clauses`, 'file', 'update', 1],
+  [`${check}.Clauses`, 'file', 'accessor', 1],
+  [`${check}.Defer`, 'checkDefer', 'update', 1],
+  [`${check}.Defer`, 'checkDefer', 'accessor', 1],
+  [`${check}.Install`, 'install', 'update', 1],
+  [`${check}.Install`, 'install', 'accessor', 1],
   [`${check}.Function`, 'checkFunction', 'accessor', 1],
   [`${check}.Function`, 'checkFunction', 'field', 1]
 ].map(([module, declaration, form, count]) =>
@@ -97,6 +107,11 @@ const finishFindings = modules => modules.flatMap(module => {
   return leaked ? [`trace gate: ${module.name} re-exports finish`] : [];
 });
 
+const typesFindings = modules => modules.filter(module =>
+  module.name !== traceModule && module.imports.some(item =>
+    item.name === typesModule)).map(module =>
+  `trace gate: ${module.name} imports ${typesModule}`);
+
 // `sources`: src file path to text; `facts`: Style.Trace's reader.
 export const traceFindings = (sources, facts, floors = traceFloors) => {
   const read = Object.entries(sources).map(([file, source]) =>
@@ -108,7 +123,7 @@ export const traceFindings = (sources, facts, floors = traceFloors) => {
     + ` ${modules.length} modules, floor ${floors.modules}`] : [];
   return [...unparsed, ...floor, ...useFindings(modules),
     ...exportFindings(modules), ...instanceFindings(modules),
-    ...finishFindings(modules)];
+    ...finishFindings(modules), ...typesFindings(modules)];
 };
 
 // The checkStructure entry: every src .purs file in `files`, read with
