@@ -67,11 +67,30 @@ adding a bypass allowlist.
   Function `checkFunction`, in pinned counts; Check/Trace exports `Trace`
   without its constructor; no instance of any class on `Trace`; `finish`
   imported by Check/Function alone, not re-exported; Check/Trace/Types
-  imported by Check/Trace alone.
-  An unparsed module fails, and a floor on modules read stops an empty
-  scan. test/structure-trace.test.mjs holds the must-fail and near-miss
-  probes. Blind: a label reached through a type-level string, and a
-  same-count swap inside an allowlisted declaration;
+  imported by Check/Trace alone; Check/Trace's export list exactly the
+  reviewed one (`traceExports`: the type, `emptyTrace`, the six recorders,
+  `finish`, `module Features.Check.Trace.Types`), so a new function taking
+  a `Trace` fails until reviewed. An unparsed module fails, and a floor on
+  modules read stops an empty scan. test/structure-trace.test.mjs holds the
+  must-fail and near-miss probes. Blind spots: the gate keys on the label,
+  not the type, so an unrelated record's `trace` outside the allowlist is
+  a false positive and a same-count swap inside an allowlisted declaration
+  a false negative; the allowlist will also list readers of the finished
+  `Traced` as the read-back adds them (reviewed entries); a label reached
+  through a type-level string, or code outside src/, is not seen;
+  Check/Function's exports are not pinned, so a wrapper of `finish`
+  exported from it would pass. Inertness and coverage
+  (test/r0-t2-trace-inert.serial.test.mjs): per corpus declaration,
+  `recheck` less its trace equals the no-collection baseline's digest
+  (test/fixtures/r0/t2-trace-inert.json, built from the fixture's commit
+  with scripts/r0-t2-trace-removal.mjs, whose edits must each match once),
+  and the finished and raw traces' entry counts per kind are pinned. A
+  corpus re-pin moves both the digests' key set and the counts: the
+  fixture records the corpus manifest's SHA-256 and the test fails naming
+  the re-pin, `node scripts/r0-t2-trace-inert-pin.mjs <scratch dir outside
+  the worktree>` (src committed; the baseline must collect nothing), a
+  reviewed change whose digest diff must be explained; a new recorder
+  needs its removal edit first;
 - purs graph parses imports; the five-layer gate (Domain, Features, Format,
   Runtime, Program; docs/plans/2026-10-07-five-layers-design.md) rejects
   unlayered modules and imports of a later layer, restricts Domain, Features

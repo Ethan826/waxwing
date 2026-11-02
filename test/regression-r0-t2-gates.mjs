@@ -36,6 +36,7 @@ const counted = async context => {
   const moved = Object.keys(pinned).filter(key =>
     run.digests[key] !== pinned[key]);
   if (JSON.stringify(run.counts) !== JSON.stringify(pinnedEntries)
+    || JSON.stringify(run.collected) !== JSON.stringify(pinnedEntries)
     || moved.length > 0)
     fail(`${context.probe}: entries ${JSON.stringify(run.counts)};`
       + ` recheck moved ${moved.length}`);

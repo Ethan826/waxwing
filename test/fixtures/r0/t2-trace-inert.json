@@ -1,6 +1,7 @@
 {
- "commit": "e2352091564b633b6ba158afe89d0af912d79e65",
- "method": "scripts/r0-t2-trace-inert-pin.mjs over test/r0-corpus.mjs",
+ "commit": "15061f3a59fa3e73b3d47aae7ad61f715c8d1848",
+ "baseline": "scripts/r0-t2-trace-removal.mjs applied to commit",
+ "corpusManifest": "282e04cc646ffd0ac3fb87b12de72ed27a89dcf82a7a1c695f89bd1e3fbb120c",
  "declarations": 3061,
  "digests": {
   "docs/plans/2026-10-21-c001-explicit/baseline/a1-discard-dictionary.wxw#discard": "50a6cdb19bb530c7f24ede697c78653127d343f8a2052e265de4f460b811bb31",

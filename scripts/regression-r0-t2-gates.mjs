@@ -47,5 +47,19 @@ export const t2GatesRows = [
     message: new RegExp('r0-t2-gates-counts: entries '
       + '\\{"uses":\\d+,"applied":815,"piped":160,"clauses":220,'
       + '"deferrals":51,"installations":208\\}; recheck moved 0')
+  },
+  {
+    // A recorder that also decides: `traced` bumps the meta counter
+    // `next` as it appends, so later metas are numbered differently. The
+    // counts hold; the digests of recheck less its trace move.
+    name: 'r0-t2-gates-decision',
+    file: 'src/Features/Check/DeclarationUse.purs',
+    needle: '      { trace = recordUse span entry use.state.trace }\n',
+    replacement: '      { trace = recordUse span entry use.state.trace\n'
+      + '      , next = use.state.next + 1\n'
+      + '      }\n',
+    probe: 'r0-t2-gates-counts',
+    message: new RegExp('r0-t2-gates-counts: entries '
+      + '\\{"uses":40287,.*"installations":208\\}; recheck moved [1-9]')
   }
 ];

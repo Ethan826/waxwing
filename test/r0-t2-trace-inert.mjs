@@ -13,6 +13,16 @@
 // both encode the same way. Plus the finished trace's entry counts per
 // kind (every entry under every key). Corpus-observed.
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+export const inertFixture = 'test/fixtures/r0/t2-trace-inert.json';
+export const repinProcedure = 'node scripts/r0-t2-trace-inert-pin.mjs'
+  + ' <scratch dir outside the worktree> (a reviewed re-pin: the digests'
+  + ' must move only with the corpus; see the header of'
+  + ' test/r0-t2-trace-inert.serial.test.mjs)';
 
 // Coverage, corpus-observed (Task 6's and 6b's runs): every entry under
 // every key of the finished traces, summed over the corpus's
@@ -23,6 +33,11 @@ export const pinnedEntries = { uses: 40287, applied: 815, piped: 160,
   clauses: 220, deferrals: 51, installations: 208 };
 
 const sha = text => createHash('sha256').update(text).digest('hex');
+
+// The pinned corpus's identity: the SHA-256 of its manifest
+// (test/fixtures/r0/corpus-manifest.json), so a corpus re-pin is seen.
+export const corpusHash = () => sha(readFileSync(
+  join(root, 'test/fixtures/r0/corpus-manifest.json')));
 
 // Plain data from compiled PureScript values: a map as its [key, value]
 // pairs in key order, a constructor as { Name: [fields] }, a record's
@@ -59,16 +74,25 @@ export const traceRun = async (load, corpus) => {
   const sizes = map => Maps.toUnfoldable(unfoldableArray)(map)
     .reduce((sum, item) => sum + item.value1.length, 0);
   const digests = {};
-  const counts = Object.fromEntries(Object.keys(pinnedEntries).map(kind =>
-    [kind, 0]));
+  const zero = () => Object.fromEntries(Object.keys(pinnedEntries)
+    .map(kind => [kind, 0]));
+  // `counts`: the finished trace's entries; `collected`: the raw trace's
+  // in the final `State`, before `finish` (a baseline that only skips
+  // `finish` still collects, and shows here).
+  const counts = zero();
+  const collected = zero();
+  const add = (into, traced) => {
+    if (traced !== undefined)
+      for (const kind of Object.keys(into))
+        into[kind] += sizes(traced[kind]);
+  };
   const repeated = [];
   const outcome = found => {
     if (found.constructor.name !== 'Right')
       return { refused: shape(found.value0) };
     const { trace, ...state } = found.value0.state;
-    if (found.value0.trace !== undefined)
-      for (const kind of Object.keys(counts))
-        counts[kind] += sizes(found.value0.trace[kind]);
+    add(counts, found.value0.trace);
+    add(collected, trace);
     return { function: shape(found.value0.function), state: shape(state) };
   };
   for (const { origin, source } of corpus) {
@@ -85,5 +109,5 @@ export const traceRun = async (load, corpus) => {
         recheck(holders)(program)(decl))));
     }
   }
-  return { digests, counts, repeated };
+  return { digests, counts, collected, repeated };
 };
