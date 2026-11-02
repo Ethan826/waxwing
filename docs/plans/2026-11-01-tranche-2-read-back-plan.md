@@ -8,7 +8,10 @@
 Status (2026-11-01): **Stage A (Tasks 1-2) authorized, dossier
 §18.151, with its clarifications and the directions Q1 live graph, Q2
 `NoCandidate` first, Q3 acceptable in principle; Stage B and Task 16
-held; no push.** Earlier: proposed, not authorized (§18.150).
+held; no push.** Then §18.152 (inventory stop) and §18.153 (trace,
+not solver); Q2's "`NoCandidate` first" is realized as the design's one
+routing, a read fault in `Certificate.effects`. Earlier: proposed, not
+authorized (§18.150).
 Stage A (Tasks 1-2) is design and measurement only and ends at an
 approval gate; Stage B (Tasks 3-9) is specified at the interface
 level and is rewritten in detail from Stage A's approved design before
@@ -115,11 +118,11 @@ Task 1 measures it.
   Mogensen 1999], **adapted** (lattice of N, `J S`, M). Approval:
   statements approved as a representation (535b780). Evidence: the
   oracle; P1 and P2 open (U6).
-- Auxiliary effect variables without a live counterpart: **open**.
-  Either refused (`NoCandidate`) or completed by row unification with
-  scoped labels [Leijen 2005], **adapted**, as the type read-back
-  completes auxiliaries by Robinson unification (ReadBack.purs step 2).
-  Decided at Stage A's gate (question Q2).
+- Auxiliary effect variables without a live counterpart: **decided**
+  (§18.151, §18.153): live-value tracing, no completion solver; a value
+  the trace cannot read is a read fault (design note §C.6), never a
+  completed binding. The design note's §G is the provenance table for
+  Stage B.
 - Hole numbering: A2 specification §2.4 (one numbering across sorts),
   **faithful**.
 - Corpus differential against an independent checker: the A2 plan's
@@ -128,9 +131,10 @@ Task 1 measures it.
 
 ## Review Focus
 
-- A recorded effect variable or position with no live counterpart must
-  make the read-back return `NoCandidate` with the missing role named,
-  never a guessed value (Task 3, test "unread role is NoCandidate").
+- A recorded effect variable or position with no live counterpart
+  gives a read fault naming the missing role, as `Left` in the
+  certificate's `effects` field while G0 decides as today (design note
+  §C.6, one routing), never a guessed value.
 - Two positions sharing one live mark meta take the same least term
   (one term per class, statements P2); a per-position computation is
   the oracle's known mutant (Task 4, test "shared meta, one term").
@@ -214,7 +218,12 @@ Task 1 measures it.
 
 ## Stage B: implementation (after Stage A's approval)
 
-Interfaces below are proposed and change with the design.
+**Superseded (2026-11-01):** the design note
+docs/plans/2026-11-01-tranche-2-read-back-design.md §I (after its
+adversarial review) is the revised Stage B task list and governs where
+it differs from the first draft below, which is kept as a record. In
+particular a read failure is never `NoCandidate`: it is `Left` in
+`Certificate.effects` (design §C.6).
 
 ### Task 3: effect rows read back by position
 
@@ -231,7 +240,7 @@ readRows
 ```
 
 - [ ] Tests first: per role, a fixture declaration and the expected
-  `PRow`; "unread role is NoCandidate"; "bare C keeps Fail's payload";
+  `PRow`; "unread role is a read fault"; "bare C keeps Fail's payload";
   a row read at a stage, an instantiation, a handler literal's R and C,
   an annotation C, `main`'s entry tail. RED, implement, GREEN, rows,
   commit.
