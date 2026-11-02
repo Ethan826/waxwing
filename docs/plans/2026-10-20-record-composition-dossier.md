@@ -7916,3 +7916,58 @@ generation correction and the production trace design. Production
 edits and re-pinning stay held for Stage B. Task 2 finishes the design
 and the adversarial review and returns one revised implementation
 proposal; no checkpoint for ordinary research corrections.
+
+### 18.154 Stage A complete: the read-back design, reviewed (2026-11-01)
+
+Design note docs/plans/2026-11-01-tranche-2-read-back-design.md,
+revision 3 (f7997bd, f03cd95, and the re-review conditions), probes
+under research/t2-read-back-design/ and research/t2-read-back-review/;
+no production edit, no re-pin. Source manifest: the corpus loader's
+set (2823 candidates of 3061 declarations) is a strict subset of the
+effect pin's (2832 of 3071; four inline programs added). With the
+generation correction and the trace, 2814 candidates map consistently
+on the corpus loader (2822 on the pin set); the 9 (10)
+`UnframedInstall` declarations stay unsupported. The trace recovered
+every unread role (0 not recovered); no synthetic stage row exists
+(class (ii) 0), so no reconstruction rule is proposed. Non-interference
+was observed through a research hook only: `recheck` identical for all
+3061 declarations and first diagnostics with Go identical for 1138
+entries; the production trace must show it again (Task 3d).
+
+Adversarial review (one Opus reviewer, adversarial-procedure-review):
+not ready at revision 1. C1: the correction minted the lambda's
+`EffectOf` twice (observed: r0-marked-corpus failed on 31
+declarations; A2 record validation is blind to it through a `Set`);
+fixed by recording the renamed annotation and minting the unrenamed
+one (observed 4/4; the effect pin moves exactly 31 keys). I1: type
+images need rows, marks and clause rows `unsettled` lacks (130
+declarations); a positional `readImage` added, 4 auxiliary images in 2
+declarations kept as read faults. I2: the type read-back's θ binds 0
+holes on the corpus (observed); effects are read under it anyway. I3:
+the honest-package gate made able to fail (pinned lists both ways, a
+minimum count, must-fail probes). I4: one routing, a read fault as
+`Left` in `Certificate.effects` while G0 decides. Re-review: ready with
+conditions, all met at revision 3 (record-row fields read live;
+`ImageApart` described as an erasure-agreement guard only; an
+unconstrained mark meta reads N by §5's definition). Claims standing:
+H1 with the fix and H4, H7, H11, H12 corpus-observed; H2 (the 11
+annotation declarations validate after the correction) reasoned; P1
+untested; least terms bounded agreement with the definition only.
+
+Proposal for the author (design §I and "Points for the author"):
+Stage B as Tasks 3a (generation correction, effect re-pin of exactly
+31 keys), 3b-3d (hole numbering export, the trace, its gates), 4-6a
+(rows, marks, type images, assembly), 7 (the certificate field), 8
+(honest packages through I3 and the validator, pinned lists), 9
+(compatibility checks), 10 (differential, marks only), 11-12 (the
+activation gate specification, records, review, verify); about
+4.4-6.0M plus the controller's 0.5-0.8M. Open for the author: the
+correction and its split; a repeated `flexEff`/`positions` entry in
+A2 record validation (validator frozen); the invented components (span
+matching with the site table and the (span, argument span) key, the
+order of extension hole numbers); the trace's placement; statements
+§7's "returns `NoCandidate`" against the one routing; the 2
+`UnreadImage` declarations; Task 8's first pinned lists; §D's
+refinements. Stage A spend about 1.1M (Task 1 0.31M, the design 0.43M
+over three rounds, review 0.28M, controller about 0.1M) against
+0.7-1.0M, an estimate not a cap. Stage B and Task 16 held; no push.
