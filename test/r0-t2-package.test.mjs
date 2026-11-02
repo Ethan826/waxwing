@@ -56,6 +56,14 @@ test('Declined for an Unsupported problem', () => {
   assert.deepEqual(checks.declinedWrong(), []);
 });
 
+test('the first Unsupported in recorded order is declined', () => {
+  assert.deepEqual(checks.declinedOrderWrong(), []);
+});
+
+test('a bound record tail follows Merge, else UnreadImage', () => {
+  assert.deepEqual(checks.recordTailWrong(), []);
+});
+
 test('MarkClash first', () => {
   assert.deepEqual(checks.clashWrong(), []);
 });

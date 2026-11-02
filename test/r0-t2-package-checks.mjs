@@ -15,6 +15,10 @@ export const packageChecks = async load => {
   const Forced = await load('Features.Check.Strategy.Effects.Forced');
   const Convert = await load('Features.Check.Strategy.ReadBack.Convert');
   const Row = await load('Domain.Row');
+  const Effect = await load('Domain.Recorded.Effect');
+  const P = await load('Domain.Verdict.EffectPackage.Types');
+  const Bound = await load('Features.Check.Strategy.ReadBack.Bound');
+  const Images = await load('Features.Check.Strategy.ReadBack.Images');
   const { Nothing } = await load('Data.Maybe');
   const { Tuple } = await load('Data.Tuple');
   const text = value => JSON.stringify(value);
@@ -110,6 +114,50 @@ export const packageChecks = async load => {
         .value0) === text(cases.Hole.holeVar(n)));
     }).map(([name]) => name);
   };
+  // The first `Unsupported` in recorded order is the one declined: an
+  // `OperationWithRow` planted before, then after, rigid's own.
+  const declinedOrderWrong = () => {
+    const item = live(sources.unframed, 'main');
+    const own = item.problem.effects.obligations;
+    const extra = { ...own.find(each => named(each.value) === 'Unsupported'),
+      value: new Effect.Unsupported(new Effect.OperationWithRow(0, 1)) };
+    const kindOf = obligations => {
+      const problem = { ...item.problem, effects: { ...item.problem.effects,
+        obligations } };
+      const found = cases.Assembly.readEffects(problem)(item.readBack)(
+        item.checked)(item.store)(item.trace);
+      return faultOf(found) === 'Declined' ? named(found.value0.value0)
+        : faultOf(found);
+    };
+    return [['before', [extra, ...own], 'OperationWithRow'],
+      ['after', [...own, extra], 'UnframedInstall']].filter(([, list,
+      kind]) => kindOf(list) !== kind).map(([name]) => name);
+  };
+  // A bound record tail in an effect row's label argument (no erasure
+  // guard there) follows Merge `substitute`: a record merges in; a tail
+  // bound to a variable, or a merge repeating a label, which Merge would
+  // not substitute, is `UnreadImage` on the bound tail.
+  const recordTailWrong = () => {
+    const hole = cases.Hole.holeVar;
+    const field = (label, ty) => new Tuple(label, ty);
+    const pint = new P.PBase(Atom.IntBase.value);
+    const read = value => Bound.boundRow({ bindings: Maps.singleton(5)(
+      value), image: Images.rowFree(Maps.empty) })({ labels: [{ effect:
+      Row.FailEffect.value, mark: P.TermN.value, args: [new P.PRecord({
+      fields: [field('a', pint)], tails: [hole(5)] })] }],
+    tail: Nothing.value });
+    const unread = found => faultOf(found) === 'UnreadImage'
+      && text(found.value0.value0) === text(hole(5));
+    const merged = found => faultOf(found) === 'Right' && text(shape(
+      found.value0.labels[0].args[0])) === text(shape(new P.PRecord({
+      fields: [field('a', pint), field('b', pint)], tails: [hole(6)] })));
+    return failing({
+      variable: () => unread(read(new Atom.TVar(hole(6)))),
+      repeated: () => unread(read(new Atom.Record([field('a', int)], []))),
+      record: () => merged(read(new Atom.Record([field('b', int)],
+        [hole(6)])))
+    });
+  };
   // A mark the injected terms do not read is an unread label.
   const unmarkedWrong = () => {
     const label = new Row.Label(new Row.UserEffect(0), [],
@@ -118,7 +166,7 @@ export const packageChecks = async load => {
       new Row.Row([label], Nothing.value));
     return named(found) === 'Left' ? [] : ['unread mark'];
   };
-  return { declinedWrong, clashWrong, forcedWrong, sortsWrong, sharedWrong,
-    distinctWrong, extensionWrong, thetaWrong, thetaFaultWrong,
-    unmarkedWrong };
+  return { declinedWrong, declinedOrderWrong, recordTailWrong, clashWrong,
+    forcedWrong, sortsWrong, sharedWrong, distinctWrong, extensionWrong,
+    thetaWrong, thetaFaultWrong, unmarkedWrong };
 };

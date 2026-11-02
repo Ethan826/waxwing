@@ -28,5 +28,7 @@ export const t2PackageProbes = {
   'r0-t2-package-theta-images': probe('thetaWrong'),
   'r0-t2-package-theta-unread': probe('thetaFaultWrong'),
   'r0-t2-package-theta-tail': probe('thetaFaultWrong'),
-  'r0-t2-package-unread-mark': probe('unmarkedWrong')
+  'r0-t2-package-unread-mark': probe('unmarkedWrong'),
+  'r0-t2-package-declined-order': probe('declinedOrderWrong'),
+  'r0-t2-package-record-tail': probe('recordTailWrong')
 };

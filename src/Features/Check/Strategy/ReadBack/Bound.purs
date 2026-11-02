@@ -8,9 +8,13 @@
 -- rigids). A binding it cannot convert (one needing rows or marks, or
 -- naming a flexible problem variable) is `UnreadImage (holeVar n)`: the
 -- effect side has no live value for it, and nothing is invented. A bound
--- record tail takes a record's fields and tails, or a variable as the
--- tail; a bound effect-row tail (`PTailHole n`) is always `UnreadImage`,
--- since θ's values carry no effect row. With no binding the value is
+-- record tail takes a record's fields and tails, as Entailed/Merge.purs
+-- `substitute` merges them; where Merge would not substitute (a tail
+-- bound to anything but a record, or a merge repeating a field label),
+-- the read is `UnreadImage` on that tail (the first bound one, for a
+-- repeated label), fail-closed rather than a value σ does not hold. A
+-- bound effect-row tail (`PTailHole n`) is always `UnreadImage`, since
+-- θ's values carry no effect row. With no binding the value is
 -- returned as it is (corpus-observed: θ binds no hole today).
 -- Arrow spines are walked by a loop (as ReadBack/Convert.purs).
 module Features.Check.Strategy.ReadBack.Bound
@@ -21,13 +25,13 @@ module Features.Check.Strategy.ReadBack.Bound
 
 import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRec)
-import Data.Array (concat, foldr, snoc)
+import Data.Array (concat, find, foldr, length, nub, snoc)
 import Data.Either (Either(..), note)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe, isJust, maybe)
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple(..), fst)
 import Domain.Recorded.Atom (RTExpr, Var)
 import Domain.Recorded.Hole (holeIndex, holeVar)
 import Domain.Verdict.EffectPackage
@@ -80,17 +84,29 @@ boundLabel ∷ Under → PLabel → Either ReadFault PLabel
 boundLabel under label = label { args = _ }
   <$> traverse (boundTy under) label.args
 
--- Fields bound in place; each bound tail spliced in, in tail order.
+-- Fields bound in place; each bound tail's record spliced in, in tail
+-- order, its labels distinct (Merge `record`).
 boundRecord ∷ Under → PRecordRow → Either ReadFault PRecordRow
-boundRecord under row = spliced
-  <$> traverse field row.fields
-  <*> traverse (boundTail under) row.tails
+boundRecord under row = do
+  fields ← traverse field row.fields
+  parts ← traverse (boundTail under) row.tails
+  let
+    merged =
+      { fields: fields <> concat (map _.fields parts)
+      , tails: concat (map _.tails parts)
+      }
+  maybe (Right merged) (distinct merged) firstBound
   where
   field (Tuple label value) = Tuple label <$> boundTy under value
-  spliced fields parts =
-    { fields: fields <> concat (map _.fields parts)
-    , tails: concat (map _.tails parts)
-    }
+  firstBound = find (isJust <<< bindingOf under) row.tails
+
+-- A merged record whose labels repeat is no value Merge substitutes.
+distinct ∷ PRecordRow → Var → Either ReadFault PRecordRow
+distinct merged tail =
+  if length (nub labels) == length labels then Right merged
+  else Left (UnreadImage tail)
+  where
+  labels = map fst merged.fields
 
 boundTail ∷ Under → Var → Either ReadFault PRecordRow
 boundTail under variable =
@@ -100,7 +116,6 @@ boundTail under variable =
   recordOf value = imageOf under variable value >>= asRecord
   asRecord = case _ of
     PRecord row → Right row
-    PVar other → Right { fields: [], tails: [ other ] }
     _ → Left (UnreadImage variable)
 
 boundArrow ∷ Under → PTy → Either ReadFault PTy

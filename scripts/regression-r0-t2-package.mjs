@@ -10,8 +10,8 @@ const forcedSkipped = { file: `${dir}EffectRows.purs`,
   needle: '  owned = not <<< flip Set.member forced\n',
   replacement: '  owned = const true <<< flip Set.member forced\n' };
 
-const row = (name, file, needle, replacement, message) => ({ name, file,
-  needle, replacement, probe: name, message });
+const row = (name, file, needle, replacement, message, probe = name) =>
+  ({ name, file, needle, replacement, probe, message });
 
 export const t2PackageRows = [
   // An `Unsupported` problem read as if it were supported.
@@ -85,6 +85,31 @@ export const t2PackageRows = [
       + '(holeVar index))\n',
     '      | Map.member index under.bindings → Right tail\n',
     /r0-t2-package-theta-tail: \["effectRow"\]/),
+  // The last `Unsupported` declined instead of the first.
+  { name: 'r0-t2-package-declined-order',
+    edits: [{ file: assembly,
+      needle: '  head (mapMaybe unsupported '
+        + '(fields problem).effects.obligations)\n',
+      replacement: '  head (reverse (mapMaybe unsupported '
+        + '(fields problem).effects.obligations))\n' },
+    { file: assembly, needle: 'import Data.Array (find, head, mapMaybe)\n',
+      replacement: 'import Data.Array (find, head, mapMaybe, reverse)\n' }],
+    probe: 'r0-t2-package-declined-order',
+    message: /r0-t2-package-declined-order: \["before","after"\]/ },
+  // A record tail bound to a variable read as that variable's tail,
+  // which Merge `substitute` would not substitute.
+  row('r0-t2-package-tail-variable', bound,
+    '    _ → Left (UnreadImage variable)\n',
+    '    PVar other → Right { fields: [], tails: [ other ] }\n'
+      + '    _ → Left (UnreadImage variable)\n',
+    /r0-t2-package-record-tail: \["variable"\]/,
+    'r0-t2-package-record-tail'),
+  // A merged record repeating a label kept, which Merge refuses.
+  row('r0-t2-package-tail-repeated', bound,
+    '  if length (nub labels) == length labels then Right merged\n',
+    '  if true || length (nub labels) == length labels then Right merged\n',
+    /r0-t2-package-record-tail: \["repeated"\]/,
+    'r0-t2-package-record-tail'),
   // A mark the injected terms do not read given N.
   { name: 'r0-t2-package-unread-mark',
     edits: [{ file: `${dir}Convert.purs`,

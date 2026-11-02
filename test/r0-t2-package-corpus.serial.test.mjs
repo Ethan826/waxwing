@@ -98,5 +98,8 @@ test('every candidate reads a package or a stated fault', async () => {
   assert.deepEqual(out.sortClashes, []);
   assert.deepEqual(out.erasure, []);
   assert.equal(out.holeBindings, 0);
+  // Corpus-observed drift pin, not a property: the hole numbers met in
+  // two maps of one package (shared identity in use), counted on this
+  // corpus on 2026-11-02. A change is explained, never silently re-pinned.
   assert.equal(out.shared, 47);
 });
