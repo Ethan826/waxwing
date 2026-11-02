@@ -8,9 +8,10 @@
 //
 // `admission` is ruling (7)'s condition on an initial pin: (a) exactly
 // the identified unsupported declarations (`Declined`) and the two
-// statsEvidence `UnreadImage`s; (b) at most three entries, each a
-// `RequirementUnjudged` that today's `certify` gives too, the same
-// refusal by its own Eq (checked per entry). Anything else, a
+// statsEvidence `UnreadImage`s; (b) only the three named
+// `RequirementUnjudged` declarations, each with the refusal today's
+// `certify` gives, the same by its own Eq (checked per entry); an
+// approved entry missing only with an explanation. Anything else, a
 // `Malformed` included, is a stop: it names the entry, never adjusts.
 // `gateProblems` compares an observation with a pin in both directions.
 const baseline = 'docs/plans/2026-10-21-c001-explicit/baseline/';
@@ -66,34 +67,58 @@ const approved = (allowed, fault) => allowed !== undefined
 
 const isUnjudged = text => text.startsWith('RequirementUnjudged ');
 
+// The three candidates `certify` refuses today (`RequirementUnjudged`),
+// the only ones list (b) may hold, each with that same refusal.
+export const unjudged = [
+  'examples/records.wxw#details',
+  'research/division-campaign/r0/probes/f05-print-key.wxw#shown',
+  'research/division-campaign/compile/split-selection.md#1#divide'];
+
+const inside = origins => at =>
+  origins.has(at.slice(0, at.lastIndexOf('#')));
+
+// The approved read faults of a denominator, by declaration.
+const allowedFaults = origins => new Map([
+  ...Object.entries(unsupported).map(([at, kind]) =>
+    [at, `Declined ${kind}`]),
+  ...unreadImages.map(at => [at, 'UnreadImage'])]
+  .filter(([at]) => inside(origins)(at)));
+
+// The approved entries of (a) and (b) the observation lacks: each a
+// disappearance, which needs an explanation (ruling (7)).
+export const vanishedApproved = (observed, origins) => {
+  const faults = new Map(observed.faults.map(entry =>
+    [entry.at, entry.fault]));
+  const refused = new Set(observed.refusals.map(entry => entry.at));
+  return [
+    ...[...allowedFaults(origins)].filter(([at, fault]) =>
+      !approved(fault, faults.get(at)))
+      .map(([at, fault]) => `approved read fault not observed: ${at} `
+        + fault),
+    ...unjudged.filter(at => inside(origins)(at) && !refused.has(at))
+      .map(at => `approved refusal not observed: ${at}`)];
+};
+
 // Ruling (7)'s condition for initializing the pin from `observed`, for a
-// denominator whose candidates have the origins in `origins`.
-export const admission = (observed, origins) => {
+// denominator whose candidates have the origins in `origins`. A
+// disappearance is a problem unless `explained`.
+export const admission = (observed, origins, explained = false) => {
   const problems = observed.malformed.map(entry =>
     `Malformed: ${entry.at} ${entry.i3}`);
-  const inside = at => origins.has(at.slice(0, at.lastIndexOf('#')));
-  const allowed = new Map([
-    ...Object.entries(unsupported).map(([at, kind]) =>
-      [at, `Declined ${kind}`]),
-    ...unreadImages.map(at => [at, 'UnreadImage'])]
-    .filter(([at]) => inside(at)));
-  const seen = new Map(observed.faults.map(entry =>
-    [entry.at, entry.fault]));
-  for (const [at, fault] of seen)
-    if (!approved(allowed.get(at), fault))
-      problems.push(`read fault not approved: ${at} ${fault}`);
-  for (const [at, fault] of allowed)
-    if (!approved(fault, seen.get(at)))
-      problems.push(`approved read fault not observed: ${at} ${fault}`);
+  const allowed = allowedFaults(origins);
+  for (const entry of observed.faults)
+    if (!approved(allowed.get(entry.at), entry.fault))
+      problems.push(`read fault not approved: ${entry.at} ${entry.fault}`);
   for (const entry of observed.refusals)
-    if (!isUnjudged(entry.refusal) || !entry.sameG0
-      || entry.certify !== entry.refusal)
+    if (!unjudged.includes(entry.at) || !isUnjudged(entry.refusal)
+      || !entry.sameG0 || entry.certify !== entry.refusal)
       problems.push(`unexpected validator refusal: ${entry.at} `
         + `${entry.refusal} (certify: ${entry.certify})`);
   if (observed.refusals.length > maxUnjudged)
     problems.push(`${observed.refusals.length} refusals, more than `
       + `${maxUnjudged}`);
-  return problems;
+  return explained ? problems
+    : [...problems, ...vanishedApproved(observed, origins)];
 };
 
 // The pin of one denominator, derived only from (a), (b) and the count.

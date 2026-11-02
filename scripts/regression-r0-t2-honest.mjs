@@ -5,19 +5,43 @@
 // compiling form: the gate's rows edit the test helpers (its own copy
 // of test/), the others the compiler.
 const gate = 'test/r0-t2-honest-gate.mjs';
+const repinRule = 'test/r0-t2-honest-repin.mjs';
+const counted = "    ...['floor', 'candidates'].filter(key => ";
 
 const helper = (name, file, needle, replacement, probe, message) =>
   ({ name, tree: 'test', edits: [{ file, needle, replacement }], probe,
     message });
 
 export const t2HonestRows = [
-  // The pin script's admission takes any refusal G0 also gives: a
-  // validator refusal certify accepts is admitted into (b).
+  // Admission takes a refusal `certify` accepts (as the four
+  // ForcedTail refusals of the first run) into (b).
   helper('r0-t2-honest-admits-refusal', gate,
-    '    if (!isUnjudged(entry.refusal) || !entry.sameG0\n'
-      + '      || entry.certify !== entry.refusal)\n',
-    '    if (!entry.sameG0 && entry.certify !== \'accepted\')\n',
+    '    if (!unjudged.includes(entry.at) || !isUnjudged(entry.refusal)\n'
+      + '      || !entry.sameG0 || entry.certify !== entry.refusal)\n',
+    '    if (entry.certify !== \'accepted\' && !entry.sameG0)\n',
     'r0-t2-honest-gate', /r0-t2-honest-gate: .*"otherRefusal"/),
+  // List (b) by kind, not identity: a new RequirementUnjudged with G0's
+  // own refusal is admitted.
+  helper('r0-t2-honest-unnamed-refusal', gate,
+    '    if (!unjudged.includes(entry.at) || !isUnjudged(entry.refusal)\n',
+    '    if (!isUnjudged(entry.refusal)\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"newRefusal"/),
+  // The re-pin rule without its vanished check: an entry leaves (a) or
+  // (b) unexplained.
+  helper('r0-t2-honest-repin-vanish', repinRule,
+    '      !kept.has(entry.at))\n',
+    '      !kept.has(entry.at) && false)\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"repinVanish"/),
+  // A floor lowered by one passes the re-pin rule unexplained.
+  helper('r0-t2-honest-repin-floor', repinRule,
+    `${counted}now[key] < old[key])\n`,
+    `${counted}now[key] < old[key] - 1)\n`,
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"repinLowered"/),
+  // Earlier explanations dropped on a re-pin.
+  helper('r0-t2-honest-repin-keeps', repinRule,
+    '    explanations: [...before?.explanations ?? [], ...added] } };\n',
+    '    explanations: [...added] } };\n',
+    'r0-t2-honest-gate', /explanations not carried forward/),
   // The lists compared one way only: a pinned entry that vanished
   // passes.
   helper('r0-t2-honest-one-way', gate,

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { admission, gateCases } from './r0-t2-honest-gate-cases.mjs';
+import { unjudged } from './r0-t2-honest-gate.mjs';
 
 // Tranche 2 Task 13's gate on synthetic rows (fixture-level): the
 // must-fail probes (a planted extra refusal, a removed pinned entry, a
@@ -19,8 +20,9 @@ test('a planted extra refusal fails the gate', () => {
 });
 
 test('a removed pinned entry fails the gate', () => {
-  assert.match(cases.removedEntry().join('\n'),
-    /pinned, not observed|not pinned/);
+  assert.deepEqual(cases.removedEntry(),
+    [`refusal pinned, not observed: ${unjudged[0]} `
+      + 'RequirementUnjudged {"decl":0}']);
 });
 
 test('a validated count one below the floor fails the gate', () => {
@@ -38,12 +40,37 @@ test('ruling (7) admits the identified lists only', () => {
   assert.match(cases.extraFault().join('\n'), /read fault not approved/);
   assert.match(cases.missingFault().join('\n'),
     /approved read fault not observed/);
-  assert.match(cases.otherRefusal().join('\n'),
-    /unexpected validator refusal: .* NotCertifiable ForcedTail/);
+  assert.deepEqual(cases.otherRefusal(), ['unexpected validator '
+    + `refusal: ${unjudged[2]} NotCertifiable ForcedTail (certify: `
+    + 'accepted)']);
   assert.match(cases.differentG0().join('\n'),
     /unexpected validator refusal/);
   assert.match(cases.fourUnjudged().join('\n'), /4 refusals, more than 3/);
 });
+
+test('list (b) holds the three named declarations only', () => {
+  assert.deepEqual(cases.vanishedRefusal(),
+    [`approved refusal not observed: ${unjudged[1]}`]);
+  assert.deepEqual(cases.explainedVanish(), []);
+  assert.deepEqual(cases.newRefusal(), ['unexpected validator refusal: '
+    + 'v.wxw#a RequirementUnjudged {"decl":0} (certify: '
+    + 'RequirementUnjudged {"decl":0})']);
+});
+
+test('the re-pin rule refuses what it must and keeps explanations',
+  () => {
+    assert.deepEqual(cases.repinHolds(), []);
+    assert.deepEqual(cases.withoutRepin(), ['a pin exists: --repin']);
+    assert.deepEqual(cases.repinVanish(),
+      [`needs --explain: d: vanished ${unjudged[1]}`]);
+    assert.deepEqual(cases.repinLowered(),
+      ['needs --explain: d: floor 3 to 2']);
+    assert.deepEqual(cases.repinMissing(),
+      ['the old pin has no denominator d']);
+    assert.deepEqual(cases.repinKeeps(), [
+      { explanation: 'earlier', covers: [] },
+      { explanation: 'why', covers: [`d: vanished ${unjudged[1]}`] }]);
+  });
 
 test('admission is the function the pin script calls', () => {
   assert.equal(typeof admission, 'function');

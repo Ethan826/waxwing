@@ -15,7 +15,8 @@
 // recorded there. `stagesCheck(load)` gives
 // `(problem, live, package, completed) → [{ at, problems }]`, one entry
 // per such stage; `completed` is null when the package was refused,
-// and then only the first two parts are checked.
+// and then the consumption is not checked and the stage says so among
+// its problems (it never reads as passing).
 const named = value => value.constructor.name;
 
 const argumentsOf = node => {
@@ -103,7 +104,9 @@ export const stagesCheck = async load => {
       if (settled === null || settled.labels.length > 0
         || named(settled.tail) !== 'Nothing')
         problems.push('does not settle empty');
-      if (completed !== null) {
+      if (completed === null) problems.push('consumption unchecked: '
+        + 'the package was refused');
+      else {
         const context = { package: settledOf(completed),
           rigidMarks: view.effects.rigidMarks };
         if (named(consumeCheck(context)(stage.site)) !== 'Right')
