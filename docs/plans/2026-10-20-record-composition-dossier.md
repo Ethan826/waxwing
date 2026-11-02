@@ -7879,3 +7879,40 @@ candidates get no package; mapping them needs either a production
 change recording each use's instantiated rows and mark metas by path,
 or completion from the obligations (Q2). (3) `Fail` labels read
 `Unmarked` today (107); the read-back writes N. Task 2 not started.
+
+### 18.153 Task 2 continues: trace, not solver (2026-11-01)
+
+The author ruled on §18.152. The inventory justifies designing a trace
+of live inference values, not another solver to reconstruct them.
+(1) Generation's treatment of local annotations is corrected, not the
+statements weakened: the design follows `Lambda.parameterType`'s
+substitution of the lambda's ambient row for the implicit annotation
+row, preserving explicitly written rows and each annotation's own
+clause row, with distinguishing tests for implicit versus explicit
+rows, nested lambdas and sibling annotations. The predicted E1 refusal
+stays reasoned pending a package test. (2) Live-value tracing is chosen
+over obligation-based completion: Task 2 designs a non-minting trace of
+instantiated rows, opened tails and mark identities keyed by stable
+use-site identities, preferring checker state or a separate inference
+result over expanding the checked IR unless a need is established;
+identities are preserved through substitution and hole numbering;
+collection adds no constraint and changes no inference decision.
+(3) Missing provenance is kept apart from synthetic variables: unread
+stage rows may be recording auxiliaries with no live allocation, which
+no trace can recover; they are classified separately, `NoCandidate`
+kept where necessary, and any reconstruction rule proposed explicitly,
+never disguised as read-back. (4) `Fail` normalization to N stands
+under the representation rule, payload and effect identity preserved,
+the conversion tested. Reporting corrections for Task 2: a source
+manifest reconciling the corpus loader's and the effect pin's source
+sets, both denominators explicit, the inventory not described as
+covering the whole pinned set; "located" kept apart from "located
+consistently" (the nine `UnframedInstall` declarations stay
+unsupported). The least-term results support bounded agreement with
+the stated definition; with the disclosed shared label pairing they do
+not independently establish correspondence between the recorded and
+live graphs. Authorized: design and research probes, including the
+generation correction and the production trace design. Production
+edits and re-pinning stay held for Stage B. Task 2 finishes the design
+and the adversarial review and returns one revised implementation
+proposal; no checkpoint for ordinary research corrections.
