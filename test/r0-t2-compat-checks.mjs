@@ -108,6 +108,8 @@ export const compatChecks = async load => {
   const judge = (problem, pkg, sigma) => ({
     erasure: erasureHolds(pkg, sigma), commute: commuteHolds(pkg),
     projection: projectionHolds(pkg, sigma), g0: g0(problem, pkg),
+    completedApart: !exact(Package.erase(Package.settle(pkg)),
+      Package.erase(Complete.settledOf(completedOf(problem, pkg)))),
     numerals: numeralsHold(problem, pkg, sigma),
     effectHoles: holesOf(pkg).some(each => each.map === 'effects'),
     derived: derivedKeys(sigma).map(key =>

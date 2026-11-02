@@ -62,9 +62,14 @@ const declaration = (program, inputs, where) => decl => {
   }
   return { at, ...checks.judge(problem, read.value0, readBack.unsettled) };
 };
+// Sources that do not resolve have no declarations; listed, not hidden.
+const skipped = new Set();
 const resultsOf = ({ origin, source }) => {
   let program;
-  try { program = resolved(source); } catch { return []; }
+  try { program = resolved(source); } catch {
+    skipped.add(origin);
+    return [];
+  }
   const inputs = Inputs.generationInputs(program);
   return program.functions.map(declaration(program, inputs, origin))
     .filter(Boolean);
@@ -79,7 +84,8 @@ const tally = results => {
   const out = { candidates: results.length, packages: 0, faults: [],
     erasure: [], commute: [], projection: [], numerals: [], g0: g0Counts(),
     effectHoles: 0, runs: 0, derivedG0: g0Counts(), collides: [],
-    differs: 0, todayCollides: 0, differsPlain: [], neither: [] };
+    differs: 0, todayCollides: 0, differsPlain: [], neither: [],
+    completedApart: 0 };
   for (const item of results) {
     if (item.fault) { out.faults.push(item.fault); continue; }
     out.packages += 1;
@@ -88,6 +94,7 @@ const tally = results => {
     count(out.g0, item.g0, item.at);
     if (item.g0 === 'neither') out.neither.push(item.at);
     if (item.effectHoles) out.effectHoles += 1;
+    if (item.completedApart) out.completedApart += 1;
     for (const run of item.derived) {
       out.runs += 1;
       count(out.derivedG0, run.g0, item.at);
@@ -106,8 +113,11 @@ const report = (name, out) => `${name} (corpus-observed): `
   + ` ${out.commute.length}, projection ${out.projection.length},`
   + ` numerals ${out.numerals.length}; G0 both ${out.g0.both}, only`
   + ` settle P_in ${out.g0.before.length}, only P_c ${out.g0.after},`
-  + ` neither ${out.g0.neither}. Derived (corpus-derived): ${out.runs}`
-  + ` runs; G0 both ${out.derivedG0.both}, only settle P_in`
+  + ` neither ${out.g0.neither}; erase P_c apart from erase (settle P_in)`
+  + ` ${out.completedApart}. Derived (corpus-derived): ${out.runs} runs,`
+  + ` ${out.derivedG0.both + out.derivedG0.before.length} able to`
+  + ` violate (G0 accepts erase (settle P_in)); G0 both`
+  + ` ${out.derivedG0.both}, only settle P_in`
   + ` ${out.derivedG0.before.length}, only P_c ${out.derivedG0.after},`
   + ` neither ${out.derivedG0.neither}; fresh hole met in P`
   + ` ${out.collides.length}; bindingsOf's numeral differs`
@@ -154,15 +164,35 @@ const corpusFaults = [
   `${baseline}q7-pure-construction.wxw#statsEvidence UnreadImage`,
   ...unframed.map(each => `${each} Declined UnframedInstall`)];
 
+// The observed counts as one record per denominator: a drift pin, not
+// a property. A change is explained, never silently re-pinned.
+const drift = out => ({ packages: out.packages,
+  effectHoles: out.effectHoles, g0Both: out.g0.both,
+  g0Neither: out.g0.neither, completedApart: out.completedApart,
+  runs: out.runs, derivedBoth: out.derivedG0.both,
+  derivedAfter: out.derivedG0.after, derivedNeither: out.derivedG0.neither,
+  differs: out.differs, todayCollides: out.todayCollides });
+
+// Observed 2026-11-02, both denominators together: 144 sources do not
+// resolve (negative programs, resolve-fault fixtures, prose snippets),
+// each listed in the diagnostic. A drift pin.
+test('skipped sources: the ones that do not resolve', t => {
+  t.diagnostic(`${skipped.size} skipped: ${[...skipped].join('; ')}`);
+  assert.equal(skipped.size, 144);
+});
+
 test('compatibility checks on the corpus loader\'s honest packages', t => {
   const out = denominators.corpus;
   t.diagnostic(report('corpus loader', out));
   assert.deepEqual(out.faults, corpusFaults);
-  // Observed 2026-11-02 (corpus-observed; drift pins, not properties):
-  // 2812 packages, 1008 with an effect hole; G0 accepts both 2809 and
-  // refuses both 3; 3622 derived runs, bindingsOf's numeral apart from
-  // completion's in 1216, of them an effect hole of P in 1112.
-  assert.equal(out.packages, 2812);
+  // Observed 2026-11-02 (corpus-observed and corpus-derived): only 53
+  // derived runs can violate G0 monotonicity (G0 accepts erase (settle
+  // P_in)) and none of the 2812 whole packages has erase P_c apart from
+  // erase (settle P_in), so the property's force is in those 53.
+  assert.deepEqual(drift(out), { packages: 2812, effectHoles: 1008,
+    g0Both: 2809, g0Neither: 3, completedApart: 0, runs: 3622,
+    derivedBoth: 53, derivedAfter: 773, derivedNeither: 2796,
+    differs: 1216, todayCollides: 1112 });
   holds(out);
 });
 
@@ -172,7 +202,10 @@ test('compatibility checks on the effect pin\'s honest packages', t => {
   // Beyond the corpus's: one more `Unsupported` problem, declined.
   assert.deepEqual(out.faults.filter(each => !corpusFaults.includes(each)),
     ['inline:fx032#g Declined OperationWithRow']);
-  // Observed 2026-11-02: 2820 packages, 1013 with an effect hole.
-  assert.equal(out.packages, 2820);
+  // Observed 2026-11-02 (corpus-observed and corpus-derived).
+  assert.deepEqual(drift(out), { packages: 2820, effectHoles: 1013,
+    g0Both: 2817, g0Neither: 3, completedApart: 0, runs: 3626,
+    derivedBoth: 53, derivedAfter: 773, derivedNeither: 2800,
+    differs: 1220, todayCollides: 1116 });
   holds(out);
 });

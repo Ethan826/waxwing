@@ -7,11 +7,16 @@
 // fails. Fixture-level.
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { compatChecks } from './r0-t2-compat-checks.mjs';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 
 const loader = context => name => import(pathToFileURL(
   resolve(dirname(context.compilerPath), '..', name, 'index.js')));
+
+// Imported when a probe runs: the package cases read example and
+// research sources a test-tree row's clone does not hold, and the
+// registry loads this module there too.
+const checksOf = async context =>
+  (await import('./r0-t2-compat-checks.mjs')).compatChecks(loader(context));
 
 // `main`'s σ binds `older`'s row variable to `{ id: Int, name: Text }`.
 const records = `fn older(p: { age: Int, ...r }): { age: Int, ...r } =
@@ -38,28 +43,37 @@ const wrongs = {
 };
 
 // A planted record tail-order difference is caught; field order is not.
-const tailOrderWrong = checks => {
-  const { P, Atom, Hole, Maps } = checks;
+// Loads only what it reads (no package cases), so it runs in a test-tree
+// row's clone, where the comparison itself is the restored defect.
+const tailOrderWrong = async context => {
+  const load = loader(context);
+  const { sameSubstitution } = await import('./r0-a2-canonical.mjs');
+  const Package = await load('Features.Check.Strategy.Effects.Package');
+  const P = await load('Domain.Verdict.EffectPackage');
+  const Atom = await load('Domain.Recorded.Atom');
+  const { holeVar } = await load('Domain.Recorded.Hole');
+  const Maps = await load('Data.Map.Internal');
+  const { Tuple } = await load('Data.Tuple');
+  const { unfoldableArray } = await load('Data.Unfoldable');
+  const pairs = map => Maps.toUnfoldable(unfoldableArray)(map)
+    .map(pair => [pair.value0, pair.value1]);
   const int = new Atom.Base(Atom.IntBase.value);
-  const field = (label, ty) => new checks.Tuple(label, ty);
-  const [one, two] = [Hole.holeVar(1), Hole.holeVar(2)];
-  const key = Hole.holeVar(0);
+  const field = (label, ty) => new Tuple(label, ty);
+  const [key, one, two] = [holeVar(0), holeVar(1), holeVar(2)];
   const pkg = { types: Maps.empty, effects: Maps.empty, marks: Maps.empty,
     rows: Maps.singleton(key)({ tails: [one, two], fields: [
       field('a', new P.PBase(Atom.IntBase.value)),
       field('b', new P.PBase(Atom.IntBase.value))] }) };
-  const sigma = (fields, tails) =>
-    Maps.singleton(key)(new Atom.Record(fields, tails));
-  const swappedFields = sigma([field('b', int), field('a', int)], [one, two]);
-  const swappedTails = sigma([field('a', int), field('b', int)], [two, one]);
-  return [...checks.erasureHolds(pkg, swappedFields) ? [] : ['fields'],
-    ...checks.erasureHolds(pkg, swappedTails) ? ['tails'] : []];
+  const holds = (fields, tails) => sameSubstitution(pairs(Package.erase(
+    pkg)), pairs(Maps.singleton(key)(new Atom.Record(fields, tails))));
+  return [
+    ...holds([field('b', int), field('a', int)], [one, two]) ? [] : ['fields'],
+    ...holds([field('a', int), field('b', int)], [two, one]) ? ['tails'] : []];
 };
 
 const probe = check => async context => {
-  const checks = await compatChecks(loader(context));
-  const wrong = check === 'tailOrder' ? tailOrderWrong(checks)
-    : wrongs[check](judged(checks));
+  const wrong = check === 'tailOrder' ? await tailOrderWrong(context)
+    : wrongs[check](judged(await checksOf(context)));
   if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
   passed(context);
 };
