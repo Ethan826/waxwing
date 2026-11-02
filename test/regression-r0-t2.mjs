@@ -10,6 +10,7 @@ import { t2MarksProbes } from './regression-r0-t2-marks.mjs';
 import { t2PackageProbes } from './regression-r0-t2-package.mjs';
 import { t2OnlineProbes } from './regression-r0-t2-online.mjs';
 import { t2HonestProbes } from './regression-r0-t2-honest.mjs';
+import { t2DiffProbes } from './regression-r0-t2-diff.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
@@ -20,5 +21,6 @@ export const r0T2Probes = {
   ...t2MarksProbes,
   ...t2PackageProbes,
   ...t2OnlineProbes,
-  ...t2HonestProbes
+  ...t2HonestProbes,
+  ...t2DiffProbes
 };
