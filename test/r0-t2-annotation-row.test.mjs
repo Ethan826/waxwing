@@ -89,6 +89,20 @@ test('implicit annotation row is the lambda\'s EffectOf', () => {
   assert.deepEqual(node.MArrow[0], found.ty, 'the node type carries it');
 });
 
+// The parameter's local carries the renamed type: `with h { … }` in the
+// lambda's body installs h at its annotation type, implicit row renamed.
+test('a use of the annotated parameter carries the renamed row', () => {
+  const effects = effectsOf('implicitRow');
+  const [found] = annotationsOf(effects);
+  const steps = [{ Named: ['Lambda'] }, { Named: ['body'] }];
+  const body = { ...found.lambda, steps: [...found.lambda.steps, ...steps] };
+  const [install] = effects.obligations.filter(item => item.value.Install
+    && same(item.provenance.AtSite?.[0].path, body));
+  assert.ok(install !== undefined, 'the body installs h');
+  assert.deepEqual(install.value.Install[0].handler, found.ty);
+  assert.deepEqual(found.rows.inference.tail, just(effectOf(found.lambda)));
+});
+
 test('explicit annotation row stays rigid', () => {
   const [found] = annotationsOf(effectsOf('explicitRow'));
   assert.deepEqual(found.rows.inference.tail, just({ EffRigid: [0] }));
