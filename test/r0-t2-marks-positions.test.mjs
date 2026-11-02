@@ -92,3 +92,10 @@ test('a literal with no clause entry is read from its node type', () => {
   assert.deepEqual(positionsText(read(item, none).value0),
     ['Frame:M', 'Literal:N']);
 });
+
+test('a position on a Console label not N is refused, not forced', async () => {
+  const { marksChecks } = await import('./r0-t2-marks-checks.mjs');
+  // con2 reads Frame:N live; with its frame planted as a meta whose class
+  // reads M the read is UnreadPosition, and N when the class reads N.
+  assert.deepEqual((await marksChecks(load)).consoleWrong(), []);
+});

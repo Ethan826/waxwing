@@ -59,5 +59,26 @@ export const marksChecks = async load => {
       frame: mark.U }));
     return faultOf(item, frame) === 'UnreadPosition' ? [] : ['unmarked'];
   };
-  return { sharedWrong, absentWrong, rigidWrong, apartWrong, unmarkedWrong };
+  // A position on a Console label whose term is not N is refused, never
+  // forced to N; con2 reads N live.
+  const consoleWrong = () => {
+    const item = live(sources.con2, 'f');
+    const wrong = positionsText(read(item).value0).join() === 'Frame:N'
+      ? [] : ['live'];
+    const frame = planted(item, 'installations', entry => ({ ...entry,
+      frame: meta(99) }));
+    const below = given => ({ ...item, store: store([], given) });
+    const fault = (given, trace) => {
+      const found = read(given, trace);
+      return named(found) === 'Left' ? named(found.value0)
+        : positionsText(found.value0).join();
+    };
+    if (fault(below([[M, meta(99)]]), frame) !== 'UnreadPosition')
+      wrong.push('M');
+    if (fault(below([[meta(99), M]]), frame) !== 'Frame:N')
+      wrong.push('N');
+    return wrong;
+  };
+  return { consoleWrong, sharedWrong, absentWrong, rigidWrong, apartWrong,
+    unmarkedWrong };
 };

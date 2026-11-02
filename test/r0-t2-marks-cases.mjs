@@ -26,6 +26,10 @@ fn g(): Unit with nofail(k) Log =
   with handler Log { log(n) => Log.log(n) } { Log.log(1) };
 fn main(): Int = 0;
 `,
+  // A `with` installing a Console handler: its Frame position sits on a
+  // Console label.
+  con2: readFileSync(join(root, 'test/fx008-probes/rev6/con2.wxw'),
+    'utf8'),
   famw: readFileSync(join(root, 'test/fx008-probes/witness/famw.wxw'),
     'utf8'),
   annotations: readFileSync(join(root,

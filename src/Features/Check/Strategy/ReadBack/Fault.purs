@@ -5,7 +5,8 @@
 --
 -- `Unread v`: no live value reaches variable v (no trace entry, no
 -- located value, or one that cannot be converted). `UnreadPosition p`:
--- the same for a mark position. `Clash key`: two trace entries under one
+-- the same for a mark position, and a position a `Fail` or Console label
+-- refers to whose term is not N (Task 9). `Clash key`: two trace entries under one
 -- key, kept by the trace and never chosen between. `Apart v`: two live
 -- sources give v different values; `PositionApart p` the same for a
 -- mark position, by term (Task 9). `UnreadImage v` and `ImageApart v`:

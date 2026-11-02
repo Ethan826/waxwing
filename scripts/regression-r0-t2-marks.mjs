@@ -38,8 +38,10 @@ export const t2MarksRows = [
     // Two readings that differ resolved by taking the first.
     name: 'r0-t2-marks-apart',
     file: marks,
-    needle: '    | otherwise = Left (PositionApart position)\n',
-    replacement: '    | otherwise = Right (Tuple position (term first))\n',
+    needle: '    | not (Array.all (eq (term first)) '
+      + '(map term marks)) =\n',
+    replacement: '    | not (Array.all (eq (term first)) '
+      + '[ term first ]) =\n',
     probe: 'r0-t2-marks-apart',
     message: /r0-t2-marks-apart: \["apart"\]/
   },
@@ -53,5 +55,17 @@ export const t2MarksRows = [
       + 'Left (UnreadPosition position)\n',
     probe: 'r0-t2-marks-unmarked',
     message: /r0-t2-marks-unmarked: \["unmarked"\]/
+  },
+  {
+    // A position a Console or Fail label refers to read as whatever its
+    // class says: no refusal of a term other than N.
+    name: 'r0-t2-marks-console-n',
+    file: marks,
+    needle: '    | Set.member position fixedN '
+      + '&& term first /= TermN =\n',
+    replacement: '    | Set.member position Set.empty '
+      + '&& term first /= TermN =\n',
+    probe: 'r0-t2-marks-console-n',
+    message: /r0-t2-marks-console-n: \["M"\]/
   }
 ];

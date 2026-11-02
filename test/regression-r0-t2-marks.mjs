@@ -21,5 +21,6 @@ export const t2MarksProbes = {
   'r0-t2-marks-absent-n': probe('absentWrong'),
   'r0-t2-marks-rigid': probe('rigidWrong'),
   'r0-t2-marks-apart': probe('apartWrong'),
-  'r0-t2-marks-unmarked': probe('unmarkedWrong')
+  'r0-t2-marks-unmarked': probe('unmarkedWrong'),
+  'r0-t2-marks-console-n': probe('consoleWrong')
 };

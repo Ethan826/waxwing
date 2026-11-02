@@ -3,8 +3,9 @@
 // least terms of each final mark store (ReadBack/Least.purs) and
 // `readMarks`: every recorded position reads a term (or the fault, by
 // kind); no class holds two constants (`clashes`); every live edge
-// `holds` under the terms (the validator's `holds`); no recorded mark
-// position sits on a `Fail` or Console label; and `readRows` under the
+// `holds` under the terms (the validator's `holds`); the recorded mark
+// positions on a `Fail` or Console label, counted (readMarks refuses a
+// term other than N there); and `readRows` under the
 // least terms (Task 8's faults, now with real terms).
 //   node research/t2-read-back-design/marks-corpus.mjs
 import { loadCorpus } from '../../test/r0-corpus.mjs';

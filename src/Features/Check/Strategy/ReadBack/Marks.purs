@@ -16,12 +16,16 @@
 --   `Instantiated p k`: the use entry at p, its meta for mark name k;
 --   `Annotation p j n`: lambda parameter j's type;
 -- and every other recorded node type a position's mark is copied into.
--- `Fail` and Console labels carry no position (statements §2: they are N,
--- written; Convert forces N on them).
 --
 -- Fail-closed, never choosing: a position no source reads, or read as
 -- `Unmarked`, is `UnreadPosition p`; two readings with different terms
 -- are `PositionApart p`; two trace entries under one key are `Clash`.
+-- A position a `Fail` or Console label refers to (ReadBack/MarkLabels;
+-- statements §2: those labels are N) whose term is not N is also
+-- `UnreadPosition p`, never forced to N (ruling on Task 9's report).
+-- Readings are compared by term, as Task 8's `Apart` compares converted
+-- rows, so this is fail-closed in one direction only: two readings from
+-- different live classes whose terms happen to be equal are not flagged.
 module Features.Check.Strategy.ReadBack.Marks
   ( module Features.Check.Strategy.ReadBack.Least
   , readMarks
@@ -33,6 +37,8 @@ import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
@@ -41,10 +47,11 @@ import Domain.Recorded.Effect (MTy, Position(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
 import Domain.Row (Label(..), Mark(..))
 import Domain.Type (Ty(..))
-import Domain.Verdict.EffectPackage (Term)
+import Domain.Verdict.EffectPackage (Term(..))
 import Features.Check.Strategy.ReadBack.EffectSites (entryAt, exprAt, keyOf)
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Strategy.ReadBack.Least (clashes, leastTerms, termOf)
+import Features.Check.Strategy.ReadBack.MarkLabels (fixedNPositions)
 import Features.Check.Strategy.ReadBack.MarkMatch (Reading, marksOfTy)
 import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
 import Features.Check.Trace (TraceKey(..), Traced, UseTrace)
@@ -60,9 +67,10 @@ readMarks
 readMarks terms problem checked traced = do
   direct ← traverse (directMarks checked.body traced) wanted
   let found = collected (Array.concat (Array.zipWith tagged wanted direct))
-  Map.fromFoldable <$> traverse (readOne terms found) wanted
+  Map.fromFoldable <$> traverse (readOne terms fixedN found) wanted
   where
   effects = (fields problem).effects
+  fixedN = fixedNPositions effects
   wanted = Array.nub effects.positions
   typed =
     Array.concatMap (nodeMarks checked.body)
@@ -78,19 +86,22 @@ readMarks terms problem checked traced = do
 -- reading the same term.
 readOne
   ∷ Map Int Term
+  → Set Position
   → Map Position (Array Mark)
   → Position
   → Either ReadFault (Tuple Position Term)
-readOne terms found position =
+readOne terms fixedN found position =
   maybe (Left (UnreadPosition position)) agreed (Array.head marks)
   where
   marks = fromMaybe [] (Map.lookup position found)
   term = termOf terms
   agreed first
     | Array.elem Unmarked marks = Left (UnreadPosition position)
-    | Array.all (eq (term first)) (map term marks) =
-        Right (Tuple position (term first))
-    | otherwise = Left (PositionApart position)
+    | not (Array.all (eq (term first)) (map term marks)) =
+        Left (PositionApart position)
+    | Set.member position fixedN && term first /= TermN =
+        Left (UnreadPosition position)
+    | otherwise = Right (Tuple position (term first))
 
 -- The trace's readings of a position.
 directMarks ∷ Checked.Expr → Traced → Position → Read
