@@ -179,7 +179,8 @@ adding a bypass allowlist.
   `Features.Check.Strategy.Effects` that `complete` and `validate`
   compose (Consume, Dependency, Equal, Forced, Handler, Judged,
   Malformed, MalformedTerms, Package, Record, RecordCompanions,
-  RecordEntries, RecordRefs, Rows, Sites, Term, Validate), and
+  RecordDuplicates, RecordEntries, RecordRefs, Rows, Sites, Term,
+  Validate), and
   `Features.Check.Strategy.Witness`. Record shapes there are type
   synonyms, which neither export list shows, so a changed field moves
   no pin.
@@ -313,7 +314,9 @@ adding a bypass allowlist.
     a check they miss lets a generation defect reach the obligation
     checks, which trust the record.
     `Features.Check.Strategy.Effects.RecordArity` adds check 5, the
-    recorded arities and every recorded application against them.
+    recorded arities and every recorded application against them;
+    `Features.Check.Strategy.Effects.RecordDuplicates` check 6, no entry
+    repeated in the declaration lists `flexEff` and `positions`.
   - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
     the equality G0's equation judgements, the hole contract and
     `elaborate`'s problem identity rest on.

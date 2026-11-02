@@ -155,7 +155,7 @@ test('the real tree matches its pin and its FFI names no token module',
     // Task 2's Effects.Package; the whole-branch review adds
     // Effects.Forced and Effects.Judged; the completion wave (dossier
     // §18.148) Effects.Arity, Effects.RecordArity (1) and
-    // Effects.RecordCompanions (2).
+    // Effects.RecordCompanions (2); §18.155 (2) Effects.RecordDuplicates.
     const generate = ['', '.Ambient', '.Assemble', '.Block', '.Body',
       '.Builtin', '.Call', '.Callee', '.Consume', '.Context', '.Control',
       '.Declared', '.Effect',
@@ -192,6 +192,7 @@ test('the real tree matches its pin and its FFI names no token module',
         'Features.Check.Strategy.Effects.Record',
         'Features.Check.Strategy.Effects.RecordArity',
         'Features.Check.Strategy.Effects.RecordCompanions',
+        'Features.Check.Strategy.Effects.RecordDuplicates',
         'Features.Check.Strategy.Effects.RecordEntries',
         'Features.Check.Strategy.Effects.RecordRefs',
         'Features.Check.Strategy.Effects.Rows',

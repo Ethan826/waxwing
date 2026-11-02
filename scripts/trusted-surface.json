@@ -1320,6 +1320,14 @@
    "companionsOf"
   ]
  },
+ "Features.Check.Strategy.Effects.RecordDuplicates": {
+  "source": [
+   "declaredListsDefect"
+  ],
+  "compiled": [
+   "declaredListsDefect"
+  ]
+ },
  "Features.Check.Strategy.Effects.RecordEntries": {
   "source": [
    "Entry",

@@ -4,9 +4,9 @@
 -- package is read. `recordDefect` visits the record's entries in spec §5
 -- item 1's order (obligations as recorded, then `instances`,
 -- `annotations`, `nodes`, `ambient`, `signature`, keys in `Ord` order,
--- then the declared arities, then the domain coverage) and gives the
--- first entry that violates a check, with the index of its first
--- violated check:
+-- then the declared arities, the declaration lists, then the domain
+-- coverage) and gives the first entry that violates a check, with the
+-- index of its first violated check:
 --   0  a `Consume`'s `marks`/`bare` differ from the site table (spec §9);
 --   1  a reference outside its permitted domain at its sort: type and
 --      record-row variables in `vars` at their position's sort, effect
@@ -32,6 +32,9 @@
 --      otherwise, judged only when the arities are valid; for the
 --      `InDeclarations` entry, invalid arities (Effects.RecordArity;
 --      dossier §18.148 (1)).
+--   6  for the `InDeclaredLists` entry, an entry repeated in `flexEff` or
+--      `positions` as recorded (Effects.RecordDuplicates; dossier
+--      §18.155 (2)).
 -- These are spec §4.1's bullets in order. A defect in a table entry
 -- or in the coverage is reported as `InRecord`, naming the table.
 -- A recorded `AtDeferredRow` is no defect for lacking coverage (A4); its
@@ -77,6 +80,9 @@ import Features.Check.Strategy.Effects.RecordCompanions
   , companionWrong
   , companionsOf
   )
+import Features.Check.Strategy.Effects.RecordDuplicates
+  ( declaredListsDefect
+  )
 import Features.Check.Strategy.Effects.RecordRefs (Refs)
 
 -- The record's domains (spec §4.1), the forced tails F, the flexible
@@ -118,7 +124,8 @@ recordDefect ∷ RecordedProblem → Maybe CheckAt
 recordDefect problem =
   maybe' declared Just (findMap (defectAt scope) entries)
   where
-  declared _ = maybe' coverage Just (declarationsDefect problem)
+  declared _ = maybe' lists Just (declarationsDefect problem)
+  lists _ = maybe' coverage Just (declaredListsDefect problem)
   recorded = fields problem
   scope = scopeOf problem
   entries = entriesOf problem

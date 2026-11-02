@@ -100,6 +100,7 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy.Effects.Record`,
   `Features.Check.Strategy.Effects.RecordArity`,
   `Features.Check.Strategy.Effects.RecordCompanions`,
+  `Features.Check.Strategy.Effects.RecordDuplicates`,
   `Features.Check.Strategy.Effects.RecordEntries`,
   `Features.Check.Strategy.Effects.RecordRefs`,
   `Features.Check.Strategy.Effects.Rows`,

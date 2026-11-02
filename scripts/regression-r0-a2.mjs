@@ -13,6 +13,7 @@ import { a2ReportRows } from './regression-r0-a2-report.mjs';
 import { a2PropsRows } from './regression-r0-a2-props.mjs';
 import { a2ArityRows } from './regression-r0-a2-arity.mjs';
 import { a2CompanionRows } from './regression-r0-a2-companions.mjs';
+import { a2DuplicateRows } from './regression-r0-a2-record-duplicates.mjs';
 
 export const a2Rows = [
   ...a2PackageRows,
@@ -25,5 +26,6 @@ export const a2Rows = [
   ...a2ReportRows,
   ...a2PropsRows,
   ...a2ArityRows,
-  ...a2CompanionRows
+  ...a2CompanionRows,
+  ...a2DuplicateRows
 ];

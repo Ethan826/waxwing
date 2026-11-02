@@ -12,6 +12,8 @@ import { a2ReportProbes } from './regression-r0-a2-report.mjs';
 import { a2PropsProbes } from './regression-r0-a2-props.mjs';
 import { a2ArityProbes } from './regression-r0-a2-arity.mjs';
 import { a2CompanionProbes } from './regression-r0-a2-companions.mjs';
+import { a2DuplicateProbes }
+  from './regression-r0-a2-record-duplicates.mjs';
 
 export const r0A2Probes = {
   ...a2PackageProbes,
@@ -24,5 +26,6 @@ export const r0A2Probes = {
   ...a2ReportProbes,
   ...a2PropsProbes,
   ...a2ArityProbes,
-  ...a2CompanionProbes
+  ...a2CompanionProbes,
+  ...a2DuplicateProbes
 };

@@ -25,7 +25,7 @@ const trusted = [
   'Strategy.Effects.Judged', 'Strategy.Effects.Malformed',
   'Strategy.Effects.MalformedTerms', 'Strategy.Effects.Package',
   'Strategy.Effects.Record', 'Strategy.Effects.RecordArity',
-  'Strategy.Effects.RecordCompanions',
+  'Strategy.Effects.RecordCompanions', 'Strategy.Effects.RecordDuplicates',
   'Strategy.Effects.RecordEntries',
   'Strategy.Effects.RecordRefs', 'Strategy.Effects.Rows',
   'Strategy.Effects.Sites', 'Strategy.Effects.Term',

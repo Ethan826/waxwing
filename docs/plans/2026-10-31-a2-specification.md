@@ -18,7 +18,10 @@ review (2026-11-01): §5 item 3 gains check (k) and the bare clause-row
 reading, §5 item 1 the `InDeclarations` entry, §4.1 check 5 is stated
 in full with its blind spot (I1, M3); record tails keep their order in
 the canonical comparison (I2); C6's hole-bound case is "observed on
-the fixture" throughout. Earlier status: **main
+the fixture" throughout. Then (2026-11-01, dossier §18.155 (2), the
+one exception to the validator freeze): §4.1 gains check 6, the
+declaration lists without repeats, and §5 item 1 its `InDeclaredLists`
+entry. Earlier status: **main
 choices approved with amendments (dossier §18.139); this revision
 is the fix pass §18.141 authorized after the adversarial review of §18.140,
 applying rulings A1-A6. Not ready for implementation authorization; no validator
@@ -418,6 +421,16 @@ violation is `RecordDefect`. The checks, numbered by their index j in
   `ClauseIntoC k` (§9's bare sites; the other side of each is a full
   row). An entry is judged only when (i) holds; with invalid arities
   no entry has a check-5 defect;
+- **6** (added 2026-11-01, dossier §18.155 (2);
+  Effects.RecordDuplicates): **declaration lists without repeats**. No
+  entry occurs twice in `flexEff` or in `positions`, read as recorded,
+  before either list becomes a set. A repeat in either is reported
+  once, as the `InDeclaredLists` entry (§5 item 1), `InRecord { table:
+  InDeclaredLists, path: Nothing }` with check 6. Repeated references
+  to a variable or position in types and obligations stay valid; only
+  a repeated listing is a defect (fixture-level,
+  test/r0-a2-record-duplicates.test.mjs; corpus: no defect,
+  test/r0-a2-record-corpus.serial.test.mjs);
 - a recorded `AtDeferredRow` is **not** a defect (A4): its condition is
   supported (labels-only, §9) and evaluated; it occurs 0 times in the
   corpus (observed, §18.140). Being no table's companion, check 4 does
@@ -468,7 +481,10 @@ One refusal per candidate, the first in this order:
    order, then the declared arities (the `InDeclarations` entry,
    `InRecord { table: InDeclarations, path: Nothing }`, check 5's
    validity part only; amended 2026-11-01, §18.148 (1)), then the
-   domain coverage (`InCoverage`, check 1's last clause).
+   declaration lists (the `InDeclaredLists` entry, `InRecord { table:
+   InDeclaredLists, path: Nothing }`, check 6; amended 2026-11-01,
+   §18.155 (2)), then the domain coverage (`InCoverage`, check 1's
+   last clause).
    `RecordDefect (provenance, j)`, j the index of the violated
    check (§4.1's list order) within that record entry.
 2. **Unsupported** (step 1): the first `Unsupported` obligation in
