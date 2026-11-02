@@ -5,9 +5,11 @@
 import { t2GenerationRows } from './regression-r0-t2-generation.mjs';
 import { t2TraceRows } from './regression-r0-t2-trace.mjs';
 import { t2RowsRows } from './regression-r0-t2-rows.mjs';
+import { t2GatesRows } from './regression-r0-t2-gates.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
   ...t2TraceRows,
-  ...t2RowsRows
+  ...t2RowsRows,
+  ...t2GatesRows
 ];

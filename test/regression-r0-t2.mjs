@@ -4,9 +4,11 @@
 import { t2GenerationProbes } from './regression-r0-t2-generation.mjs';
 import { t2TraceProbes } from './regression-r0-t2-trace.mjs';
 import { t2RowsProbes } from './regression-r0-t2-rows.mjs';
+import { t2GatesProbes } from './regression-r0-t2-gates.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
   ...t2TraceProbes,
-  ...t2RowsProbes
+  ...t2RowsProbes,
+  ...t2GatesProbes
 };
