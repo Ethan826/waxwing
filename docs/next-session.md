@@ -12,13 +12,44 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. Tranche 2 Stage B (docs/plans/2026-11-01-tranche-2-read-back-
-plan.md) stopped at Task 13 for the author (dossier §18.156): four
-honest packages refused NotCertifiable ForcedTail that today accepts.
-Tasks 3-12, 14, 15 and Task 13's tooling are integrated (b166c6c);
-Task 13's serial gate (branch t2/honest, d78874c) and Task 16 wait.
+Nothing: paused by the author on 2026-11-02 to pace credit use.
+
+**Resume with exactly this (dossier §18.157, authorized, no further
+checkpoint unless a stop condition occurs):**
+1. Task 13's pin: on branch t2/honest (worktree .claude/worktrees/
+   on-lane-c), redo the serial gate (d78874c, red) on top of the
+   integrated tooling (r0-t2-d1 has 90ec094, dadf29c): admit exactly
+   the four ForcedTail refusals named in §18.157, recorded separately
+   from the three RequirementUnjudged; floors 2805 (corpus loader) and
+   2813 (effect-pin sources). The stage check now marks stages in
+   refused packages "consumption unchecked": rewrite d78874c's
+   all-pass assertion accordingly.
+2. Pin script correction (scripts/r0-t2-honest-pin.mjs,
+   test/r0-t2-honest-repin.mjs, tests and rows): `--explain` must not
+   permit a lower floor or candidate denominator; any such re-pin
+   needs an explicit author ruling.
+3. Record corrections: ForcedTail is dependency, not causation
+   (§18.157 (1)); link to the earlier forcing-loss evidence; H2 as
+   observed (ten refusals at the reported checks; §B.5's E1 prediction
+   retired) in the design note and plan.
+4. The trace's compile-time (+22%) and memory cost recorded as a
+   performance issue requiring qualification before activation
+   (BACKLOG item), not a functional blocker.
+5. This plan's Task 16: activation-gate specification (the seven
+   criteria in the last report, §18.156), records (statements, spec
+   §11 owed checks now run, closure checklist, progress, findings,
+   BACKLOG), two whole-branch reviews (read-back semantics; gates,
+   pins, live) over 823f628..head, their fixes, then one routine
+   `npm run verify` alone under the lock; performance reported
+   separately.
+Held: A2's Task 16 (minting switch), C6, F14's retirement, replacement
+losses, any push.
+
+Integrated state: r0-t2-d1 at 441e19a (Stage B Tasks 3-12, 14, 15,
+Task 13 tooling; all focused and serial tests green at b166c6c).
 Ledger (git-ignored): .superpowers/sdd/2026-11-01-tranche-2-read-back-
-plan/progress.md.
+plan/progress.md. Spend so far in Stage B about 4.9M of the 4.9-6.8M
+estimate.
 
 ## Where the work is
 

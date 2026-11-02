@@ -8096,3 +8096,54 @@ or E4′ revisited; or the recording of handler-value installations
 examined); confirm the re-pin reading that a floor falls only with an
 explanation and only when candidates fall. Then Task 13's pin, Task 16
 and the acceptance verify. No push; no soundness claim.
+
+### 18.157 The four ForcedTail refusals admitted; completion authorized; paused (2026-11-02)
+
+The author admitted exactly four ForcedTail refusals to the shadow
+evidence pin as known compatibility gaps: editors/vscode/fixtures/
+effect-namespaces.wxw#main, examples/services.wxw#main,
+test/fx-services-programs.mjs:fake#1#main,
+test/fx008-defer-programs.mjs:aroundBoth#1#around. This does not
+approve losing those programs when the old checker is replaced. The
+validated-count floors are initialized at 2805 (corpus loader) and
+2813 (effect-pin sources), with the reported read-fault lists, the
+three RequirementUnjudged refusals and these four refusals recorded
+separately.
+
+Corrections to §18.156. (1) ForcedTail identifies dependency, not
+demonstrated causation: agreement with M-B supports the observed mark
+refusal under the completed package; it does not establish that the
+forcing rule alone caused it, nor exclude a recording or mapping
+error. §18.156's sentence placing "the disagreement between today's
+checker and the specified forcing restriction" is withdrawn in that
+form. Reconsidering E4′ is separate work. These are four newly
+observed losses under the restriction, linked to the earlier
+forcing-loss evidence (stand-in runs aroundBoth, k2f refused, plan
+Provenance V1a); neither list is exhaustive. (2) H2: all eleven
+annotation declarations validate after the correction; restoring the
+defect gives ten observed refusals at the reported checks (nine at
+their Consumed InstallR consumption, one RigidExact). The design's
+prediction that all eleven fail at E1 (§B.5) is retired; the
+restored-defect proof is tied to the failures observed.
+
+Not authorized: the proposed re-pin reading. An explanation, even with
+a falling candidate count, does not authorize lowering a floor; every
+later re-pin needs an explicit ruling. The pin script and its tests
+are corrected so `--explain` cannot itself permit a lower floor or
+candidate denominator: explanations document approved changes, they
+do not approve them.
+
+Performance: the trace's reported 22% compile-time cost is material;
+recorded as a performance issue requiring qualification before
+activation, memory cost included. The noisy measurements establish
+neither a precise regression size nor acceptable performance; they do
+not block functional Stage B acceptance.
+
+Authorized next: the pin, these corrections, both whole-branch
+reviews, ordinary review fixes and the routine verify, with no further
+checkpoint unless another stop condition occurs. This tranche's Task
+16 (records, activation-gate specification, reviews, acceptance) is
+authorized; A2's Task 16 (the minting switch) stays held. C6, F14's
+retirement and actual replacement losses stay undecided. No push.
+
+Paused by the author (2026-11-02) to pace credit use; nothing running.
