@@ -47,6 +47,13 @@ test('marks only: a forgery changes exactly one term', async () => {
   const dropped = { ...input, effects: cases.Maps.insert(
     cases.Effect.ordEVar)(variable)({ ...row, labels: [] })(input.effects) };
   assert.equal(forge.marksOnly(input, dropped), 'row');
+  // `J ∅` is N; a moved `marks` key is not a term change.
+  assert.equal(forge.plain(cases.J()), 'N');
+  const [, c1] = validateList(cases).find(([name]) => name === 'C1 A');
+  const [first, second] = c1.effects.positions;
+  const at = position => ({ ...input,
+    marks: cases.Maps.singleton(position)(cases.N) });
+  assert.equal(forge.marksOnly(at(first), at(second)), 'position');
 });
 
 test('marks only: the fixture differential agrees', async t => {

@@ -10,9 +10,11 @@
 //   (`ObligationFailed`, `NotCertifiable ForcedTail`) M-B refuses;
 // - a refused base with an accepted forgery is a mark refusal (one term
 //   away from an accepted package): M-B refuses it, and accepts the
-//   accepted forgery; its refused forgeries are not compared;
-// - a refused base without one is not compared (its refusal may be a
-//   non-mark obligation, which M-B does not judge).
+//   accepted forgery; its refused forgeries are not compared (below);
+// - a refused base without one, and a refused forgery of a refused
+//   base, is not compared as a mark verdict (its refusal may be a
+//   non-mark obligation), but M-B must refuse it too: an M-B acceptance
+//   there is a disagreement.
 // Anything else is a disagreement, a stop for the author. A forgery
 // refused at the prerequisites, or at another kind, is listed apart.
 // Reported beside them: each honest package's full `validate` verdict
@@ -45,8 +47,8 @@ export const diffRunner = async load => {
     fullRefused: [], recorded: {}, capped: 0,
     forgeries: { position: 0, binding: 0 }, steps: {},
     agreements: { accepted: 0, bothAccept: 0, markRefused: 0 },
-    notCompared: 0, apart: [], vacuous: [], disagreements: [],
-    exercised: new Set() };
+    notCompared: 0, notComparedMbRefuses: 0, apart: [], vacuous: [],
+    disagreements: [], exercised: new Set() };
   const judged = (problem, input) => {
     const before = cases.describe(cases.prerequisites(problem, input));
     return before === 'Right' ? mb.judgeBoth(problem, input)
@@ -67,6 +69,14 @@ export const diffRunner = async load => {
   const describeForgery = item => `${item.kind} ${JSON.stringify(
     shape(item.at))} ${JSON.stringify(item.from)} -> ${
     JSON.stringify(item.to)}`;
+  // Not compared (a refused variant of a refused base): M-B's verdict is
+  // still tallied, and an M-B acceptance there counts as a disagreement
+  // (the coordinator's ruling, the stricter choice).
+  const notCompared = (where, what, run) => {
+    out.notCompared += 1;
+    if (run.mb) return disagree(where, `${what} (not compared)`, run);
+    out.notComparedMbRefuses += 1;
+  };
   const compare = (where, base, item, run) => {
     const what = `forged ${describeForgery(item)}`;
     if (run.prerequisites || (!accepts(run) && accepts(base)
@@ -74,7 +84,7 @@ export const diffRunner = async load => {
       return out.apart.push(`${where} ${what}: validator ${run.validator}`);
     if (accepts(run)) return agreeAccept(where, what, run, 'bothAccept');
     if (accepts(base)) return agreeRefuse(where, what, run);
-    out.notCompared += 1;
+    notCompared(where, what, run);
   };
   const add = ({ where, problem, pkg }) => {
     out.packages += 1;
@@ -91,7 +101,7 @@ export const diffRunner = async load => {
     if (!accepts(base))
       out.refusedHonest.push(`${where}: validator ${base.validator}; M-B ${
         base.prerequisites ? 'not run' : base.mb ? 'accepts' : 'refuses'
-      } (not compared unless a forgery is accepted)`);
+      } (a mark refusal if a forgery is accepted, else not compared)`);
     if (base.prerequisites) return;
     if (accepts(base)) agreeAccept(where, 'honest', base, 'accepted');
     const runs = forge.forgeries(problem, pkg).flatMap(item => {
@@ -107,7 +117,7 @@ export const diffRunner = async load => {
     runs.forEach(([item, run]) => compare(where, base, item, run));
     if (!accepts(base) && runs.some(([, run]) => accepts(run)))
       agreeRefuse(where, 'honest (a mark refusal)', base);
-    else if (!accepts(base)) out.notCompared += 1;
+    else if (!accepts(base)) notCompared(where, 'honest', base);
   };
   const total = () => out;
   const report = counts => reportLines(counts).map(line =>
@@ -117,7 +127,8 @@ export const diffRunner = async load => {
 
 const reportLines = counts => [
   `scope: ${scope}; caps: ${caps.rule}`,
-  `${counts.packages} honest packages (${counts.faults} read faults); `
+  `${counts.packages} honest packages${counts.faults === undefined ? ''
+    : ` (${counts.faults} read faults)`}; `
     + `verdicts on the mark obligations ${JSON.stringify(counts.honest)
     }; full validate ${JSON.stringify(counts.full)}`,
   ...counts.refusedHonest.map(line => `honest refused ${line}`),
@@ -125,7 +136,8 @@ const reportLines = counts => [
   `forgeries: ${JSON.stringify(counts.forgeries)}; by step ${
     JSON.stringify(counts.steps)}; ${counts.capped} packages capped`,
   `agreements: ${JSON.stringify(counts.agreements)}; not compared ${
-    counts.notCompared}; apart ${counts.apart.length}; vacuous ${
+    counts.notCompared} (M-B refuses ${counts.notComparedMbRefuses
+  }); apart ${counts.apart.length}; vacuous ${
     counts.vacuous.length}; disagreements ${counts.disagreements.length}`,
   `edge kinds on accepted variants: ${[...counts.exercised].sort()
     .join(', ')}`,

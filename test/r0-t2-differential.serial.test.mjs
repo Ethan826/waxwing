@@ -33,6 +33,7 @@ const agrees = out => {
   assert.deepEqual(out.vacuous, []);
   assert.deepEqual(out.apart, []);
   assert.deepEqual(out.disagreements, []);
+  assert.equal(out.notComparedMbRefuses, out.notCompared);
 };
 
 test(`${label}: the corpus loader's packages agree`, async t => {

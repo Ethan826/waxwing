@@ -47,8 +47,10 @@ export const sample = (items, cap) => items.length <= cap ? items
 export const forger = (cases, mb) => {
   const { P, J, Maps, Effect, Sets, Unfoldable } = cases;
   const array = set => Sets.toUnfoldable(Unfoldable.unfoldableArray)(set);
+  // A term as plain data; `J ∅` is N (statements §5's normal form).
   const plain = term => term instanceof P.TermN ? 'N'
-    : term instanceof P.TermM ? 'M' : sorted(array(term.value0));
+    : term instanceof P.TermM ? 'M' : array(term.value0).length === 0
+      ? 'N' : sorted(array(term.value0));
   const toTerm = term => term === 'N' ? P.TermN.value
     : term === 'M' ? P.TermM.value : J(...term);
   const name = term => JSON.stringify(term);
@@ -91,8 +93,6 @@ export const forger = (cases, mb) => {
   // The places where `forged` differs from `base`; a mark forgery has
   // exactly one, a term. Maps are compared entry by entry, rows label by
   // label (effect, arguments and tail by identity, marks by value).
-  const termsOf = input => pairs(input.marks).map(([, term]) =>
-    name(plain(term)));
   const rowDiffs = (one, other) => {
     if (one === other) return [];
     if (one.tail !== other.tail
@@ -113,13 +113,16 @@ export const forger = (cases, mb) => {
       Effect.eqEVar.eq(variable)(other[index][0])
         ? rowDiffs(row, other[index][1]) : ['binding']);
   };
+  // Entry by entry, keys (positions) by equality, terms by value.
   const markDiffs = (base, forged) => {
-    const one = termsOf(base);
-    const other = termsOf(forged);
-    if (pairs(base.marks).length !== pairs(forged.marks).length)
-      return ['position'];
-    return one.flatMap((term, index) => term === other[index] ? []
-      : ['term']);
+    const one = pairs(base.marks);
+    const other = pairs(forged.marks);
+    if (one.length !== other.length) return ['position'];
+    return one.flatMap(([position, term], index) => {
+      const [key, value] = other[index];
+      if (!Effect.eqPosition.eq(position)(key)) return ['position'];
+      return name(plain(term)) === name(plain(value)) ? [] : ['term'];
+    });
   };
   const marksOnly = (base, forged) => {
     const fixed = base.types === forged.types && base.rows === forged.rows
