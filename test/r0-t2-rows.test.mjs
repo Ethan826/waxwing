@@ -124,7 +124,7 @@ test("bare C keeps Fail's payload", () => {
 
 test('Fail and Console read as N', () => {
   // Terms that answer M for every mark: Fail and Console stay N.
-  const everyM = () => cases.Package.TermM.value;
+  const everyM = () => new cases.Just(cases.Package.TermM.value);
   assert.equal(one(sources.handlers, 'deferred', 'EffectOf', null,
     undefined, everyM), '[Console@N|hole]');
   assert.equal(one(sources.handlers, 'failing', 'HandlerClauses',

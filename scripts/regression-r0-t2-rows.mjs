@@ -31,7 +31,8 @@ export const t2RowsRows = [
     name: 'r0-t2-rows-fail-n',
     file: convert,
     needle: '    FailEffect, _ → Right TermN\n',
-    replacement: '    FailEffect, _ → Right (terms mark)\n',
+    replacement: '    FailEffect, _ → '
+      + 'note (UnmarkedLabel effect) (terms mark)\n',
     probe: 'r0-t2-rows-fail-n',
     message: /r0-t2-rows-fail-n: \["failing"\]/
   },
@@ -89,7 +90,8 @@ export const t2RowsRows = [
     name: 'r0-t2-rows-console-n',
     file: convert,
     needle: '    ConsoleEffect, _ → Right TermN\n',
-    replacement: '    ConsoleEffect, _ → Right (terms mark)\n',
+    replacement: '    ConsoleEffect, _ → '
+      + 'note (UnmarkedLabel effect) (terms mark)\n',
     probe: 'r0-t2-rows-console-n',
     message: /r0-t2-rows-console-n: \["console"\]/
   },

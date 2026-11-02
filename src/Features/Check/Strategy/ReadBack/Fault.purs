@@ -13,7 +13,11 @@
 -- mark graph's least terms met a class holding two different constants
 -- (Task 9; unreachable from a store). `UnreadImage v` and `ImageApart v`:
 -- a type image that needs rows it cannot read, or whose erasure is not
--- today's (design §C.8). `Declined k`: an `Unsupported` problem.
+-- today's (design §C.8); also a hole θ binds to a value the package
+-- cannot hold (design §C.7, ReadBack/Bound.purs). `Declined k`: an
+-- `Unsupported` problem. `ForcedRead v`: the assembled effects bind a
+-- forced `ResultClauses` tail v (A2 spec §3), which only a defect in the
+-- row read-back could produce (Task 11's assertion).
 module Features.Check.Strategy.ReadBack.Fault (ReadFault(..)) where
 
 import Prelude
@@ -31,5 +35,6 @@ data ReadFault
   | UnreadImage Var
   | ImageApart Var
   | Declined UnsupportedKind
+  | ForcedRead EVar
 
 derive instance eqReadFault ∷ Eq ReadFault

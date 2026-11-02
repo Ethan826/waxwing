@@ -4,7 +4,7 @@
 -- (ReadBack/EffectSites.purs) and from the checked declaration and the
 -- trace's clause, deferral and installation entries for the located ones
 -- (ReadBack/EffectPlaces.purs), each live row converted under the
--- injected `Mark → Term` (ReadBack/Convert.purs; Task 9 supplies least
+-- injected `Mark → Maybe Term` (ReadBack/Convert.purs; Task 9's least
 -- terms). Forced tails (Effects/Forced.purs) are not package-owned and
 -- are not read. Untrusted search: it builds plain rows only.
 --
@@ -20,7 +20,7 @@ import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (fromMaybe, maybe)
+import Data.Maybe (Maybe, fromMaybe, maybe)
 import Data.Set as Set
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
@@ -39,7 +39,7 @@ import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Trace (Traced)
 
 readRows
-  ∷ (Mark → Term)
+  ∷ (Mark → Maybe Term)
   → RecordedProblem
   → Checked.FunctionDecl
   → Traced
@@ -62,7 +62,7 @@ readRows terms problem checked traced = do
 -- One variable's value: read by at least one source, every reading
 -- converted, all the same.
 readOne
-  ∷ (Mark → Term)
+  ∷ (Mark → Maybe Term)
   → Map EVar (Array (TyRow Open))
   → EVar
   → Either ReadFault (Tuple EVar PRow)

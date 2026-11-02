@@ -90,15 +90,9 @@ export const marksCases = async load => {
   // A mark's term under a store's least terms, as text.
   const termIn = (given, which) => maybeText(Marks.termOf(least(given))(
     which));
-  // The `Mark → Term` readRows injects. Convert never asks for an
-  // `Unmarked` mark (Fail and Console read N first, an unmarked user
-  // label is refused), so a Nothing here throws rather than invent a term.
-  const rowTerms = terms => which => {
-    const found = Marks.termOf(terms)(which);
-    if (named(found) !== 'Just')
-      throw new Error(`no term for ${named(which)}`);
-    return found.value0;
-  };
+  // The `Mark → Maybe Term` readRows injects: `termOf` itself, whose
+  // Nothing Convert reads as an unmarked label, never an invented term.
+  const rowTerms = terms => Marks.termOf(terms);
 
   // The named declaration's problem, checked declaration, trace and final
   // mark store.

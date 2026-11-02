@@ -56,6 +56,7 @@ import Domain.Recorded.Atom
   , Var(..)
   , VarInfo
   )
+import Domain.Recorded.Hole (holeIndex)
 import Domain.Recorded.Origin (Path)
 import Domain.Type (VarId(..))
 import Domain.Verdict (Claim(..))
@@ -74,10 +75,15 @@ import Features.Check.Strategy.ReadBack.Type (holesIn)
 -- itself is the trusted check's (Strategy.Substitution `certify`,
 -- BACKLOG R026), which settles σ to judge it and binds the witness to
 -- the unsettled σ, so a default stays a hole the hole contract judges.
+-- `holeBindings`: step 2's θ restricted to holes, by hole number (tranche
+-- 2 read-back design §C.7), so the effect read-back reads every hole θ
+-- binds as σ does; empty when step 2 binds no hole (corpus-observed: θ
+-- bound 0 holes over the 2,823 candidates).
 type ReadBack =
   { unsettled ∷ Substitution
   , claim ∷ Claim
   , holes ∷ Array Int
+  , holeBindings ∷ Map.Map Int RTExpr
   }
 
 type Equation = Tuple RTExpr RTExpr
@@ -90,7 +96,7 @@ readBack problem checked = completed problem
 
 completed ∷ RecordedProblem → Array (Tuple Var RTExpr) → ReadBack
 completed problem values =
-  maybe (read ClaimsComplete values) completing
+  maybe (read ClaimsComplete Map.empty values) completing
     (filter auxiliary <$> traverse placed equations)
   where
   view = fields problem
@@ -103,20 +109,29 @@ completed problem values =
     && maybe false isFlexible (Map.lookup variable view.vars)
   completing remaining =
     if all inFragment remaining && wellSorted remaining then
-      maybe (read ClaimsComplete values) (read ClaimsComplete <<< joined)
+      maybe (read ClaimsComplete Map.empty values) joined
         (mgu (void view.vars) remaining)
-    else read Heuristic values
-  joined theta = map (under theta) values <> solved problem theta
+    else read Heuristic Map.empty values
+  joined theta = read ClaimsComplete (holeBound theta)
+    (map (under theta) values <> solved problem theta)
   under theta (Tuple variable value) =
     Tuple variable (fromMaybe value (substitute theta value))
   inFragment (Tuple one other) = fragment one && fragment other
 
-read ∷ Claim → Array (Tuple Var RTExpr) → ReadBack
-read claim values =
+read ∷ Claim → Map.Map Int RTExpr → Array (Tuple Var RTExpr) → ReadBack
+read claim holeBindings values =
   { unsettled: Map.fromFoldable values
   , claim
   , holes: Array.sort (Array.nub (concatMap (holesIn <<< snd) values))
+  , holeBindings
   }
+
+-- θ's bindings of holes, keyed by hole number.
+holeBound ∷ Map.Map Var RTExpr → Map.Map Int RTExpr
+holeBound theta = Map.fromFoldable
+  (mapMaybe numbered (Map.toUnfoldable theta ∷ Array (Tuple Var RTExpr)))
+  where
+  numbered (Tuple variable value) = flip Tuple value <$> holeIndex variable
 
 -- The unifier's bindings of the problem's flexible variables; made rows
 -- and holes it bound are not the problem's.

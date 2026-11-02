@@ -27,7 +27,8 @@ const { fields } = await load('Domain.Recorded');
 
 const named = value => value.constructor.name;
 const pairs = map => Maps.toUnfoldable(unfoldableArray)(map);
-const terms = () => Package.TermN.value;
+const { Just } = await load('Data.Maybe');
+const terms = () => new Just(Package.TermN.value);
 const baseline = 'docs/plans/2026-10-21-c001-explicit/baseline/';
 
 // What a package image needs beyond its erasure, by an explicit stack.

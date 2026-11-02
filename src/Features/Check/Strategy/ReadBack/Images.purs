@@ -12,7 +12,10 @@
 -- position: Robinson unification completed it (ReadBack step 2), so its
 -- image converts only when it needs no row (no arrow, no handler head,
 -- no data with row arguments, by the problem's declared arities);
--- otherwise it is `UnreadImage v`. No row or mark is invented.
+-- otherwise it is `UnreadImage v`. No row or mark is invented. Every
+-- image is read under ReadBack's `holeBindings` (ReadBack/Bound.purs,
+-- design §C.7) before its erasure is compared, so a hole θ binds reads
+-- θ's value here as in σ.
 --
 -- `ImageApart v` is an erasure-agreement guard only: the image's erasure
 -- (Effects.Package `eraseTy`, spec §2.5) must be today's image up to
@@ -23,6 +26,7 @@
 module Features.Check.Strategy.ReadBack.Images
   ( Images
   , readImages
+  , rowFree
   ) where
 
 import Prelude
@@ -52,6 +56,7 @@ import Domain.Verdict.EffectPackage (PRecordRow, PTy(..), Term)
 import Features.Check.Spine (spine, unspine)
 import Features.Check.Strategy.Effects.Package (eraseTy)
 import Features.Check.Strategy.ReadBack (ReadBack, slotted)
+import Features.Check.Strategy.ReadBack.Bound (boundTy)
 import Features.Check.Strategy.ReadBack.Convert (convertTy)
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Strategy.ReadBack.Position (liveAt, liveType)
@@ -62,10 +67,11 @@ type Reading =
   { live ∷ CheckedName → Maybe PTy
   , vars ∷ Map Var VarInfo
   , arities ∷ Map TypeId DataArity
+  , bound ∷ PTy → Either ReadFault PTy
   }
 
 readImages
-  ∷ (Mark → Term)
+  ∷ (Mark → Maybe Term)
   → RecordedProblem
   → Checked.FunctionDecl
   → ReadBack
@@ -79,6 +85,10 @@ readImages terms problem checked found =
     { live
     , vars: view.vars
     , arities: view.effects.declarations.types
+    , bound: boundTy
+        { bindings: found.holeBindings
+        , image: rowFree view.effects.declarations.types
+        }
     }
   ranked = slotted problem
   live name = hush (liveAt checked.body ranked name) >>= converted
@@ -92,7 +102,8 @@ placed reading images (Tuple variable today) =
   note unread (Map.lookup variable reading.vars) >>= filed
   where
   unread = UnreadImage variable
-  filed info = imageOf reading unread today info >>= sorted info.sort
+  filed info = imageOf reading unread today info >>= reading.bound
+    >>= sorted info.sort
   sorted sort image = case sort of
     SortType → typed image <$ agreed image
     SortRow → note unread (recordRow image) >>= rowAgreed

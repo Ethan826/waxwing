@@ -22,7 +22,7 @@ const user = new Row.UserEffect(7);
 const label = (effect, args, mark) => new Row.Label(effect, args, mark);
 const row = (labels, tail) => new Row.Row(labels,
   tail === null ? Nothing.value : new Just(tail));
-const terms = mark => (mark instanceof Row.MarkVariable
+const terms = mark => new Just(mark instanceof Row.MarkVariable
   ? new P.TermJ(Sets.singleton(mark.value0)) : P.TermM.value);
 const convert = ty => Convert.convertTy(terms)(ty);
 const right = found => {
@@ -91,6 +91,19 @@ test('an unmarked user label is UnmarkedLabel', () => {
     Row.Unmarked.value)], null));
   assert.equal(found.constructor.name, 'Left');
   assert.equal(found.value0.constructor.name, 'UnmarkedLabel');
+});
+
+// Task 11 ruling: the injected terms are `Mark → Maybe Term`; a mark
+// they do not read is an unread label, never a defaulted term.
+test('a mark the terms do not read is UnmarkedLabel', () => {
+  const none = () => Nothing.value;
+  const found = Convert.convertRow(none)(row([label(user, [],
+    new Row.MarkMeta(3))], null));
+  assert.equal(found.constructor.name, 'Left');
+  assert.equal(found.value0.constructor.name, 'UnmarkedLabel');
+  const fail = label(Row.FailEffect.value, [], new Row.MarkMeta(3));
+  assert.equal(Convert.convertRow(none)(row([fail], null))
+    .constructor.name, 'Right');
 });
 
 test('a deep spine converts by a loop', () => {

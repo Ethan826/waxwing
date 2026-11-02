@@ -46,8 +46,9 @@ export const imagesCases = async load => {
 
   // Task 9's least terms stubbed: a user label's live mark reads
   // `J {least:<mark>}`, so a test sees the injected terms reach the image.
-  const terms = mark => new Package.TermJ(Sets.singleton(
-    `least:${named(mark)}`));
+  const { Just } = await load('Data.Maybe');
+  const terms = mark => new Just(new Package.TermJ(Sets.singleton(
+    `least:${named(mark)}`)));
   const readBackOf = item => {
     const found = RB.readBack(item.problem)(item.checked);
     if (named(found) !== 'Right') throw new Error('read-back refused');

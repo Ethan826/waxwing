@@ -1,6 +1,7 @@
 -- A live checked type or row, read as the effect package's (A2 spec
 -- §2.2; tranche 2 read-back design §C.8): every row kept, each label's
--- mark a `Term` by the injected `Mark → Term` (least terms, Task 9),
+-- mark a `Term` by the injected `Mark → Maybe Term` (least terms, Task
+-- 9's `termOf`),
 -- except that a `Fail` or Console label is N whatever its live mark
 -- (design §E: the payload, effect and place in the row are kept). Holes
 -- are already on the trace's numbering (Check/Trace.purs `finish`), so a
@@ -8,7 +9,8 @@
 -- tail is `PTailRigid`. Untrusted search.
 --
 -- Nothing is invented: a user label with no mark (`Unmarked`, Fail's
--- placeholder) has no term to read, and is `UnmarkedLabel`; the caller
+-- placeholder), or one whose mark the injected terms do not read
+-- (`Nothing`), has no term to read, and is `UnmarkedLabel`; the caller
 -- names the variable or image it was reading. Arrow spines are walked by
 -- a loop.
 module Features.Check.Strategy.ReadBack.Convert
@@ -21,7 +23,8 @@ import Prelude
 import Prim hiding (Row)
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array (foldr, snoc)
-import Data.Either (Either(..))
+import Data.Either (Either(..), note)
+import Data.Maybe (Maybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
@@ -46,7 +49,7 @@ derive instance eqUnconverted ∷ Eq Unconverted
 
 type Stage = { parameter ∷ Ty Open, row ∷ TyRow Open }
 
-convertTy ∷ (Mark → Term) → Ty Open → Either Unconverted PTy
+convertTy ∷ (Mark → Maybe Term) → Ty Open → Either Unconverted PTy
 convertTy terms ty = case ty of
   TInt → Right (PBase IntBase)
   TBool → Right (PBase BoolBase)
@@ -65,11 +68,12 @@ convertTy terms ty = case ty of
     <$> convertRow terms inference
     <*> traverse (convertRow terms) clauses
 
-convertRow ∷ (Mark → Term) → TyRow Open → Either Unconverted PRow
+convertRow ∷ (Mark → Maybe Term) → TyRow Open → Either Unconverted PRow
 convertRow terms (Row labels tail) = { labels: _, tail: map tailOf tail }
   <$> traverse (convertLabel terms) labels
 
-convertLabel ∷ (Mark → Term) → Label (Ty Open) → Either Unconverted PLabel
+convertLabel
+  ∷ (Mark → Maybe Term) → Label (Ty Open) → Either Unconverted PLabel
 convertLabel terms (Label effect arguments mark) =
   { effect, args: _, mark: _ } <$> traverse (convertTy terms) arguments
     <*> termOf
@@ -78,16 +82,18 @@ convertLabel terms (Label effect arguments mark) =
     FailEffect, _ → Right TermN
     ConsoleEffect, _ → Right TermN
     UserEffect _, Unmarked → Left (UnmarkedLabel effect)
-    UserEffect _, _ → Right (terms mark)
+    UserEffect _, _ → note (UnmarkedLabel effect) (terms mark)
 
 convertRecord
-  ∷ (Mark → Term) → RecordRow (Ty Open) Open → Either Unconverted PRecordRow
+  ∷ (Mark → Maybe Term)
+  → RecordRow (Ty Open) Open
+  → Either Unconverted PRecordRow
 convertRecord terms row = { fields: _, tails: map named row.tails }
   <$> traverse field row.fields
   where
   field (Tuple label value) = Tuple label <$> convertTy terms value
 
-convertArrow ∷ (Mark → Term) → Ty Open → Either Unconverted PTy
+convertArrow ∷ (Mark → Maybe Term) → Ty Open → Either Unconverted PTy
 convertArrow terms ty = foldr arrow <$> convertTy terms found.result
   <*> traverse stage found.stages
   where

@@ -84,8 +84,10 @@ export const rowsCases = async load => {
   const pairs = map => Maps.toUnfoldable(unfoldableArray)(map)
     .map(pair => [pair.value0, pair.value1]);
 
-  // A stub for Task 9's least terms: N, M, J {k}, and M for a meta.
-  const stub = mark => {
+  // A stub for Task 9's least terms (`Mark → Maybe Term`, total here):
+  // N, M, J {k}, and M for a meta.
+  const { Just } = await load('Data.Maybe');
+  const termOf = mark => {
     switch (named(mark)) {
     case 'NoFail': return Package.TermN.value;
     case 'MarkVariable': return new Package.TermJ(Sets.singleton(
@@ -93,6 +95,7 @@ export const rowsCases = async load => {
     default: return Package.TermM.value;
     }
   };
+  const stub = mark => new Just(termOf(mark));
 
   // The named declaration's problem, checked declaration and trace.
   const live = (source, name) => {
@@ -158,7 +161,7 @@ export const rowsCases = async load => {
   const rowText = row => `[${row.labels.map(labelText).join(' ')}|`
     + `${tailText(row.tail)}]`;
   return { live, read, varsOf, valueOf, rowText, pairs, stub, same, named,
-    consumedOf, keyOrd, Tuple, Row, Package, Maps };
+    consumedOf, keyOrd, Tuple, Row, Package, Maps, Just };
 };
 
 // A value as plain data, for comparing PureScript values.

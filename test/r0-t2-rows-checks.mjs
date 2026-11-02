@@ -38,7 +38,7 @@ export const rowsChecks = async load => {
   }).map(([name]) => name);
   // Fail and Console labels read N whatever the terms say.
   const failWrong = () => {
-    const everyM = () => cases.Package.TermM.value;
+    const everyM = () => new cases.Just(cases.Package.TermM.value);
     const item = live(sources.handlers, 'failing');
     const found = read(item, item.trace, everyM);
     if (named(found) !== 'Right') return ['failing'];
@@ -89,7 +89,7 @@ export const rowsChecks = async load => {
       === '[User@M|rigid:0]' ? [] : ['piped'];
   };
   // Console reads N whatever the terms say; Fail keeps its payload.
-  const everyM = () => cases.Package.TermM.value;
+  const everyM = () => new cases.Just(cases.Package.TermM.value);
   const consoleWrong = () => {
     const item = live(sources.handlers, 'deferred');
     const found = read(item, item.trace, everyM);
