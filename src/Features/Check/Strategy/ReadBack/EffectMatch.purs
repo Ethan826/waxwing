@@ -17,6 +17,7 @@ module Features.Check.Strategy.ReadBack.EffectMatch
   ( Fact
   , matchRow
   , matchTy
+  , sameLabel
   ) where
 
 import Prelude

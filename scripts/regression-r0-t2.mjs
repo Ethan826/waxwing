@@ -7,11 +7,13 @@ import { t2TraceRows } from './regression-r0-t2-trace.mjs';
 import { t2RowsRows } from './regression-r0-t2-rows.mjs';
 import { t2GatesRows } from './regression-r0-t2-gates.mjs';
 import { t2ImagesRows } from './regression-r0-t2-images.mjs';
+import { t2MarksRows } from './regression-r0-t2-marks.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
   ...t2TraceRows,
   ...t2RowsRows,
   ...t2GatesRows,
-  ...t2ImagesRows
+  ...t2ImagesRows,
+  ...t2MarksRows
 ];
