@@ -63,5 +63,54 @@ export const t2RowsRows = [
       + '{ row = const raw.row row }\n',
     probe: 'r0-t2-rows-entry-finish',
     message: /r0-t2-rows-entry-finish: \[/
+  },
+  {
+    // A variable no source reads given a closed empty row.
+    name: 'r0-t2-rows-unread',
+    file: rows,
+    needle: '  chosen converted = maybe (Left (Unread variable)) '
+      + '(agreed converted)\n',
+    replacement: '  chosen converted = maybe (Right (Tuple variable '
+      + '{ labels: [], tail: Array.head [] })) (agreed converted)\n',
+    probe: 'r0-t2-rows-unread',
+    message: /r0-t2-rows-unread: \["unread"\]/
+  },
+  {
+    // A piped stage keyed by the pipe's own span, not its left operand's.
+    name: 'r0-t2-rows-piped-key',
+    file: sites,
+    needle: '    (keyOf (Checked.spanOf left))\n',
+    replacement: '    (keyOf (const found.span left))\n',
+    probe: 'r0-t2-rows-piped-key',
+    message: /r0-t2-rows-piped-key: \["piped"\]/
+  },
+  {
+    // A Console label read with its live mark's term instead of N.
+    name: 'r0-t2-rows-console-n',
+    file: convert,
+    needle: '    ConsoleEffect, _ → Right TermN\n',
+    replacement: '    ConsoleEffect, _ → Right (terms mark)\n',
+    probe: 'r0-t2-rows-console-n',
+    message: /r0-t2-rows-console-n: \["console"\]/
+  },
+  {
+    // A Fail label's payload dropped.
+    name: 'r0-t2-rows-fail-payload',
+    file: convert,
+    needle: '  { effect, args: _, mark: _ } <$> traverse (convertTy terms) '
+      + 'arguments\n',
+    replacement: '  { effect, args: _, mark: _ } <$> traverse '
+      + '(convertTy terms) (if effect == FailEffect then [] else arguments)\n',
+    probe: 'r0-t2-rows-fail-payload',
+    message: /r0-t2-rows-fail-payload: \["payload"\]/
+  },
+  {
+    // An unmarked user label converted with a default term.
+    name: 'r0-t2-rows-unmarked',
+    file: convert,
+    needle: '    UserEffect _, Unmarked → Left (UnmarkedLabel effect)\n',
+    replacement: '    UserEffect _, Unmarked → Right TermN\n',
+    probe: 'r0-t2-rows-unmarked',
+    message: /r0-t2-rows-unmarked: \["unmarked"\]/
   }
 ];

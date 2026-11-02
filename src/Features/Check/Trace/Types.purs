@@ -110,6 +110,8 @@ emptyTraced =
   , clauses: Map.empty
   , deferrals: Map.empty
   , installations: Map.empty
+  -- A placeholder: `finish` (Features.Check.Trace) alone sets the
+  -- declaration's row; no `Traced` is read before it.
   , row: Row [] Nothing
   }
 

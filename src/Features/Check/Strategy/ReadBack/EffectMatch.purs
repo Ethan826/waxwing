@@ -24,7 +24,7 @@ import Prim hiding (Row)
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Foldable (foldl)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..), fst)
@@ -90,15 +90,22 @@ matchArrow recorded live = tailRec step { recorded, live, facts: [] }
     MArrow _ _ _, _ → Done at.facts
     other, liveOther → Done (at.facts <> matchTy other liveOther)
 
+-- The first free live label of the same key, in same-key order; but a
+-- `Fail` label matched with an unknown payload head may name any of
+-- several keys, so with more than one candidate it takes none (no
+-- choice, §18.155 (3)) and the tail gets no value here.
 takeLabel ∷ Array (Label (Ty Open)) → Labels → MLabel → Labels
-takeLabel live found label =
-  maybe (found { missed = true }) taken
-    (Array.findIndex free (Array.mapWithIndex Tuple live))
+takeLabel live found label = chosen candidates
   where
+  candidates = Array.filter free (Array.mapWithIndex Tuple live)
   free (Tuple index each) = not (Set.member index found.used)
     && sameLabel label each
-  taken index = maybe found (matched index) (Array.index live index)
-  matched index each = found
+  chosen several
+    | Array.length several > 1 && Array.any loose several =
+        found { missed = true }
+    | otherwise = maybe (found { missed = true }) taken (Array.head several)
+  loose (Tuple _ each) = not (headsKnown label each)
+  taken (Tuple index each) = found
     { used = Set.insert index found.used
     , facts = found.facts <> matchArguments label each
     }
@@ -110,13 +117,26 @@ matchArguments label (Label _ arguments _) =
 -- The same effect; for `Fail`, the same payload head when both are
 -- known (a variable payload's head is not).
 sameLabel ∷ MLabel → Label (Ty Open) → Boolean
-sameLabel label (Label effect arguments _) = label.effect == effect
-  && (effect /= FailEffect || agree recordedHead liveHead)
+sameLabel label each@(Label effect _ _) = label.effect == effect
+  && (effect /= FailEffect || agree (heads label each))
   where
-  recordedHead = Array.head label.args >>= headOf
-  liveHead = map sorted (Array.head arguments >>= typeHead)
-  agree (Just one) (Just other) = one == other
-  agree _ _ = true
+  agree found = maybe true identity (eq <$> found.recorded <*> found.live)
+
+-- Whether a `Fail` match is decided by known heads (any other label's is).
+headsKnown ∷ MLabel → Label (Ty Open) → Boolean
+headsKnown label each@(Label effect _ _) = effect /= FailEffect
+  || isJust found.recorded && isJust found.live
+  where
+  found = heads label each
+
+heads
+  ∷ MLabel
+  → Label (Ty Open)
+  → { recorded ∷ Maybe TypeHead, live ∷ Maybe TypeHead }
+heads label (Label _ arguments _) =
+  { recorded: Array.head label.args >>= headOf
+  , live: map sorted (Array.head arguments >>= typeHead)
+  }
 
 headOf ∷ MTy → Maybe TypeHead
 headOf = case _ of

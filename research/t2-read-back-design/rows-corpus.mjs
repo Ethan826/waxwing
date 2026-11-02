@@ -69,8 +69,11 @@ const entryCheck = (map, at) => {
   const entry = pairs.find(pair => roleOf(pair.value0) === 'EntryTail');
   if (entry === undefined) return;
   const tail = entry.value1.tail;
-  if (named(tail) !== 'Just' || named(tail.value0) !== 'PTailHole')
+  if (named(tail) !== 'Just' || named(tail.value0) !== 'PTailHole') {
+    out.notHole ??= [];
+    out.notHole.push(`${at} ${named(tail) === 'Just' ? 'rigid' : 'closed'}`);
     return bump(out.entry, 'not a hole');
+  }
   const hole = tail.value0.value0;
   const others = new Set(pairs.filter(pair => pair !== entry)
     .flatMap(pair => holesOf(pair.value1)));

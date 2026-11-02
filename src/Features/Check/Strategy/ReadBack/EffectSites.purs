@@ -86,7 +86,7 @@ atNode ∷ Traced → ERole → Checked.Expr → Read
 atNode traced role (Checked.Expr found) = case role, found.node of
   Stage k, Checked.Apply _ arguments → applied traced found.span
     (Array.index arguments k)
-  Stage _, Checked.Pipe left _ → entryAt PipedKey
+  Stage 0, Checked.Pipe left _ → entryAt PipedKey
     (keyOf (Checked.spanOf left))
     traced.piped
   Stage _, Checked.Lambda _ _ → Right Nothing

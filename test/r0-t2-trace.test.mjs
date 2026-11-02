@@ -189,7 +189,9 @@ test('a state value renumbers a meta shared with the body', () => {
 
 test("the declaration's row is renumbered with the trace", async () => {
   const { readFileSync } = await import('node:fs');
-  const item = traced(readFileSync('examples/services.wxw', 'utf8'), 'main');
+  const root = new URL('..', import.meta.url);
+  const item = traced(readFileSync(new URL('examples/services.wxw', root),
+    'utf8'), 'main');
   const tail = item.found.trace.row.value1.value0;
   assert.equal(named(tail), 'Hole');
   assert.ok(tail.value0 >= 0);
