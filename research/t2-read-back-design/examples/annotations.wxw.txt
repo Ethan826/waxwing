@@ -1,0 +1,31 @@
+effect Log { fn log(n: Int): Unit; };
+effect Tick { fn tick(): Unit; };
+effect Tock { fn tock(): Unit; };
+fn implicitRow(): Unit with Tick = {
+  let inst = fn(h: Handler(Log)) => with h { Log.log(1) };
+  inst(handler Log { log(n) => Tick.tick() })
+};
+fn explicitRow(cb: Unit -> Unit with ...e): Unit with ...e = {
+  let inst = fn(h: Handler(Log with ...e)) => with h { Log.log(1) };
+  inst(handler Log { log(n) => cb(()) })
+};
+fn pureRow(): Unit with Tick = {
+  let inst = fn(h: Handler(Log with pure)) => with h { Log.log(1) };
+  inst(handler Log { log(n) => () })
+};
+fn nested(): Unit with Tick = {
+  let outer = fn(h: Handler(Log)) => {
+    let inner = fn(k: Handler(Log)) => with k { Log.log(2) };
+    with h { inner(handler Log { log(n) => Log.log(n) }) }
+  };
+  outer(handler Log { log(n) => Tick.tick() })
+};
+fn siblings(): Unit with Tick = {
+  let both = fn(h: Handler(Log), k: Handler(Tock)) =>
+    { with h { Log.log(1) }; with k { Tock.tock() } };
+  both(handler Log { log(n) => Tick.tick() },
+    handler Tock { tock() => Tick.tick() })
+};
+fn main(): Unit with Console =
+  with handler Tick { tick() => Console.print(5) }
+  { implicitRow(); pureRow(); nested(); siblings() };

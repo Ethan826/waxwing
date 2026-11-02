@@ -81,6 +81,17 @@ Mapping, over the 2,823 candidates:
 The plan header's "998 programs, 3071 declarations" was not reproduced
 by this count; the figures above are what `loadCorpus` gave here.
 
+Correction (dossier §18.153; docs/plans/2026-11-01-tranche-2-read-back-
+design.md §A): these counts cover the corpus loader's source set only,
+not the whole pinned effect set. The effect pin
+(test/r0-effects-pin-run.mjs `sourcesOf`) reads the same 1,138 entries
+plus R022's two probes and the window's two defect probes: 998
+programs, 3,071 declarations. The 10 declarations it adds were not
+inventoried here. "Mapped" below means located; one of the 1,372
+mapped declarations is located inconsistently (a local annotation's
+implicit row), and the 9 `UnframedInstall` declarations stay
+unsupported wherever values were found (design §A).
+
 Within the 1,372 mapped declarations the required inputs are: EffectOf
 64, Stage 39, EntryTail 175, EffInst 32, HandlerInference 19,
 HandlerClauses 19, Clauses 23; positions Literal 19, Frame 1,
