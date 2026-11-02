@@ -4,8 +4,10 @@
 // One file per lane, each owned by its lane.
 import { t2GenerationRows } from './regression-r0-t2-generation.mjs';
 import { t2TraceRows } from './regression-r0-t2-trace.mjs';
+import { t2RowsRows } from './regression-r0-t2-rows.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
-  ...t2TraceRows
+  ...t2TraceRows,
+  ...t2RowsRows
 ];
