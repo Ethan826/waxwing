@@ -3,11 +3,15 @@
 // check probes load modules from the compiler under test only, through
 // `context.compilerPath`, and fail naming every fixture of
 // test/r0-t2-online-checks.mjs that differs; the import probe runs
-// `purs graph` over the clone's sources and the healthy structure rules.
+// `purs graph` over the clone's sources and the healthy structure rules;
+// the substitution probe reads the clone's src with the healthy reader.
 import { spawnSync } from 'node:child_process';
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { graphFindings } from '../scripts/structure.mjs';
+import { filesUnder, graphFindings } from '../scripts/structure.mjs';
+import { onlineImportFindings } from '../scripts/structure-online.mjs';
+import { facts } from '../output/Style.Trace/index.js';
 import { onlineChecks } from './r0-t2-online-checks.mjs';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 
@@ -34,8 +38,21 @@ const imports = async context => {
   passed(context);
 };
 
+// The clone's src tree, read with the healthy build's Style.Trace.
+const substitution = async context => {
+  const root = rootOf(context);
+  const sources = Object.fromEntries(filesUnder(resolve(root, 'src'))
+    .filter(file => file.endsWith('.purs')).map(file =>
+      [relative(root, file), readFileSync(file, 'utf8')]));
+  const found = onlineImportFindings(sources, facts);
+  if (found.length > 0) fail(`${context.probe}: ${found.join('; ')}`);
+  passed(context);
+};
+
 export const t2OnlineProbes = {
   'r0-t2-online-carried': probe('carriedWrong'),
   'r0-t2-online-kept': probe('keptWrong'),
-  'r0-t2-online-imports': imports
+  'r0-t2-online-verdict': probe('verdictWrong'),
+  'r0-t2-online-imports': imports,
+  'r0-t2-online-substitution': substitution
 };

@@ -6,6 +6,9 @@
 // cases that differ, empty when all hold. `onlineChecks(load)` takes a
 // module loader, so a probe reads the compiler under test only.
 // Fixture-level.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe } from './r0-decide-support.mjs';
 import { onlineFrom } from './r0-online-support.mjs';
 import { packageCases, sources as packageSources }
@@ -14,6 +17,12 @@ import { sources as imageSources } from './r0-t2-images-cases.mjs';
 import { shape } from './regression-r0-amin-support.mjs';
 
 const text = value => JSON.stringify(shape(value));
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Each fixture's whole `decide` result as plain data (verdict, Solution's
+// validity, assurance and compilation, attempts, search faults), pinned
+// from a plain-purs build of 8ad30c1, before Task 12.
+export const pinnedDecisions = () => JSON.parse(readFileSync(join(root,
+  'test/fixtures/r0/t2-online-decisions.json'), 'utf8')).decisions;
 const named = value => value.constructor.name;
 
 // Each fixture's declaration, the package's outcome (`Right` or the
@@ -75,13 +84,18 @@ export const onlineChecks = async load => {
       || text(found.value1) !== text(made.claim);
   }).map(fixture => fixture.name);
 
-  // G0 decides as before; no verdict reads `effects`, so a read fault is
-  // never shown as effect validation, nor a package as one.
-  const verdictWrong = () => fixtures.filter(fixture => {
-    const program = online.programOf(fixture.source);
-    return text(describe(online.decisionOf(program, fixture.decl)))
-      !== text(fixture.decision);
-  }).map(fixture => fixture.name);
+  // G0 decides as before, the whole result equal to the pre-Task 12
+  // build's; no verdict reads `effects`, so a read fault is never shown
+  // as effect validation, nor a package as one.
+  const verdictWrong = () => {
+    const pinned = pinnedDecisions();
+    return fixtures.filter(fixture => {
+      const program = online.programOf(fixture.source);
+      const found = online.decisionOf(program, fixture.decl);
+      return text(describe(found)) !== text(fixture.decision)
+        || text(found) !== JSON.stringify(pinned[fixture.name]);
+    }).map(fixture => fixture.name);
+  };
 
   return { carriedWrong, keptWrong, verdictWrong };
 };

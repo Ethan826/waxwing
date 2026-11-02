@@ -7,6 +7,12 @@ const either = { file: online,
   needle: 'import Data.Either (Either, either)\n',
   replacement: 'import Data.Either (Either(..), either)\n' };
 
+const search = { file: online,
+  needle: 'import Domain.Verdict.Search (Budget, CheckRefusal, '
+    + 'SearchHint(..))\n',
+  replacement: 'import Domain.Verdict.Search (Budget, CheckRefusal(..), '
+    + 'SearchHint(..))\n' };
+
 export const t2OnlineRows = [
   // The read dropped: the certificate's `effects` is always a fault.
   { name: 'r0-t2-online-dropped',
@@ -41,5 +47,23 @@ export const t2OnlineRows = [
     replacement: 'import Features.Check.Strategy.Guard (g0Guard)\n'
       + 'import Features.Check.Strategy.Effects.Validate as Validate\n',
     probe: 'r0-t2-online-imports',
-    message: /Online imports Features\.Check\.Strategy\.Effects\.Validate/ }
+    message: /Online imports Features\.Check\.Strategy\.Effects\.Validate/ },
+  // Online takes the validator from Substitution beside G0's check.
+  { name: 'r0-t2-online-takes-validate', file: online,
+    needle: '  , certifySound\n  )\n',
+    replacement: '  , certifySound\n  , validate\n  )\n',
+    probe: 'r0-t2-online-substitution',
+    message: /Online must import exactly certify, certifySound/ },
+  // The check reads `effects`: a read fault refuses the candidate, so
+  // G0's verdict moves for the fault fixtures.
+  { name: 'r0-t2-online-certified-reads',
+    edits: [either, search, { file: online,
+      needle: 'certified problem certificate = certify problem '
+        + 'certificate.unsettled\n',
+      replacement: 'certified problem certificate = either '
+        + '(const (Left NotGeneric))\n'
+        + '  (const (certify problem certificate.unsettled))\n'
+        + '  certificate.effects\n' }],
+    probe: 'r0-t2-online-verdict',
+    message: /r0-t2-online-verdict: \["unframed","c7","q7"\]/ }
 ];

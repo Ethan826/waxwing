@@ -258,7 +258,11 @@ adding a bypass allowlist.
   - `Features.Check.Strategy.Online`: `certified` hands the certificate's
     pre-default sigma to `certify`, which settles and judges it and
     builds the witness from the same sigma; no other certificate field
-    reaches the verdict or the witness.
+    reaches the verdict or the witness. Its `effects` field (tranche 2
+    Task 12) carries the honest effect package or its read fault as
+    untrusted data: nothing reads it for the verdict, a read fault
+    keeps the candidate, and Online takes only `certify` and
+    `certifySound` from Substitution (scripts/structure-online.mjs).
   - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
     builds the witness here, so a wrong binding is a wrong compilation.
     Its solved form is also A2's I3 check (i) over packages,

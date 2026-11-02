@@ -15,7 +15,7 @@
 -- A problem the program does not record (no declaration of its id, or
 -- one from which generation records another problem) is `Inconsistent`:
 -- the injected context disagrees with the problem, which stops the run
--- (ruling R10 (iii)). A read-back failure is the search's
+-- (ruling R10 (iii)). A type read-back failure is the search's
 -- own (`Broke`, G-Q13). The online solver's own limits are its budget;
 -- the injected `Budget`'s fuel is spent by `strategy` alone.
 --
