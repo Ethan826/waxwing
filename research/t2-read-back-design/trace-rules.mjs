@@ -8,7 +8,8 @@
 //   OpenedRow      use entry: `row`'s tail, when `openedRow` minted it
 //   Opened i       use entry: field i's (i = count: the result's) mark
 //   Stage k        use node: `rows[k]` (k < count − 1, `stages`);
-//                  Apply node: the k-th applied stage's consumed row;
+//                  Apply node: the row consumed for its k-th argument
+//                  (keyed by the Apply's span and that argument's);
 //                  Pipe node: the row the left operand's stage consumed
 import { load } from '../../test/r0-generate-support.mjs';
 import { markText, rowText } from '../t2-read-back-inventory/match.mjs';
@@ -35,7 +36,8 @@ export const indexOf = entries => {
   const index = { uses: new Map(), applies: new Map(), pipes: new Map() };
   for (const e of entries) {
     if (e.site === 'use') push(index.uses, e.span, e);
-    if (e.site === 'apply') push(index.applies, e.span, e.row);
+    if (e.site === 'apply')
+      push(index.applies, `${e.span} ${e.argument}`, e.row);
     if (e.site === 'pipe') push(index.pipes, e.span, e.row);
   }
   return index;
@@ -120,11 +122,15 @@ const fromApplied = (item, index, node, k) => {
     return { text, row: rows[0], mechanism: 'pipe row',
       cross: `pipe ${crossed(item, node.node.value1.value0.ty, 0, text)}` };
   }
-  const rows = index.applies.get(spanKey(node.span));
-  if (rows === undefined || k >= rows.length)
-    return none('apply: no entry', 'apply rows');
-  const text = rowValue(item, rows[k]);
-  return { text, row: rows[k], mechanism: 'apply rows',
+  // Keyed by the Apply's span and its k-th argument's (review M3: an
+  // over-applied Apply shares its span with the saturated call).
+  const argument = node.node.value1[k];
+  const rows = argument === undefined ? undefined : index.applies.get(
+    `${spanKey(node.span)} ${spanKey(argument.value0.span)}`);
+  if (rows === undefined || rows.length !== 1)
+    return none('apply: no single entry', 'apply rows');
+  const text = rowValue(item, rows[0]);
+  return { text, row: rows[0], mechanism: 'apply rows',
     cross: `apply ${crossed(item, node.node.value0.value0.ty, k, text)}` };
 };
 

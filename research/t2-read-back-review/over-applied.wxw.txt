@@ -1,0 +1,10 @@
+effect Log { fn log(n: Int): Unit; };
+fn add(x: Int, y: Int): Int = x + y;
+fn two(a: Int, b: Int): Int -> Int = add(a + b);
+fn inc(x: Int): Int with Log = { Log.log(x); x + 1 };
+fn overTwo(): Int = two(1, 2, 3);
+fn inFirst(): Int with Log = two(inc(1), 2, 3);
+fn inExtra(): Int with Log = two(1, 2, inc(3));
+fn main(): Unit with Console =
+  with handler Log { log(n) => Console.print(n) }
+  { Console.print(overTwo() + inFirst() + inExtra()) };

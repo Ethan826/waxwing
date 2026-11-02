@@ -3,7 +3,8 @@
 // a few compiled modules are edited as text, each edit required to
 // match exactly once. Nothing under src/, test/ or output/ changes; the
 // probes reach a copy through redirect.mjs. Research only.
-//   node research/t2-read-back-design/scratch.mjs generation|trace|both|clean
+//   node research/t2-read-back-design/scratch.mjs \
+//     generation|trace|both|theta|clean
 import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from '../../test/r0-corpus.mjs';
@@ -62,6 +63,11 @@ const variants = {
 };
 
 variants.both = [...variants.generation, ...variants.trace];
+// The type read-back's completion unifier (ReadBack.purs step 2),
+// handed to the probe's hook with the positioned values (theta.mjs).
+const mguAt = 'Features_Check_Entailed_Mgu.mgu($$void(view.vars))(remaining)';
+variants.theta = [['Features.Check.Strategy.ReadBack', mguAt,
+  `globalThis.__t2theta(${mguAt}, values)`]];
 
 const patchOne = (output, [module, find, replace]) => {
   const file = join(output, module, 'index.js');
