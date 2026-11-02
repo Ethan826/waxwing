@@ -4,7 +4,8 @@
 // Marks are read with a research term function that keeps every mark
 // class apart (`J {meta:n}` per store representative), so `Apart` is
 // not hidden by least terms. Also: `main`'s entry tail, read from the
-// checked row, whose holes `recheck` does not renumber with the body.
+// trace's declaration row, must take a non-negative hole that no other
+// variable's row uses unless the live value is shared.
 //   node research/t2-read-back-design/rows-corpus.mjs
 import { loadCorpus } from '../../test/r0-corpus.mjs';
 import { load, resolved } from '../../test/r0-generate-support.mjs';

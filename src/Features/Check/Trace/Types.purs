@@ -21,10 +21,10 @@ import Data.Array as Array
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple)
 import Domain.Checked.Internal (Open)
-import Domain.Row (Mark)
+import Domain.Row (Mark, Row(..))
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Holes (foldHoles)
 
@@ -96,6 +96,10 @@ type Traced =
   , clauses ∷ Map SpanKey (Array ClauseTrace)
   , deferrals ∷ Map SpanKey (Array (TyRow Open))
   , installations ∷ Map SpanKey (Array InstallTrace)
+  -- The declaration's own resolved row (the checked row's value, which
+  -- `recheck` does not renumber): `main`'s entry tail and the body
+  -- root's ambient row are read from it, on the trace's numbering.
+  , row ∷ TyRow Open
   }
 
 emptyTraced ∷ Traced
@@ -106,6 +110,7 @@ emptyTraced =
   , clauses: Map.empty
   , deferrals: Map.empty
   , installations: Map.empty
+  , row: Row [] Nothing
   }
 
 -- Every type and row in the trace changed by `change`; marks are kept.
@@ -117,6 +122,7 @@ mapTraced change traced =
   , clauses: map (map changedClause) traced.clauses
   , deferrals: map (map (onRow change)) traced.deferrals
   , installations: map (map changedInstall) traced.installations
+  , row: onRow change traced.row
   }
   where
   changedUse use = use
@@ -136,8 +142,9 @@ mapTraced change traced =
 -- The body's numbering extended over the trace's other metas: uses,
 -- then applied, then piped, then clause entries, deferrals and
 -- installations (Task 6b's kinds, after piped), each in key order and
--- arrival order; within a use, slots, opened tail, stages, fields,
--- result; within a clause entry, its row, R, C; within a type,
+-- arrival order, and last the declaration's row (so adding it moved no
+-- other value's number); within a use, slots, opened tail, stages,
+-- fields, result; within a clause entry, its row, R, C; within a type,
 -- `foldHoles` order.
 extended ∷ Map Int Int → Traced → Map Int Int
 extended numbering traced = (foldl visit start types).seen
@@ -150,6 +157,7 @@ extended numbering traced = (foldl visit start types).seen
     <> Array.concatMap clauseTypes (entries traced.clauses)
     <> map arrowOf (entries traced.deferrals)
     <> map installType (entries traced.installations)
+    <> [ arrowOf traced.row ]
 
 onSlot ∷ (Ty Open → Ty Open) → Slot → Slot
 onSlot change = case _ of

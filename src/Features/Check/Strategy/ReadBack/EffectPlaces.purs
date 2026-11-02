@@ -5,11 +5,13 @@
 --   nodes: the checked node's type (a lambda's stages, a `show` or
 --   `crash` reference's synthesized lambda, a handler literal's R and C,
 --   a pattern's instances);
---   ambient: the body root's at the checked row (`main`'s entry tail), a
---   lambda body's at the lambda's last arrow row, a `with` body's at its
---   traced installation (the handler's label under the frame mark, then
---   the row it is installed in), a deferred expression's at its traced
---   row, a handler clause body's at its clause entry's own row;
+--   ambient: the body root's at the traced declaration row (`main`'s
+--   entry tail; `recheck`'s checked row is not on the trace's
+--   numbering), a lambda body's at the lambda's last arrow row, a
+--   `with` body's at its traced installation (the handler's label under
+--   the frame mark, then the row it is installed in), a deferred
+--   expression's at its traced row, a handler clause body's at its clause
+--   entry's own row;
 --   annotations: the lambda parameter's type; instances: a reference's
 --   type, stage by stage, or a call's result; the declaration's own
 --   signature; and each handler literal's clause entries, R and C.
@@ -56,7 +58,7 @@ locatedFacts effects checked traced = do
       (Map.toUnfoldable effects.annotations)
     <> Array.concatMap (instanceFacts checked.body)
       (Map.toUnfoldable effects.instances)
-    <> signatureFacts effects.signature checked
+    <> signatureFacts effects.signature checked traced
     <> Array.concat ambient
     <> Array.concat literals
   where
@@ -90,15 +92,16 @@ stepIndex = case _ of
   Index index → Just index
   Named _ → Nothing
 
-signatureFacts ∷ InstanceSig → Checked.FunctionDecl → Array Fact
-signatureFacts own checked =
+signatureFacts
+  ∷ InstanceSig → Checked.FunctionDecl → Traced → Array Fact
+signatureFacts own checked traced =
   Array.concat (Array.zipWith matchTy own.parameters checked.parameters)
     <> matchTy own.result checked.result
-    <> matchRow own.row checked.row
+    <> matchRow own.row traced.row
 
 ambientFacts ∷ Checked.FunctionDecl → Traced → Tuple Path MRow → Facts
 ambientFacts checked traced (Tuple (Path path) row) = case placeOf steps of
-  AtRoot → Right (matchRow row checked.row)
+  AtRoot → Right (matchRow row traced.row)
   InLambda → Right (maybe [] (matchRow row) (lambdaRow =<< at 2))
   InWith → maybe (Right []) (installed traced row) (at 2)
   Deferred → maybe (Right []) deferred (at 0)

@@ -190,3 +190,37 @@ test('located and traced disagree is Apart', () => {
   assert.equal(named(found.value0), 'Apart');
   assert.equal(named(found.value0.value0.value1), 'Stage');
 });
+
+// The hole numbers in a package row: its tail's, and its labels'.
+const holesIn = value => {
+  if (value === null || typeof value !== 'object') return [];
+  const own = named(value) === 'PTailHole' ? [value.value0] : [];
+  return [...own, ...Object.values(value).flatMap(holesIn)];
+};
+const entryHole = (item, map) => {
+  const [entry] = varsOf(item, 'EntryTail', null);
+  const value = valueOf(map, entry);
+  assert.equal(named(value.tail.value0), 'PTailHole');
+  return value.tail.value0.value0;
+};
+
+test("main's entry tail shares the with installations' hole", () => {
+  const { item, map } = rows(sources.services, 'main');
+  const hole = entryHole(item, map);
+  const currents = cases.pairs(item.trace.installations).flatMap(([, list]) =>
+    list.map(entry => entry.current.value1.value0.value0));
+  assert.equal(currents.length, 3);
+  assert.deepEqual([...new Set(currents)], [hole]);
+  // The checked row keeps its raw meta, apart from the trace's number.
+  assert.notEqual(item.checked.row.value1.value0.value0, hole);
+});
+
+test('a lone entry tail takes its own extension number', () => {
+  const { item, map } = rows(sources.lone, 'main');
+  const hole = entryHole(item, map);
+  assert.ok(hole >= 0);
+  const others = cases.pairs(map).filter(([key]) =>
+    named(key.value1) !== 'EntryTail').flatMap(([, value]) => holesIn(value));
+  assert.ok(others.length > 0, 'another hole in the package');
+  assert.ok(!others.includes(hole), `${hole} not in ${others}`);
+});

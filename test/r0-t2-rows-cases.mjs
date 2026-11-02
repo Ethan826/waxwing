@@ -39,6 +39,11 @@ fn failing(): Unit = {
 fn job(): Int = match Job(fn(n: Int) => n) { Job(f) => f(1) };
 fn main(): Unit with Console = Console.print(1);
 `,
+  // A main whose entry tail meets nothing else, beside another hole.
+  lone: `fn add(x: Int, y: Int): Int = x + y;
+fn main(): Unit with Console = { let p = add(1); Console.print(1) };
+`,
+  services: readFileSync(join(root, 'examples/services.wxw'), 'utf8'),
   builtins: research('t2-read-back-design/examples/builtins.wxw.txt'),
   over: research('t2-read-back-review/over-applied.wxw.txt')
 };
@@ -221,5 +226,21 @@ export const rowsChecks = async load => {
     return faultOf(item, { ...item.trace, uses: Maps.insert(keyOrd)(key)(
       [planted])(item.trace.uses) }) === 'Apart' ? [] : ['apart'];
   };
-  return { clashWrong, appliedWrong, failWrong, apartWrong };
+  // `main`'s entry tail on the trace's numbering: the hole the `with`
+  // installations' rows end in (services), or its own extension number.
+  const entryWrong = () => [['services', sources.services],
+    ['lone', sources.lone]].filter(([name, source]) => {
+    const item = live(source, 'main');
+    const found = read(item);
+    if (named(found) !== 'Right') return true;
+    const [entry] = varsOf(item, 'EntryTail', null);
+    const tail = valueOf(found.value0, entry)?.tail;
+    if (tail === undefined || named(tail) !== 'Just') return true;
+    const hole = tail.value0.value0;
+    const currents = cases.pairs(item.trace.installations).flatMap(
+      ([, list]) => list.map(each => each.current.value1.value0.value0));
+    return hole < 0 || currents.some(other => other !== hole)
+      || (name === 'services' && currents.length === 0);
+  }).map(([name]) => name);
+  return { clashWrong, appliedWrong, failWrong, apartWrong, entryWrong };
 };

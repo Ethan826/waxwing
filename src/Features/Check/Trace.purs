@@ -89,14 +89,18 @@ recordInstallation ∷ Span → InstallTrace → Trace → Trace
 recordInstallation span entry (Trace raw) = Trace raw
   { installations = appended (spanKey span) entry raw.installations }
 
--- Every type and row resolved by `resolve` (the final substitution), then
--- each meta in the body's `numbering` takes its number there, and every
--- other meta an extension number from the numbering's size upward, in
--- first-occurrence order over the trace (design §C.3).
-finish ∷ (Ty Open → Ty Open) → Map Int Int → Trace → Traced
-finish resolve numbering (Trace raw) = mapTraced (rename renumber) resolved
+-- The declaration's resolved row (Check/Function.purs: the value of the
+-- checked row) is kept as `row`. Every type and row resolved by `resolve`
+-- (the final substitution), then each meta in the body's `numbering`
+-- takes its number there, and every other meta an extension number from
+-- the numbering's size upward, in first-occurrence order over the trace,
+-- the row last (design §C.3).
+finish
+  ∷ (Ty Open → Ty Open) → Map Int Int → TyRow Open → Trace → Traced
+finish resolve numbering row (Trace raw) =
+  mapTraced (rename renumber) resolved
   where
-  resolved = mapTraced resolve raw
+  resolved = mapTraced resolve raw { row = row }
   numbers = extended numbering resolved
   renumber = case _ of
     Hole meta → Hole (maybe meta identity (Map.lookup meta numbers))

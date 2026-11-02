@@ -100,7 +100,10 @@ const span = (start, end) => ({ start: { line: 1, column: 1, offset: start },
 const useOf = result => ({ slots: [], marks: [], opened: Nothing.value,
   stages: [], fields: [], result });
 const pure = new Row.Row([], Nothing.value);
-const finished = trace => Trace.finish(ty => ty)(Maps.empty)(trace);
+// `finish` takes the declaration's row since the entry-tail ruling; a
+// closed one here.
+const finished = trace => Trace.finish(ty => ty)(Maps.empty)(
+  new Row.Row([], Nothing.value))(trace);
 
 test('entries under one key are kept in arrival order', () => {
   const uses = finished(Trace.recordUse(span(0, 1))(useOf(Core.TBool.value))(
@@ -182,4 +185,17 @@ test('a state value renumbers a meta shared with the body', () => {
   assert.equal(tailHole(clause.inference), 0);
   assert.equal(tailHole(clause.row), 1);
   for (const item of [lam, mk]) assert.equal(extensionWrong(item), null);
+});
+
+test("the declaration's row is renumbered with the trace", async () => {
+  const { readFileSync } = await import('node:fs');
+  const item = traced(readFileSync('examples/services.wxw', 'utf8'), 'main');
+  const tail = item.found.trace.row.value1.value0;
+  assert.equal(named(tail), 'Hole');
+  assert.ok(tail.value0 >= 0);
+  for (const [, list] of pairs(item.found.trace.installations))
+    for (const entry of list)
+      assert.equal(entry.current.value1.value0.value0, tail.value0);
+  // `recheck`'s checked row itself keeps the raw meta.
+  assert.notEqual(item.found.function.row.value1.value0.value0, tail.value0);
 });

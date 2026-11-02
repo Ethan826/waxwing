@@ -101,6 +101,7 @@ checkFunction holders env function = do
   comparable holders env settled
   printable holders env settled
   Entry.check env ended function
+  let entryRow = Entry.resolvedRow settledSubst env.current
   pure
     { function:
         { id: function.id
@@ -108,12 +109,13 @@ checkFunction holders env function = do
         , sorts: function.sorts
         , parameters: map parameterType function.parameters
         , result: rigid function.result
-        , row: Entry.resolvedRow settledSubst env.current
+        , row: entryRow
         , body: holes settled
         , span: function.span
         }
     , state: marked
-    , trace: finish (resolved settledSubst) (numbering settled) marked.trace
+    , trace: finish (resolved settledSubst) (numbering settled) entryRow
+        marked.trace
     }
   where
   parameterType parameter = rigid parameter.ty

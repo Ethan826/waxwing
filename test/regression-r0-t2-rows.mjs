@@ -20,5 +20,7 @@ export const t2RowsProbes = {
   'r0-t2-rows-clash': probe('clashWrong'),
   'r0-t2-rows-applied-key': probe('appliedWrong'),
   'r0-t2-rows-fail-n': probe('failWrong'),
-  'r0-t2-rows-apart': probe('apartWrong')
+  'r0-t2-rows-apart': probe('apartWrong'),
+  'r0-t2-rows-entry-root': probe('entryWrong'),
+  'r0-t2-rows-entry-finish': probe('entryWrong')
 };

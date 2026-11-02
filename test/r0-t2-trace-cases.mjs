@@ -130,8 +130,9 @@ export const traceCases = async load => {
   };
 
   // Every hole occurrence in the finished trace, in the extension order
-  // of design §C.3: uses, then applied, then piped, each in key order;
-  // within a use, slots, opened tail, stages, fields, result.
+  // of design §C.3: uses, then applied, then piped, each in key order,
+  // then clause entries, deferrals, installations, and the declaration's
+  // row last; within a use, slots, opened tail, stages, fields, result.
   const metasInOrder = item => {
     const found = [];
     const visit = ty => Holes.foldHoles(seen => meta => {
@@ -157,6 +158,7 @@ export const traceCases = async load => {
       list.forEach(row => visit(arrow(row)));
     for (const list of item.installations.values())
       list.forEach(entry => visit(arrow(entry.current)));
+    visit(arrow(item.found.trace.row));
     return found;
   };
   const bodyHoleCount = item =>

@@ -5,6 +5,7 @@
 const sites = 'src/Features/Check/Strategy/ReadBack/EffectSites.purs';
 const convert = 'src/Features/Check/Strategy/ReadBack/Convert.purs';
 const rows = 'src/Features/Check/Strategy/ReadBack/EffectRows.purs';
+const places = 'src/Features/Check/Strategy/ReadBack/EffectPlaces.purs';
 
 export const t2RowsRows = [
   {
@@ -42,5 +43,25 @@ export const t2RowsRows = [
     replacement: '    | otherwise = Right (Tuple variable first)\n',
     probe: 'r0-t2-rows-apart',
     message: /r0-t2-rows-apart: \["apart"\]/
+  },
+  {
+    // The body root's ambient read from the checked row, whose holes
+    // `recheck` does not renumber: main's entry tail leaves the numbering.
+    name: 'r0-t2-rows-entry-root',
+    file: places,
+    needle: '  AtRoot → Right (matchRow row traced.row)\n',
+    replacement: '  AtRoot → Right (matchRow row checked.row)\n',
+    probe: 'r0-t2-rows-entry-root',
+    message: /r0-t2-rows-entry-root: \["services"/
+  },
+  {
+    // `finish` drops the declaration's row: the trace's row is closed.
+    name: 'r0-t2-rows-entry-finish',
+    file: 'src/Features/Check/Trace.purs',
+    needle: '  resolved = mapTraced resolve raw { row = row }\n',
+    replacement: '  resolved = mapTraced resolve raw '
+      + '{ row = const raw.row row }\n',
+    probe: 'r0-t2-rows-entry-finish',
+    message: /r0-t2-rows-entry-finish: \[/
   }
 ];
