@@ -3,7 +3,9 @@
 // (scripts/regression-r0.mjs); the probes are in test/regression-r0-t2.mjs.
 // One file per lane, each owned by its lane.
 import { t2GenerationRows } from './regression-r0-t2-generation.mjs';
+import { t2TraceRows } from './regression-r0-t2-trace.mjs';
 
 export const t2Rows = [
-  ...t2GenerationRows
+  ...t2GenerationRows,
+  ...t2TraceRows
 ];

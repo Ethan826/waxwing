@@ -206,8 +206,9 @@ export const r005bRows = [
     // A creation point not desugared (a constructor's use): its row of
     // two unknown tails reaches the unifier's guard (plan §2.1).
     name: 'r005b-one-unknown', file: 'src/Features/Check/Use.purs',
-    needle: '  owned ctor info = Right $ desugaredUse (made ctor info)\n',
-    replacement: '  owned ctor info = Right $ identity\n',
+    needle: '  owned ctor info = Right $ traced span $ desugaredUse '
+      + '(made ctor info)\n',
+    replacement: '  owned ctor info = Right $ traced span $ identity\n',
     probe: 'r005b-one-unknown',
     message: /creation point missed: E_INTERNAL a record row holds two /
   },
