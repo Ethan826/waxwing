@@ -7,6 +7,7 @@
 -- reaching checker state (D1 spec §9; T10).
 module Features.Check.Holes
   ( holes
+  , numbering
   , foldHoles
   ) where
 
@@ -23,18 +24,24 @@ import Domain.Type (Ty(..), rename)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Features.Check.Walk (foldTypes, retype)
 
--- Renumbers a finished body's unsolved metas as holes 0, 1, …, in the
--- order `foldTypes` first meets them. A body with no hole is kept rather
--- than rebuilt unchanged (T003).
+-- The map `holes` renames by: each unsolved meta in the body to its hole
+-- number, in the order `foldTypes` first meets them (0, 1, …).
+numbering ∷ Checked.Expr → Map Int Int
+numbering body = (foldTypes number { next: 0, seen: Map.empty } body).seen
+  where
+  number found _ ty = foldHoles numberHole found ty
+
+-- Renumbers a finished body's unsolved metas as holes 0, 1, … by
+-- `numbering`. A body with no hole is kept rather than rebuilt unchanged
+-- (T003).
 holes ∷ Checked.Expr → Checked.Expr
 holes body =
-  if Map.isEmpty numbering then body else retype renamed body
+  if Map.isEmpty named then body else retype renamed body
   where
-  numbering = (foldTypes number { next: 0, seen: Map.empty } body).seen
-  number found _ ty = foldHoles numberHole found ty
+  named = numbering body
   renamed ty = rename renumber ty
   renumber = case _ of
-    Hole meta → Hole (maybe meta identity (Map.lookup meta numbering))
+    Hole meta → Hole (maybe meta identity (Map.lookup meta named))
     rigid → rigid
 
 type Numbering = { next ∷ Int, seen ∷ Map Int Int }
