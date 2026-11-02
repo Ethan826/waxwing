@@ -33,8 +33,8 @@ export const r0WitnessRows = [
     // reads it as `Int` (Specialize/Body.purs `copyRest`).
     name: 'r0-readback-sort-everywhere',
     file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
-    needle: '  plain = map readType\n',
-    replacement: '  plain = map (readSorted sort)\n',
+    needle: '  plain = map Plain\n',
+    replacement: '  plain = map BySort\n',
     probe: 'r0-readback-sort-everywhere',
     message: /the rest's bare hole read as Record/
   },
@@ -44,8 +44,8 @@ export const r0WitnessRows = [
     // pattern's type plainly (Specialize/Body.purs `copyPattern`).
     name: 'r0-readback-pattern-slot-sorted',
     file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
-    needle: '  AtPattern (Checked.Pattern found) → readType <$>\n',
-    replacement: '  AtPattern (Checked.Pattern found) → readSorted sort <$>\n',
+    needle: '  AtPattern (Checked.Pattern found) → Plain <$>\n',
+    replacement: '  AtPattern (Checked.Pattern found) → BySort <$>\n',
     probe: 'r0-readback-pattern-slot-sorted',
     message: /the pattern slot's bare hole read as Record/
   },

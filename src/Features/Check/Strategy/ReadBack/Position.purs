@@ -12,7 +12,13 @@
 -- Check/Tables.purs `ownerType`: a type argument per type or record-row
 -- parameter, effect rows apart), so slot `i` reads as the type argument
 -- at its `rank`, its place among the owner's non-effect-row variables.
-module Features.Check.Strategy.ReadBack.Position (Slotted, valueAt) where
+module Features.Check.Strategy.ReadBack.Position
+  ( Live(..)
+  , Slotted
+  , liveAt
+  , liveType
+  , valueAt
+  ) where
 
 import Prelude
 import Data.Array as Array
@@ -28,6 +34,11 @@ import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
 -- A slot's index, and its rank among the slots generation records.
 type Slotted = { index ∷ Int, rank ∷ Int }
 
+-- The live checked type at a position: an expression's instantiation
+-- slot, which `valueAt` reads by the variable's sort, or any other.
+-- Task 10's type images (ReadBack.Images) read the same type unerased.
+data Live = BySort (Ty Open) | Plain (Ty Open)
+
 -- An expression's instantiation slot is read by the variable's sort
 -- (ReadBack.Type `readSorted`, R022), as specialization reads it
 -- (Specialize/Values.purs `instantiated`, `slotType`); every other
@@ -40,8 +51,16 @@ valueAt
   → VarSort
   → CheckedName
   → Either String RTExpr
-valueAt body ranked sort = case _ of
-  Slot path index → node body path >>= slot sort (ranked path index)
+valueAt body ranked sort name = reading <$> liveAt body ranked name
+  where
+  reading = case _ of
+    BySort ty → readSorted sort ty
+    Plain ty → readType ty
+
+liveAt
+  ∷ Checked.Expr → (Path → Int → Slotted) → CheckedName → Either String Live
+liveAt body ranked = case _ of
+  Slot path index → node body path >>= slot (ranked path index)
   NodeType path → plain (Checked.typeOf <$> expression body path)
   ParamType path index → plain (expression body path >>= parameter index)
   LambdaBody path → plain (expression body path >>= lambdaBody)
@@ -52,7 +71,12 @@ valueAt body ranked sort = case _ of
   RigidName _ → Left "a flexible variable with a rigid position"
   Auxiliary → Left "an auxiliary variable has no position"
   where
-  plain = map readType
+  plain = map Plain
+
+liveType ∷ Live → Ty Open
+liveType = case _ of
+  BySort ty → ty
+  Plain ty → ty
 
 expression ∷ Checked.Expr → Path → Either String Checked.Expr
 expression body path = node body path >>= case _ of
@@ -77,11 +101,11 @@ node body (Path path) = case path.root of
 
 -- Instantiation slot `index` of the reference or call at the node; an
 -- over-applied call's is its saturated call's (ReadBack.Walk).
-slot ∷ VarSort → Slotted → Node → Either String RTExpr
-slot sort at = case _ of
-  AtExpr (Checked.Expr found) → readSorted sort <$>
+slot ∷ Slotted → Node → Either String Live
+slot at = case _ of
+  AtExpr (Checked.Expr found) → BySort <$>
     (instantiation found.node >>= indexed at.index)
-  AtPattern (Checked.Pattern found) → readType <$>
+  AtPattern (Checked.Pattern found) → Plain <$>
     (ownerArgument found.ty >>= indexed at.rank)
 
 indexed ∷ Int → Array (Ty Open) → Either String (Ty Open)

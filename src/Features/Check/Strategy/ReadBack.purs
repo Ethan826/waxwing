@@ -34,6 +34,7 @@
 module Features.Check.Strategy.ReadBack
   ( ReadBack
   , readBack
+  , slotted
   ) where
 
 import Prelude
