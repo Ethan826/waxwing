@@ -57,6 +57,19 @@ adding a bypass allowlist.
   there are any; `unavailable (reason)` for any value the host cannot give)
   before each test phase (scripts/verify-conditions.mjs); `npm run perf`
   prints the same line first;
+- trace gate (scripts/structure-trace.mjs, in checkStructure; tranche 2
+  Task 7, dossier §18.155 (4)): inference never reads the live-value
+  trace. Decided on each src module's CST (tools/style/src/Style/Trace.purs,
+  language-cst-parser, as the style gate): a use of the record label
+  `trace` (accessor, update, literal field or pun, record pattern) only
+  in Scheme `start`, DeclarationUse `traced`, Apply `appliedAt` and
+  `pipedAt` and Function `checkFunction`, in pinned counts; Check/Trace
+  exports `Trace` without its constructor; no instance of any class on
+  `Trace`; `finish` imported by Check/Function alone, not re-exported.
+  An unparsed module fails, and a floor on modules read stops an empty
+  scan. test/structure-trace.test.mjs holds the must-fail and near-miss
+  probes. Blind: a label reached through a type-level string, and a
+  same-count swap inside an allowlisted declaration;
 - purs graph parses imports; the five-layer gate (Domain, Features, Format,
   Runtime, Program; docs/plans/2026-10-07-five-layers-design.md) rejects
   unlayered modules and imports of a later layer, restricts Domain, Features

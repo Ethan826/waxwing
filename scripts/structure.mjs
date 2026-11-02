@@ -9,6 +9,7 @@ import { internalModules, pinnedSurfaces, restricts, tokenModules }
   from './structure-modules.mjs';
 import { elabFindings } from './structure-elab.mjs';
 import { clockGate } from './structure-clocks.mjs';
+import { traceGate } from './structure-trace.mjs';
 
 export const filesUnder = root =>
   readdirSync(root, { withFileTypes: true }).flatMap(entry =>
@@ -195,6 +196,7 @@ export const checkStructure = async () => {
     tokenAllowed));
   findings.push(...elabFindings());
   findings.push(...await clockGate(files, file => readFileSync(file, 'utf8')));
+  findings.push(...await traceGate(files, file => readFileSync(file, 'utf8')));
   findings.push(...theoremImportFindings(Object.fromEntries(files.filter(file =>
     file.startsWith('src/') && file.endsWith('.purs')).map(file =>
     [file, readFileSync(file, 'utf8')]))));
