@@ -83,9 +83,22 @@ export const marksCases = async load => {
     ? `J{${Sets.toUnfoldable(unfoldableArray)(term.value0).join(',')}}`
     : named(term).slice(4));
   const least = given => Marks.leastTerms(given);
+  // `termOf` gives Maybe Term (Nothing for `Unmarked` or a clash); `none`
+  // prints Nothing.
+  const maybeText = found => (named(found) === 'Just'
+    ? termText(found.value0) : 'none');
   // A mark's term under a store's least terms, as text.
-  const termIn = (given, which) => termText(Marks.termOf(least(given))(
+  const termIn = (given, which) => maybeText(Marks.termOf(least(given))(
     which));
+  // The `Mark → Term` readRows injects. Convert never asks for an
+  // `Unmarked` mark (Fail and Console read N first, an unmarked user
+  // label is refused), so a Nothing here throws rather than invent a term.
+  const rowTerms = terms => which => {
+    const found = Marks.termOf(terms)(which);
+    if (named(found) !== 'Just')
+      throw new Error(`no term for ${named(which)}`);
+    return found.value0;
+  };
 
   // The named declaration's problem, checked declaration, trace and final
   // mark store.
@@ -103,25 +116,28 @@ export const marksCases = async load => {
   };
   const read = (item, trace = item.trace) => Marks.readMarks(least(
     item.store))(item.problem)(item.checked)(trace);
-  const rowsOf = item => Rows.readRows(Marks.termOf(least(item.store)))(
+  const rowsOf = item => Rows.readRows(rowTerms(least(item.store)))(
     item.problem)(item.checked)(item.trace);
   // A read's positions as `Kind:term` texts, in the map's order.
   const positionsText = map => pairs(map).map(([position, term]) =>
     `${named(position)}:${termText(term)}`);
   const positionsOf = item => fields(item.problem).effects.positions;
-  // Every live edge holds under the least terms (the validator's `holds`).
+  // Every live edge holds under the least terms (the validator's `holds`);
+  // an edge with an `Unmarked` end is dropped, as the least terms drop it.
   const edgesHold = given => {
     const terms = least(given);
     const all = [];
     for (let at = given.edges; named(at) === 'Push'; at = at.value1)
       all.push(at.value0);
-    return all.every(edge => Term.holds(Marks.termOf(terms)(edge.lower))(
-      Marks.termOf(terms)(edge.upper)));
+    const ends = edge => [edge.lower, edge.upper].map(Marks.termOf(terms));
+    return all.map(ends).filter(found => found.every(each =>
+      named(each) === 'Just')).every(([low, high]) =>
+      Term.holds(low.value0)(high.value0));
   };
   // A trace map with every entry list changed by `change`.
   const remap = (map, change) => Maps.fromFoldable(spanOrd)(foldableArray)(
     pairs(map).map(([key, entries]) => Tuple.create(key)(change(entries))));
   return { live, read, rowsOf, remap, positionsText, positionsOf, store, mark,
-    termIn, termText, least, edgesHold, pairs, named, Marks, Term, Row,
-    Maps, Sets, Tuple, ordInt, fields };
+    termIn, termText, maybeText, rowTerms, least, edgesHold, pairs, named,
+    Marks, Term, Row, Maps, Sets, Tuple, ordInt, fields };
 };

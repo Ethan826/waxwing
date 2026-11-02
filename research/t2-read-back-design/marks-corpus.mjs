@@ -28,7 +28,8 @@ const { unfoldableArray } = await load('Data.Unfoldable');
 const named = value => value.constructor.name;
 const shown = 3;
 const out = { candidates: 0, marksRead: 0, marksFaults: {}, positions: {},
-  stores: 0, clashes: 0, edges: 0, edgesFailing: 0, failOrConsolePositions: 0,
+  stores: 0, clashes: 0, edges: 0, edgesFailing: 0, edgesUnmarked: 0,
+  failOrConsolePositions: 0,
   rowsRead: 0, rowsFaults: {}, unsupported: {}, examples: {} };
 const bump = (table, key, by = 1) => { table[key] = (table[key] ?? 0) + by; };
 const note = (key, at) => {
@@ -52,13 +53,20 @@ const failPositions = (value, found = { count: 0 }) => {
 
 const storeChecks = (store, terms, at) => {
   out.stores += 1;
-  const clashed = Marks.clashes(store);
+  const clashed = terms.clashes;
   out.clashes += clashed;
   if (clashed > 0) note('clash', at);
   for (const edge of edgesOf(store)) {
     out.edges += 1;
-    if (!holds(Marks.termOf(terms)(edge.lower))(Marks.termOf(terms)(
-      edge.upper))) { out.edgesFailing += 1; note('edge failing', at); }
+    const [low, high] = [edge.lower, edge.upper].map(Marks.termOf(terms));
+    if (named(low) !== 'Just' || named(high) !== 'Just') {
+      out.edgesUnmarked += 1;
+      continue;
+    }
+    if (!holds(low.value0)(high.value0)) {
+      out.edgesFailing += 1;
+      note('edge failing', at);
+    }
   }
 };
 
@@ -90,7 +98,16 @@ const declaration = (origin, program, inputs, holders, decl) => {
     bump(unsupported ? out.unsupported : out.marksFaults, `marks ${key}`);
     note(`marks ${key}`, at);
   }
-  const rows = Rows.readRows(Marks.termOf(terms))(problem)(checked)(trace);
+  // Convert never asks for `Unmarked`; a Nothing would throw, counted.
+  const rowTerms = which => {
+    const found = Marks.termOf(terms)(which);
+    if (named(found) !== 'Just') throw new Error('no term');
+    return found.value0;
+  };
+  let rows;
+  try { rows = Rows.readRows(rowTerms)(problem)(checked)(trace); } catch {
+    return void (out.rowsAskedNoTerm = (out.rowsAskedNoTerm ?? 0) + 1);
+  }
   if (named(rows) === 'Right') return void (out.rowsRead += 1);
   const fault = rows.value0;
   const key = `${named(fault)} ${named(fault.value1 ?? fault.value0)}`;

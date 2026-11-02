@@ -5,7 +5,8 @@
 // (its encoder and disclosures). Term by term against oracle.mjs
 // `leastTerms` on every graph the least-term families build; the
 // equalities-ignored mutant must be detected. Bounded: agreement with
-// the definition on these graphs; not independent evidence of
+// the definition on these graphs; with the disclosed shared label
+// pairing (ReadBack/Marks.purs), not independent evidence of
 // recorded/live correspondence (P1 untested). The unit test
 // (test/r0-t2-marks-oracle.test.mjs) runs a seeded subset.
 //   node research/t2-read-back-design/marks-oracle.mjs

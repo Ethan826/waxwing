@@ -20,8 +20,10 @@ export const t2MarksRows = [
     // A meta the least terms do not name read as M instead of N.
     name: 'r0-t2-marks-absent-n',
     file: least,
-    needle: '  MarkMeta meta → fromMaybe TermN (Map.lookup meta terms)\n',
-    replacement: '  MarkMeta meta → fromMaybe TermM (Map.lookup meta terms)\n',
+    needle: '      MarkMeta meta → '
+      + 'Just (fromMaybe TermN (Map.lookup meta found.terms))\n',
+    replacement: '      MarkMeta meta → '
+      + 'Just (fromMaybe TermM (Map.lookup meta found.terms))\n',
     probe: 'r0-t2-marks-absent-n',
     message: /r0-t2-marks-absent-n: \["meta 42"\]/
   },
@@ -38,21 +40,17 @@ export const t2MarksRows = [
     // Two readings that differ resolved by taking the first.
     name: 'r0-t2-marks-apart',
     file: marks,
-    needle: '    | not (Array.all (eq (term first)) '
-      + '(map term marks)) =\n',
-    replacement: '    | not (Array.all (eq (term first)) '
-      + '[ term first ]) =\n',
+    needle: '    | not (Array.all (eq read.first) read.all) =\n',
+    replacement: '    | not (Array.all (eq read.first) [ read.first ]) =\n',
     probe: 'r0-t2-marks-apart',
     message: /r0-t2-marks-apart: \["apart"\]/
   },
   {
-    // An `Unmarked` reading taken as a term (N) instead of refused.
+    // An `Unmarked` mark given a term (N) instead of none.
     name: 'r0-t2-marks-unmarked',
-    file: marks,
-    needle: '    | Array.elem Unmarked marks = '
-      + 'Left (UnreadPosition position)\n',
-    replacement: '    | Array.elem Unmarked [] = '
-      + 'Left (UnreadPosition position)\n',
+    file: least,
+    needle: '      Unmarked → Nothing\n',
+    replacement: '      Unmarked → Just TermN\n',
     probe: 'r0-t2-marks-unmarked',
     message: /r0-t2-marks-unmarked: \["unmarked"\]/
   },
@@ -62,10 +60,58 @@ export const t2MarksRows = [
     name: 'r0-t2-marks-console-n',
     file: marks,
     needle: '    | Set.member position fixedN '
-      + '&& term first /= TermN =\n',
+      + '&& read.first /= TermN =\n',
     replacement: '    | Set.member position Set.empty '
-      + '&& term first /= TermN =\n',
+      + '&& read.first /= TermN =\n',
     probe: 'r0-t2-marks-console-n',
     message: /r0-t2-marks-console-n: \["M"\]/
+  },
+  {
+    // Edges read upper ⊑ lower.
+    name: 'r0-t2-marks-direction',
+    file: least,
+    needle: '  ends edge = Tuple edge.lower edge.upper\n',
+    replacement: '  ends edge = Tuple edge.upper edge.lower\n',
+    probe: 'r0-t2-marks-direction',
+    message: /r0-t2-marks-direction: \["below","above"\]/
+  },
+  {
+    // A constant class read from what reaches it, not its constant.
+    name: 'r0-t2-marks-constant',
+    file: least,
+    needle: 'rootTerm reach root = case root of\n',
+    replacement: 'rootTerm reach root = case NodeMeta 0 of\n',
+    probe: 'r0-t2-marks-constant',
+    message: /r0-t2-marks-constant: \["J\{k\}","N"\]/
+  },
+  {
+    // M reaching a class not taking precedence over rigid constants.
+    name: 'r0-t2-marks-precedence',
+    file: least,
+    needle: '    | Set.member NodeM from → TermM\n',
+    replacement: '    | Set.member NodeM Set.empty → TermM\n',
+    probe: 'r0-t2-marks-precedence',
+    message: /r0-t2-marks-precedence: \["precedence"\]/
+  },
+  {
+    // A two-constant class read on (its metas' terms all Nothing, so
+    // UnreadPosition) instead of the MarkClash fault.
+    name: 'r0-t2-marks-clash',
+    file: marks,
+    needle: '  when (terms.clashes > 0) (Left MarkClash)\n',
+    replacement: '  when (terms.clashes > 0 && false) (Left MarkClash)\n',
+    probe: 'r0-t2-marks-clash',
+    message: /r0-t2-marks-clash: \["read"\]/
+  },
+  {
+    // An ambiguous Fail label takes the first candidate (§18.155 (3)).
+    name: 'r0-t2-marks-take-first',
+    file: 'src/Features/Check/Strategy/ReadBack/EffectMatch.purs',
+    needle: '    | Array.length several > 1 && Array.any loose several = '
+      + 'Nothing\n',
+    replacement: '    | Array.length several > 1 && Array.any loose [] = '
+      + 'Nothing\n',
+    probe: 'r0-t2-marks-take-first',
+    message: /r0-t2-marks-take-first: \["effect unknown head","marks/
   }
 ];

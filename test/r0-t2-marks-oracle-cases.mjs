@@ -25,7 +25,7 @@ const A = atoms.length;
 
 export const oracleCases = async load => {
   const cases = await marksCases(load);
-  const { store, mark, Marks, Term, termText } = cases;
+  const { store, mark, Marks, Term } = cases;
   const P = await load('Domain.Verdict.EffectPackage.Types');
   const { foldableArray } = await load('Data.Foldable');
   const { ordString } = await load('Data.Ord');
@@ -69,7 +69,7 @@ export const oracleCases = async load => {
     const terms = Marks.leastTerms(given);
     if (oracle !== null) for (let i = 0; i < size; i += 1) {
       counts.nodes += 1;
-      if (termText(Marks.termOf(terms)(markOf(i)))
+      if (cases.maybeText(Marks.termOf(terms)(markOf(i)))
         !== oracleText(oracle.term(oracle.find(i)))) counts.differ += 1;
     }
     return cases.edgesHold(given);

@@ -22,5 +22,10 @@ export const t2MarksProbes = {
   'r0-t2-marks-rigid': probe('rigidWrong'),
   'r0-t2-marks-apart': probe('apartWrong'),
   'r0-t2-marks-unmarked': probe('unmarkedWrong'),
-  'r0-t2-marks-console-n': probe('consoleWrong')
+  'r0-t2-marks-console-n': probe('consoleWrong'),
+  'r0-t2-marks-direction': probe('directionWrong'),
+  'r0-t2-marks-constant': probe('constantWrong'),
+  'r0-t2-marks-precedence': probe('precedenceWrong'),
+  'r0-t2-marks-clash': probe('clashWrong'),
+  'r0-t2-marks-take-first': probe('takeFirstWrong')
 };

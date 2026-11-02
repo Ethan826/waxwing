@@ -10,8 +10,9 @@ import { oracleCases } from './r0-t2-marks-oracle-cases.mjs';
 // with every node's term against the oracle's own least terms. Every
 // family in full ran once as evidence (research/t2-read-back-design/
 // marks-oracle.mjs). Standing (§18.153): bounded agreement with the
-// definition; not independent evidence of recorded/live correspondence
-// (P1 untested).
+// stated definition; with the disclosed shared label pairing
+// (ReadBack/Marks.purs), not independent evidence of recorded/live
+// correspondence (P1 untested).
 const SAMPLE = 20000;
 const oracle = await oracleCases(load);
 const { verdict, holds, counts, families } = oracle;

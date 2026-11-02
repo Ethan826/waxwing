@@ -12,6 +12,7 @@
 -- caller's `UnreadPosition`.
 module Features.Check.Strategy.ReadBack.MarkMatch
   ( Reading
+  , marksOfRow
   , marksOfTy
   ) where
 
@@ -27,7 +28,7 @@ import Domain.Checked.Internal (Open)
 import Domain.Recorded.Effect (MLabel, MRow, MTy(..), MarkRef(..), Position)
 import Domain.Row (Label(..), Mark, Row(..))
 import Domain.Type (Ty(..), TyRow)
-import Features.Check.Strategy.ReadBack.EffectMatch (sameLabel)
+import Features.Check.Strategy.ReadBack.EffectMatch (candidateOf, sameLabel)
 
 -- A recorded position and the live mark met at its place.
 type Reading = Tuple Position Mark
@@ -61,14 +62,13 @@ marksOfRow recorded (Row live _) = paired.readings
   paired = foldl (takeLabel live) start recorded.labels
   start = { used: Set.empty, readings: [] }
 
+-- The live label is EffectMatch's `candidateOf`: an ambiguous `Fail`
+-- label takes none, and its positions get no reading here.
 takeLabel ∷ Array (Label (Ty Open)) → Paired → MLabel → Paired
 takeLabel live found label =
-  maybe found taken (Array.findIndex free (Array.mapWithIndex Tuple live))
+  maybe found taken (candidateOf live found.used label)
   where
-  free (Tuple index each) = not (Set.member index found.used)
-    && sameLabel label each
-  taken index = maybe found (matched index) (Array.index live index)
-  matched index each = found
+  taken (Tuple index each) = found
     { used = Set.insert index found.used
     , readings = found.readings <> marksOfLabel label each
     }

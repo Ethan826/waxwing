@@ -15,6 +15,7 @@
 -- only variables are read.
 module Features.Check.Strategy.ReadBack.EffectMatch
   ( Fact
+  , candidateOf
   , matchRow
   , matchTy
   , sameLabel
@@ -91,25 +92,34 @@ matchArrow recorded live = tailRec step { recorded, live, facts: [] }
     MArrow _ _ _, _ → Done at.facts
     other, liveOther → Done (at.facts <> matchTy other liveOther)
 
--- The first free live label of the same key, in same-key order; but a
--- `Fail` label matched with an unknown payload head may name any of
--- several keys, so with more than one candidate it takes none (no
--- choice, §18.155 (3)) and the tail gets no value here.
 takeLabel ∷ Array (Label (Ty Open)) → Labels → MLabel → Labels
-takeLabel live found label = chosen candidates
+takeLabel live found label =
+  maybe (found { missed = true }) taken (candidateOf live found.used label)
   where
-  candidates = Array.filter free (Array.mapWithIndex Tuple live)
-  free (Tuple index each) = not (Set.member index found.used)
-    && sameLabel label each
-  chosen several
-    | Array.length several > 1 && Array.any loose several =
-        found { missed = true }
-    | otherwise = maybe (found { missed = true }) taken (Array.head several)
-  loose (Tuple _ each) = not (headsKnown label each)
   taken (Tuple index each) = found
     { used = Set.insert index found.used
     , facts = found.facts <> matchArguments label each
     }
+
+-- The live label a recorded label takes, shared by this matcher and
+-- ReadBack/MarkMatch.purs: the first free live label of the same key, in
+-- same-key order; but a `Fail` label matched with an unknown payload
+-- head may name any of several keys, so with more than one candidate it
+-- takes none (no choice, §18.155 (3)).
+candidateOf
+  ∷ Array (Label (Ty Open))
+  → Set Int
+  → MLabel
+  → Maybe (Tuple Int (Label (Ty Open)))
+candidateOf live used label = chosen candidates
+  where
+  candidates = Array.filter free (Array.mapWithIndex Tuple live)
+  free (Tuple index each) = not (Set.member index used)
+    && sameLabel label each
+  chosen several
+    | Array.length several > 1 && Array.any loose several = Nothing
+    | otherwise = Array.head several
+  loose (Tuple _ each) = not (headsKnown label each)
 
 matchArguments ∷ MLabel → Label (Ty Open) → Array Fact
 matchArguments label (Label _ arguments _) =

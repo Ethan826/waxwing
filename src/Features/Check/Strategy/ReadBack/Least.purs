@@ -9,19 +9,23 @@
 -- research reading it agrees with is research/t2-read-back-inventory/
 -- least.mjs.
 --
--- Standing (§18.153): bounded agreement with the definition (the
+-- Standing (§18.153): bounded agreement with the stated definition (the
 -- oracle's families: research/t2-read-back-design/marks-oracle.mjs, a
--- seeded subset in test/r0-t2-marks-oracle.test.mjs); not independent
--- evidence of recorded/live correspondence (P1 untested).
+-- seeded subset in test/r0-t2-marks-oracle.test.mjs); with the disclosed
+-- shared label pairing (ReadBack/Marks.purs), not independent evidence
+-- of recorded/live correspondence (P1 untested).
 --
 -- A class never holds two constants: each meta has one binding and a
 -- constant none, so a class is a tree with one end, or a cycle of metas
 -- (reasoned; the corpus check counts `clashes`, research/t2-read-back-
--- design/marks-corpus.mjs). The union keeps a constant as the root, so
--- a class's root is its constant when it has one. `Unmarked` ends are
--- dropped, as UnifyMark `recorded` drops them: such a meta reads alone.
+-- design/marks-corpus.mjs). The count is returned, and a reader faults
+-- on any (fail-closed; only a planted graph reaches it). The union
+-- keeps a constant as the root, so a class's root is its constant when
+-- it has one. `Unmarked` ends are dropped, as UnifyMark `recorded` drops
+-- them: such a meta reads alone.
 module Features.Check.Strategy.ReadBack.Least
-  ( clashes
+  ( MarkTerms
+  , leastOfGraph
   , leastTerms
   , termOf
   ) where
@@ -50,56 +54,69 @@ type Edge = { lower ∷ Node, upper ∷ Node }
 
 type Classes = { parent ∷ Map Node Node, clashed ∷ Int }
 
--- Every live meta's least term, keyed by meta.
-leastTerms ∷ ∀ t. MarkStore t → Map Int Term
-leastTerms store = Map.fromFoldable (Array.mapMaybe termed nodes)
+-- Every live meta's least term, keyed by meta, and how many equalities
+-- met two different constants (unreachable from a store, see above; a
+-- reader faults on any, never uses the terms).
+type MarkTerms = { terms ∷ Map Int Term, clashes ∷ Int }
+
+leastTerms ∷ ∀ t. MarkStore t → MarkTerms
+leastTerms store = leastOfGraph (map binding (Map.toUnfoldable store.bindings))
+  (map ends (edgesOf store))
   where
-  graph = graphOf store
+  binding (Tuple meta mark) = Tuple (MarkMeta meta) mark
+  ends edge = Tuple edge.lower edge.upper
+
+-- The same over a graph given as mark pairs: equalities, and edges as
+-- (lower, upper). A planted graph may hold a clash, which a store cannot.
+leastOfGraph ∷ Array (Tuple Mark Mark) → Array (Tuple Mark Mark) → MarkTerms
+leastOfGraph equalities edges =
+  { terms: Map.fromFoldable (Array.mapMaybe termed graph.nodes)
+  , clashes: classes.clashed
+  }
+  where
+  graph = graphOf equalities edges
   classes = classesOf graph.equalities
   reach = reaching classes graph.edges graph.constants
-  nodes = Array.nub (sides <> ends)
-  sides = map fst' graph.equalities <> map snd' graph.equalities
-  ends = map _.lower graph.edges <> map _.upper graph.edges
   termed node = case node of
     NodeMeta meta → Just (Tuple meta (rootTerm reach (find classes node)))
     _ → Nothing
-  fst' (Tuple one _) = one
-  snd' (Tuple _ other) = other
 
 -- A live mark's term: a constant's own, a meta's from the map, N for a
 -- meta the map lacks (a singleton class, statements §5's "N if none";
--- design §C.8). `Unmarked` is `Fail`'s placeholder (statements §2: N);
--- Convert reads `Fail` and Console as N before asking, and refuses an
--- unmarked user label, and readMarks refuses an unmarked position.
-termOf ∷ Map Int Term → Mark → Term
-termOf terms = case _ of
-  NoFail → TermN
-  Plain → TermM
-  MarkVariable name → TermJ (Set.singleton name)
-  MarkMeta meta → fromMaybe TermN (Map.lookup meta terms)
-  Unmarked → TermN
-
--- How many equalities met two different constants (expected 0).
-clashes ∷ ∀ t. MarkStore t → Int
-clashes store = (classesOf (graphOf store).equalities).clashed
+-- design §C.8). Nothing for `Unmarked`, which has no term to read, and
+-- for every mark when the terms hold a clash.
+termOf ∷ MarkTerms → Mark → Maybe Term
+termOf found mark
+  | found.clashes > 0 = Nothing
+  | otherwise = case mark of
+      NoFail → Just TermN
+      Plain → Just TermM
+      MarkVariable name → Just (TermJ (Set.singleton name))
+      MarkMeta meta → Just (fromMaybe TermN (Map.lookup meta found.terms))
+      Unmarked → Nothing
 
 type Graph =
   { equalities ∷ Array (Tuple Node Node)
   , edges ∷ Array Edge
   , constants ∷ Array Node
+  , nodes ∷ Array Node
   }
 
-graphOf ∷ ∀ t. MarkStore t → Graph
-graphOf store = { equalities, edges, constants }
+graphOf ∷ Array (Tuple Mark Mark) → Array (Tuple Mark Mark) → Graph
+graphOf markPairs markEdges = { equalities, edges, constants, nodes }
   where
-  equalities = Array.mapMaybe equality (Map.toUnfoldable store.bindings)
-  equality (Tuple meta mark) = Tuple (NodeMeta meta) <$> nodeOf mark
-  edges = Array.mapMaybe edge (edgesOf store)
-  edge found = { lower: _, upper: _ } <$> nodeOf found.lower
-    <*> nodeOf found.upper
-  constants = Array.filter isConstant (Array.nub ends)
-  ends = map pairEnd equalities <> map _.lower edges <> map _.upper edges
-  pairEnd (Tuple _ other) = other
+  equalities = Array.mapMaybe pairOf markPairs
+  edges = Array.mapMaybe edge markEdges
+  pairOf (Tuple one other) = Tuple <$> nodeOf one <*> nodeOf other
+  edge pair = map lowerUpper (pairOf pair)
+  lowerUpper (Tuple lower upper) = { lower, upper }
+  nodes = Array.nub
+    ( Array.concatMap sides equalities
+        <> Array.concatMap ends edges
+    )
+  sides (Tuple one other) = [ one, other ]
+  ends found = [ found.lower, found.upper ]
+  constants = Array.filter isConstant nodes
 
 nodeOf ∷ Mark → Maybe Node
 nodeOf = case _ of

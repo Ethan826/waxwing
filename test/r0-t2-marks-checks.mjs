@@ -79,6 +79,75 @@ export const marksChecks = async load => {
       wrong.push('N');
     return wrong;
   };
-  return { consoleWrong, sharedWrong, absentWrong, rigidWrong, apartWrong,
-    unmarkedWrong };
+  // An edge is lower ⊑ upper: a rigid below a meta reaches it.
+  const directionWrong = () => {
+    const below = store([], [[rigid('k'), meta(-1)]]);
+    const above = store([], [[meta(-1), rigid('k')]]);
+    return [termIn(below, meta(-1)) === 'J{k}' ? null : 'below',
+      termIn(above, meta(-1)) === 'N' ? null : 'above'].filter(Boolean);
+  };
+  // A class holding a constant keeps it, whatever reaches it.
+  const constantWrong = () => [[rigid('k'), 'J{k}'], [mark.N, 'N']]
+    .filter(([constant, want]) => termIn(store([[-1, constant]],
+      [[M, meta(-1)]]), meta(-1)) !== want).map(([, want]) => want);
+  // M reaching a class wins over the rigid constants reaching it.
+  const precedenceWrong = () => termIn(store([], [[rigid('k'), meta(-1)],
+    [M, meta(-1)]]), meta(-1)) === 'M' ? [] : ['precedence'];
+  // A planted graph whose class holds two constants: no term anywhere,
+  // and readMarks faults with MarkClash.
+  const clashWrong = () => {
+    const pairs = [[meta(-1), mark.N], [meta(-1), M]];
+    const terms = cases.Marks.leastOfGraph(pairs.map(([one, other]) =>
+      cases.Tuple.create(one)(other)))([]);
+    const item = handled();
+    const found = cases.Marks.readMarks(terms)(item.problem)(item.checked)(
+      item.trace);
+    return [terms.clashes === 1 ? null : 'count',
+      named(cases.Marks.termOf(terms)(mark.N)) === 'Nothing' ? null
+        : 'term',
+      named(found) === 'Left' && named(found.value0) === 'MarkClash' ? null
+        : 'read'].filter(Boolean);
+  };
+  // A recorded Fail whose payload head is unknown, met by two live Fail
+  // labels of one head, takes neither (§18.155 (3)); the known-head Fail
+  // takes the first. Both matchers use EffectMatch's `candidateOf`.
+  const takeFirstWrong = async () => {
+    const E = await load('Domain.Recorded.Effect');
+    const O = await load('Domain.Recorded.Origin');
+    const Atom = await load('Domain.Recorded.Atom');
+    const Core = await load('Domain.Type.Core');
+    const Checked = await load('Domain.Checked.Internal');
+    const Match = await load('Features.Check.Strategy.ReadBack.EffectMatch');
+    const MarkMatch = await load(
+      'Features.Check.Strategy.ReadBack.MarkMatch');
+    const { Just } = await load('Data.Maybe');
+    const { Row } = cases;
+    const path = { root: O.InBody.value, steps: [] };
+    const owner = 7;
+    const failA = { effect: Row.FailEffect.value, args: [new E.MVar(
+      new Atom.RigidVar(0))], mark: new E.At(new E.Literal(path)) };
+    const failE = { effect: Row.FailEffect.value, args: [new E.MData(owner,
+      [new E.MBase(Atom.IntBase.value)], [])],
+    mark: new E.At(new E.Frame(path)) };
+    const liveFail = (ty, at) => new Row.Label(Row.FailEffect.value,
+      [new Core.TData(owner, [ty], [])], meta(at));
+    const labels = [liveFail(Core.TInt.value, -1),
+      liveFail(Core.TBool.value, -2)];
+    const variable = new E.EffFresh(path, E.EffectOf.value);
+    const recorded = { labels: [failA, failE], tail: new Just(variable) };
+    const live = new Row.Row(labels, new Just(new Checked.Hole(1)));
+    const none = cases.Sets.empty;
+    const readings = MarkMatch.marksOfRow(recorded)(live).map(reading =>
+      `${named(reading.value0)}:${reading.value1.value0}`);
+    return [named(Match.candidateOf(labels)(none)(failA)) === 'Nothing'
+      ? null : 'effect unknown head',
+    Match.candidateOf(labels)(none)(failE).value0?.value0 === 0 ? null
+      : 'effect known head',
+    readings.join() === 'Frame:-1' ? null : `marks ${readings}`,
+    Match.matchRow(recorded)(live).length === 0 ? null : 'effect tail'
+    ].filter(Boolean);
+  };
+  return { takeFirstWrong, consoleWrong, sharedWrong, absentWrong,
+    rigidWrong, apartWrong, unmarkedWrong, directionWrong, constantWrong,
+    precedenceWrong, clashWrong };
 };

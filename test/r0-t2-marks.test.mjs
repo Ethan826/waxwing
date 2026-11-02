@@ -85,3 +85,31 @@ test('Fail and Console read as N, payload and effect kept', () => {
   // No recorded position sits on a Fail or Console label.
   assert.deepEqual(positionsText(read(item).value0), ['Literal:M']);
 });
+
+// The review's cases (each also a restored-defect row): every check
+// returns the names of the cases that differ.
+const checks = await (await import('./r0-t2-marks-checks.mjs'))
+  .marksChecks(load);
+
+test('an ambiguous Fail label gives no reading in either matcher',
+  async () => { assert.deepEqual(await checks.takeFirstWrong(), []); });
+
+test('edges point lower to upper', () => {
+  assert.deepEqual(checks.directionWrong(), []);
+});
+
+test('a constant class keeps its constant', () => {
+  assert.deepEqual(checks.constantWrong(), []);
+});
+
+test('M wins over the rigid constants reaching a class', () => {
+  assert.deepEqual(checks.precedenceWrong(), []);
+});
+
+test('a planted two-constant class is MarkClash, no term read', () => {
+  assert.deepEqual(checks.clashWrong(), []);
+});
+
+test('Unmarked has no term', () => {
+  assert.equal(termIn(store([], []), mark.U), 'none');
+});
