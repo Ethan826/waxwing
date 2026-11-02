@@ -5,16 +5,21 @@
 // reaches through Check/Outcomes and Check/Inspect, plus `finish` and
 // the second `numbering` in checkFunction). Each (build, workload) runs
 // in its own fresh node process, so its peak resident set (maxRSS) is
-// its own; rounds alternate builds to spread drift from load.
-//   node scripts/r0-t2-trace-cost.mjs <collecting output> <removed output>
-//     [rounds]
-// The second build is the first with collection removed, made in a
-// scratch copy outside the worktree (record functions' callers left the
-// state unchanged, checkFunction's finish and second `numbering` gone).
+// its own; each sample is one cold pass (module load and JIT warm-up
+// included, the same for both builds); rounds alternate builds to spread
+// drift from load, and the load average is printed before and after.
+//   node scripts/r0-t2-trace-cost.mjs <scratch dir> [rounds]
+// Compares this worktree's output/ with the no-collection baseline
+// (scripts/r0-t2-trace-removal.mjs: every recorder's caller leaves the
+// state unchanged, checkFunction drops `finish` and its second
+// `numbering`), built under the scratch directory (outside the worktree)
+// and removed after.
 import { spawnSync } from 'node:child_process';
 import { loadavg, cpus } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { rmSync } from 'node:fs';
+import { buildUncollected, repoRoot } from './r0-t2-trace-removal.mjs';
 
 const defaultRounds = 5;
 const kibibyte = 1024;
@@ -75,13 +80,18 @@ const compared = (builds, rounds) => Object.fromEntries(
 if (process.argv[2] === '--worker')
   await worker(process.argv[3], process.argv[4]);
 else {
-  const [collecting, removed, rounds = defaultRounds] =
-    process.argv.slice(2);
+  const [scratch, rounds = defaultRounds] = process.argv.slice(2);
   const conditions = () => ({ loadavg: loadavg().map(value =>
     Number(value.toFixed(2))), cores: cpus().length,
   node: process.version });
-  const before = conditions();
-  const result = compared([collecting, removed], Number(rounds));
-  console.log(JSON.stringify({ before, after: conditions(), rounds:
-    Number(rounds), ...result }, null, 1));
+  const removed = buildUncollected(scratch);
+  try {
+    const before = conditions();
+    const result = compared([resolve(repoRoot, 'output'), removed.output],
+      Number(rounds));
+    console.log(JSON.stringify({ before, after: conditions(), rounds:
+      Number(rounds), ...result }, null, 1));
+  } finally {
+    rmSync(removed.root, { recursive: true, force: true });
+  }
 }
