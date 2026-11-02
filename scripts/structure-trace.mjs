@@ -11,8 +11,10 @@
 // `pipedAt`, Clauses `file`, Defer `checkDefer` and Install `install`
 // (Task 6b), and read once, by Function `checkFunction`, as `finish`'s
 // argument after every check has run (that declaration's literal field
-// is `Rechecked`'s). A listed entry that no longer matches is a finding
-// too. (3) Features.Check.Trace exists, has an export list, and exports
+// is `Rechecked`'s), and once after it, by Strategy.Online `packaged`,
+// handing the finished trace to the effect read-back (Task 12). A
+// listed entry that no longer matches is a finding too.
+// (3) Features.Check.Trace exists, has an export list, and exports
 // `Trace` without constructors and not by `module` re-export; its export
 // list is exactly `traceExports` (as a set), so a new function taking a
 // `Trace` (a reader usable inside an allowlisted declaration without
@@ -66,7 +68,10 @@ export const traceAllowed = [
   [`${check}.Install`, 'install', 'update', 1],
   [`${check}.Install`, 'install', 'accessor', 1],
   [`${check}.Function`, 'checkFunction', 'accessor', 1],
-  [`${check}.Function`, 'checkFunction', 'field', 1]
+  [`${check}.Function`, 'checkFunction', 'field', 1],
+  // Reviewed reader of the finished `Traced` (tranche 2 Task 12): the
+  // online certificate's package, read after recheck, outside inference.
+  [`${check}.Strategy.Online`, 'packaged', 'accessor', 1]
 ].map(([module, declaration, form, count]) =>
   ({ module, declaration, form, count }));
 

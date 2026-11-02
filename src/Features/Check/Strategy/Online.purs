@@ -18,6 +18,12 @@
 -- (ruling R10 (iii)). A read-back failure is the search's
 -- own (`Broke`, G-Q13). The online solver's own limits are its budget;
 -- the injected `Budget`'s fuel is spent by `strategy` alone.
+--
+-- The certificate also carries the honest effect package, or the read
+-- fault that stopped it (tranche 2 Task 12; design §C.6; dossier
+-- §18.155 (4), (5)): untrusted search, carried as data. Nothing here
+-- reads it, validates it or completes it: G0's `certify` judges
+-- `unsettled` alone, under F14, and a read fault keeps the candidate.
 module Features.Check.Strategy.Online
   ( Certificate
   , OnlineContext
@@ -39,15 +45,19 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic)
 import Domain.Verdict (Assurance(..), SearchEnd(..), StrategyName(..))
 import Domain.Verdict.Certified (Certified)
+import Domain.Verdict.EffectPackage (EffectPackage)
 import Domain.Verdict.Search (Budget, CheckRefusal, SearchHint(..))
 import Features.Check.Functional (Functional)
 import Features.Check.Generate (Inputs, generate, generationInputs)
 import Features.Check.Function (Rechecked, recheck)
+import Features.Check.Subst (Subst(..))
 import Features.Check.Strategy (Search(..), Strategy, strategy)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.Guard (g0Guard)
 import Features.Check.Strategy.Online.Ending (Ending(..), ending)
-import Features.Check.Strategy.ReadBack (readBack)
+import Features.Check.Strategy.ReadBack (ReadBack, readBack)
+import Features.Check.Strategy.ReadBack.Fault (ReadFault)
+import Features.Check.Strategy.ReadBack.Package (readEffects)
 import Features.Check.Strategy.Substitution
   ( certify
   , certifySound
@@ -66,11 +76,14 @@ type OnlineContext =
 -- R026: the certificate carries no separately settled σ); the checked
 -- declaration today's solver built, the baseline Task 7.1 compares
 -- `build`'s IR against; and the holes step 4 binds (provisional,
--- pending the author's ambiguity ruling), reported for RT8 only.
+-- pending the author's ambiguity ruling), reported for RT8 only; and
+-- the effect package or its read fault, which no verdict reads (Task 16
+-- held; statements §7's interim amendment).
 type Certificate =
   { unsettled ∷ Substitution
   , checked ∷ Checked.FunctionDecl
   , holes ∷ Array Int
+  , effects ∷ Either ReadFault EffectPackage
   }
 
 type Today =
@@ -106,16 +119,28 @@ searched
   ∷ (Diagnostic → String) → RecordedProblem → Today → Search Certificate
 searched legacyText problem = either (refused legacyText) accepted
   where
-  accepted found = either broke (offered found.function)
+  accepted found = either broke (offered found)
     (readBack problem found.function)
-  offered checked made = Candidate
+  offered found made = Candidate
     { unsettled: made.unsettled
-    , checked
+    , checked: found.function
     , holes: made.holes
+    , effects: packaged problem found made
     }
     made.claim
     []
   broke why = NoCandidate (Broke ("read-back: " <> why)) []
+
+-- The package read from today's checked declaration, final mark store
+-- and finished trace, beside the type read-back's result (the trace's
+-- one reader here; scripts/structure-trace.mjs lists it).
+packaged
+  ∷ RecordedProblem → Rechecked → ReadBack → Either ReadFault EffectPackage
+packaged problem found made =
+  readEffects problem made found.function (marks found.state.subst)
+    found.trace
+  where
+  marks (Subst subst) = subst.marks
 
 refused ∷ ∀ cert. (Diagnostic → String) → Diagnostic → Search cert
 refused legacyText diagnostic = case ending diagnostic.problem of

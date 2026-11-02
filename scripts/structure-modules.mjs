@@ -64,6 +64,10 @@ export const internalModules = [
   // wraps them: every other module reads them through the facade.
   { module: 'Domain.Verdict.EffectPackage.Types',
     importers: /^Domain\.Verdict\.EffectPackage(\.Internal)?$/ },
+  // Tranche 2 Task 12 (dossier §18.155 (5)): the online certificate
+  // carries the package and nothing validates or completes it there.
+  { module: /^Features\.Check\.Strategy\.Effects\.(Validate|Complete)$/,
+    importers: /^(?!Features\.Check\.Strategy\.Online$)/ },
   { module: /^(Domain\.Elaborating|Features\.Check\.Generate)(\.|$)/,
     importers: /^(?!Runtime\.)/ }
 ];

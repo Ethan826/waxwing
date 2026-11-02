@@ -65,6 +65,30 @@ test('only the facade and Effects.Complete import EffectPackage.Internal',
         [`${name} imports ${internal}`], name);
   });
 
+// Tranche 2 Task 12 (design §C.6; dossier §18.155 (5)): the online
+// certificate carries the package without validating or completing it;
+// Online imports neither Effects.Validate nor Effects.Complete (anchored,
+// so Effects.ValidateX and OnlineX are outside the rule) and, by the
+// rule above, not EffectPackage.Internal. Direct imports only: what
+// Online's imports import is not this rule's.
+test('Online imports no Effects.Validate, Complete or package token',
+  () => {
+    const online = 'Features.Check.Strategy.Online';
+    for (const dependency of ['Features.Check.Strategy.Effects.Validate',
+      'Features.Check.Strategy.Effects.Complete',
+      'Domain.Verdict.EffectPackage.Internal'])
+      assert.deepEqual(importing(online, dependency),
+        [`${online} imports ${dependency}`], dependency);
+    for (const [name, dependency] of [
+      [online, 'Features.Check.Strategy.ReadBack.Package'],
+      [online, 'Features.Check.Strategy.Effects.ValidateX'],
+      [`${online}X`, 'Features.Check.Strategy.Effects.Validate'],
+      ['Features.Check.Strategy.Effects.Complete',
+        'Features.Check.Strategy.Effects.Validate']])
+      assert.deepEqual(importing(name, dependency), [],
+        `${name} ${dependency}`);
+  });
+
 // A2: the package's types are read through the facade only, so the
 // facade's pinned surface is the one place they enter (Task 1 review).
 test('only the facade and its Internal import EffectPackage.Types', () => {

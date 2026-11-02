@@ -8,6 +8,7 @@ import { t2GatesProbes } from './regression-r0-t2-gates.mjs';
 import { t2ImagesProbes } from './regression-r0-t2-images.mjs';
 import { t2MarksProbes } from './regression-r0-t2-marks.mjs';
 import { t2PackageProbes } from './regression-r0-t2-package.mjs';
+import { t2OnlineProbes } from './regression-r0-t2-online.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
@@ -16,5 +17,6 @@ export const r0T2Probes = {
   ...t2GatesProbes,
   ...t2ImagesProbes,
   ...t2MarksProbes,
-  ...t2PackageProbes
+  ...t2PackageProbes,
+  ...t2OnlineProbes
 };
