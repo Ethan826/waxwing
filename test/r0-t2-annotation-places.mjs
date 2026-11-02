@@ -60,7 +60,8 @@ const copyOf = (after, rename) => {
   const node = after.nodes.find(([path]) => same(path, rename.path))?.[1];
   const annotated = after.annotations
     .filter(([key]) => same(lambdaOf(key), rename.path))
-    .flatMap(([, ty]) => [ty, ty.MHandler?.[1].inference]);
+    .flatMap(([, ty]) => ty.MHandler ? [ty, ty.MHandler[1].inference]
+      : [ty]);
   let value = after;
   for (const step of rename.trail) {
     if (node !== undefined && same(value, node)) return 'lambda';

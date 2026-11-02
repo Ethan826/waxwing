@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,11 +13,12 @@ import { contentsProblems, differences }
 // the generation correction (design §B.2) moved the effect pin of 31
 // declarations. The fixture holds each one's canonical effect encoding
 // as generation recorded it before the correction, with the digest the
-// pin held for it at 823f628 (`git show 823f628:test/fixtures/r0/
-// effects.json`, read here). test/r0-t2-annotation-places.mjs states
+// pin held for it then (compared once, when the fixture was written,
+// with `git show 823f628:test/fixtures/r0/effects.json`: 31 of 31
+// equal; not read here, since that commit need not survive a rebase).
+// test/r0-t2-annotation-places.mjs states
 // what the old and current encodings may differ by and where; the
 // effect pin holds the digest of the contents checked here.
-const before = '823f6283635ccf8c2b37c1c04858e7e4a1d3ae1f';
 const fixture = JSON.parse(readFileSync(join(repoRoot,
   'test/fixtures/r0/t2-annotation-row-before.json'), 'utf8')).entries;
 const keys = Object.keys(fixture);
@@ -47,15 +47,10 @@ const problemsOf = (key, after) =>
 
 test('the fixture is the pre-correction encoding of 31 declarations',
   () => {
-    const pinned = JSON.parse(execFileSync('git',
-      ['show', `${before}:test/fixtures/r0/effects.json`],
-      { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1 << 26 })).digests;
     assert.equal(keys.length, 31);
-    for (const key of keys) {
-      assert.equal(fixture[key].digest, pinned[key], key);
+    for (const key of keys)
       assert.equal(sha(JSON.stringify(fixture[key].effects)),
         fixture[key].digest, key);
-    }
   });
 
 test('each moved declaration differs only by the implicit tail renamed',
