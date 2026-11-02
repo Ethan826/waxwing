@@ -4,14 +4,19 @@
 // fails naming every case of test/r0-t2-package-checks.mjs that differs.
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { packageChecks } from './r0-t2-package-checks.mjs';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 
 const loader = context => name => import(pathToFileURL(
   resolve(dirname(context.compilerPath), '..', name, 'index.js')));
 
+// Imported when a probe runs: the cases read corpus and research
+// sources a test-tree row's clone does not hold, and the registry loads
+// this module there too (test/regression-r0-amin-effects-pin.mjs).
+const checksOf = async context =>
+  (await import('./r0-t2-package-checks.mjs')).packageChecks(loader(context));
+
 const probe = check => async context => {
-  const wrong = (await packageChecks(loader(context)))[check]();
+  const wrong = (await checksOf(context))[check]();
   if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
   passed(context);
 };

@@ -2,20 +2,21 @@
 // scripts/regression-r0-t2-gates.mjs. The scan probe reads the src tree
 // of the compiler under test (the directory above its output/) with the
 // healthy build's Style.Trace reader, the gate's own tool; the counts
-// probe loads modules from the compiler under test only.
+// probe loads modules from the compiler under test only. Each probe
+// imports its tools when it runs: a test-tree row's clone has neither
+// scripts/, Style.Trace's output nor the corpus's research/ sources,
+// and the registry imports this file there too.
 import { readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { filesUnder } from '../scripts/structure.mjs';
-import { traceFindings } from '../scripts/structure-trace.mjs';
-import { facts } from '../output/Style.Trace/index.js';
-import { loadCorpus } from './r0-corpus.mjs';
-import { pinnedEntries, traceRun } from './r0-t2-trace-inert.mjs';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 
 const rootOf = context => resolve(dirname(context.compilerPath), '..', '..');
 
 const scanned = async context => {
+  const { filesUnder } = await import('../scripts/structure.mjs');
+  const { traceFindings } = await import('../scripts/structure-trace.mjs');
+  const { facts } = await import('../output/Style.Trace/index.js');
   const root = rootOf(context);
   const sources = Object.fromEntries(filesUnder(resolve(root, 'src'))
     .filter(file => file.endsWith('.purs')).map(file =>
@@ -29,6 +30,9 @@ const fixture = () => JSON.parse(readFileSync(
   'test/fixtures/r0/t2-trace-inert.json', 'utf8'));
 
 const counted = async context => {
+  const { loadCorpus } = await import('./r0-corpus.mjs');
+  const { pinnedEntries, traceRun } =
+    await import('./r0-t2-trace-inert.mjs');
   const load = name => import(pathToFileURL(
     resolve(dirname(context.compilerPath), '..', name, 'index.js')));
   const run = await traceRun(load, await loadCorpus());

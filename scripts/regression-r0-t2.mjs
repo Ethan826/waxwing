@@ -10,6 +10,7 @@ import { t2ImagesRows } from './regression-r0-t2-images.mjs';
 import { t2MarksRows } from './regression-r0-t2-marks.mjs';
 import { t2PackageRows } from './regression-r0-t2-package.mjs';
 import { t2OnlineRows } from './regression-r0-t2-online.mjs';
+import { t2HonestRows } from './regression-r0-t2-honest.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
@@ -19,5 +20,6 @@ export const t2Rows = [
   ...t2ImagesRows,
   ...t2MarksRows,
   ...t2PackageRows,
-  ...t2OnlineRows
+  ...t2OnlineRows,
+  ...t2HonestRows
 ];
