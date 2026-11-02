@@ -15,6 +15,11 @@
 -- `annotations` at `Lambda/params/k`, a key of its own (a parameter is
 -- not a node, so no node path takes that step). The lambda's body runs in
 -- the ambient row `⟨p, effect⟩` (Task 8, E11), recorded at `Lambda/body`.
+-- An annotation's implicit row is that same `⟨p, effect⟩` (tranche 2
+-- design §B.2, Generate.Marked `lambdaAmbient`) wherever it is recorded:
+-- `annotations`, the parameter's local and the lambda's node type. It is
+-- minted from the unrenamed annotation, since `lambda` mints `⟨p,
+-- effect⟩` already (review C1: minting it twice fails the marked corpus).
 module Features.Check.Generate.Control
   ( lambda
   , match
@@ -59,7 +64,11 @@ import Features.Check.Generate.Node
   , markersAt
   , stagedArrow
   )
-import Features.Check.Generate.Marked (MarkNaming(..), marked)
+import Features.Check.Generate.Marked
+  ( MarkNaming(..)
+  , lambdaAmbient
+  , marked
+  )
 import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Obligation (agreeEqual, equalTagged)
 import Features.Check.Generate.Out (EffectItem(..), TypeMarker)
@@ -185,12 +194,15 @@ parameterAt context path index parameter = do
     found ← lifted (translate context.tables Rigidly written)
     markedType ← lifted
       (marked context.tables (InAnnotation path index) written)
-    let owned = annotationClauses path index markedType
+    let
+      recorded = annotationClauses path index
+        (lambdaAmbient context.implicit path markedType)
     effected
-      ( [ AnnotationAt (childAt path "Lambda" "params" index) owned ]
-          <> mintedAt path [] [ PartTy owned ]
+      ( [ AnnotationAt (childAt path "Lambda" "params" index) recorded ]
+          <> mintedAt path []
+            [ PartTy (annotationClauses path index markedType) ]
       )
-    pure (annotation found owned)
+    pure (annotation found recorded)
   annotation found markedType =
     { ty: found.ty
     , marked: markedType

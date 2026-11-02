@@ -724,6 +724,7 @@
  "Features.Check.Generate.Marked": {
   "source": [
    "MarkNaming(..)",
+   "lambdaAmbient",
    "marked",
    "renumbered"
   ],
@@ -731,6 +732,7 @@
    "Declared",
    "AtUse",
    "InAnnotation",
+   "lambdaAmbient",
    "marked",
    "renumbered"
   ]

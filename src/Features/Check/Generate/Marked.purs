@@ -17,6 +17,7 @@
 -- nesting bounds.
 module Features.Check.Generate.Marked
   ( MarkNaming(..)
+  , lambdaAmbient
   , marked
   , renumbered
   ) where
@@ -63,6 +64,32 @@ marked tables naming ty = numbered naming <$> mtyOf tables naming ty
 -- pre-order, a handler type's label, then R, then C.
 renumbered ∷ Path → Int → MTy → MTy
 renumbered path parameter ty = _.value (numTy { path, parameter } 0 ty)
+
+-- Every row tail `EffRigid implicit` in an annotation's marked type
+-- becomes the enclosing lambda's own row, as Check/Lambda.purs
+-- `annotationRow` substitutes it; written rows stay (tranche 2 design
+-- §B.2). Every row is visited: arrows', data rows, a handler's R and C,
+-- and rows inside label arguments; nothing else changes.
+lambdaAmbient ∷ VarId → Path → MTy → MTy
+lambdaAmbient implicit path = ambientTy
+  where
+  ambientTy = case _ of
+    MData owner arguments rows →
+      MData owner (map ambientTy arguments) (map row rows)
+    MRecord fields tails → MRecord (map (map ambientTy) fields) tails
+    MHandler label rows → MHandler (labelIn label)
+      { inference: row rows.inference, clauses: map row rows.clauses }
+    arrow@(MArrow _ _ _) → spine (arrowStages arrow)
+    other → other
+  row found = { labels: map labelIn found.labels, tail: map tail found.tail }
+  labelIn label = label { args = map ambientTy label.args }
+  tail variable
+    | variable == EffRigid implicit = EffFresh path EffectOf
+    | otherwise = variable
+  spine found = Array.foldr arrowOf (ambientTy found.result)
+    (map stage found.stages)
+  stage (Tuple parameter stageRow) = Tuple (ambientTy parameter)
+    (row stageRow)
 
 mtyOf ∷ Tables → MarkNaming → Ty VarId → Either GenerationFault MTy
 mtyOf tables naming ty = case ty of

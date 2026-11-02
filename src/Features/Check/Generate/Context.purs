@@ -4,7 +4,9 @@
 -- environment `Γ`, each local at its generator type (D1 spec §3.2; R0
 -- Task 7.1b) and its marked type (amin tranche 1, Task 3). Task 8 adds
 -- the ambient row the expression runs in (E11) and the declaration's
--- callback parameters, both read off the syntax. Nothing
+-- callback parameters, both read off the syntax; tranche 2 Task 3 the
+-- implicit row variable a local annotation's unwritten row ends in
+-- (Resolve/Signature.purs, the last `VarId`). Nothing
 -- else: no checker state, substitution, meta counter or solved type is
 -- in scope, so no rule can branch on one (§4's applicative invariant;
 -- T10). `Recur` is the expression rule itself,
@@ -23,7 +25,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe)
 import Domain.Recorded.Effect (MRow, MTy)
 import Domain.Recorded.Origin (Path, RuleId)
-import Domain.Resolved (Expr, FunctionId, LocalId)
+import Domain.Resolved (Expr, FunctionId, LocalId, VarId)
 import Features.Check.Generate.Elab (GenTy)
 import Features.Check.Generate.Gen (Gen)
 import Features.Check.Generate.Inputs (Signatures, Tables)
@@ -37,6 +39,7 @@ type Context s =
   , locals ∷ Map LocalId (Local s)
   , ambient ∷ MRow -- the row stages are consumed into (E2, E10, E11)
   , callbacks ∷ Array LocalId -- parameters of one-stage function type
+  , implicit ∷ VarId -- the declaration's implicit ambient row variable
   }
 
 -- A local's generator type and its marked type, bound together.

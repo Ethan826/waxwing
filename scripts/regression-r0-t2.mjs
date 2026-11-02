@@ -1,0 +1,9 @@
+// Tranche 2 read-back regression rows (docs/plans/
+// 2026-11-01-tranche-2-read-back-design.md §I), spread into r0Rows
+// (scripts/regression-r0.mjs); the probes are in test/regression-r0-t2.mjs.
+// One file per lane, each owned by its lane.
+import { t2GenerationRows } from './regression-r0-t2-generation.mjs';
+
+export const t2Rows = [
+  ...t2GenerationRows
+];

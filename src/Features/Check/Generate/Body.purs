@@ -27,12 +27,13 @@
 module Features.Check.Generate.Body (generateIn) where
 
 import Prelude
+import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Effect (ERole(..), EVar(..), MRow)
 import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
-import Domain.Resolved (FunctionDecl, exprSpan)
+import Domain.Resolved (FunctionDecl, VarId(..), exprSpan)
 import Domain.Row (Row(..))
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Generate.Ambient (callbackParameters)
@@ -68,6 +69,7 @@ generateIn tables signatures function = do
     , locals
     , ambient
     , callbacks: callbackParameters function
+    , implicit: VarId (Array.length function.variables - 1)
     }
     root
     function.body
