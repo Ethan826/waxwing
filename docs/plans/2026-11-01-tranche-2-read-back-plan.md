@@ -5,7 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-01, later): **Stage A complete (§18.154); Stage B
+Status (2026-11-02): **Stage B stopped at Task 13 for the author
+(§18.156): Tasks 3-12, 14, 15 and Task 13's tooling integrated; Task
+13's pin and Task 16 wait.** Before that: (2026-11-01, later)
+**Stage A complete (§18.154); Stage B
 (Tasks 3-16 below) authorized with rulings, dossier §18.155; A2's Task
 16, replacement, F14's retirement and pushing held.** Before that:
 **Stage A (Tasks 1-2) authorized, dossier

@@ -12,17 +12,13 @@ No milestone has moved since 2026-10-25.
 
 ## What is running now
 
-Nothing. The A2 validator stage (Tasks 0-15 and 17) is ACCEPTED
-(dossier §18.150; verify at ad3557b, §18.149). Task 16 held; C6's
-replacement decision and U6 open; performance not run. Next: write the
-tranche 2 read-back plan, drafted for review at
-docs/plans/2026-11-01-tranche-2-read-back-plan.md. Stage A authorized
-(§18.151); Task 1 stopped (§18.152), ruled (§18.153); Task 2's
-design reviewed and complete (§18.154,
-docs/plans/2026-11-01-tranche-2-read-back-design.md). Waiting for the
-author on the Stage B proposal; nothing running. A2 plan:
-docs/plans/2026-10-31-a2-validator-plan.md; live ledger (git-ignored):
-.superpowers/sdd/2026-10-31-a2-validator-plan/progress.md.
+Nothing. Tranche 2 Stage B (docs/plans/2026-11-01-tranche-2-read-back-
+plan.md) stopped at Task 13 for the author (dossier §18.156): four
+honest packages refused NotCertifiable ForcedTail that today accepts.
+Tasks 3-12, 14, 15 and Task 13's tooling are integrated (b166c6c);
+Task 13's serial gate (branch t2/honest, d78874c) and Task 16 wait.
+Ledger (git-ignored): .superpowers/sdd/2026-11-01-tranche-2-read-back-
+plan/progress.md.
 
 ## Where the work is
 

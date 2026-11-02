@@ -8023,3 +8023,76 @@ unexpected protected-pin movement, an unexplained compatibility
 failure, a differential disagreement. The differential stays marks
 only. Return with production evidence, both denominator reports, the
 remaining restrictions and the proposed activation gate.
+
+### 18.156 Stage B stopped at Task 13: four ForcedTail refusals (2026-11-02)
+
+Stage B Tasks 3-12, 14 and 15 are implemented, reviewed, fixed and
+integrated on r0-t2-d1 (head b166c6c), with Task 13's gate tooling
+(dadf29c); Task 13's serial gate (d78874c, red on purpose) is not
+integrated and its pin is unwritten. Task 16 (activation gate
+specification, whole-branch reviews, acceptance verify) has not run.
+Controller rulings during the run are in the git-ignored ledger
+.superpowers/sdd/2026-11-01-tranche-2-read-back-plan/progress.md; the
+ones that shaped production code: the trace also carries clause
+entries, deferrals and installations (6b) and the declaration's row
+(Task 8), so every value is read from one renumbered source; one
+live-type converter shared by rows and images, taking `Mark → Maybe
+Term`; fail-closed read faults `PositionApart`, `MarkClash`,
+`ForcedRead`; a mark position on a Console or Fail label whose term
+is not N is a read fault, never forced; ambiguous same-key Fail
+pairings take nothing.
+
+The stop (§18.155 (7): an unexpected validator refusal). On honest
+packages, `validate` refuses four declarations today's `certify`
+accepts, each `NotCertifiable ForcedTail`: editors/vscode/fixtures/
+effect-namespaces.wxw#main, examples/services.wxw#main,
+test/fx-services-programs.mjs:fake#1#main and
+test/fx008-defer-programs.mjs:aroundBoth#1#around. In each the
+installed handler is a value, not a literal; its C tail is the
+validator's forced ResultClauses tail (E4′, the provisional
+restriction, §R7b). Observed values: in services and fake, the honest
+R is `[Console@N, User1@N, User0@N]` (the live checker unified the
+instance's open tail with the outer labels), so the forced C carries
+User1, whose ambient partner is M, while the inner frame is N; in
+aroundBoth, C is `[User0@M | rigid 0]` and the frame `J{k}`. The
+independent M-B checker also refuses all four (Task 15), so the
+package and both checkers agree; the disagreement is between today's
+checker and the specified forcing restriction. Spec §6 routes
+ForcedTail as a decline, so on activation these four would lose an
+acceptance (A1). Neither side is presumed correct (§18.145).
+
+Evidence otherwise (corpus-observed, 2026-11-02). Denominators:
+corpus loader 2823 candidates, effect pin's sources 2832. Read-back:
+2812 / 2820 packages; read faults exactly the approved list (9 / 10
+Declined, the second including inline:fx032#g's OperationWithRow; 2
+UnreadImage). I3: 0 Malformed. validate: 2805 / 2813 validated; 3
+RequirementUnjudged with the same G0 refusal, checked individually;
+the 4 ForcedTail. H2: all 11 annotation declarations validate (with
+the correction reverted, 9 fail at their Consumed InstallR
+consumption and 1 RigidExact, not at E1 as design §B.5 reasoned).
+Ruling (8): 317 dropped partial stages are traced unconstrained,
+settle empty and their consumptions pass (those stages only).
+Compatibility (spec §2.5, §4, §11): erase = today's σ by the
+canonical comparison, erase∘settle = settled∘erase, G0 monotonicity
+(0 violations; force in 53 derived runs), effect-hole numerals
+(completion never reuses a hole; today's bindingsOf would in 1112
+derived runs, as §2.4 predicts): 0 counterexamples on both
+denominators. Differential, marks only: 0 disagreements; 2808
+accepted honest packages, 284 forgeries both accept, 769 mark
+refusals, 34 not compared and all refused by M-B; gap sites AtCallback,
+AtStage, AtApply, AtPipe now exercised; AtDeferredRow is never
+generated. Pins: problem, first diagnostics with Go, census, window,
+RT8, shadow unchanged; the effect pin moved only for the 31
+annotation declarations, contents verified; the trace inertness pin
+holds. Costs, apart from acceptance: collection +22% compile and +35%
+recheck CPU; the read-back on the online path about +80% CPU on the
+shadow test (noisy load). Found and fixed on the way: test-tree
+regression rows had been unloadable since Task 7's probes (now gated by
+test/regression-probes-tree.test.mjs).
+
+For the author: rule on the four (named compatibility gaps tied to the
+provisional forcing restriction, admitted to the pin with that reason;
+or E4′ revisited; or the recording of handler-value installations
+examined); confirm the re-pin reading that a floor falls only with an
+explanation and only when candidates fall. Then Task 13's pin, Task 16
+and the acceptance verify. No push; no soundness claim.
