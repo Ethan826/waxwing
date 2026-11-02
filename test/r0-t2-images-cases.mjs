@@ -21,6 +21,7 @@ fn held(): Int with Log = { let g = id(one); g(()) };
 fn wrap(): Unit = { let h = id(handler Log { log(n) => () }); () };
 fn given(h: Handler(Log)): Unit = { let k = id(h); () };
 fn job(): Int = { let j = id(Job(fn(n: Int) => n)); 1 };
+fn pick(d: { f: Int, g: Bool }): Int = d.f;
 ${main}`,
   c7: file('docs/plans/2026-10-21-c001-explicit/baseline/'
     + 'c7-pure-stages-construction.wxw'),
@@ -85,10 +86,36 @@ export const imagesCases = async load => {
       && textOf(item, variable).startsWith(text))[0];
   const liveParam = (item, variable) => nodeOf(item, variable).value0.node
     .value0[infoOf(item, variable).position.value1].ty;
+  // `pick`'s auxiliary record-row variable read with a planted value of
+  // today's σ, as a θ binding it: the fault's name, or 'Right'.
+  const T = cases.Tuple.Tuple;
+  const field = ty => new Atom.Record([new T('f', ty)], []);
+  // A flexible variable other than the auxiliary: no hole, no rigid.
+  const flexible = item => varsOf(item).find(([variable, info]) =>
+    named(info.quant) === 'Exists' && named(info.position) !== 'Auxiliary')
+    [0];
+  const planted = {
+    flexibleField: item => field(new Atom.TVar(flexible(item))),
+    flexibleTail: item => new Atom.Record([], [flexible(item)]),
+    rowData: () => field(new Atom.App(new Atom.DataHead(0),
+      [new Atom.Base(Atom.IntBase.value)])),
+    handler: () => field(new Atom.App(new Atom.HandlerHead(
+      new cases.Row.UserEffect(0)), [])),
+    rigid: () => new Atom.TVar(new Atom.RigidVar(0))
+  };
+  const plantedFault = kind => {
+    const { item, readBack } = declaration(sources.uses, 'pick');
+    const [variable] = auxiliaries(item);
+    const value = kind === null ? lookup(readBack.unsettled, variable)
+      : planted[kind](item);
+    const found = imagesOf(item, { ...readBack, unsettled: cases.Maps
+      .insert(Atom.ordVar)(variable)(value)(readBack.unsettled) });
+    return named(found) === 'Left' ? named(found.value0) : 'Right';
+  };
   const liveRow = row => Convert.convertRow(terms)(row).value0;
   return { ...cases, Atom, Images, Erase, declaration, imagesOf, readBackOf,
     slotVar, liveSlot, paramVar, liveParam, lookup, infoOf, auxiliaries,
-    liveRow, terms, shape };
+    liveRow, terms, shape, plantedFault };
 };
 
 // The restored-defect probes' checks (test/regression-r0-t2-images.mjs):
@@ -125,5 +152,12 @@ export const imagesChecks = async load => {
     return named(image) === 'PArrow' && JSON.stringify(shape(image.value1))
       === JSON.stringify(shape(cases.liveRow(live.value1))) ? [] : ['f05'];
   };
-  return { auxiliaryWrong, guardWrong, orderWrong, liveWrong };
+  // Planted auxiliary values no package can hold are UnreadImage.
+  const plantedWrong = kinds => () => kinds.filter(kind =>
+    cases.plantedFault(kind) !== 'UnreadImage');
+  return { auxiliaryWrong, guardWrong, orderWrong, liveWrong,
+    namableWrong: plantedWrong(['flexibleField', 'flexibleTail']),
+    rowDataWrong: plantedWrong(['rowData']),
+    handlerWrong: plantedWrong(['handler']),
+    rigidWrong: plantedWrong(['rigid']) };
 };

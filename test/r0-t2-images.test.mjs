@@ -118,3 +118,16 @@ test('a row-free auxiliary converts, compared up to field order', () => {
     shape(new cases.Atom.Record([...lookup(readBack.unsettled, variable)
       .value0].sort((a, b) => (a.value0 < b.value0 ? -1 : 1)), [])));
 });
+
+test('an auxiliary naming a flexible variable is a read fault', () => {
+  assert.equal(cases.plantedFault(null), 'Right');
+  assert.equal(cases.plantedFault('flexibleField'), 'UnreadImage');
+  assert.equal(cases.plantedFault('flexibleTail'), 'UnreadImage');
+});
+
+test('an auxiliary with data rows, a handler or a rigid row is a fault',
+  () => {
+    assert.equal(cases.plantedFault('rowData'), 'UnreadImage');
+    assert.equal(cases.plantedFault('handler'), 'UnreadImage');
+    assert.equal(cases.plantedFault('rigid'), 'UnreadImage');
+  });

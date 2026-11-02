@@ -20,5 +20,9 @@ export const t2ImagesProbes = {
   'r0-t2-images-auxiliary': probe('auxiliaryWrong'),
   'r0-t2-images-guard': probe('guardWrong'),
   'r0-t2-images-field-order': probe('orderWrong'),
-  'r0-t2-images-live': probe('liveWrong')
+  'r0-t2-images-live': probe('liveWrong'),
+  'r0-t2-images-namable': probe('namableWrong'),
+  'r0-t2-images-data-rows': probe('rowDataWrong'),
+  'r0-t2-images-handler': probe('handlerWrong'),
+  'r0-t2-images-record-hole': probe('rigidWrong')
 };

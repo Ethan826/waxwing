@@ -41,7 +41,7 @@ import Domain.Recorded.Atom
   , CheckedName(..)
   , Head(..)
   , RTExpr(..)
-  , Var
+  , Var(..)
   , VarInfo
   , VarSort(..)
   )
@@ -82,6 +82,8 @@ readImages terms problem checked found =
     }
   ranked = slotted problem
   live name = hush (liveAt checked.body ranked name) >>= converted
+  -- Convert's `UnmarkedLabel` is `UnreadImage v` too: ReadFault (shared
+  -- with the row read-back) has no finer constructor for it.
   converted = hush <<< convertTy terms <<< liveType
 
 -- One variable's image, filed by its sort once its erasure agrees.
@@ -95,6 +97,7 @@ placed reading images (Tuple variable today) =
     SortType → typed image <$ agreed image
     SortRow → note unread (recordRow image) >>= rowAgreed
   rowAgreed row = rowed row <$ agreed (PRecord row)
+  -- Tails compared in order: stricter than `eraseTy`, which sorts them.
   agreed image
     | fieldOrder (eraseTy image) == fieldOrder today = Right unit
     | otherwise = Left (ImageApart variable)
@@ -108,7 +111,10 @@ imageOf reading unread today info = case info.position of
   position → note unread (reading.live position)
 
 -- A record-row variable's image: a record, or a bare hole read as its
--- tail (ReadBack.Type `readSorted`, R022).
+-- tail (ReadBack.Type `readSorted`, R022). The tail reading applies at
+-- every position, though `valueAt` reads it by sort only at an expression
+-- slot; at a `Plain` position today's image is the bare hole, and the
+-- guard reports the mismatch as `ImageApart`.
 recordRow ∷ PTy → Maybe PRecordRow
 recordRow = case _ of
   PRecord row → Just row
@@ -117,14 +123,14 @@ recordRow = case _ of
   _ → Nothing
 
 -- An `RTExpr` that needs no row, as a `PTy`; `Nothing` for an arrow, a
--- handler head, or data whose declared row arguments are not none.
+-- handler head, data whose declared row arguments are not none, or a
+-- variable or tail outside the package's domain (`namable`).
 rowFree ∷ Map TypeId DataArity → RTExpr → Maybe PTy
 rowFree arities ty = case ty of
   Base (DataBase owner) → rowless owner []
   Base base → Just (PBase base)
-  TVar variable → Just (PVar variable)
-  Record entries tails → PRecord <<< { fields: _, tails }
-    <$> traverse field entries
+  TVar variable → PVar <$> namable variable
+  Record entries tails → PRecord <$> record entries tails
   App (DataHead owner) arguments → traverse recur arguments
     >>= rowless owner
   App (HandlerHead _) _ → Nothing
@@ -132,11 +138,23 @@ rowFree arities ty = case ty of
   where
   recur = rowFree arities
   field (Tuple label value) = Tuple label <$> recur value
+  record entries tails = { fields: _, tails: _ } <$> traverse field entries
+    <*> traverse namable tails
   rowless owner arguments =
     Map.lookup owner arities >>= declared owner arguments
   declared owner arguments arity
     | arity.rows == 0 = Just (PData owner arguments [])
     | otherwise = Nothing
+
+-- A hole or a rigid, what a package image may name (A2 spec §2.2: `PVar`
+-- and record tails); θ may bind an auxiliary to another flexible
+-- variable it left unbound, which no package can name (C11).
+namable ∷ Var → Maybe Var
+namable variable = case variable of
+  RigidVar _ → Just variable
+  FreshVar _ _
+    | isHole variable → Just variable
+    | otherwise → Nothing
 
 -- Record fields sorted by label, everything else kept (§18.150).
 fieldOrder ∷ RTExpr → RTExpr
