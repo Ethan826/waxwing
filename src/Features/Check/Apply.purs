@@ -23,6 +23,7 @@ import Features.Check.Provenance (Callee, Consumed(Application))
 import Features.Check.Require (expectType, require, typeName)
 import Features.Check.Scheme (State, Threaded, headOf, resolved, threadAll)
 import Features.Check.Sync (sync)
+import Features.Check.Trace (recordApplied, recordPiped)
 
 -- An application in progress: the checking state and the type still to
 -- be applied.
@@ -87,7 +88,11 @@ applyNext infer env span named applying argument = do
   opened ← open env synced applying.ty (Resolved.exprSpan argument)
   checked ← infer env opened.state argument
   reached ← require env checked.state opened.value.parameter checked.value
-  consumed ← consumeAt env reached span (Application named) opened.value.row
+  consumed ← consumeAt env
+    (appliedAt span (Resolved.exprSpan argument) opened.value.row reached)
+    span
+    (Application named)
+    opened.value.row
   pure
     { value: checked.value
     , state: { ty: opened.value.result, state: consumed }
@@ -107,10 +112,23 @@ applyValue env state named ty argument = do
   synced ← sync env state (Checked.spanOf argument)
   opened ← open env synced ty (Checked.spanOf argument)
   reached ← require env opened.state opened.value.parameter argument
-  consumed ← consumeAt env reached (Checked.spanOf argument)
+  consumed ← consumeAt env
+    (pipedAt (Checked.spanOf argument) opened.value.row reached)
+    (Checked.spanOf argument)
     (Application named)
     opened.value.row
   pure { value: opened.value.result, state: consumed }
+
+-- The row an applied stage consumes, kept for the read-back under the
+-- Apply's span and its argument's (tranche 2 design §C.2).
+appliedAt ∷ Span → Span → TyRow Open → State → State
+appliedAt span argument row state = state
+  { trace = recordApplied span argument row state.trace }
+
+-- The row a pipe's stage consumes, kept under its left operand's span.
+pipedAt ∷ Span → TyRow Open → State → State
+pipedAt argument row state = state
+  { trace = recordPiped argument row state.trace }
 
 -- A callee that is a parameter of the enclosing function has a name and a
 -- written row to point at (FX017). LocalIds below the parameter count are

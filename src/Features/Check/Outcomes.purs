@@ -20,17 +20,16 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, origin, problemAt)
 import Domain.Verdict (FunctionName(..))
 import Features.Check.Coverage (coverage)
-import Features.Check.Function (recheck)
+import Features.Check.Function (Rechecked, recheck)
 import Features.Check.Functional (Functional, containsFunction, functional)
 import Features.Check.Instantiation (instantiationRule)
 import Features.Check.Path (expandPath)
-import Features.Check.Scheme (State)
 import Features.Check.Strip (stripProgram)
 
 -- Today's checker result for one body: the shadow phase's legacy slot
 -- (ruling R2), until generation and decision replace it (Task 4.6).
 type Today =
-  Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
+  Either Diagnostic Rechecked
 
 -- `problem` stays Nothing until generation exists (Task 3.x); nothing
 -- builds a Decided or Refused outcome from a diagnostic (ruling R2).

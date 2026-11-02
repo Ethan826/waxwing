@@ -1,4 +1,4 @@
-module Features.Check.Function (environment, recheck) where
+module Features.Check.Function (Rechecked, environment, recheck) where
 
 import Prelude
 import Data.Array as Array
@@ -23,20 +23,26 @@ import Features.Check.MarkReport (reportViolation)
 import Features.Check.Printable (printable)
 import Features.Check.Require (require, tooDeepAt)
 import Features.Check.EndReport (endReport)
-import Features.Check.Holes (holes)
+import Features.Check.Holes (holes, numbering)
 import Features.Check.Scheme (State, firstTooDeep, resolved, start)
 import Features.Check.Seed (joined, required, seeded)
 import Features.Check.Settle (settleRestricted)
+import Features.Check.Trace (Traced, finish)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (retype)
 
--- One function checked alone: its checked form and final state.
+-- One function checked alone: its checked form, final state, and the
+-- trace of its live values, finished with the body (tranche 2 design
+-- §C.3, §C.6).
+type Rechecked =
+  { function ∷ Checked.FunctionDecl, state ∷ State, trace ∷ Traced }
+
 recheck
   ∷ Functional
   → Resolved.Program
   → Resolved.FunctionDecl
-  → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
+  → Either Diagnostic Rechecked
 recheck holders program definition = checkFunction holders
   (environment program definition)
   definition
@@ -69,12 +75,10 @@ environment program function =
 -- Parameters bind rigid types; the body is inferred; then the result
 -- unifies; then every type in the body is bounded again (a type bounded
 -- when built deepens as its metas are bound); then the body's comparisons
--- must be ground; then the metas still unsolved become holes.
+-- must be ground; then the metas still unsolved become holes, and the
+-- trace's values are resolved and renumbered with them.
 checkFunction
-  ∷ Functional
-  → Env
-  → Resolved.FunctionDecl
-  → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
+  ∷ Functional → Env → Resolved.FunctionDecl → Either Diagnostic Rechecked
 checkFunction holders env function = do
   body ← infer env (own env function) function.body
   finished ← require env body.state (rigid function.result) body.value
@@ -109,6 +113,7 @@ checkFunction holders env function = do
         , span: function.span
         }
     , state: marked
+    , trace: finish (resolved settledSubst) (numbering settled) marked.trace
     }
   where
   parameterType parameter = rigid parameter.ty

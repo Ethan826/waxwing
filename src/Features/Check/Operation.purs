@@ -25,7 +25,7 @@ import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.Stages (arrowType)
 import Features.Check.Provenance (Consumed(Operation))
-import Features.Check.Use (Use, declarationUse, withOrigin)
+import Features.Check.Use (Use, declarationUse, traced, withOrigin)
 import Features.Check.UseFacts (seededUse)
 
 type Result = Either Diagnostic (Threaded Checked.Expr)
@@ -150,7 +150,7 @@ operationUse env state span effect@(EffectId owner) index =
   missing _ = Left (problemAt (Internal TableLookup "Invalid operation") span)
   owned info = maybe' missing (used info)
     (Array.index info.operations index)
-  used info operation = Right
+  used info operation = Right $ traced span
     ( seededUse env searched
         ( withOrigin (Operation operation.name) Nothing
             ( declarationUse state info.parameters []

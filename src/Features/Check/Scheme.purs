@@ -30,6 +30,7 @@ import Domain.Row (openRow)
 import Features.Check.Provenance (Origins, noOrigins)
 import Features.Check.Restricted (Restricted, emptyRestricted)
 import Features.Check.Site (Site)
+import Features.Check.Trace (Trace, emptyTrace)
 import Features.Check.Unify (Flex, Subst, exceedsLimit, resolve, walk)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (foldTypes)
@@ -42,12 +43,15 @@ import Features.Check.Walk (foldTypes)
 -- `origins`: where each label occurrence entered a row (design §6), read
 -- only when a rejection is reported. `restricted`: the clause rows and
 -- installations of FX008's abort tracking (Features.Check.Restricted).
+-- `trace`: the live values kept for the effect read-back (tranche 2
+-- design §C), appended to and never read while checking.
 type State =
   { subst ∷ Subst
   , next ∷ Int
   , deferrals ∷ Array Deferral
   , origins ∷ Origins
   , restricted ∷ Restricted
+  , trace ∷ Trace
   }
 
 -- `current` is the row the `defer` was checked in, which later labels join,
@@ -97,6 +101,7 @@ start =
   , deferrals: []
   , origins: noOrigins
   , restricted: emptyRestricted
+  , trace: emptyTrace
   }
 
 threadAll

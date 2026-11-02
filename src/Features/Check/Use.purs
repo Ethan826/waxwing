@@ -20,7 +20,7 @@ import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), TypeId(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Context (CheckEnv)
-import Features.Check.DeclarationUse (Callee, Use, declarationUse)
+import Features.Check.DeclarationUse (Callee, Use, declarationUse, traced)
 import Features.Check.MarkUse (openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
@@ -40,7 +40,8 @@ functionUse env state using (FunctionId index) =
   span = using.span
   missing _ = Left
     (problemAt (Internal TableLookup "Invalid resolved function") span)
-  found function = Right $ lacksStated span function.constraints
+  found function = Right $ traced span $ lacksStated span
+    function.constraints
     (desugaredUse (made function) (used function))
   made function =
     { site: span
@@ -119,7 +120,7 @@ ctorUse env state using (CtorId index) =
     , variables: info.variables
     , syntax: ctor.fieldSyntax
     }
-  owned ctor info = Right $ desugaredUse (made ctor info)
+  owned ctor info = Right $ traced span $ desugaredUse (made ctor info)
     ( withOrigin (CallOf ctor.name) Nothing
         ( joinedUse ctor.joined info.variables
             ( seededUse env info.sorts

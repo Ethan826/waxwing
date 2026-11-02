@@ -42,8 +42,7 @@ import Domain.Verdict.Certified (Certified)
 import Domain.Verdict.Search (Budget, CheckRefusal, SearchHint(..))
 import Features.Check.Functional (Functional)
 import Features.Check.Generate (Inputs, generate, generationInputs)
-import Features.Check.Function (recheck)
-import Features.Check.Scheme (State)
+import Features.Check.Function (Rechecked, recheck)
 import Features.Check.Strategy (Search(..), Strategy, strategy)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.Guard (g0Guard)
@@ -75,7 +74,7 @@ type Certificate =
   }
 
 type Today =
-  Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
+  Either Diagnostic Rechecked
 
 online ∷ OnlineContext → Strategy
 online = onlineWith <<< onlineSearch
