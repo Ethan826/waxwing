@@ -25,6 +25,7 @@ import Features.Check.Consume (consumeIgnoring)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.Provenance (Boundary(Installation), Consumed(Application))
 import Features.Check.Restricted (registerInstallation)
+import Features.Check.Trace (recordInstallation)
 import Features.Check.RowName (labelName)
 import Features.Check.Scheme (State, Threaded, flexible)
 import Features.Check.Unify (Flex, Subst(..))
@@ -96,6 +97,8 @@ install infer env state span handlerValue label rows body = do
         , matched: 0
         }
         framed.restricted
+    , trace = recordInstallation span { frame, current: env.current }
+        framed.trace
     }
 
 -- C as the handler's type holds it. A top-level result type got its own at

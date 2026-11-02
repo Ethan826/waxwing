@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
-import { sources, spanOf, traceCases } from './r0-t2-trace-cases.mjs';
+import { exprAt, sources, spanOf, traceCases }
+  from './r0-t2-trace-cases.mjs';
 
 // Tranche 2 Task 6 (design §C, Task 3c; dossier §18.155 (3), (4)): the
 // live-value trace `recheck` returns, resolved and renumbered with the
@@ -113,4 +114,72 @@ test('entries under one key are kept in arrival order', () => {
     .applied;
   assert.deepEqual(pairs(applied).map(([key, list]) =>
     [key.value1.value0, list.length]), [[2, 1], [5, 2]]);
+});
+
+// Task 6b: the values `State` alone held, now traced under stable spans.
+const labelCount = row => row.value0.length;
+
+test("a clause entry's row is read under its key", () => {
+  assert.deepEqual(cases.clauseWrong(), []);
+  const item = traced(sources.state, 'handled');
+  const entry = only(item.clauses,
+    spanOf(sources.state, 'log(n) => Tick.tick()'));
+  assert.equal(labelCount(entry.inference) > 0, true);
+  assert.equal(named(entry.own), 'MarkMeta');
+});
+
+test("a defer's row is read under its value's span", () => {
+  const item = traced(sources.state, 'deferred');
+  assert.deepEqual([...item.deferrals.keys()],
+    [spanOf(sources.state, 'Console.print(1)')]);
+  const row = only(item.deferrals, spanOf(sources.state, 'Console.print(1)'));
+  assert.equal(labelCount(row), 1);
+});
+
+test("a with's frame mark and current row", () => {
+  const item = traced(sources.state, 'handled');
+  const key = spanOf(sources.state,
+    'with handler Log { log(n) => Tick.tick() } { Log.log(1) }');
+  assert.deepEqual([...item.installations.keys()], [key]);
+  const entry = only(item.installations, key);
+  assert.equal(named(entry.frame), 'MarkMeta');
+  assert.deepEqual(entry.current.value0.map(label => named(label.value0)),
+    ['UserEffect']);
+});
+
+test('nested handlers keep distinct entries', () => {
+  const item = traced(sources.state, 'nested');
+  assert.equal(item.installations.size, 2);
+  assert.equal(item.clauses.size, 2);
+  for (const map of [item.installations, item.clauses])
+    for (const list of map.values()) assert.equal(list.length, 1);
+  const [outer, inner] = [...item.installations.values()].map(list =>
+    list[0]);
+  assert.notEqual(outer.frame.value0, inner.frame.value0);
+});
+
+test('state values renumber with the body and extend after it', () => {
+  for (const name of ['handled', 'nested', 'deferred'])
+    assert.equal(extensionWrong(traced(sources.state, name)), null, name);
+});
+
+const tailHole = row => row.value1.value0.value0;
+
+test('a state value renumbers a meta shared with the body', () => {
+  // `lam`'s `with` is installed in the lambda's row: its current row's
+  // tail is the body's hole in the lambda's arrow.
+  const lam = traced(sources.shared, 'lam');
+  const lambda = exprAt(lam.found.function.body, spanOf(sources.shared,
+    'fn(h: Handler(Log)) => with h { Log.log(1) }'));
+  const [entry] = [...lam.installations.values()][0];
+  assert.equal(tailHole(entry.current), tailHole(lambda.ty.value1));
+  assert.ok(tailHole(entry.current) < bodyHoleCount(lam));
+  // `mk`'s handler value: R's tail is the body's hole, the clause's own
+  // row reaches no node type and takes the first extension number.
+  const mk = traced(sources.shared, 'mk');
+  const clause = only(mk.clauses, spanOf(sources.shared, 'log(n) => ()'));
+  assert.equal(bodyHoleCount(mk), 1);
+  assert.equal(tailHole(clause.inference), 0);
+  assert.equal(tailHole(clause.row), 1);
+  for (const item of [lam, mk]) assert.equal(extensionWrong(item), null);
 });

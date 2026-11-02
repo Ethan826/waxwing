@@ -21,7 +21,11 @@ const renumbered = async context =>
 const appliedKeys = async context =>
   reported(context, (await traceCases(loader(context))).appliedWrong());
 
+const clauseRecorded = async context =>
+  reported(context, (await traceCases(loader(context))).clauseWrong());
+
 export const t2TraceProbes = {
   'r0-t2-trace-renumber': renumbered,
-  'r0-t2-trace-applied-key': appliedKeys
+  'r0-t2-trace-applied-key': appliedKeys,
+  'r0-t2-trace-clause-dropped': clauseRecorded
 };

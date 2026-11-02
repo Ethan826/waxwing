@@ -28,5 +28,15 @@ export const t2TraceRows = [
       + ' row\n',
     probe: 'r0-t2-trace-applied-key',
     message: /applied-key: \["overTwo","inFirst","inExtra"\]/
+  },
+  {
+    // A handler clause's entry not recorded (Task 6b): its own row is
+    // left in `State` alone, where the read-back cannot read it.
+    name: 'r0-t2-trace-clause-dropped',
+    file: 'src/Features/Check/Clauses.purs',
+    needle: '    , trace = recordClause clause.span traced consumed.trace\n',
+    replacement: '    , trace = const consumed.trace traced\n',
+    probe: 'r0-t2-trace-clause-dropped',
+    message: /clause-dropped: \["one clause key","one entry","row reads/
   }
 ];

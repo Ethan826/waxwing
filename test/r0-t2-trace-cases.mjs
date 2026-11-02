@@ -34,6 +34,24 @@ fn add(x: Int, y: Int): Int = x + y;
 fn e(): Int -> Int = add(length(Nil));
 fn main(): Unit with Console = Console.print(1);
 `,
+  // Values `State` alone held before the extension (Task 6b): clause
+  // entries, installations and deferrals.
+  state: `effect Log { fn log(n: Int): Unit; };
+effect Tick { fn tick(): Unit; };
+fn handled(): Unit with Tick =
+  with handler Log { log(n) => Tick.tick() } { Log.log(1) };
+fn nested(): Unit with Tick =
+  with handler Log { log(n) => Tick.tick() }
+  { with handler Log { log(n) => Log.log(n) } { Log.log(2) } };
+fn deferred(): Unit with Console = { defer Console.print(1); () };
+fn main(): Unit with Console = Console.print(1);
+`,
+  // State values whose metas the body shares, or does not.
+  shared: `effect Log { fn log(n: Int): Unit; };
+fn lam(): Unit = { let k = fn(h: Handler(Log)) => with h { Log.log(1) }; () };
+fn mk(): Unit = { let v = handler Log { log(n) => () }; () };
+fn main(): Unit with Console = Console.print(1);
+`,
   // research/t2-read-back-review/over-applied.wxw.txt, copied.
   over: `effect Log { fn log(n: Int): Unit; };
 fn add(x: Int, y: Int): Int = x + y;
@@ -64,7 +82,7 @@ export const spanOf = (source, text, nth = 0) => {
 };
 
 // The checked expression record at `key` ("start-end") in a body.
-const exprAt = (value, key) => {
+export const exprAt = (value, key) => {
   if (value === null || typeof value !== 'object') return undefined;
   if (value.span !== undefined && value.ty !== undefined
     && `${value.span.start.offset}-${value.span.end.offset}` === key)
@@ -99,7 +117,12 @@ export const traceCases = async load => {
     const found = right(Function.recheck(functional(program.ctors))(
       program)(decl), 'recheck');
     const { uses, applied, piped } = found.trace;
+    const bySpan = map => new Map(pairs(map).map(([k, v]) =>
+      [keyText(k), v]));
     return { found,
+      clauses: bySpan(found.trace.clauses),
+      deferrals: bySpan(found.trace.deferrals),
+      installations: bySpan(found.trace.installations),
       uses: new Map(pairs(uses).map(([k, v]) => [keyText(k), v])),
       applied: new Map(pairs(applied).map(([k, v]) =>
         [`${keyText(k.value0)} ${keyText(k.value1)}`, v])),
@@ -127,6 +150,13 @@ export const traceCases = async load => {
     }
     for (const list of [...item.applied.values(), ...item.piped.values()])
       list.forEach(row => visit(arrow(row)));
+    for (const list of item.clauses.values()) for (const entry of list)
+      [entry.row, entry.inference, entry.clauses].forEach(row =>
+        visit(arrow(row)));
+    for (const list of item.deferrals.values())
+      list.forEach(row => visit(arrow(row)));
+    for (const list of item.installations.values())
+      list.forEach(entry => visit(arrow(entry.current)));
     return found;
   };
   const bodyHoleCount = item =>
@@ -160,6 +190,18 @@ export const traceCases = async load => {
       .filter(([, slot]) => slot === undefined || slot.value0 !== hole
         || hole >= bodyHoleCount(item)).map(([name]) => name);
   };
+  // `handled`'s clause entry under its clause's span, one entry, its
+  // own row holding the clause body's `Tick`.
+  const clauseWrong = () => {
+    const item = traced(sources.state, 'handled');
+    const key = spanOf(sources.state, 'log(n) => Tick.tick()');
+    const list = item.clauses.get(key) ?? [];
+    return [['one clause key', item.clauses.size === 1],
+      ['one entry', list.length === 1],
+      ['row reads Tick', list.length === 1
+        && list[0].row.value0.length === 1]]
+      .filter(([, held]) => !held).map(([name]) => name);
+  };
   return { traced, metasInOrder, bodyHoleCount, appliedWrong,
-    renumberWrong, Core };
+    renumberWrong, clauseWrong, Core };
 };

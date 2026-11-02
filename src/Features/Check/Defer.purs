@@ -32,6 +32,7 @@ import Features.Check.Provenance
 import Features.Check.RowName (labelName)
 import Features.Check.Require (require)
 import Features.Check.Scheme (Deferral, State, Threaded, flexible, flexibleRow)
+import Features.Check.Trace (recordDeferral)
 
 type DeferEnv r = CheckEnv (locals ∷ Locals | r)
 
@@ -78,6 +79,8 @@ checkDefer infer env state span value = do
             , sites: env.sites
             , body: inferred.value
             }
+        , trace = recordDeferral (Checked.spanOf inferred.value) row
+            consumed.trace
         }
     }
   where

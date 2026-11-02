@@ -1,8 +1,9 @@
 -- The live-value trace (tranche 2 read-back design §C; dossier §18.155
 -- (3), (4)): the values the checker already allocates at a use, an
--- applied argument and a pipe, kept under the span where each was made,
--- for the effect read-back to read once checking is done. Untrusted
--- search, not on the trusted surface.
+-- applied argument and a pipe, and (Task 6b) the handler clause entries,
+-- deferrals and installations `State` registers, kept under the span
+-- where each was made, for the effect read-back to read once checking
+-- is done. Untrusted search, not on the trusted surface.
 --
 -- Collection only appends: no inference module can read a `Trace` (its
 -- constructor is not exported, and it has no Eq, Ord, Show or Generic
@@ -12,85 +13,45 @@
 -- order; nothing overwrites, deduplicates or chooses, so a key met
 -- twice surfaces at read-back as a clash, never here.
 module Features.Check.Trace
-  ( Trace
-  , SpanKey
-  , TraceKey(..)
-  , Slot(..)
-  , UseTrace
-  , Traced
+  ( module Features.Check.Trace.Types
+  , Trace
   , emptyTrace
   , recordUse
   , recordApplied
   , recordPiped
+  , recordClause
+  , recordDeferral
+  , recordInstallation
   , finish
   ) where
 
 import Prelude
-import Prim hiding (Row)
 import Data.Array as Array
-import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
-import Domain.Row (Mark)
 import Domain.Syntax (Span)
-import Domain.Type (Ty(..), TyRow, rename)
-import Features.Check.Holes (foldHoles)
-
--- A span's start and end offsets.
-type SpanKey = Tuple Int Int
-
--- Where a traced value is kept: a use, an applied argument (the Apply's
--- span and the argument's), or a pipe's left operand. The read-back
--- names a clash by it.
-data TraceKey
-  = UseKey SpanKey
-  | AppliedKey SpanKey SpanKey
-  | PipedKey SpanKey
-
-derive instance eqTraceKey ∷ Eq TraceKey
-derive instance ordTraceKey ∷ Ord TraceKey
-
-instance showTraceKey ∷ Show TraceKey where
-  show = case _ of
-    UseKey key → "(UseKey " <> show key <> ")"
-    AppliedKey key argument →
-      "(AppliedKey " <> show key <> " " <> show argument <> ")"
-    PipedKey key → "(PipedKey " <> show key <> ")"
-
--- A scheme variable's instance at one use (Check/Scheme.purs
--- `instantiate`): a row variable's meta is a row's tail, bound in the
--- substitution's row table, so it is kept as a row and read as one; a
--- type or record variable's is a type.
-data Slot = TypeSlot (Ty Open) | RowSlot (TyRow Open)
-
--- One use's allocated values: `slots` by VarId; `marks`, each mark
--- name's meta (Check/MarkUse.purs `instantiateMarks`), kept raw for the
--- read-back to read through the final mark store (design §C.3); the
--- tail `openedRow` minted, if it did; the stages before the last; the
--- final fields (handlers opened) and result.
-type UseTrace =
-  { slots ∷ Array Slot
-  , marks ∷ Array (Tuple String Mark)
-  , opened ∷ Maybe (TyRow Open)
-  , stages ∷ Array (TyRow Open)
-  , fields ∷ Array (Ty Open)
-  , result ∷ Ty Open
-  }
-
-type Traced =
-  { uses ∷ Map SpanKey (Array UseTrace)
-  , applied ∷ Map (Tuple SpanKey SpanKey) (Array (TyRow Open))
-  , piped ∷ Map SpanKey (Array (TyRow Open))
-  }
+import Domain.Type (Ty, TyRow, rename)
+import Features.Check.Trace.Types
+  ( ClauseTrace
+  , InstallTrace
+  , Slot(..)
+  , SpanKey
+  , TraceKey(..)
+  , Traced
+  , UseTrace
+  , emptyTraced
+  , extended
+  , mapTraced
+  )
 
 -- Raw values, metas as allocated.
 newtype Trace = Trace Traced
 
 emptyTrace ∷ Trace
-emptyTrace = Trace { uses: Map.empty, applied: Map.empty, piped: Map.empty }
+emptyTrace = Trace emptyTraced
 
 recordUse ∷ Span → UseTrace → Trace → Trace
 recordUse span use (Trace raw) = Trace raw
@@ -109,6 +70,24 @@ recordApplied span argument row (Trace raw) = Trace raw
 recordPiped ∷ Span → TyRow Open → Trace → Trace
 recordPiped argument row (Trace raw) = Trace raw
   { piped = appended (spanKey argument) row raw.piped }
+
+-- A handler clause's entry, keyed by the clause's span (each clause of
+-- a handler has its own), recorded where Check/Clauses.purs registers it.
+recordClause ∷ Span → ClauseTrace → Trace → Trace
+recordClause clause entry (Trace raw) = Trace raw
+  { clauses = appended (spanKey clause) entry raw.clauses }
+
+-- A `defer`'s row, keyed by the deferred expression's span: the checked
+-- body keeps no `defer` item span, so this is the span the read-back
+-- can find (Check/Defer.purs).
+recordDeferral ∷ Span → TyRow Open → Trace → Trace
+recordDeferral value row (Trace raw) = Trace raw
+  { deferrals = appended (spanKey value) row raw.deferrals }
+
+-- A `with` installation, keyed by the `with`'s span (Check/Install.purs).
+recordInstallation ∷ Span → InstallTrace → Trace → Trace
+recordInstallation span entry (Trace raw) = Trace raw
+  { installations = appended (spanKey span) entry raw.installations }
 
 -- Every type and row resolved by `resolve` (the final substitution), then
 -- each meta in the body's `numbering` takes its number there, and every
@@ -130,71 +109,3 @@ appended ∷ ∀ k a. Ord k ⇒ k → a → Map k (Array a) → Map k (Array a)
 appended key value = Map.alter (Just <<< maybe [ value ] added) key
   where
   added earlier = Array.snoc earlier value
-
--- Every type and row in the trace changed by `change`; marks are kept.
-mapTraced ∷ (Ty Open → Ty Open) → Traced → Traced
-mapTraced change traced =
-  { uses: map (map changedUse) traced.uses
-  , applied: map (map (onRow change)) traced.applied
-  , piped: map (map (onRow change)) traced.piped
-  }
-  where
-  changedUse use = use
-    { slots = map (onSlot change) use.slots
-    , opened = map (onRow change) use.opened
-    , stages = map (onRow change) use.stages
-    , fields = map change use.fields
-    , result = change use.result
-    }
-
-onSlot ∷ (Ty Open → Ty Open) → Slot → Slot
-onSlot change = case _ of
-  TypeSlot ty → TypeSlot (change ty)
-  RowSlot row → RowSlot (onRow change row)
-
--- A row changed as the row of a one-arrow type. `resolve` and `rename`
--- keep an arrow an arrow, so the fallback (the row unchanged) is never
--- taken.
-onRow ∷ (Ty Open → Ty Open) → TyRow Open → TyRow Open
-onRow change row = case change (TFun TUnit row TUnit) of
-  TFun _ found _ → found
-  _ → row
-
--- The body's numbering extended over the trace's other metas: uses,
--- then applied, then piped, each in key order and arrival order; within
--- a use, slots, opened tail, stages, fields, result; within a type,
--- `foldHoles` order.
-extended ∷ Map Int Int → Traced → Map Int Int
-extended numbering traced = (foldl visit start types).seen
-  where
-  start = { next: Map.size numbering, seen: numbering }
-  visit found ty = foldHoles numbered found ty
-  types = Array.concatMap useTypes (entries traced.uses)
-    <> map arrowOf (entries traced.applied)
-    <> map arrowOf (entries traced.piped)
-
--- A map's entries in key order, each key's in arrival order.
-entries ∷ ∀ k a. Map k (Array a) → Array a
-entries = Array.concat <<< Array.fromFoldable <<< Map.values
-
-type Numbered = { next ∷ Int, seen ∷ Map Int Int }
-
-numbered ∷ Numbered → Int → Numbered
-numbered found meta =
-  if Map.member meta found.seen then found
-  else { next: found.next + 1, seen: Map.insert meta found.next found.seen }
-
-useTypes ∷ UseTrace → Array (Ty Open)
-useTypes use = map slotType use.slots
-  <> maybe [] (Array.singleton <<< arrowOf) use.opened
-  <> map arrowOf use.stages
-  <> use.fields
-  <> [ use.result ]
-
-slotType ∷ Slot → Ty Open
-slotType = case _ of
-  TypeSlot ty → ty
-  RowSlot row → arrowOf row
-
-arrowOf ∷ TyRow Open → Ty Open
-arrowOf row = TFun TUnit row TUnit

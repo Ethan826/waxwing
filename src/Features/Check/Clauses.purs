@@ -26,6 +26,7 @@ import Features.Check.Defer (placed)
 import Features.Check.Walked (End(..), bareLabel, endOf, walkedRow)
 import Features.Check.Provenance (Consumed(ClauseRow), Origin)
 import Features.Check.Restricted (registerClause)
+import Features.Check.Trace (recordClause)
 import Features.Check.Scheme (State, Threaded, threadAll)
 import Features.Check.Watch (watchTail)
 
@@ -142,6 +143,7 @@ file env setup ids row clause state = do
   pure consumed
     { subst = watchTail tail consumed.subst
     , restricted = registerClause ids.clause group entry consumed.restricted
+    , trace = recordClause clause.span traced consumed.trace
     }
   where
   origin ∷ Origin
@@ -152,6 +154,13 @@ file env setup ids row clause state = do
     Loose meta → meta
     _ → ids.tail
   group = { representative: tail, remainder: openRow ids.phi }
+  -- The entry's rows and mark, kept for the read-back (tranche 2 Task 6b).
+  traced =
+    { row
+    , own: setup.own
+    , inference: setup.inference
+    , clauses: setup.clauses
+    }
   entry =
     { row
     , inference: setup.inference
