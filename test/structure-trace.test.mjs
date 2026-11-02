@@ -78,6 +78,14 @@ test('Trace exported with its constructor fails', () => {
   /must export Trace without its constructor/);
 });
 
+test('a new export from Check/Trace fails, even an unused one', () => {
+  const peek = replaced(trace, '  , finish\n', '  , finish\n  , peekTrace\n');
+  fails({ [trace]: `${peek[trace]}\npeekTrace ∷ Trace → Int\n`
+    + 'peekTrace _ = 0\n' }, /exports .*peekTrace.*not the reviewed list/);
+  fails(replaced(trace, '  , recordInstallation\n', ''),
+    /not the reviewed list/);
+});
+
 test('finish or Trace.Types imported outside their owner fails', () => {
   for (const imported of ['import Features.Check.Trace (finish)',
     'import Features.Check.Trace as Trace',

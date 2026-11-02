@@ -13,7 +13,10 @@
 // argument after every check has run (that declaration's literal field
 // is `Rechecked`'s). A listed entry that no longer matches is a finding
 // too. (3) Features.Check.Trace exists, has an export list, and exports
-// `Trace` without constructors and not by `module` re-export. (4) No
+// `Trace` without constructors and not by `module` re-export; its export
+// list is exactly `traceExports` (as a set), so a new function taking a
+// `Trace` (a reader usable inside an allowlisted declaration without
+// moving a count) fails until reviewed. (4) No
 // instance of any class has `Trace` in its head (Eq, Ord, Show and
 // Generic, the design's four, and Newtype or any other, since a method
 // could read it); TraceKey's are allowed. (5) `finish` is brought into
@@ -22,17 +25,28 @@
 // trace's types and helpers, Task 6b) is imported by Features.Check.Trace
 // alone.
 //
-// Limits (reasoned). The gate sees syntax: a label reached through a
-// type-level string (a `Proxy "trace"` with a record library; none is a
-// dependency) or through code outside src/ is not seen; a use of the
-// label `trace` for an unrelated record in an allowlisted declaration
-// passes if the count is unchanged. Instances are matched by the type
-// constructor's unqualified name, so a different type named Trace
-// counts too (fails closed). The floor stops an empty or truncated scan.
+// Limits (reasoned). The gate keys on the label, not the type: any
+// record's `trace` label counts, so an unrelated record using it outside
+// the allowlist is reported (a false positive, fails closed), while
+// inside an allowlisted declaration one use can stand in for another at
+// the same count (a false negative). The allowlist also covers readers of
+// the finished `Traced` (`Rechecked.trace`), added as reviewed entries
+// when the read-back lands. A label reached through a type-level string
+// (a `Proxy "trace"` with a record library; none is a dependency) or
+// through code outside src/ is not seen. Check/Function's own exports are
+// not pinned: a wrapper of `finish` exported from it would pass. Instances
+// are matched by the type constructor's unqualified name, so a different
+// type named Trace counts too (fails closed). The floor stops an empty or
+// truncated scan.
 export const traceModule = 'Features.Check.Trace';
 export const typesModule = 'Features.Check.Trace.Types';
 export const finishImporter = 'Features.Check.Function';
 export const traceType = 'Trace';
+// Check/Trace's reviewed exports: the type, the empty trace, the six
+// recorders (append only), `finish`, and its types module re-exported.
+export const traceExports = ['module Features.Check.Trace.Types', 'Trace',
+  'emptyTrace', 'recordUse', 'recordApplied', 'recordPiped', 'recordClause',
+  'recordDeferral', 'recordInstallation', 'finish'];
 // Falls only with the owner's approval.
 export const traceFloors = { modules: 460 };
 
@@ -87,7 +101,11 @@ const exportFindings = modules => {
     return [`trace gate: ${traceModule} must export ${traceType} without`
       + ` its constructor (exports ${JSON.stringify(owner.exportList
         ? owner.exported : 'everything')})`];
-  return [];
+  const listed = [...owner.exported].sort();
+  return JSON.stringify(listed) === JSON.stringify([...traceExports].sort())
+    ? [] : [`trace gate: ${traceModule} exports ${JSON.stringify(
+      owner.exported)}, not the reviewed list (scripts/structure-trace.mjs`
+      + ' traceExports; a change needs review)'];
 };
 
 const instanceFindings = modules => modules.flatMap(({ name, instances }) =>
