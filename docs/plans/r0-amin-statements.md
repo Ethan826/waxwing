@@ -1191,7 +1191,13 @@ obligation, whatever the caller's routing.
   `CandidateRefused` search fault, the reason `Inference
   NoAcceptedCertificate`).
 - If a read-back cannot build a package, it returns `NoCandidate`,
-  never `Inconsistent` (which stops the run; T5-b).
+  never `Inconsistent` (which stops the run; T5-b). **Interim
+  amendment (author, 2026-11-01, dossier §18.155 (5)):** before Task
+  16, an effect read failure is `Left ReadFault` in the online
+  certificate's `effects` field, the candidate kept and legacy G0
+  certification unchanged under F14; it never appears as successful
+  effect validation. Routing after activation is part of Task 16's
+  approval.
 - Acceptance mints `Certified Valid (Witnessed (strip P))`.
 
 ## 7a. Trace: FX008's failing cleanup

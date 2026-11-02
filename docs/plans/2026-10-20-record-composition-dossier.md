@@ -7971,3 +7971,55 @@ order of extension hole numbers); the trace's placement; statements
 refinements. Stage A spend about 1.1M (Task 1 0.31M, the design 0.43M
 over three rounds, review 0.28M, controller about 0.1M) against
 0.7-1.0M, an estimate not a cap. Stage B and Task 16 held; no push.
+
+### 18.155 Stage B authorized with rulings (2026-11-01)
+
+The author authorized Stage B of the tranche 2 read-back (design note
+§I), 4.9-6.8M with coordination as an estimate, not a cap; Task 16,
+replacement, F14's retirement and pushing stay held. The research trace
+supports production implementation; production non-interference and
+honest-package validation still need their planned checks. Rulings:
+(1) The generation correction is approved with the record-renamed,
+mint-unrenamed split; the four generation modules' trusted-surface
+re-pin and the effect-pin change for exactly the 31 identified
+declarations are authorized, their contents verified, not only their
+count; the G0 problem pin stays unchanged. (2) Repeated declaration
+entries are rejected: a narrow record-validation check for duplicate
+entries in `flexEff` and `positions`, before either list becomes a set,
+one explicit exception to the validator freeze; repeated references to
+a variable in types and obligations stay valid; specification, direct
+and restored-defect tests, the distinction tested; then the validator
+is frozen again. (3) Span-plus-site matching, the (span, argument
+span) key and the deterministic extension order are approved as
+implementation identities, not semantic guarantees, fail-closed:
+duplicate entries are kept until a clash can be detected, never
+overwritten or chosen silently. §C.6's `recordApplied` signature and
+map key corrected to carry the argument span (done with this record).
+Numbering tests cover shared identities, distinct identities, sort
+separation and extension holes across the complete package. (4) The
+opaque trace and the non-minting certificate field are approved; the
+restriction on inference reading the trace stays, with production
+non-interference checks; collection's compile-time and memory costs are
+reported apart from functional acceptance. (5) Interim routing
+amendment: before Task 16, an effect read failure is `Left ReadFault`
+in the certificate, legacy G0 certification unchanged under F14, never
+shown as successful effect validation (statements §7, amended with
+this record); routing after activation belongs to Task 16. (6) The two
+`UnreadImage` declarations get no invented effects and stay named
+compatibility gaps. (7) Initial refusal pins may be initialized from
+the first production run only if they contain the identified
+unsupported declarations, the two `UnreadImage` declarations and up to
+the three `RequirementUnjudged` cases with the same G0 refusal
+confirmed individually; floors derive from those lists and
+denominators; no floor is lowered and no exception added for another
+failure; any `Malformed`, new read failure or unexpected validator
+refusal is a stop; a disappearance from an approved list is explained,
+never silently re-pinned. (8) Applied and piped rows are approved as
+consumed-row read-back; generation's dropped-partial-stage
+consumptions stay unchanged; their harmlessness is tested (the traced
+unconstrained rows settle empty and the obligations pass), not
+generalized. Stops: a semantic amendment beyond these rulings,
+unexpected protected-pin movement, an unexplained compatibility
+failure, a differential disagreement. The differential stays marks
+only. Return with production evidence, both denominator reports, the
+remaining restrictions and the proposed activation gate.

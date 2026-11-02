@@ -1,13 +1,15 @@
 # Tranche 2 read-back: design note (Task 2, 2026-11-01)
 
-Status: **design and research only; proposed, not approved.** Task 2
+Status (2026-11-01): **approved with rulings for Stage B (dossier
+§18.155); revision 3 re-reviewed, ready with conditions, conditions
+met (§18.154).** Earlier status: design and research only. Task 2
 of docs/plans/2026-11-01-tranche-2-read-back-plan.md, under the
 author's ruling in dossier §18.153 (trace, not solver), continuing
 §18.151 and §18.152. Nothing under src/, test/ or scripts/ changed; no
 pin moved; no trusted-surface change. The production changes below are
 designs for Stage B, which stays held. Revision 1 went through one
-adversarial review (plan Task 2 Step 2; below); a re-review of this
-revision is owed.
+adversarial review (plan Task 2 Step 2; below); revisions 2 and 3
+were re-reviewed (§18.154).
 
 **Revision 2 (2026-11-01, review corrections).** An adversarial review
 (.superpowers/sdd/2026-11-01-tranche-2-read-back-plan/task-2-review.md
@@ -494,11 +496,13 @@ type UseTrace =
 newtype Trace = Trace Recorded              -- constructor not exported
 emptyTrace ∷ Trace
 recordUse ∷ Span → UseTrace → Trace → Trace
-recordApplied ∷ Span → TyRow Open → Trace → Trace
+-- An applied stage is keyed by the Apply's span and its argument's
+-- span (§C.2, review M3; corrected §18.155 (3)).
+recordApplied ∷ Span → Span → TyRow Open → Trace → Trace
 recordPiped ∷ Span → TyRow Open → Trace → Trace
 type Traced =
   { uses ∷ Map SpanKey (Array UseTrace)
-  , applied ∷ Map SpanKey (Array (TyRow Open))
+  , applied ∷ Map (Tuple SpanKey SpanKey) (Array (TyRow Open))
   , piped ∷ Map SpanKey (Array (TyRow Open))
   }
 -- After `holes`: every type and row resolved, metas renumbered by the
@@ -513,7 +517,8 @@ finish ∷ (Ty Open → Ty Open) → Map Int Int → Trace → Traced
   computes. Check/Use.purs `functionUse`/`ctorUse` and
   Check/Operation.purs `operationUse` append `recordUse span` with the
   final fields and result; Check/Apply.purs `applyNext` and
-  `applyValue` append `recordApplied`/`recordPiped` with the row they
+  `applyValue` append `recordApplied` (Apply span, argument span) and
+  `recordPiped` (pipe span) with the row they
   pass to `consumeAt`.
 - Check/Holes.purs: `numbering` exported; `holes` unchanged in
   behaviour.

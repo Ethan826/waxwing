@@ -5,7 +5,10 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-01): **Stage A (Tasks 1-2) authorized, dossier
+Status (2026-11-01, later): **Stage A complete (§18.154); Stage B
+(Tasks 3-16 below) authorized with rulings, dossier §18.155; A2's Task
+16, replacement, F14's retirement and pushing held.** Before that:
+**Stage A (Tasks 1-2) authorized, dossier
 §18.151, with its clarifications and the directions Q1 live graph, Q2
 `NoCandidate` first, Q3 acceptable in principle; Stage B and Task 16
 held; no push.** Then §18.152 (inventory stop) and §18.153 (trace,
@@ -78,15 +81,23 @@ Task 1 measures it.
   the plain `EffectPackage` input type only. A defect in them may lose
   acceptances, never certify.
 - The validator is frozen: no change to any Features.Check.Strategy.
-  Effects module or to Substitution.purs in this plan. A validator
+  Effects module or to Substitution.purs in this plan, except Task 4's
+  duplicate-entry record check (§18.155 (2)), after which it is frozen
+  again. A validator
   refusal of an honest package, or a disagreement between the
   validator and an independent checker, is a stop for the author,
   never fixed in a lane, and neither side is presumed correct
   (§18.145).
 - No minting change: the G0-only `certify` keeps minting under F14;
-  Task 16 is not part of this plan. Live compilation unchanged: the G0
-  problem pin, first diagnostics and generated Go, the effect pin, and
-  the census, window and RT8 fixtures stay byte-identical.
+  the A2 plan's Task 16 is not part of this plan. Live compilation
+  unchanged: the G0 problem pin, first diagnostics and generated Go,
+  and the census, window and RT8 fixtures stay byte-identical; the
+  effect pin moves only in Task 3, for exactly the 31 declarations
+  with their contents verified (§18.155 (1)). Any other protected-pin
+  movement is a stop.
+- Inference never reads the trace (§18.155 (4)); a trace clash or a
+  duplicate entry is kept and surfaces as a read fault, never resolved
+  by overwriting or choosing (§18.155 (3)).
 - Comparison rules (§18.150): the erased-substitution property uses
   test/r0-a2-canonical.mjs (record field order only, tails in order).
   Full effect packages are compared by R-A's semantic row equality:
@@ -216,151 +227,214 @@ Task 1 measures it.
     yes, as `effects ∷ Either ReadFault EffectPackage`.
   Stage B is rewritten in detail from the approved design.
 
-## Stage B: implementation (after Stage A's approval)
+## Stage B: implementation (authorized, dossier §18.155)
 
-**Superseded (2026-11-01):** the design note
-docs/plans/2026-11-01-tranche-2-read-back-design.md §I (after its
-adversarial review) is the revised Stage B task list and governs where
-it differs from the first draft below, which is kept as a record. In
-particular a read failure is never `NoCandidate`: it is `Left` in
-`Certificate.effects` (design §C.6).
+The design note docs/plans/2026-11-01-tranche-2-read-back-design.md
+(revision 3) is this stage's specification: each task names the
+sections it implements, and its exact values (keys, counts, test
+programs) are there. §18.155's rulings bind every task and win over
+the design where they differ. Stage B's first draft (Tasks 3-11 as
+proposed before Stage A) is superseded and kept in git history.
+Production changes are marked [P]; pin or trusted-surface changes
+[pin]. Every task is test-first with RED shown, and every new
+invariant gets its restored-defect row in
+scripts/regression-r0-t2-<lane>.mjs with its probe in
+test/regression-r0-t2-<lane>.mjs. Stops (§18.155): a semantic
+amendment beyond the rulings, unexpected protected-pin movement, an
+unexplained compatibility failure, a differential disagreement.
 
-### Task 3: effect rows read back by position
+### Task 3: the generation correction and its effect re-pin [P][pin]
 
-**Files:** Create src/Features/Check/Strategy/ReadBack/Effects.purs,
-ReadBack/EffectRows.purs; test test/r0-t2-rows.test.mjs.
+Design §B.2-§B.4, Task 3a. Ruling §18.155 (1).
+**Files:** src/Features/Check/Generate/Marked.purs (`lambdaAmbient`),
+Generate/Context.purs (`implicit`), Generate/Body.purs,
+Generate/Control.purs (`parameterAt`: record the renamed annotation,
+mint the unrenamed one); test test/r0-t2-annotation-row.test.mjs;
+rows scripts/regression-r0-t2-generation.mjs.
+- [ ] Tests first: the six distinguishing cases of design §B.4
+  (implicit versus explicit rows, closed rows, nested lambdas, sibling
+  annotations, an annotation's own clause row unchanged);
+  test/r0-marked-corpus.serial.test.mjs passes unchanged.
+- [ ] Re-pin scripts/trusted-surface.json for the four modules (named
+  in the commit). Re-pin test/fixtures/r0/effects.json: exactly the 31
+  keys of design §B.3 move. **Contents verified:** a committed check
+  (test or script under test/) decodes each moved declaration's effect
+  problem before and after and shows the only difference is the
+  implicit annotation tail, `EffRigid ι` to `EffFresh p EffectOf`, at
+  the annotation's places (`AnnotationAt`, the parameter's local, the
+  lambda's node type), with `flexEff` unchanged. The G0 problem pin
+  (test/fixtures/r0/problems.json) does not move.
+- [ ] Rows: restoring `EffRigid` for the implicit tail fails; minting
+  from the renamed annotation (the double mint) fails
+  test/r0-marked-corpus's "minted twice".
 
-**Interfaces (proposed):**
+### Task 4: duplicate declaration entries are a record defect [P][pin]
+
+Ruling §18.155 (2): the one exception to the validator freeze.
+**Files:** src/Features/Check/Strategy/Effects/Record.purs and, if the
+check needs its own module, a new Effects/RecordDuplicates.purs
+(trusted; AGENTS.md list, structure lists, trusted-surface re-pin);
+spec docs/plans/2026-10-31-a2-specification.md §4.1 and §5 item 1;
+test test/r0-a2-record-duplicates.test.mjs; row in
+scripts/regression-r0-a2-record-duplicates.mjs (spread into a2Rows).
+- [ ] Controller ruling: a new record check, index 6, "declaration
+  lists without repeats": a repeated entry in `flexEff` or `positions`
+  is reported once as `InRecord { table: InDeclaredLists, path:
+  Nothing }` with check 6, a new `RecordTable` constructor placed after
+  `InDeclarations` and before `InCoverage`; the check reads the lists
+  before any conversion to a set.
+- [ ] Tests: a repeated `flexEff` entry and a repeated `positions`
+  entry each give the defect; the same variable referenced many times
+  across types and obligations, listed once, gives none (the
+  distinction); the corpus record test stays at 0 defects.
+- [ ] Row: the check dropped (or the list converted to a set first)
+  fails. Then the validator is frozen again (ledger line).
+
+### Task 5: hole numbering exported [P]
+
+Design §C.3, Task 3b. **Files:** src/Features/Check/Holes.purs
+(`numbering`, `holes` through it; review-required lowering boundary,
+token review). Tests: `holes` byte-identical on the corpus (existing
+pins pass); "numbering is first occurrence".
+
+### Task 6: the trace [P]
+
+Design §C.1-§C.6 (with §C.6's corrected `recordApplied ∷ Span → Span →
+TyRow Open → Trace → Trace` and its (span, argument span) key), Task
+3c. Ruling §18.155 (3), (4). **Files:** create
+src/Features/Check/Trace.purs (constructor unexported); modify
+Check/Scheme.purs, Check/DeclarationUse.purs, Check/Use.purs,
+Check/Operation.purs, Check/Apply.purs, Check/Function.purs (`recheck`
+returns `trace ∷ Traced`); test test/r0-t2-trace.test.mjs.
+- [ ] Fail-closed: entries under one key are kept as an array in
+  arrival order; nothing overwrites or chooses; a clash surfaces at
+  read-back (Task 8), never here.
+- [ ] Tests: design Task 3c's list (instance metas, dropped stages,
+  applied rows keyed by argument on over-applied.wxw.txt's three
+  cases, pipe rows keyed by the left operand, trace metas renumbered
+  with the body, extension numbers after the body's).
+
+### Task 7: trace gates, inertness and collection cost [P]
+
+Design Task 3d, review M4, M5. **Files:** scripts/structure-*.mjs (the
+scan), test/r0-t2-trace-inert.serial.test.mjs, rows.
+- [ ] Scan: Trace's constructor unexported; no `Eq`, `Ord`, `Show` or
+  `Generic` instance on `Trace`; `finish` imported only by
+  Check/Function; no inference module reads the trace.
+- [ ] Inertness (production counterpart of H3): `recheck`'s checked
+  declaration and `State` less `trace`, the problem pin, first
+  diagnostics with Go, the effect pin (after Task 3), census, window,
+  RT8 and shadow fixtures byte-identical.
+- [ ] Cost (§18.155 (4)): compile time and peak memory with and without
+  collection on the corpus, measured by a script under scripts/ or
+  research/, reported apart from functional acceptance and not gated.
+
+### Task 8: effect rows read back
+
+Design §C.1-§C.2, §D, Task 4. Ruling §18.155 (8). **Files:** create
+src/Features/Check/Strategy/ReadBack/EffectRows.purs,
+ReadBack/EffectSites.purs; test test/r0-t2-rows.test.mjs.
 ```purescript
-data ReadFault = Unread EVar | UnreadPosition Position | Clash EVar
-
 readRows
-  ∷ RecordedProblem → Checked.FunctionDecl → State
+  ∷ RecordedProblem → Checked.FunctionDecl → Traced
   → Either ReadFault (Map EVar PRow)
 ```
+- [ ] Tests: one per role and site (design Task 4's list, show and
+  crash stages on the effectful examples/builtins.wxw.txt included);
+  "unread role is a read fault"; "two trace entries under one key are
+  a `Clash`"; "located and traced disagree is `Apart`"; "bare C keeps
+  Fail's payload"; applied and piped rows read as the consumed row.
 
-- [ ] Tests first: per role, a fixture declaration and the expected
-  `PRow`; "unread role is a read fault"; "bare C keeps Fail's payload";
-  a row read at a stage, an instantiation, a handler literal's R and C,
-  an annotation C, `main`'s entry tail. RED, implement, GREEN, rows,
-  commit.
+### Task 9: mark terms as least terms
 
-### Task 4: mark terms as least terms
+Design §E, §F, Task 5. **Files:** create ReadBack/Marks.purs
+(`leastTerms ∷ MarkStore t → Map Int Term`, `readMarks`); tests
+test/r0-t2-marks.test.mjs, test/r0-t2-marks-oracle.test.mjs.
+- [ ] Tests: shared meta one term; Fail and Console read as N, payload
+  and effect identity kept (§18.153 (4)); an unconstrained meta reads
+  N; FX008's §7a trace; `J {k}`; agreement with the bounded oracle's
+  families (bounded, labelled so).
 
-**Files:** Create ReadBack/Marks.purs; test test/r0-t2-marks.test.mjs;
-oracle comparison test/r0-t2-marks-oracle.test.mjs.
+### Task 10: type images as `PTy`
 
-**Interfaces (proposed):**
-```purescript
-leastTerms ∷ MarkStore t → Map Int Term     -- per live meta's class
-readMarks
-  ∷ RecordedProblem → State → Map Int Term
-  → Either ReadFault (Map Position Term)
-```
+Design §C.8, Task 6a. Ruling §18.155 (6). **Files:** create
+ReadBack/Images.purs (`readImage ∷ MarkTerms → Ty Open → Either
+ReadFault PTy`); test test/r0-t2-images.test.mjs with design Task 6a's
+tests, the f05-print-key record-row field and the two `UnreadImage`
+declarations by name.
 
-- [ ] Tests first: "shared meta, one term"; "Fail and Console read as
-  N"; FX008's §7a trace (honest x = M); the rigid case `J {k}`; the
-  oracle's three verdicts agree with `leastTerms` on its bounded
-  families (bounded). Then label terms inside rows (Task 3's labels
-  take the term of their meta). Commit.
+### Task 11: holes and assembly
 
-### Task 5: holes and assembly
+Design §C.7, Task 6. Ruling §18.155 (3). **Files:** create
+ReadBack/Package.purs (`readEffects`, design Task 6's signature);
+ReadBack.purs gains `holeBindings`.
+- [ ] Numbering tests across the complete package: shared identities
+  (one live meta, one hole number in every map that reads it),
+  distinct identities (two metas, two numbers), sort separation (no
+  hole number used at two sorts), extension holes after the body's in
+  the stated order; "a hole θ binds reads bound on both sides"
+  (planted θ); "erased types equal today's unsettled"; no forced
+  binding; `Declined` for an `Unsupported` problem.
 
-**Files:** Create ReadBack/Package.purs; modify ReadBack.purs (types
-and rows keep today's values); test test/r0-t2-package.test.mjs.
+### Task 12: the online certificate carries the package [P]
 
-**Interfaces (proposed):**
-```purescript
-readPackage
-  ∷ RecordedProblem → Checked.FunctionDecl → State → Substitution
-  → Either ReadFault EffectPackage
-```
+Design §C.6, Task 7. Ruling §18.155 (4), (5). **Files:**
+src/Features/Check/Strategy/Online.purs (`Certificate.effects ∷
+Either ReadFault EffectPackage`); test test/r0-t2-online.test.mjs.
+- [ ] Tests: field present on a solved fixture; a read fault keeps the
+  candidate and G0's verdict; nothing reports a read fault as effect
+  validation; Online imports no Effects.Validate or Complete (scan);
+  protected pins unchanged.
 
-- [ ] Tests first: "effect and type holes never share a number";
-  `types` and `rows` equal today's `unsettled` images converted to
-  `PTy` (no new type value); no binding of a forced `ResultClauses`
-  tail (spec §3). Commit.
+### Task 13: honest packages through I3 and the validator
 
-### Task 6: the online certificate carries the package (Q3)
+Design Task 8. Ruling §18.155 (7), (8). **Files:**
+test/r0-t2-honest.serial.test.mjs, test/r0-t2-honest-report.mjs, pin
+test/fixtures/r0/t2-honest.json and its reviewed pin script.
+- [ ] Both denominators (corpus loader; effect pin's sources).
+- [ ] The pin may be initialized from the first run only if list (a)
+  is exactly the unsupported declarations and the two `UnreadImage`
+  declarations, and list (b) holds at most the three
+  `RequirementUnjudged` candidates, each with the same G0 refusal
+  confirmed individually. Floors (c) derive from those lists and the
+  denominators. Anything else (a `Malformed`, another read fault, an
+  unexpected refusal) is a stop; no floor lowered, no exception added.
+- [ ] Assertions both ways, must-fail probes (extra refusal, removed
+  entry, floor minus one), the 11 annotation declarations validated
+  (H2 observed or a stop).
+- [ ] Ruling (8)'s test: every dropped partial-stage row is traced
+  unconstrained, settles empty, and its consumption obligation passes;
+  the result names its scope (those stages only).
 
-**Files:** modify Strategy/Online.purs (trusted; re-pin named in the
-commit); test test/r0-t2-online.test.mjs.
+### Task 14: the owed compatibility checks
 
-- [ ] The certificate gains the package; nothing calls `validate` from
-  the strategy, nothing mints. Tests: certificate field present on a
-  solved fixture; live and pinned outputs unchanged (problem pin,
-  first diagnostics, effect pin, census, shadow). Commit.
+Design Task 9; spec §2.5, §11. On honest packages: `erase` equals
+today's σ by test/r0-a2-canonical.mjs; erase∘settle = settled∘erase;
+G0 monotonicity; effect-hole numerals. Corpus-observed, each labelled.
 
-### Task 7: honest corpus packages through I3 and the validator
+### Task 15: the corpus differential, marks only
 
-**Files:** test test/r0-t2-honest.serial.test.mjs; reporter
-test/r0-t2-honest-report.mjs.
+Design Task 10, §F; §18.151, §18.155. M-B collector on honest packages
+and mark forgeries only, labelled "marks only"; row forgeries are not
+run as differential evidence. Any disagreement is a stop.
 
-- [ ] For every corpus declaration the online strategy solves: the
-  read-back outcome (package or `ReadFault` by role), I3's verdict, and
-  `validate`'s verdict, tallied by kind. Assertions: no `Malformed` on
-  an honest package; for every declaration today's `certify` accepts,
-  `validate` accepts or the row is listed with its refusal (A1, U2).
-  Any `Malformed`, or an unlisted refusal, is a stop. Records the
-  A3 effect part (solved-form refusals on honest packages).
+### Task 16: activation gate, records, review, acceptance
 
-### Task 8: the owed compatibility checks
-
-**Files:** modify test/r0-a2-properties.serial.test.mjs (or a sibling
-under 250 lines).
-
-- [ ] Spec §2.5 and §11, now on honest packages: `erase` of each
-  honest package equals today's read-back σ by the canonical comparison
-  (field order only); `erase`∘`settle` = `settled`∘`erase`; G0 accepts
-  `erase P_c` whenever it accepts `erase (settle P_in)`; hole numerals
-  with effect holes present. Each result corpus-observed.
-
-### Task 9: the corpus differential
-
-**Files:** test test/r0-t2-differential.serial.test.mjs; extends the
-M-B collector (test tree only).
-
-- [ ] Scope (§18.151): the M-B collector is an independent check of
-  marks only; mark comparisons are labelled so. Dropped labels,
-  duplicated labels and moved tails need a separately justified row
-  check before they support a row-semantics claim.
-- [ ] On honest corpus packages and their forged variants (each mark
-  raised or lowered one step, each label dropped or duplicated, each
-  tail moved): the validator against the independent checker, both
-  directions (spec §5's soundness direction on forged packages,
-  completeness on least-term packages). Disagreements are stops.
-  Packages compared by R-A semantic row equality where compared at
-  all.
-
-### Task 10: the activation gate (specification)
-
-**Files:** Create docs/plans/2026-11-0X-a2-activation-gate.md; a gate
-report script test/r0-t2-gate-report.mjs (reads Tasks 7-9's tallies;
-gate-integrity: must-fail probes for each criterion).
-
-- [ ] The conditions under which Task 16 may be proposed, each with
-  the check that measures it, none of them a decision:
-  1. Tasks 7-9 run on the whole corpus with no stop open.
-  2. A1: every declaration today certifies is validated, or each
-     exception is listed and ruled by the author.
-  3. The C6 replacement-compatibility decision made by the author.
-  4. BACKLOG R034 (2) (merged `EffectsUnchecked` kinds) and (10)
-     (duplicate owners) landed.
-  5. The census, window, RT8 and shadow dumps compared with the
-     validator minting in a scratch build (r0-results-diff), every
-     moved row listed.
-  6. Performance qualification of the validator on the corpus,
-     companion scan included (R034 (11)), reported separately.
-  7. U4 and U6 stated as they stand; F14's retirement is the author's.
-
-### Task 11: records, review, acceptance
-
-- [ ] Records (statements status, spec §11 owed checks run or still
-  owed, closure checklist, progress, findings), a whole-branch review
-  (two Opus: read-back semantics; gates and pins), its fixes, one
-  routine verify alone under the lock; performance reported separately.
+This plan's Task 16 (the A2 plan's Task 16, the minting switch, stays
+held). Create docs/plans/2026-11-0X-a2-activation-gate.md (the gate's
+criteria, each with the check that measures it; none a decision) and a
+gate report script with must-fail probes; records (statements and spec
+status, design status, closure checklist, progress, findings,
+BACKLOG); two whole-branch reviews (read-back semantics; gates, pins,
+live), their fixes; one routine verify alone under the lock;
+performance and collection cost reported separately.
 
 ## Estimate
+
+Stage B (§18.155): design note §I's 4.4-6.0M plus Task 4 (about
+0.25M) and the controller's 0.5-0.8M; about 4.9-6.8M with
+coordination, an estimate, not a cap. The table below is the
+pre-Stage-A estimate, kept as a record.
 
 From the A2 stage's history (implementer 0.25-0.33M, task review
 0.10-0.20M, fix round 0.08-0.21M, whole-branch reviewer 0.16-0.28M):
