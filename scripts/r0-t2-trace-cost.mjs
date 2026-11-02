@@ -19,7 +19,7 @@ import { loadavg, cpus } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { rmSync } from 'node:fs';
-import { buildUncollected, repoRoot } from './r0-t2-trace-removal.mjs';
+import { repoRoot, uncollected } from './r0-t2-trace-removal.mjs';
 
 const defaultRounds = 5;
 const kibibyte = 1024;
@@ -84,7 +84,8 @@ else {
   const conditions = () => ({ loadavg: loadavg().map(value =>
     Number(value.toFixed(2))), cores: cpus().length,
   node: process.version });
-  const removed = buildUncollected(scratch);
+  // Throws if the baseline still collects (scripts/r0-t2-trace-removal).
+  const removed = await uncollected(scratch);
   try {
     const before = conditions();
     const result = compared([resolve(repoRoot, 'output'), removed.output],

@@ -7,12 +7,17 @@
 // listed here fails the build instead of leaving collection in. The
 // `State` field stays (a constant `emptyTrace`); every recorder's caller
 // leaves it unchanged, and checkFunction drops `finish` and its second
-// `numbering`. The pin then checks every trace count is zero.
+// `numbering`. `uncollected` then checks, over the corpus, that the
+// baseline's raw and finished traces hold no entry, so neither the pin
+// nor the cost measurement can use a baseline that still collects.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync,
   writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, isAbsolute, join, relative, resolve, sep }
+  from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { loadCorpus } from '../test/r0-corpus.mjs';
+import { traceRun } from '../test/r0-t2-trace-inert.mjs';
 import { cloneTree, compileTree } from './regression-clone.mjs';
 
 export const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)),
@@ -48,11 +53,13 @@ export const removalEdits = [
   ''],
   [`${check}/Install.purs`, '    , trace = recordInstallation span'
     + ' { frame, current: env.current }\n        framed.trace\n', ''],
+  // `row` (Task 8): the closed empty row, as `emptyTraced` has it.
   [`${check}/Function.purs`, '    , trace: finish (resolved settledSubst)'
-    + ' (numbering settled) marked.trace\n',
+    + ' (numbering settled) entryRow\n        marked.trace\n',
   '    , trace:\n        { uses: Map.empty, applied: Map.empty,'
     + ' piped: Map.empty\n        , clauses: Map.empty,'
-    + ' deferrals: Map.empty, installations: Map.empty\n        }\n']
+    + ' deferrals: Map.empty, installations: Map.empty\n'
+    + '        , row: Row [] Nothing\n        }\n']
 ].map(([file, needle, replacement]) => ({ file, needle, replacement }));
 
 // Applies the edits to the src tree under `root`; each matches once.
@@ -73,8 +80,9 @@ export const removeCollection = root => {
 export const buildUncollected = scratch => {
   const at = resolve(scratch);
   mkdirSync(at, { recursive: true });
-  assert.ok(relative(realpathSync(repoRoot), realpathSync(at))
-    .startsWith('..'), 'the scratch directory must be outside the worktree');
+  const path = relative(realpathSync(repoRoot), realpathSync(at));
+  assert.ok(path === '..' || path.startsWith(`..${sep}`) || isAbsolute(path),
+    'the scratch directory must be outside the worktree');
   const root = join(at, 't2-uncollected');
   rmSync(root, { recursive: true, force: true });
   mkdirSync(root, { recursive: true });
@@ -86,4 +94,25 @@ export const buildUncollected = scratch => {
   assert.ifError(built.error);
   assert.equal(built.status, 0, built.stderr);
   return { root, output: join(root, 'output') };
+};
+
+// The baseline built, then run over the pinned corpus: every trace count,
+// raw (the final `State`'s) and finished, must be zero, or the build is
+// removed and this throws. Returns the build and the run.
+export const uncollected = async scratch => {
+  const built = buildUncollected(scratch);
+  try {
+    const load = name =>
+      import(pathToFileURL(join(built.output, name, 'index.js')).href);
+    const run = await traceRun(load, await loadCorpus());
+    const counted = [...Object.values(run.counts),
+      ...Object.values(run.collected)];
+    assert.ok(counted.every(count => count === 0), 'the baseline still'
+      + ` collects: ${JSON.stringify({ counts: run.counts,
+        collected: run.collected })}; review scripts/r0-t2-trace-removal.mjs`);
+    return { ...built, run };
+  } catch (failure) {
+    rmSync(built.root, { recursive: true, force: true });
+    throw failure;
+  }
 };
