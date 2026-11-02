@@ -329,11 +329,17 @@ Check/Call.purs `checkCall`, `checkConstruct`, and the references
 `applyAll` at the same span, so its extra stages are `Apply` entries.
 Three roles stay positional, as today: a lambda's `Stage k` (the
 lambda node's arrow rows), the `Stage 0` of a `show` or `crash`
-reference (review M2; the synthesized lambda's arrow row: observed on
-examples/builtins.wxw.txt, `[|rigid:0]` for both; in the corpus these
-are among the 115 lambda-type stages, not counted apart), and an
+reference (review M2; the synthesized lambda's arrow row; in the
+corpus these are among the 115 lambda-type stages, not counted apart),
+and an
 instance at a constructor pattern (the pattern's type; 2 such `EffInst`
-in the corpus, both located).
+in the corpus, both located). The show/crash example is effectful so
+that readings differ (re-review N4; examples/builtins.wxw.txt, run
+with `trace.mjs`): `twice(show, 1)` and `fails(crash, "no")` pass the
+references where `Int -> Text with Log` and `Text -> Int with Log` are
+expected, and each reference's `Stage 0` reads `[E0@M|rigid:0]`, the
+Log row it was unified with; a reading that took the builtin's
+synthesized row before unification, or a closed row, would differ.
 
 ### C.2 The key: formed at allocation, matched to the recorded path
 
@@ -569,9 +575,12 @@ gains `holeBindings ∷ Map Int RTExpr`, θ restricted to holes, and
 `readEffects` reads every effect-side value under it: hole n with a
 binding takes the binding's `PTy` (§C.8's conversion, row-free images
 only), and a binding whose image needs rows or marks is the read fault
-`UnreadImage`. With today's corpus the map is empty and the rule never
-fires; Task 6's test plants a θ that binds a hole and checks both
-sides read the bound value.
+`UnreadImage`. A bound hole whose image names a flexible problem
+variable (not a hole, not a rigid) is also a read fault, `UnreadImage`
+on that hole's variable: the effect side has no live value for it
+(re-review N5; 0 today, since θ binds no hole). With today's corpus
+the map is empty and the rule never fires; Task 6's test plants a θ
+that binds a hole and checks both sides read the bound value.
 
 ### C.8 Type images as `PTy` (review I1)
 
@@ -579,13 +588,18 @@ sides read the bound value.
 handler clause rows; today's `unsettled` holds `RTExpr`, which carries
 none. Corpus-observed (review `image-rows.mjs`, `theta.mjs`): of 51,598
 type images over the 2,823 candidates, **196** contain an arrow (177)
-or a handler head (19), in **127** declarations; **192** are positioned
-values and **4** are auxiliaries completed by θ, in 2 declarations
+or a handler head (19); **192** are positioned values and **4** are
+auxiliaries completed by θ, in 2 declarations
 (docs/plans/2026-10-21-c001-explicit/baseline/
 c7-pure-stages-construction.wxw#statsEvidence and
-q7-pure-construction.wxw#statsEvidence). Not counted: images whose
-data types take row arguments (an `App (DataHead t)` with row arity
-above 0 needs `PData`'s rows too); Task 6a's probe counts them first.
+q7-pure-construction.wxw#statsEvidence). With the reviewer's extension
+of `image-rows.mjs` (re-review N1, re-run here): **6** more images hold
+data with row arguments and nothing else needing rows (all positioned,
+none auxiliary), so **130** declarations have an image that needs rows.
+Five of these images are record-row variables (`rows`, not `types`):
+**1 positioned**, research/division-campaign/r0/probes/
+f05-print-key.wxw#main (`{ f: Int -> Int }`), and the **4 auxiliary**
+images of the two statsEvidence declarations.
 
 The read (design; Stage B Task 6a):
 
@@ -609,11 +623,34 @@ readImage ∷ MarkTerms → Ty Open → Either ReadFault PTy
 - Check against today: `erase (readImage live)` must equal the
   `unsettled` image by the canonical comparison; otherwise the read
   fault `ImageApart v` (no repair).
+- **Record-row images** (`EffectPackage.rows`, `PRecordRow`): a
+  positioned record-row variable's fields are read from the live
+  record type at its position with `readImage`, field by field (same
+  substitution, numbering and least terms); its tails as today. Today's
+  `unsettled` is used for nothing but the erasure check. On the corpus
+  this rule reads f05-print-key#main's `f` field as a `PArrow` with
+  its live row.
 - Auxiliaries have no live position. A row-free auxiliary image (no
-  arrow, no handler head, no data with row arguments) converts
-  directly; any other is the read fault `UnreadImage v`: on today's
-  corpus the 2 declarations above, whose packages are then absent
-  (`Left`), listed in Task 8's pinned list. No row or mark is invented.
+  arrow, no handler head, no data with row arguments), type or record
+  row, converts directly; any other is the read fault `UnreadImage v`:
+  on today's corpus the 4 auxiliary record-row images of the 2
+  statsEvidence declarations, whose packages are then absent (`Left`),
+  listed in Task 8's pinned list. No row or mark is invented.
+- **What `ImageApart` guards** (re-review N2): it compares the erasure
+  of the read image with today's σ image, so it catches a read that
+  disagrees with today's types (a wrong position, a wrong constructor,
+  a wrong hole). It cannot detect a wrong row, mark or C, which erasure
+  drops; those rest on reading the live type itself and on the
+  validator's obligations.
+- **A mark meta absent from the mark store** (re-review N2): it forms
+  a singleton class, no constant or edge reaches it, and statements
+  §5's least-term definition gives it N ("N if none"). The definition
+  fixes the case, so no read fault is added: an absent meta has no
+  constraint, and N is the least solution of none. Task 5 tests it
+  ("an unconstrained mark meta reads N"); a meta found in no store
+  and no type is impossible by construction (marks are read from
+  types and trace values whose metas the store resolves) and is not
+  separately guarded.
 
 ## D. Unread stage rows (and every other unread role), classified
 
@@ -750,7 +787,7 @@ should try to break each with a program the table does not cover.
 | H9 | Least terms agree with statements §5 | F | bounded; not independence |
 | H10 | An honest package passes I3 and the validator for every declaration `certify` accepts today (U2, A1), outside the pinned, approved list | Task 8's gate (exact list, minimum counts, both denominators) | owed; any unlisted refusal is a stop |
 | H11 | Effect side and σ never disagree on a hole | θ binds 0 holes (§C.7); reading under θ by design | corpus-observed; test owed |
-| H12 | Every type image in the package is read from the live type or is a row-free conversion; nothing else | §C.8: 192 positioned rowful images read, 4 auxiliary ones a fault (2 declarations) | corpus-observed counts; reading owed |
+| H12 | Every type and record-row image in the package is read from the live type or is a row-free conversion; nothing else. `ImageApart` guards erasure agreement only | §C.8: 198 positioned images needing rows read (192 with arrows or handlers, 6 data with rows; 1 of them a record row, f05-print-key#main), 4 auxiliary record-row images a fault (2 declarations), 130 declarations in all | corpus-observed counts; reading owed |
 
 Restrictions the representation adds (adversarial-review table, first
 pass):
@@ -868,7 +905,8 @@ NoCandidate" is renamed by §C.6's routing.) 0.45-0.6M.
 (`leastTerms ∷ MarkStore t → Map Int Term`, `readMarks`; `MarkTerms`
 below is this map); tests test/r0-t2-marks.test.mjs and
 test/r0-t2-marks-oracle.test.mjs: "shared meta, one term"; "Fail and
-Console read as N" (E); FX008's §7a trace; the rigid case `J {k}`;
+Console read as N" (E); "an unconstrained mark meta reads N" (§C.8);
+FX008's §7a trace; the rigid case `J {k}`;
 agreement with the bounded oracle's three verdicts on its families
 (bounded). 0.35-0.45M.
 
@@ -880,9 +918,12 @@ least-term marks); "a handler image keeps its C" (inference and
 clauses from the live `HandlerRows`, absent C stays absent); "data rows
 read"; "erase of the image is today's σ image" (`ImageApart` on a
 planted mismatch); "an auxiliary image with an arrow is a read fault"
-(`UnreadImage`, on c7-pure-stages-construction#statsEvidence). First
-step: a probe counting images whose data types take row arguments
-(not yet counted). 0.25-0.35M.
+(`UnreadImage`, on c7-pure-stages-construction#statsEvidence); "a
+record-row field with an arrow reads its live row" (on
+research/division-campaign/r0/probes/f05-print-key.wxw#main: the
+positioned record-row variable's `f` field is a `PArrow` whose row is
+the live one, not taken from `unsettled`); "data with row arguments
+reads its rows" (one of the 6). 0.3-0.4M.
 
 **Task 6 (plan Task 5). Holes and assembly.** Create
 ReadBack/Package.purs:
@@ -891,8 +932,9 @@ readEffects
   ∷ RecordedProblem → ReadBack → Checked.FunctionDecl → MarkStore Open
   → Traced → Either ReadFault EffectPackage
 ```
-ReadBack's result gains `holeBindings` (§C.7); `types` from Task 6a,
-`rows` from today's `unsettled`; effect holes `PTailHole n` on the
+ReadBack's result gains `holeBindings` (§C.7); `types` and `rows`
+from Task 6a (today's `unsettled` only for the erasure check); effect
+holes `PTailHole n` on the
 shared numbering; every effect-side value read under `holeBindings`;
 no binding of a forced `ResultClauses` tail; `Declined` for an
 `Unsupported` problem. Tests: "effect and type holes never share a
@@ -928,7 +970,11 @@ Expected from this note's counts (to be confirmed by the first run,
 then approved): (a) the 2 `UnreadImage` declarations of §C.8 and the
 `Unsupported` declarations as `Declined` (9 on the corpus loader, 10 on
 the effect pin); (b) empty; (c) 2,812 of 2,823 candidates (corpus
-loader) and 2,820 of 2,832 (effect pin). **The author approves** the
+loader) and 2,820 of 2,832 (effect pin). (c) may fall by up to 3: the
+3 candidates G0's `certify` refuses today (`RequirementUnjudged`) have
+packages, and the validator, whose step 3 is G0, will refuse them too;
+each then belongs in (b) with that refusal, which the first run settles
+(re-review N5). **The author approves** the
 first pinned lists and counts, any non-empty (b) (each entry is a stop
 until ruled), and every later re-pin. Restored-defect row for 3a: with
 `EffRigid` restored in an isolated copy, the 11 refuse at E1 and the

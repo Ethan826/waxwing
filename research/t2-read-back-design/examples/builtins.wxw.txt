@@ -1,3 +1,8 @@
-fn shown(): Text = { let s = show; s(1) };
-fn crashed(): Int = { let c = crash; if true then 1 else c("no") };
-fn main(): Unit with Console = Console.print(shown());
+effect Log { fn log(n: Int): Unit; };
+fn twice(f: Int -> Text with Log, x: Int): Text with Log = f(x);
+fn fails(f: Text -> Int with Log, x: Text): Int with Log = f(x);
+fn shown(): Text with Log = twice(show, 1);
+fn crashed(): Int with Log = fails(crash, "no");
+fn main(): Unit with Console =
+  with handler Log { log(n) => Console.print(n) }
+  { Console.print(shown()) };
