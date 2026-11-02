@@ -7,7 +7,8 @@
 -- located value, or one that cannot be converted). `UnreadPosition p`:
 -- the same for a mark position. `Clash key`: two trace entries under one
 -- key, kept by the trace and never chosen between. `Apart v`: two live
--- sources give v different values. `UnreadImage v` and `ImageApart v`:
+-- sources give v different values; `PositionApart p` the same for a
+-- mark position, by term (Task 9). `UnreadImage v` and `ImageApart v`:
 -- a type image that needs rows it cannot read, or whose erasure is not
 -- today's (design §C.8). `Declined k`: an `Unsupported` problem.
 module Features.Check.Strategy.ReadBack.Fault (ReadFault(..)) where
@@ -20,6 +21,7 @@ import Features.Check.Trace (TraceKey)
 data ReadFault
   = Unread EVar
   | UnreadPosition Position
+  | PositionApart Position
   | Clash TraceKey
   | Apart EVar
   | UnreadImage Var
