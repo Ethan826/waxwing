@@ -65,7 +65,7 @@ A cited ruling counts as recorded only if all three hold:
   `RequirementUnjudged` or `ForcedTail` according to the list.
 
 Checks: `node --test test/r0-t2-activation-gate.test.mjs` (7 tests).
-A synthetic body of evidence meets all seven criteria. Each of 42
+A synthetic body of evidence meets all seven criteria. Each of 47
 must-fail cases changes one thing and must leave unmet exactly the
 criteria it names, with every other criterion still met. One further
 case must hold: a lowered pin with a later re-pin ruling that names
@@ -95,14 +95,18 @@ restore one defect in the gate's helpers:
 
 Check:
 
-- The pin cites §18.157, and §18.157 exists and records the admission.
+- The pin cites §18.157 as a whole number (`§18.1570` does not
+  count), and §18.157 exists and records the admission.
 - Each denominator holds §18.157's figures (corpus loader 2823
   candidates, floor 2805; effect-pin sources 2832, floor 2813) and
   exactly the four ForcedTail declarations it names.
 - A pin that departs from §18.157 is met only if `repin` cites a ruling
-  after §18.157 whose section names the new candidates and floor. A
-  pin lowered consistently, with candidates and floor falling
-  together, is unmet without that ruling.
+  after §18.157 whose section names each departing denominator's new
+  figures in the form `corpus loader: 2822 candidates, floor 2804`.
+  The phrase ties the figures to their denominator, and the floor must
+  be a whole number there (`floor 28040` does not name 2804). A pin
+  lowered consistently, with candidates and floor falling together,
+  is unmet without that ruling.
 - In both denominators every refusal is one of the three named
   `RequirementUnjudged` declarations (`unjudged`). Every ForcedTail
   entry is one of the four (`forcedTail`), refused `NotCertifiable
@@ -160,7 +164,7 @@ Measured: not met; no ruling recorded. A2 specification §12 C6 leaves
 the replacement-compatibility decision open "to resolve before the new
 checker is enabled live", and §18.157 lists C6 as undecided.
 
-### 4. BACKLOG R034 (2) and (10) have landed
+### 4. BACKLOG R034 (2) and (10) landed
 
 Check: `landed` names a regression row for each item, and the
 registry holds that row. Under the project's rule, a fix lands with
@@ -189,7 +193,7 @@ Measured: not met; not run. Minting is held (§18.157), so no such
 build exists. Evidence it needs: the comparison file above, from a
 run the author authorizes.
 
-### 6. Performance qualification, read-back and validator apart
+### 6. Performance qualified, read-back and validator apart
 
 Check:
 
@@ -200,7 +204,7 @@ Check:
 - `performance.measurement` names a JSON file with `conditions` and
   two parts, `readBack` (trace collection and read-back) and
   `validator`. Each part has `compileTime` and `peakMemory`, each with
-  a `measured` number.
+  a `measured` number that is finite and not negative.
 - Each measured value is at most the status file's budget. Any budget
   written in the measurement file is ignored.
 
@@ -248,6 +252,11 @@ never run".
 
 ## Today's report
 
+The script's headings and verdict on the working tree (exit 1). Its
+measured lines are longer than this file's 80-column limit, so they
+are left out here; the Measured paragraphs above paraphrase them, and
+the script prints them in full.
+
 ```text
 A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 1 met: Task 13's pin approved; no unexpected refusal
@@ -260,6 +269,5 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 gate: not met (2, 3, 4, 5, 6, 7)
 ```
 
-Each heading is followed by its measured lines, as quoted in the
-criteria above. Today the gate is not met, which is what the evidence
-in the working tree shows.
+Today the gate is not met, which is what the evidence in the working
+tree shows.

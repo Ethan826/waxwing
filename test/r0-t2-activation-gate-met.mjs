@@ -8,6 +8,8 @@ import { forcedTail, unjudged, unreadImages, unsupported }
 
 export const dossier = ['# Dossier', '### 18.150 Earlier',
   'C6, routing, read fault, ForcedTail and R035 named, not ruled.',
+  'Corpus loader figures named early: corpus loader: 2822 candidates,'
+    + ' floor 2804.',
   '### 18.155 Stage B',
   'UnreadImage and RequirementUnjudged lists; a read fault list.',
   '### 18.157 The four ForcedTail refusals admitted',
@@ -15,7 +17,12 @@ export const dossier = ['# Dossier', '### 18.150 Earlier',
   'The routing ruled.', '### 18.302 Performance budget',
   'R035 budget approved.', '### 18.303 Replacement losses',
   'Each read fault, RequirementUnjudged and ForcedTail loss ruled.',
-  '### 18.304 Re-pin', 'Corpus loader re-pinned at 2822, floor 2804.',
+  '### 18.304 Re-pin', 'corpus loader: 2822 candidates, floor 2804.',
+  '### 18.305 Re-pin, a longer floor',
+  'corpus loader: 2822 candidates, floor 28040.',
+  '### 18.306 Re-pin, the other denominator',
+  'effect pin: 2822 candidates, floor 2804.',
+  '### 18.1580 A longer number', 'C6 decided under another number.',
   ''].join('\n');
 
 export const statements = ['## 0e. Changes',
@@ -55,7 +62,7 @@ export const met = () => ({
       'effect pin': denominator(2832, 2813, 12) } },
   dossier, statements,
   rows: new Set(['r0-a2-r034-2-merge', 'r0-a2-r034-10-owner',
-    'r0-a2-defect-block']),
+    'r0-a2-defect-block', 'r0-r034-2-r034-10']),
   files: { 'cmp.json': { build: 'abc', census: { moved: [] },
     window: { moved: [] }, rt8: { moved: [] }, shadow: { moved: [] } },
   'perf.json': { conditions: 'quiet machine', readBack: within(),

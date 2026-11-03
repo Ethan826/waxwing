@@ -34,11 +34,11 @@ export const t2ActivationRows = [
     '  ...d.forcedTail.filter(entry => false\n    || !String',
     /r0-t2-activation-gate: .*"fifthForced"/),
   // A section up to §18.157 read as a ruling (review I1): §18.157
-  // itself records C6 as undecided.
+  // itself records C6 as undecided. The early re-pin case fails too.
   helper('r0-t2-activation-any-section', evidence,
     '  if (!isLater(cite))\n',
     '  if (false && !isLater(cite))\n',
-    /r0-t2-activation-gate: .*"c6Early"/),
+    /r0-t2-activation-gate: .*"repinEarly".*"c6Early"/),
   // §18.157's figures not checked (review I3): a pin lowered
   // consistently, without a re-pin ruling, reads as approved.
   helper('r0-t2-activation-figures-unchecked', pin,

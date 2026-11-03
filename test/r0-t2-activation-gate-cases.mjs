@@ -28,9 +28,18 @@ const changes = {
   pinLoweredRepinned: [[], evidence => {
     lowered(evidence);
     status(evidence).repin = '§18.304'; }],
+  // §18.150 names the lowered figures; only its number is too early.
   repinEarly: [[1], evidence => {
     lowered(evidence);
-    status(evidence).repin = '§18.155'; }],
+    status(evidence).repin = '§18.150'; }],
+  repinPartNumber: [[1], evidence => {
+    lowered(evidence);
+    status(evidence).repin = '§18.305'; }],
+  repinOtherDenominator: [[1], evidence => {
+    lowered(evidence);
+    status(evidence).repin = '§18.306'; }],
+  pinCitesLonger: [[1], evidence => {
+    evidence.pin.ruling = 'dossier §18.155 (7), §18.1570'; }],
   explanationsNotList: [[1], evidence => {
     evidence.pin.explanations = 'none'; }],
   fifthForced: [[1, 2], evidence => {
@@ -60,11 +69,14 @@ const changes = {
   c6NoSection: [[3], evidence => { status(evidence).c6 = '§18.999'; }],
   c6WrongSection: [[3], evidence => { status(evidence).c6 = '§18.301'; }],
   c6Early: [[3], evidence => { status(evidence).c6 = '§18.150'; }],
-  c6Prefix: [[3], evidence => { status(evidence).c6 = '§18.30'; }],
+  // Only `### 18.1580` exists: a later number whose heading is absent.
+  c6Prefix: [[3], evidence => { status(evidence).c6 = '§18.158'; }],
   landedNull: [[4], evidence => {
     status(evidence).landed['R034 (10)'] = null; }],
+  // One row carrying both tags, recorded for both items.
   landedSame: [[4], evidence => {
-    status(evidence).landed['R034 (10)'] = 'r0-a2-r034-2-merge'; }],
+    status(evidence).landed['R034 (2)'] = 'r0-r034-2-r034-10';
+    status(evidence).landed['R034 (10)'] = 'r0-r034-2-r034-10'; }],
   landedUnrelated: [[4], evidence => {
     status(evidence).landed['R034 (2)'] = 'r0-a2-defect-block'; }],
   rowUnknown: [[4], evidence => {
@@ -83,6 +95,10 @@ const changes = {
   overOwnBudget: [[6], evidence => {
     evidence.files['perf.json'].readBack.peakMemory =
       { budget: 100, measured: 3 }; }],
+  negativeMeasured: [[6], evidence => {
+    evidence.files['perf.json'].validator.compileTime.measured = -1; }],
+  measuredNotNumber: [[6], evidence => {
+    evidence.files['perf.json'].validator.compileTime.measured = '1'; }],
   budgetMissing: [[6], evidence => {
     status(evidence).performance.budget = null; }],
   validatorApart: [[6], evidence => {

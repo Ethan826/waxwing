@@ -7,7 +7,7 @@
 // test/r0-t2-honest.serial.test.mjs's, not this gate's.
 import { forcedTail, unjudged, unreadImages, unsupported }
   from './r0-t2-honest-gate.mjs';
-import { result, ruling, section, statusKey }
+import { citesWhole, result, ruling, section, statusKey }
   from './r0-t2-activation-evidence.mjs';
 
 export const pinFile = 'test/fixtures/r0/t2-honest.json';
@@ -64,18 +64,19 @@ const sameSet = (left, right) =>
 
 // A denominator departing from §18.157 (figures, or the four ForcedTail
 // by identity), unless the status cites a later re-pin ruling naming
-// its new candidates and floor (review I3).
+// its new figures as `<denominator>: <n> candidates, floor <m>`, the
+// floor a whole number (review I3; round 2 minor 5).
 const departure = (evidence, name, d) => {
   const approved = approvedFigures[name];
   const forced = d.forcedTail.map(entry => entry.at);
   if (d.candidates === approved.candidates && d.floor === approved.floor
     && sameSet(forced, forcedTail)) return [];
   const cite = statusKey(evidence, 'repin') ?? null;
-  const text = section(evidence.dossier, cite);
-  // Recorded after §18.157, naming the new floor and candidates.
-  const named = text !== null && text.includes(String(d.candidates));
-  const found = ruling(evidence.dossier, cite, String(d.floor));
-  return found.met && named ? [] : [`${name}: ${d.candidates} candidates, `
+  const phrase = `${name}: ${d.candidates} candidates, floor ${d.floor}`;
+  const found = ruling(evidence.dossier, cite, phrase);
+  const named = found.met && new RegExp(`${phrase}(?![0-9])`)
+    .test(section(evidence.dossier, cite));
+  return named ? [] : [`${name}: ${d.candidates} candidates, `
     + `floor ${d.floor}, ${forced.length} ForcedTail depart from §18.157; `
     + `re-pin ${found.line}`];
 };
@@ -91,7 +92,7 @@ const explanationLines = pin => (isList(pin.explanations)
 export const pinApproved = evidence => {
   if (evidence.pin === null) return result([`${pinFile} missing`], []);
   const problems = [];
-  if (!String(evidence.pin.ruling).includes('§18.157'))
+  if (!citesWhole(String(evidence.pin.ruling), '§18.157'))
     problems.push('pin does not cite §18.157');
   ruledOn(evidence.dossier, '§18.157', 'admitted', problems);
   const explained = explanationLines(evidence.pin);

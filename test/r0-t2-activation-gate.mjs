@@ -89,7 +89,7 @@ const partProblems = (perf, path, file, part) =>
     const measured = file[part]?.[metric]?.measured;
     if (!Number.isFinite(budget))
       return [`gate status lacks the ${part} ${metric} budget`];
-    if (!Number.isFinite(measured))
+    if (!Number.isFinite(measured) || measured < 0)
       return [`${path}: ${part} lacks a ${metric} measurement`];
     return measured <= budget ? []
       : [`${path}: ${part} ${metric} ${measured} over ${budget}`];
