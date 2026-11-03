@@ -73,6 +73,31 @@ test("criterion 1 holds on the committed pin, §18.157's figures", () => {
   assert.equal(pinApproved({ ...committed, pin: lowered }).met, false);
 });
 
+// Task 16 final review, item 10: the report says why a re-pin or a
+// measurement does not count.
+test('the report names a figure-less re-pin and a bad measurement', () => {
+  const stateOf = (change, id) => {
+    const evidence = met();
+    change(evidence);
+    return evaluate(evidence).find(found => found.id === id).state
+      .join('\n');
+  };
+  const partNumber = stateOf(evidence => {
+    const loader = evidence.pin.denominators['corpus loader'];
+    loader.candidates = 2822;
+    loader.floor = 2804;
+    evidence.status.repin = '§18.305';
+  }, 1);
+  assert.match(partNumber, /§18\.305 does not name the figures/);
+  assert.doesNotMatch(partNumber, /ruling recorded: yes/);
+  const measured = value => stateOf(evidence => {
+    evidence.files['perf.json'].validator.compileTime.measured = value;
+  }, 6);
+  assert.match(measured(-1), /compileTime measurement -1 is negative/);
+  assert.match(measured('1'), /compileTime measurement is not a finite/);
+  assert.match(measured(undefined), /lacks a compileTime measurement/);
+});
+
 test('a section is found by its whole number only', () => {
   const dossier = '### 18.15 a\nx\n### 18.157 b\ny\n## c\nz\n';
   assert.equal(section(dossier, '§18.157'), '### 18.157 b\ny');

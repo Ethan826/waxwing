@@ -89,8 +89,14 @@ const partProblems = (perf, path, file, part) =>
     const measured = file[part]?.[metric]?.measured;
     if (!Number.isFinite(budget))
       return [`gate status lacks the ${part} ${metric} budget`];
-    if (!Number.isFinite(measured) || measured < 0)
+    if (measured === undefined || measured === null)
       return [`${path}: ${part} lacks a ${metric} measurement`];
+    if (!Number.isFinite(measured))
+      return [`${path}: ${part} ${metric} measurement is not a finite `
+        + `number (${typeof measured} ${String(measured)})`];
+    if (measured < 0)
+      return [`${path}: ${part} ${metric} measurement ${measured} is `
+        + 'negative'];
     return measured <= budget ? []
       : [`${path}: ${part} ${metric} ${measured} over ${budget}`];
   });

@@ -76,9 +76,13 @@ const departure = (evidence, name, d) => {
   const found = ruling(evidence.dossier, cite, phrase);
   const named = found.met && new RegExp(`${phrase}(?![0-9])`)
     .test(section(evidence.dossier, cite));
+  // A section naming the phrase only inside a longer number is not a
+  // ruling on these figures (Task 16 final review, item 10).
+  const line = found.met ? `ruling recorded: no (${cite} does not name `
+    + `the figures "${phrase}")` : found.line;
   return named ? [] : [`${name}: ${d.candidates} candidates, `
     + `floor ${d.floor}, ${forced.length} ForcedTail depart from §18.157; `
-    + `re-pin ${found.line}`];
+    + `re-pin ${line}`];
 };
 
 const explanationLines = pin => (isList(pin.explanations)
