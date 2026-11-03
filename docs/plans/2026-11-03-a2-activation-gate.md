@@ -119,7 +119,7 @@ pin still matches a fresh run is checked by
 test/r0-t2-honest.serial.test.mjs in the routine verify, not by this
 gate.
 
-### 2. A1: every accepted declaration validated or on a ruled list
+### 2. A1: each gap list's loss on replacement ruled
 
 Check:
 
