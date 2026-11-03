@@ -37,6 +37,14 @@ fn w(): Unit = { let v = id(handler Log { log(n) => Fail.fail(Nil) }); () };
 fn y(): Unit = { let f = id(add(1)); let g = id(add(2)); () };
 fn z(): Unit = { let v = handler Log { log(n) => Fail.fail(Nil) }; () };
 fn main(): Unit with Console = Console.print(1);
+`,
+  // Final review A-I1: a partial call whose result is itself an arrow,
+  // plain (`part`) and as a pipe's right side (`piped`): the instance's
+  // result meets the live type after the one arrow the call still lacks.
+  arrowResult: `fn mk(a: Int, b: Int): Int -> Int with ...e = fn(x: Int) => x;
+fn part(): Int = { let f = mk(1); 3 };
+fn piped(): Int = { let f = 2 |> mk(1); 3 };
+fn main(): Unit with Console = Console.print(1);
 `
 };
 
@@ -45,7 +53,7 @@ export const fixtures = [['uses', ['call', 'made', 'part', 'applied',
   'piped', 'logged', 'lam']], ['handlers', ['handled', 'deferred',
   'annotated', 'failing', 'job']], ['lone', ['main']], ['holes', ['f',
   'e']], ['slots', ['f', 'g', 'part', 'piped']], ['numbering', ['w', 'y',
-  'z']], ['services', ['main']]];
+  'z']], ['services', ['main']], ['arrowResult', ['part', 'piped']]];
 
 export const packageCases = async load => {
   const { parse } = await load('Format.Parse');

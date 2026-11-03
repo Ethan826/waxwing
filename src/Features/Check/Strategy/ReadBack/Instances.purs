@@ -3,20 +3,23 @@
 -- research/t2-read-back-inventory/sources.mjs `instance`): at a
 -- reference (`FunctionRef`, `CtorRef`, `OperationRef`), the reference's
 -- arrow type, parameter by parameter, then its row and result; at any
--- other node only the result, after the arrows a call missing arguments
--- still has (a pipe's left side, a partial construction). An
--- over-applied call's instance is its saturated callee's. Untrusted
--- search: a shape that differs gives no value.
+-- other node only the result, after exactly the arrows a call missing
+-- arguments still has (a call, construction or perform given k of its n
+-- parameters, also a pipe's right side, is typed by the n - k arrows
+-- left, then the result, which may itself be an arrow;
+-- Generate/Call.purs `applied`). An over-applied call's instance is its
+-- saturated callee's, whose type is the result. Untrusted search: a
+-- shape that differs gives no value.
 module Features.Check.Strategy.ReadBack.Instances (instanceFacts) where
 
 import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
-import Data.Maybe (maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Effect (InstanceSig, MTy(..))
+import Domain.Recorded.Effect (InstanceSig)
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Type (Ty(..))
 import Features.Check.Strategy.ReadBack.EffectMatch (Fact, matchRow, matchTy)
@@ -31,23 +34,31 @@ instanceFacts body (Tuple (Path path) sig) = case path.root of
   where
   atNode = case _ of
     AtExpr (Checked.Expr expr) → atExpr expr.node expr.ty
-    AtPattern (Checked.Pattern pattern) → results sig pattern.ty
+    AtPattern (Checked.Pattern pattern) → results sig 0 pattern.ty
   atExpr node ty = case node of
     Checked.FunctionRef _ _ → staged sig ty
     Checked.CtorRef _ _ → staged sig ty
     Checked.OperationRef _ _ _ → staged sig ty
-    Checked.Apply callee _ → results sig (Checked.typeOf callee)
-    _ → results sig ty
+    Checked.Call _ _ arguments → results sig (missing arguments) ty
+    Checked.Construct _ _ arguments → results sig (missing arguments) ty
+    Checked.Perform _ _ _ arguments → results sig (missing arguments) ty
+    Checked.Apply callee _ → results sig 0 (Checked.typeOf callee)
+    _ → results sig 0 ty
+  missing arguments = max 0
+    (Array.length sig.parameters - Array.length arguments)
 
--- The result, after every arrow unless the recorded result is one.
-results ∷ InstanceSig → Ty Open → Array Fact
-results sig ty = case sig.result of
-  MArrow _ _ _ → matchTy sig.result ty
-  _ → matchTy sig.result (tailRec step ty)
+-- The result, after exactly `count` arrows; fewer arrows give no value.
+results ∷ InstanceSig → Int → Ty Open → Array Fact
+results sig count ty = maybe [] (matchTy sig.result) (afterArrows count ty)
+
+afterArrows ∷ Int → Ty Open → Maybe (Ty Open)
+afterArrows count ty = tailRec step { count, at: ty }
   where
-  step = case _ of
-    TFun _ _ result → Loop result
-    other → Done other
+  step found
+    | found.count <= 0 = Done (Just found.at)
+    | otherwise = case found.at of
+        TFun _ _ result → Loop { count: found.count - 1, at: result }
+        _ → Done Nothing
 
 -- Parameter by parameter along the arrow, then its row and result.
 staged ∷ InstanceSig → Ty Open → Array Fact

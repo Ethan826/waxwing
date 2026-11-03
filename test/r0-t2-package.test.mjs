@@ -68,6 +68,10 @@ test('MarkClash first', () => {
   assert.deepEqual(checks.clashWrong(), []);
 });
 
+test('a partial call with an arrow result validates', () => {
+  assert.deepEqual(checks.arrowResultWrong(), []);
+});
+
 test('a mark the injected terms do not read is an unread label', () => {
   assert.deepEqual(checks.unmarkedWrong(), []);
 });

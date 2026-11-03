@@ -120,5 +120,12 @@ export const t2PackageRows = [
     { file: `${dir}Convert.purs`, needle: 'import Data.Maybe (Maybe)\n',
       replacement: 'import Data.Maybe (Maybe, fromMaybe)\n' }],
     probe: 'r0-t2-package-unread-mark',
-    message: /r0-t2-package-unread-mark: \["unread mark"\]/ }
+    message: /r0-t2-package-unread-mark: \["unread mark"\]/ },
+  // A partial call's instance result laid over the live type with no
+  // arrow stripped (final review A-I1): the result arrow meets the
+  // lacking parameter's arrow, `Apart`.
+  row('r0-t2-package-arrow-result', `${dir}Instances.purs`,
+    '  missing arguments = max 0\n',
+    '  missing arguments = 0 * max 0\n',
+    /r0-t2-package-arrow-result: \["part:Apart","piped:Apart"\]/)
 ];

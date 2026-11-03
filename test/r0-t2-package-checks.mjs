@@ -19,6 +19,7 @@ export const packageChecks = async load => {
   const P = await load('Domain.Verdict.EffectPackage.Types');
   const Bound = await load('Features.Check.Strategy.ReadBack.Bound');
   const Images = await load('Features.Check.Strategy.ReadBack.Images');
+  const Substitution = await load('Features.Check.Strategy.Substitution');
   const { Nothing } = await load('Data.Maybe');
   const { Tuple } = await load('Data.Tuple');
   const text = value => JSON.stringify(value);
@@ -166,7 +167,17 @@ export const packageChecks = async load => {
       new Row.Row([label], Nothing.value));
     return named(found) === 'Left' ? [] : ['unread mark'];
   };
+  // A partial call with an arrow result reads a package the trusted
+  // validator accepts (final review A-I1); each failing declaration is
+  // named with its read fault, or `refused`.
+  const arrowResultWrong = () => ['part', 'piped'].flatMap(name => {
+    const item = live(sources.arrowResult, name);
+    const found = effectsOf(item);
+    if (faultOf(found) !== 'Right') return [`${name}:${faultOf(found)}`];
+    return named(Substitution.validate(item.problem)(found.value0))
+      === 'Right' ? [] : [`${name}:refused`];
+  });
   return { declinedWrong, declinedOrderWrong, recordTailWrong, clashWrong,
     forcedWrong, sortsWrong, sharedWrong, distinctWrong, extensionWrong,
-    thetaWrong, thetaFaultWrong, unmarkedWrong };
+    thetaWrong, thetaFaultWrong, unmarkedWrong, arrowResultWrong };
 };
