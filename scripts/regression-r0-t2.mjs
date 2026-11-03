@@ -13,6 +13,7 @@ import { t2OnlineRows } from './regression-r0-t2-online.mjs';
 import { t2HonestRows } from './regression-r0-t2-honest.mjs';
 import { t2DiffRows } from './regression-r0-t2-diff.mjs';
 import { t2CompatRows } from './regression-r0-t2-compat.mjs';
+import { t2ActivationRows } from './regression-r0-t2-activation.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
@@ -25,5 +26,6 @@ export const t2Rows = [
   ...t2OnlineRows,
   ...t2HonestRows,
   ...t2DiffRows,
-  ...t2CompatRows
+  ...t2CompatRows,
+  ...t2ActivationRows
 ];
