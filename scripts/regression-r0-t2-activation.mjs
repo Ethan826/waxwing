@@ -30,8 +30,8 @@ export const t2ActivationRows = [
   // ForcedTail admitted by class, not by the four names (§18.157).
   helper('r0-t2-activation-forced-class', pin,
     '  ...d.forcedTail.filter(entry => !forcedTail.includes(entry.at)\n'
-      + '    || !String',
-    '  ...d.forcedTail.filter(entry => false\n    || !String',
+      + '    || !isForced',
+    '  ...d.forcedTail.filter(entry => false\n    || !isForced',
     /r0-t2-activation-gate: .*"fifthForced"/),
   // A section up to §18.157 read as a ruling (review I1): §18.157
   // itself records C6 as undecided. The early re-pin case fails too.

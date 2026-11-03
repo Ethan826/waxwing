@@ -98,6 +98,15 @@ export const gateCases = () => ({
     refused(forcedTail[2], 'ObligationFailed {}', 'accepted', false))),
   forcedCertifyRefuses: () => admitted(replaced(forcedTail[3],
     refused(forcedTail[3], forced, refusal, false))),
+  // A refusal whose constructor only starts with ForcedTail's name is
+  // not ForcedTail (final review B-M3).
+  forcedSuffix: () => admitted(replaced(forcedTail[0],
+    refused(forcedTail[0], 'NotCertifiable ForcedTailX {"at":0}',
+      'accepted', false))),
+  // One declaration's row twice, in place of another validated row, so
+  // the counts are unchanged (final review B-M6).
+  repeatedAt: () => against(replaced('v.wxw#c', row('v.wxw#b'))),
+  repeatedAdmitted: () => admitted(replaced('v.wxw#c', row('v.wxw#b'))),
   // The re-pin rule.
   repinHolds: () => repinned(baseRows()).problems,
   repinKeeps: () => repinned(replaced(u1, row(u1)),

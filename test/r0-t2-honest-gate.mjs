@@ -19,6 +19,7 @@
 // Anything else, a `Malformed` included, is a stop: it names the entry,
 // never adjusts.
 // `gateProblems` compares an observation with a pin in both directions.
+// Both name a declaration the rows hold twice.
 const baseline = 'docs/plans/2026-10-21-c001-explicit/baseline/';
 
 // The identified unsupported declarations (design §A), their kind.
@@ -52,7 +53,11 @@ export const forcedTail = [
   'test/fx-services-programs.mjs:fake#1#main',
   'test/fx008-defer-programs.mjs:aroundBoth#1#around'];
 
-const isForced = text => text.startsWith('NotCertifiable ForcedTail');
+// A `NotCertifiable ForcedTail` refusal, by its whole constructor
+// name: `NotCertifiable ForcedTailX` is not one (final review B-M3).
+const forcedKind = 'NotCertifiable ForcedTail';
+export const isForced = text => text === forcedKind
+  || text.startsWith(`${forcedKind} `);
 
 const byAt = (left, right) => (left.at < right.at ? -1 : 1);
 
@@ -62,9 +67,22 @@ const refusedOf = rows => rows.filter(row => row.read === 'package'
   .map(row => ({ at: row.at, refusal: row.validate,
     certify: row.certify, sameG0: row.sameG0 })).sort(byAt);
 
+// The declarations met more than once among the rows: each row is one
+// declaration, so a repeat would count it twice (final review B-M6).
+const repeatedOf = rows => {
+  const seen = new Set();
+  const repeated = new Set();
+  for (const row of rows) {
+    if (seen.has(row.at)) repeated.add(row.at);
+    seen.add(row.at);
+  }
+  return [...repeated].sort();
+};
+
 // One denominator's observation: its lists and counts.
 export const observe = rows => ({
   candidates: rows.length,
+  repeated: repeatedOf(rows),
   validated: rows.filter(row => row.validate === 'validated').length,
   malformed: rows.filter(row => row.i3 !== null && row.i3 !== 'ok')
     .map(row => ({ at: row.at, i3: row.i3 })),
@@ -124,8 +142,9 @@ export const vanishedApproved = (observed, origins) => {
 // denominator whose candidates have the origins in `origins`. A
 // disappearance is a problem unless `explained`.
 export const admission = (observed, origins, explained = false) => {
-  const problems = observed.malformed.map(entry =>
-    `Malformed: ${entry.at} ${entry.i3}`);
+  const problems = [...observed.repeated.map(at =>
+    `declaration repeated: ${at}`), ...observed.malformed.map(entry =>
+    `Malformed: ${entry.at} ${entry.i3}`)];
   const allowed = allowedFaults(origins);
   for (const entry of observed.faults)
     if (!approved(allowed.get(entry.at), entry.fault))
@@ -176,6 +195,7 @@ export const gateProblems = (pin, observed) => {
   const unvalidated = new Set([...observed.faults, ...observed.refusals,
     ...observed.forcedTail].map(entry => entry.at));
   return [
+    ...observed.repeated.map(at => `declaration repeated: ${at}`),
     ...apart('read fault', listed(pin.faults), faults),
     ...apart('refusal', listed(pin.refusals), listed(observed.refusals)),
     ...apart('ForcedTail', listed(pin.forcedTail),

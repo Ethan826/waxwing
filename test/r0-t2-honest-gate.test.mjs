@@ -83,6 +83,15 @@ test('the four admitted ForcedTail refusals, no other', () => {
     + `observed: ${forcedTail[2]} ${at}`]);
   assert.match(cases.forcedCertifyRefuses().join('\n'),
     /^ForcedTail not admitted: .*\(certify: RequirementUnjudged/);
+  assert.deepEqual(cases.forcedSuffix(), ['unexpected validator refusal: '
+    + `${forcedTail[0]} NotCertifiable ForcedTailX {"at":0} (certify: `
+    + 'accepted)', '4 refusals, more than 3']);
+});
+
+test('a declaration met twice fails the gate and admission', () => {
+  assert.deepEqual(cases.repeatedAt(), ['declaration repeated: v.wxw#b']);
+  assert.deepEqual(cases.repeatedAdmitted(),
+    ['declaration repeated: v.wxw#b']);
 });
 
 test('the re-pin rule refuses what it must and keeps explanations',

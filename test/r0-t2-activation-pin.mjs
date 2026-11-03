@@ -5,7 +5,7 @@
 // sections that rule on them. They read the pin as it stands; the live
 // comparison of the corpus with the pin is
 // test/r0-t2-honest.serial.test.mjs's, not this gate's.
-import { forcedTail, unjudged, unreadImages, unsupported }
+import { forcedTail, isForced, unjudged, unreadImages, unsupported }
   from './r0-t2-honest-gate.mjs';
 import { citesWhole, result, ruling, section, statusKey }
   from './r0-t2-activation-evidence.mjs';
@@ -56,7 +56,7 @@ const refusalsUnnamed = (name, d) => [
     || !String(entry.refusal).startsWith('RequirementUnjudged '))
     .map(entry => `${name}: unexpected refusal ${entry.at}`),
   ...d.forcedTail.filter(entry => !forcedTail.includes(entry.at)
-    || !String(entry.refusal).startsWith('NotCertifiable ForcedTail'))
+    || !isForced(String(entry.refusal)))
     .map(entry => `${name}: ForcedTail not admitted ${entry.at}`)];
 
 const sameSet = (left, right) =>

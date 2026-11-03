@@ -46,6 +46,10 @@ const changes = {
     loader(evidence).forcedTail[0].at = 'examples/other.wxw#main'; }],
   forcedOtherClass: [[1, 2], evidence => {
     loader(evidence).forcedTail[0].refusal = 'NotCertifiable RigidExact'; }],
+  // A constructor name that only starts with ForcedTail's (review B-M3).
+  forcedSuffix: [[1, 2], evidence => {
+    loader(evidence).forcedTail[0].refusal =
+      'NotCertifiable ForcedTailX {}'; }],
   otherRefusal: [[1, 2], evidence => {
     loader(evidence).refusals[0].refusal = 'ObligationFailed {}'; }],
   unruledFault: [[2], evidence => {
