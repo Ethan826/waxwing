@@ -136,13 +136,16 @@ test('the certificate lists the holes the read-back bound', () => {
 // values are substituted). `field`'s problem plus one equation reading
 // its auxiliary row `rest` as a type: still one tail, but ill-sorted,
 // so the read claims `Heuristic` (with the guard deleted it claimed
-// `ClaimsComplete`; docs/findings.md, "R021 follow-ups").
+// `ClaimsComplete`; docs/findings.md, "R021 follow-ups"). Today's
+// result is the checker's own (`todayOf`): an accepted body's
+// certificate reads the effect package from its state and trace.
 const { t } = await supportFrom(load);
 const Atom = await load('Domain.Recorded.Atom');
 test('an ill-sorted auxiliary equation makes the read Heuristic', () => {
-  const { problem, certificate } = candidateOf('field');
-  const read = given => Online.searched(online.legacyText)(given)(
-    new Right({ function: certificate.checked, state: null })).value1;
+  const { problem } = candidateOf('field');
+  const today = online.todayOf(program, 'field');
+  const read = given =>
+    Online.searched(online.legacyText)(given)(today).value1;
   const [rest] = online.pairs(problem.vars).filter(([, info]) =>
     info.position.constructor.name === 'Auxiliary'
     && info.sort.constructor.name === 'SortRow')
