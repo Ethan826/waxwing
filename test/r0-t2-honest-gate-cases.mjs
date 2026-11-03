@@ -118,6 +118,13 @@ export const gateCases = () => ({
     { explanation: 'why' }).problems,
   explainedHigher: () => repinned([...baseRows(), row('v.wxw#d')],
     { explanation: 'why' }).problems,
+  // The new pin without the old pin's denominator, unexplained and
+  // explained: refused both ways.
+  repinDropped: () => repin({ denominators: { d: pinOf(observe(
+    baseRows())) } }, { denominators: {} }, { repin: true }).problems,
+  repinDroppedExplained: () => repin({ denominators: { d: pinOf(observe(
+    baseRows())) } }, { denominators: {} },
+  { repin: true, explanation: 'why' }).problems,
   repinMissing: () => repin({ denominators: {} },
     { denominators: { d: pinOf(observe(baseRows())) } },
     { repin: true }).problems

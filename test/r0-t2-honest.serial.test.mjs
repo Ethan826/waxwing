@@ -43,8 +43,11 @@ test('no package is Malformed', () => {
   for (const name of names) assert.deepEqual(observed[name].malformed, []);
 });
 
-// Design §B.3's 11 local-annotation declarations, which refuse at E1
-// without the generation correction (§B.5): H2, observed.
+// Design §B.3's 11 local-annotation declarations: H2, observed. With
+// the generation correction reverted, ten refuse (nine ObligationFailed
+// at their Consumed InstallR consumption, check 0; one RigidExact,
+// amb3#f), as observed; §B.5's prediction that all eleven fail at E1 is
+// retired (§18.157 (2)).
 test('the 11 annotation declarations validate', () => {
   const rows = found['effect pin'].rows;
   const verdicts = annotated.map(at => [at,
@@ -61,7 +64,8 @@ test('the 11 annotation declarations validate', () => {
 // that mark only, and every other stage passes all checks. The marked
 // set is pinned: observed empty (2026-11-03), since none of the seven
 // refused packages has a dropped stage, so on this corpus every stage
-// is checked in full.
+// is checked in full. The mark itself is shown on a fixture by the
+// r0-t2-honest-stages-unchecked probe (test/regression-r0-t2-honest.mjs).
 const unchecked = 'consumption unchecked: the package was refused';
 const marked = [];
 

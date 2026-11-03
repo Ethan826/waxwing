@@ -7,8 +7,13 @@ import { forcedTail, unjudged } from './r0-t2-honest-gate.mjs';
 // must-fail probes (a planted extra refusal, a removed pinned entry, a
 // count one below the floor) and ruling §18.155 (7)'s admission, which
 // refuses a Malformed, a read fault outside (a), an unexpected refusal
-// and a fourth RequirementUnjudged. test/r0-t2-honest.serial.test.mjs
-// runs the same probes on the corpus.
+// and a fourth RequirementUnjudged. §18.157: the ForcedTail list admits
+// exactly the four named refusals certify accepts (a fifth, one
+// missing, one in another class, one certify refuses all fail), and
+// the re-pin rule refuses a lower floor or candidate count, and a
+// dropped denominator, whatever `--explain` says.
+// test/r0-t2-honest.serial.test.mjs runs the gate's probes on the
+// corpus.
 const cases = gateCases();
 const forced = 'NotCertifiable ForcedTail';
 const lowered = (key, from, to) => `d: ${key} ${from} to ${to} refused; `
@@ -89,6 +94,10 @@ test('the re-pin rule refuses what it must and keeps explanations',
     assert.deepEqual(cases.repinLowered(), [lowered('floor', 3, 2)]);
     assert.deepEqual(cases.repinMissing(),
       ['the old pin has no denominator d']);
+    assert.deepEqual(cases.repinDropped(),
+      ['the new pin drops denominator d']);
+    assert.deepEqual(cases.repinDroppedExplained(),
+      ['the new pin drops denominator d']);
     assert.deepEqual(cases.repinKeeps(), [
       { explanation: 'earlier', covers: [] },
       { explanation: 'why', covers: [`d: vanished ${unjudged[1]}`] }]);

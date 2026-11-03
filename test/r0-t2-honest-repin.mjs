@@ -6,13 +6,14 @@
 // `covers` lists the disappearances admission found that the
 // explanation must answer. It gives `{ problems, pin }`; any problem
 // means nothing is written.
-// A re-pin needs `--repin`; a denominator missing from the old pin is
-// refused; an entry that vanishes from a pinned list is refused unless
-// explained. A floor or candidate count that falls is refused whatever
-// the explanation (§18.157: explanations document approved changes,
-// they do not approve them; a lowering needs the author's ruling and a
-// mechanism this script does not have). Every explanation, old and
-// new, is kept in the pin with what it covers.
+// A re-pin needs `--repin`; a denominator missing from the old pin or
+// from the new one is refused, explained or not; an entry that
+// vanishes from a pinned list is refused unless explained. A floor or
+// candidate count that falls is refused whatever the explanation
+// (§18.157: explanations document approved changes, they do not
+// approve them; a lowering needs the author's ruling and a mechanism
+// this script does not have). Every explanation, old and new, is kept
+// in the pin with what it covers.
 const ats = entries => new Set(entries.map(entry => entry.at));
 
 // The pinned entries of one denominator: (a), (b) and (b′).
@@ -47,6 +48,9 @@ export const repin = (before, after, options) => {
         problems.push(...fallen(name, old, now));
       }
     }
+    for (const name of Object.keys(before.denominators ?? {}))
+      if (after.denominators[name] === undefined)
+        problems.push(`the new pin drops denominator ${name}`);
   }
   if (covers.length > 0 && options.explanation === undefined)
     problems.push(`needs --explain: ${covers.join('; ')}`);

@@ -8,8 +8,10 @@
 // refusal), `sameG0` (validate's refusal equals certify's, by the
 // refusal's own Eq) and `stages` (test/r0-t2-honest-stages.mjs). It
 // takes a loader, so a regression probe reads the compiler under test
-// only. Corpus-observed when run over the corpus; nothing here is a
-// soundness claim.
+// only, and the stage check to use (`stagesCheck` unless another is
+// injected, as the stage probe does to see every package refused).
+// Corpus-observed when run over the corpus; nothing here is a soundness
+// claim.
 import { budget, onlineFrom } from './r0-online-support.mjs';
 import { stagesCheck } from './r0-t2-honest-stages.mjs';
 
@@ -43,7 +45,7 @@ const shown = (value, nested = false) => {
 // `Declined (OperationWithRow 1 0)`, `NotCertifiable ForcedTail {…}`.
 export const refusalText = refusal => shown(refusal);
 
-export const honestReport = async load => {
+export const honestReport = async (load, checkStages = stagesCheck) => {
   const online = await onlineFrom(load);
   const { parse } = await load('Format.Parse');
   const { resolve } = await load('Features.Resolve');
@@ -58,7 +60,7 @@ export const honestReport = async load => {
   const Malformed = await load('Features.Check.Strategy.Effects.Malformed');
   const Substitution = await load('Features.Check.Strategy.Substitution');
   const Search = await load('Domain.Verdict.Search');
-  const stages = await stagesCheck(load);
+  const stages = await checkStages(load);
   const sameRefusal = (left, right) =>
     Search.eqCheckRefusal.eq(left)(right);
 

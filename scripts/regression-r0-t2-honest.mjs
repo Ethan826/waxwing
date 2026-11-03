@@ -56,6 +56,11 @@ export const t2HonestRows = [
       + '          .push(...fallen(name, old, now));\n',
     'r0-t2-honest-gate',
     /r0-t2-honest-gate: .*"explainedFloor","explainedCandidates"/),
+  // A denominator the new pin drops passes the re-pin rule.
+  helper('r0-t2-honest-repin-dropped', repinRule,
+    '      if (after.denominators[name] === undefined)\n',
+    '      if (after.denominators[name] === undefined && false)\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"repinDropped"/),
   // Earlier explanations dropped on a re-pin.
   helper('r0-t2-honest-repin-keeps', repinRule,
     '    explanations: [...before?.explanations ?? [], ...added] } };\n',
@@ -78,6 +83,26 @@ export const t2HonestRows = [
     "    if (named(site.site) !== 'AtStage' || named(role) !== 'Consumed')\n",
     "    if (named(site.site) !== 'AtCall' || named(role) !== 'Consumed')\n",
     'r0-t2-honest-stages', /r0-t2-honest-stages: 0 dropped stages/),
+  // A stage in a refused package not marked: its consumption reads as
+  // passing though it was never checked.
+  helper('r0-t2-honest-stages-unmarked', 'test/r0-t2-honest-stages.mjs',
+    "      if (completed === null) problems.push('consumption unchecked: '\n",
+    "      if (completed === null) void ('consumption unchecked: '\n",
+    'r0-t2-honest-stages-unchecked',
+    /r0-t2-honest-stages-unchecked: 7 stages, unmarked \[\[\]/),
+  // The mark altered: it no longer says the consumption was unchecked.
+  helper('r0-t2-honest-stages-mismarked', 'test/r0-t2-honest-stages.mjs',
+    "      if (completed === null) problems.push('consumption unchecked: '\n",
+    "      if (completed === null) problems.push('consumption checked: '\n",
+    'r0-t2-honest-stages-unchecked',
+    /stages-unchecked: 7 stages, unmarked \[\["consumption checked/),
+  // ForcedTail admitted without certify's acceptance (§18.157 admits
+  // only refusals today's checker accepts).
+  helper('r0-t2-honest-forced-certify', gate,
+    '    if (!forcedTail.includes(entry.at) '
+      + '|| entry.certify !== \'accepted\')\n',
+    '    if (!forcedTail.includes(entry.at))\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"forcedCertifyRefuses"/),
   {
     // Holes left unsettled: a dropped stage keeps its hole tail, so it
     // does not settle empty (ruling (8)'s second part detects it).

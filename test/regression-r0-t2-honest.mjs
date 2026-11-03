@@ -5,6 +5,7 @@
 import { fail, passed } from './regression-r0-amin-support.mjs';
 import { gateCases } from './r0-t2-honest-gate-cases.mjs';
 import { honestReport } from './r0-t2-honest-report.mjs';
+import { stagesCheck } from './r0-t2-honest-stages.mjs';
 import { annotated } from './r0-t2-honest-annotated.mjs';
 
 // Ruling (8)'s fixture: `part` drops one stage of `two`, `both` one of
@@ -26,6 +27,13 @@ fn putter(): Int -> Unit with Log = Log.put(1);
 fn main(): Unit with Console = Console.print(1);
 `;
 const dropped = 7;
+const unchecked = 'consumption unchecked: the package was refused';
+
+// The stage check as it runs on a refused package: `completed` null.
+const refusedStages = async load => {
+  const check = await stagesCheck(load);
+  return (problem, live, pkg) => check(problem, live, pkg, null);
+};
 
 // Every must-fail case: each must name a problem; the gate's own
 // observation must name none.
@@ -35,7 +43,8 @@ const mustFail = ['extraRefusal', 'removedEntry', 'belowFloor',
   'newRefusal', 'withoutRepin', 'repinVanish', 'repinLowered',
   'repinMissing', 'explainedFloor', 'explainedCandidates', 'fifthForced',
   'fifthAdmitted', 'forcedMissing', 'forcedMissingAdmitted',
-  'forcedChanged', 'forcedCertifyRefuses'];
+  'forcedChanged', 'forcedCertifyRefuses', 'repinDropped',
+  'repinDroppedExplained'];
 const mustHold = ['holds', 'admitted', 'explainedVanish', 'repinHolds',
   'explainedEqual', 'explainedHigher'];
 
@@ -59,6 +68,18 @@ export const t2HonestProbes = {
     if (found.length !== dropped || problems.length > 0)
       fail(`${context.probe}: ${found.length} dropped stages `
         + JSON.stringify(problems));
+    passed(context);
+  },
+  // A stage in a refused package is marked, with that mark only.
+  'r0-t2-honest-stages-unchecked': async context => {
+    const rows = (await honestReport(context.load, refusedStages))([
+      { origin: 'inline:stages', source: stages }]);
+    const found = rows.flatMap(row => row.stages);
+    const wrong = found.filter(stage => stage.problems.length !== 1
+      || stage.problems[0] !== unchecked);
+    if (found.length !== dropped || wrong.length > 0)
+      fail(`${context.probe}: ${found.length} stages, unmarked `
+        + JSON.stringify(wrong.map(stage => stage.problems)));
     passed(context);
   },
   'r0-t2-honest-annotated': async context => {
