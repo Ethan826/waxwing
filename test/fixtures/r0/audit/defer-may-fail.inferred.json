@@ -1,7 +1,7 @@
 {
   "name": "defer-may-fail/inferred",
   "refusal": "DeferMayFail",
-  "site": "src/Features/Check/Defer.purs:165",
+  "site": "src/Features/Check/Defer.purs:168",
   "token": "DeferMayFail",
   "class": "semantic",
   "evidence": "checked",

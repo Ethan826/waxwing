@@ -47,7 +47,7 @@ const cases = [
     + 'Console.print(1, 2);' + main, 'E_ARITY', arity()],
   ['Operation.purs:104', 'fn f(): Int = crash(1, 2);' + main, 'E_ARITY',
     arity()],
-  ['Outcomes.purs:136, main\'s result holds a function',
+  ['Outcomes.purs:135, main\'s result holds a function',
     'fn main(): (Int) -> Int = fn(x) => x;', 'E_ENTRY',
     [['main', 'StaticRule', 'StaticEntry', 'InResult', []]]],
   ['Pipe.purs:36, an instantiated result: semantic, no static refusal',

@@ -32,7 +32,7 @@ const placed = [
   ['CtorNotCallable', ['ResolveRule StaticNotCallable'],
     [`${R}Name.purs:97`]],
   ['TypeMismatch', ['CheckSemantic'], [`${C}Reject.purs:69`]],
-  ['NotAFunction', ['CheckSemantic'], [`${C}Apply.purs:189`]],
+  ['NotAFunction', ['CheckSemantic'], [`${C}Apply.purs:207`]],
   ['InfiniteType', ['CheckSemantic'], [`${C}Require.purs:95`]],
   ['NotComparable', ['CheckSemantic'], [`${C}Comparable.purs:77`]],
   ['PolymorphicRecursion', ['ProgramWide'], [`${C}Instantiation.purs:70`]],

@@ -1,7 +1,7 @@
 {
   "name": "defer-may-perform/inferred",
   "refusal": "DeferMayPerform",
-  "site": "src/Features/Check/Defer.purs:134",
+  "site": "src/Features/Check/Defer.purs:137",
   "token": "DeferMayPerform",
   "class": "semantic",
   "evidence": "checked",
