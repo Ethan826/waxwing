@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadCorpus } from './r0-corpus.mjs';
 import { sourcesOf } from './r0-effects-pin-run.mjs';
-import { load, resolved } from './r0-generate-support.mjs';
+import { createHash } from 'node:crypto';
+import { load } from './r0-generate-support.mjs';
 import { budget, onlineFrom } from './r0-online-support.mjs';
 import { compatChecks } from './r0-t2-compat-checks.mjs';
 
@@ -36,6 +37,8 @@ const Elaborating = await load('Domain.Elaborating');
 const Online = await load('Features.Check.Strategy.Online');
 const Function = await load('Features.Check.Function');
 const { functional } = await load('Features.Check.Functional');
+const { parse } = await load('Format.Parse');
+const { resolve } = await load('Features.Resolve');
 const RB = await load('Features.Check.Strategy.ReadBack');
 const Package = await load('Features.Check.Strategy.ReadBack.Package');
 const { named } = checks.cases;
@@ -62,11 +65,19 @@ const declaration = (program, inputs, where) => decl => {
   }
   return { at, ...checks.judge(problem, read.value0, readBack.unsettled) };
 };
-// Sources that do not resolve have no declarations; listed, not hidden.
+// Sources that do not parse or resolve have no declarations; listed,
+// not hidden. Only a `Left` from parse or resolve skips a source; any
+// thrown error fails the test (final review B-M2).
 const skipped = new Set();
+const programOf = source => {
+  const parsed = parse(source);
+  if (named(parsed) !== 'Right') return null;
+  const found = resolve(parsed.value0);
+  return named(found) === 'Right' ? found.value0 : null;
+};
 const resultsOf = ({ origin, source }) => {
-  let program;
-  try { program = resolved(source); } catch {
+  const program = programOf(source);
+  if (program === null) {
     skipped.add(origin);
     return [];
   }
@@ -175,10 +186,18 @@ const drift = out => ({ packages: out.packages,
 
 // Observed 2026-11-02, both denominators together: 144 sources do not
 // resolve (negative programs, resolve-fault fixtures, prose snippets),
-// each listed in the diagnostic. A drift pin.
+// each listed in the diagnostic. A drift pin on the count and on the
+// identities: the SHA-256 of the sorted origins, one per line (final
+// review B-M2), so one source swapped for another also shows.
+const skippedDigest =
+  'b417e6911b38c684edbe993a6a05cc9e494382fedc4dfbed92900b108843ccfc';
 test('skipped sources: the ones that do not resolve', t => {
-  t.diagnostic(`${skipped.size} skipped: ${[...skipped].join('; ')}`);
+  const origins = [...skipped].sort();
+  const digest = createHash('sha256').update(origins.join('\n'))
+    .digest('hex');
+  t.diagnostic(`${skipped.size} skipped (${digest}): ${origins.join('; ')}`);
   assert.equal(skipped.size, 144);
+  assert.equal(digest, skippedDigest);
 });
 
 test('compatibility checks on the corpus loader\'s honest packages', t => {
