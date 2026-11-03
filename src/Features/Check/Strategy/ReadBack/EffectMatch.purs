@@ -18,6 +18,7 @@ module Features.Check.Strategy.ReadBack.EffectMatch
   , candidateOf
   , matchRow
   , matchTy
+  , sameData
   , sameLabel
   ) where
 
@@ -62,9 +63,10 @@ matchTy ∷ MTy → Ty Open → Array Fact
 matchTy recorded live = case recorded, live of
   MArrow _ _ _, _ → matchArrow recorded live
   MRecord fields _, TRecord row → Array.concatMap (field row.fields) fields
-  MData _ arguments rows, TData _ liveArguments liveRows →
-    Array.concat (Array.zipWith matchTy arguments liveArguments)
-      <> Array.concat (Array.zipWith matchRow rows liveRows)
+  MData _ arguments rows, TData _ liveArguments liveRows
+    | sameData recorded live →
+        Array.concat (Array.zipWith matchTy arguments liveArguments)
+          <> Array.concat (Array.zipWith matchRow rows liveRows)
   MHandler label rows, THandler liveLabel liveRows
     | sameLabel label liveLabel → matchArguments label liveLabel
         <> matchRow rows.inference liveRows.inference
@@ -76,6 +78,18 @@ matchTy recorded live = case recorded, live of
   named name (Tuple label _) = label == name
   snd' (Tuple _ ty) = ty
   clausesOf liveRows = fromMaybe liveRows.inference liveRows.clauses
+
+-- A recorded data type and a live one of one owner, with as many
+-- arguments and as many rows, so that zipping them pairs every part
+-- (final review A-M1); another shape gives no value. Shared with
+-- ReadBack/MarkMatch.purs.
+sameData ∷ MTy → Ty Open → Boolean
+sameData recorded live = case recorded, live of
+  MData owner arguments rows, TData liveOwner liveArguments liveRows →
+    owner == liveOwner
+      && Array.length arguments == Array.length liveArguments
+      && Array.length rows == Array.length liveRows
+  _, _ → false
 
 -- An arrow spine walked in step with the live one, by a loop.
 matchArrow ∷ MTy → Ty Open → Array Fact

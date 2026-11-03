@@ -1,7 +1,8 @@
 // Tranche 2 Task 8 regression probes (the effect-row read-back); the
 // rows are in scripts/regression-r0-t2-rows.mjs. Each loads modules from
 // the compiler under test only, through `context.compilerPath`, and
-// fails naming every case of test/r0-t2-rows-checks.mjs that differs.
+// fails naming every case of test/r0-t2-rows-checks.mjs (or, for the
+// final review's shape rows, test/r0-t2-shapes-checks.mjs) that differs.
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fail, passed } from './regression-r0-amin-support.mjs';
@@ -15,8 +16,11 @@ const loader = context => name => import(pathToFileURL(
 const checksOf = async context =>
   (await import('./r0-t2-rows-checks.mjs')).rowsChecks(loader(context));
 
-const probe = check => async context => {
-  const wrong = await (await checksOf(context))[check]();
+const shapesOf = async context => (await import('./r0-t2-shapes-checks.mjs'))
+  .shapeChecks(loader(context));
+
+const probe = (check, of = checksOf) => async context => {
+  const wrong = await (await of(context))[check]();
   if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
   passed(context);
 };
@@ -32,5 +36,8 @@ export const t2RowsProbes = {
   'r0-t2-rows-piped-key': probe('pipedWrong'),
   'r0-t2-rows-console-n': probe('consoleWrong'),
   'r0-t2-rows-fail-payload': probe('payloadWrong'),
-  'r0-t2-rows-unmarked': probe('unmarkedWrong')
+  'r0-t2-rows-unmarked': probe('unmarkedWrong'),
+  'r0-t2-rows-data-shape': probe('effectDataWrong', shapesOf),
+  'r0-t2-marks-data-shape': probe('markDataWrong', shapesOf),
+  'r0-t2-rows-annotation-shape': probe('annotationWrong', shapesOf)
 };

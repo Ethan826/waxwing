@@ -114,5 +114,36 @@ export const t2RowsRows = [
     replacement: '    UserEffect _, Unmarked → Right TermN\n',
     probe: 'r0-t2-rows-unmarked',
     message: /r0-t2-rows-unmarked: \["unmarked"\]/
+  },
+  {
+    // Final review A-M1: data types zipped whatever their owners and
+    // lengths, in the effect matcher.
+    name: 'r0-t2-rows-data-shape',
+    file: 'src/Features/Check/Strategy/ReadBack/EffectMatch.purs',
+    needle: '    | sameData recorded live →\n',
+    replacement: '    | true →\n',
+    probe: 'r0-t2-rows-data-shape',
+    message: new RegExp('r0-t2-rows-data-shape: \\["effect owner",'
+      + '"effect rows","effect arguments"\\]')
+  },
+  {
+    // The same in the mark matcher.
+    name: 'r0-t2-marks-data-shape',
+    file: 'src/Features/Check/Strategy/ReadBack/MarkMatch.purs',
+    needle: '    | sameData recorded live →\n',
+    replacement: '    | true →\n',
+    probe: 'r0-t2-marks-data-shape',
+    message: new RegExp('r0-t2-marks-data-shape: \\["marks owner",'
+      + '"marks rows","marks arguments"\\]')
+  },
+  {
+    // Final review A-M2: an annotation read at any path ending in an
+    // index under a lambda, its `Lambda/params` shape unchecked.
+    name: 'r0-t2-rows-annotation-shape',
+    file: sites,
+    needle: '    [ Named "Lambda", Named "params", Index at ] → Just at\n',
+    replacement: '    [ _, _, Index at ] → Just at\n',
+    probe: 'r0-t2-rows-annotation-shape',
+    message: /r0-t2-rows-annotation-shape: \["moved"\]/
   }
 ];

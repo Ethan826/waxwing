@@ -18,7 +18,8 @@
 -- Fail-closed: two entries under one key are `Clash`; no entry reads
 -- nothing here, and the caller reports a variable no source reads.
 module Features.Check.Strategy.ReadBack.EffectSites
-  ( entryAt
+  ( annotatedAt
+  , entryAt
   , exprAt
   , keyOf
   , tracedRow
@@ -35,9 +36,9 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Effect (ERole(..), EVar(..))
-import Domain.Recorded.Origin (Path(..), PathRoot(..))
+import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
 import Domain.Syntax (Span)
-import Domain.Type (TyRow)
+import Domain.Type (Ty, TyRow)
 import Domain.Type.Core (VarId(..))
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
@@ -69,6 +70,20 @@ exprAt body (Path path) = case path.root of
   expression = case _ of
     AtExpr found → Just found
     AtPattern _ → Nothing
+
+-- An annotation's parameter type: the annotation is recorded at the
+-- lambda's path then `Lambda/params/j`; any other path names none. One
+-- shape check for the row and mark read-backs (final review A-M2).
+annotatedAt ∷ Checked.Expr → Path → Maybe (Ty Open)
+annotatedAt body (Path path) = parameterAt =<< exprAt body lambda
+  where
+  lambda = Path path { steps = Array.dropEnd 3 path.steps }
+  index = case Array.takeEnd 3 path.steps of
+    [ Named "Lambda", Named "params", Index at ] → Just at
+    _ → Nothing
+  parameterAt (Checked.Expr found) = case found.node of
+    Checked.Lambda parameters _ → map _.ty (Array.index parameters =<< index)
+    _ → Nothing
 
 -- The one entry under `key`, nothing when there is none.
 entryAt ∷ ∀ k a. Ord k ⇒ (k → TraceKey) → k → Map k (Array a) → Entry a

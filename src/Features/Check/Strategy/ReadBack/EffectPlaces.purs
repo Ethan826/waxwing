@@ -41,7 +41,12 @@ import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
 import Domain.Row (Label(..), Row(..))
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Strategy.ReadBack.EffectMatch (Fact, matchRow, matchTy)
-import Features.Check.Strategy.ReadBack.EffectSites (entryAt, exprAt, keyOf)
+import Features.Check.Strategy.ReadBack.EffectSites
+  ( annotatedAt
+  , entryAt
+  , exprAt
+  , keyOf
+  )
 import Features.Check.Strategy.ReadBack.Fault (ReadFault)
 import Features.Check.Strategy.ReadBack.Instances (instanceFacts)
 import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
@@ -77,20 +82,11 @@ nodeType = case _ of
   AtExpr found → Checked.typeOf found
   AtPattern (Checked.Pattern found) → found.ty
 
+-- An annotation's parameter, by the shape check the mark read-back
+-- shares (EffectSites `annotatedAt`).
 annotationFacts ∷ Checked.Expr → Tuple Path MTy → Array Fact
-annotationFacts body (Tuple (Path path) ty) = maybe [] (matchTy ty <<< _.ty)
-  (parameterAt =<< exprAt body (Path path { steps = dropped }))
-  where
-  dropped = Array.dropEnd 3 path.steps
-  index = stepIndex =<< Array.last path.steps
-  parameterAt found = case nodeOf found of
-    Checked.Lambda parameters _ → Array.index parameters =<< index
-    _ → Nothing
-
-stepIndex ∷ Step → Maybe Int
-stepIndex = case _ of
-  Index index → Just index
-  Named _ → Nothing
+annotationFacts body (Tuple path ty) =
+  maybe [] (matchTy ty) (annotatedAt body path)
 
 signatureFacts
   ∷ InstanceSig → Checked.FunctionDecl → Traced → Array Fact

@@ -28,7 +28,11 @@ import Domain.Checked.Internal (Open)
 import Domain.Recorded.Effect (MLabel, MRow, MTy(..), MarkRef(..), Position)
 import Domain.Row (Label(..), Mark, Row(..))
 import Domain.Type (Ty(..), TyRow)
-import Features.Check.Strategy.ReadBack.EffectMatch (candidateOf, sameLabel)
+import Features.Check.Strategy.ReadBack.EffectMatch
+  ( candidateOf
+  , sameData
+  , sameLabel
+  )
 
 -- A recorded position and the live mark met at its place.
 type Reading = Tuple Position Mark
@@ -41,9 +45,10 @@ marksOfTy recorded live = case recorded, live of
     marksOfTy parameter liveParameter <> marksOfRow row liveRow
       <> marksOfTy result liveResult
   MRecord fields _, TRecord row → Array.concatMap (field row.fields) fields
-  MData _ arguments rows, TData _ liveArguments liveRows →
-    Array.concat (Array.zipWith marksOfTy arguments liveArguments)
-      <> Array.concat (Array.zipWith marksOfRow rows liveRows)
+  MData _ arguments rows, TData _ liveArguments liveRows
+    | sameData recorded live →
+        Array.concat (Array.zipWith marksOfTy arguments liveArguments)
+          <> Array.concat (Array.zipWith marksOfRow rows liveRows)
   MHandler label rows, THandler liveLabel liveRows
     | sameLabel label liveLabel → marksOfLabel label liveLabel
         <> marksOfRow rows.inference liveRows.inference

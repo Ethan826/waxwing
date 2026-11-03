@@ -47,11 +47,16 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Effect (MTy, Position(..))
-import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
+import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Row (Label(..), Mark)
 import Domain.Type (Ty(..))
 import Domain.Verdict.EffectPackage (Term(..))
-import Features.Check.Strategy.ReadBack.EffectSites (entryAt, exprAt, keyOf)
+import Features.Check.Strategy.ReadBack.EffectSites
+  ( annotatedAt
+  , entryAt
+  , exprAt
+  , keyOf
+  )
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Strategy.ReadBack.Least
   ( MarkTerms
@@ -167,19 +172,11 @@ nodeType = case _ of
   AtExpr found → Checked.typeOf found
   AtPattern (Checked.Pattern found) → found.ty
 
--- An annotation is recorded at the lambda's path then `Lambda/params/j`;
--- any other path gives no reading.
+-- An annotation's parameter (EffectSites `annotatedAt`); any other path
+-- gives no reading.
 annotationMarks ∷ Checked.Expr → Tuple Path MTy → Array Reading
-annotationMarks body (Tuple (Path path) ty) = maybe [] (marksOfTy ty)
-  (parameterAt =<< exprAt body (Path path { steps = lambda }))
-  where
-  lambda = Array.dropEnd 3 path.steps
-  index = case Array.takeEnd 3 path.steps of
-    [ Named "Lambda", Named "params", Index at ] → Just at
-    _ → Nothing
-  parameterAt found = case nodeOf found of
-    Checked.Lambda parameters _ → map _.ty (Array.index parameters =<< index)
-    _ → Nothing
+annotationMarks body (Tuple path ty) =
+  maybe [] (marksOfTy ty) (annotatedAt body path)
 
 nodeOf ∷ Checked.Expr → Checked.Node
 nodeOf (Checked.Expr found) = found.node
