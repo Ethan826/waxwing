@@ -1,0 +1,14 @@
+{
+  "spec": "docs/plans/2026-11-03-a2-activation-gate.md",
+  "c6": null,
+  "landed": {
+    "R034 (2)": null,
+    "R034 (10)": null
+  },
+  "comparison": null,
+  "performance": {
+    "ruling": null,
+    "measurement": null
+  },
+  "routing": null
+}
