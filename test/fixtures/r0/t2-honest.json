@@ -1,0 +1,174 @@
+{
+  "ruling": "dossier §18.155 (7), §18.157",
+  "denominators": {
+    "corpus loader": {
+      "candidates": 2823,
+      "faults": [
+        {
+          "at": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw#statsEvidence",
+          "fault": "UnreadImage (FreshVar {\"root\":\"InBody\",\"steps\":[{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]},{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Apply\"]},{\"Named\":[\"function\"]},{\"Named\":[\"FieldAccess\"]},{\"Named\":[\"record\"]}]} Rest)"
+        },
+        {
+          "at": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw#statsEvidence",
+          "fault": "UnreadImage (FreshVar {\"root\":\"InBody\",\"steps\":[{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]},{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Apply\"]},{\"Named\":[\"function\"]},{\"Named\":[\"FieldAccess\"]},{\"Named\":[\"record\"]}]} Rest)"
+        },
+        {
+          "at": "test/fixtures/r0/audit/expected-handler.pinned-selection.json#k",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:r2#1#run",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:r9#1#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/f3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev7/late1.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev7/late2.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev8/one3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev8/two3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rigid.wxw#main",
+          "fault": "Declined UnframedInstall"
+        }
+      ],
+      "refusals": [
+        {
+          "at": "examples/records.wxw#details",
+          "refusal": "RequirementUnjudged {\"decl\":5,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"Match\"]},{\"Named\":[\"arms\"]},{\"Index\":[0]},{\"Named\":[\"body\"]},{\"Named\":[\"Interpolate\"]},{\"Named\":[\"parts\"]},{\"Index\":[2]}]},\"index\":0}"
+        },
+        {
+          "at": "research/division-campaign/compile/split-selection.md#1#divide",
+          "refusal": "RequirementUnjudged {\"decl\":0,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"Block\"]},{\"Named\":[\"items\"]},{\"Index\":[0]},{\"Named\":[\"Let\"]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]}]},\"index\":0}"
+        },
+        {
+          "at": "research/division-campaign/r0/probes/f05-print-key.wxw#shown",
+          "refusal": "RequirementUnjudged {\"decl\":0,\"path\":{\"root\":\"InBody\",\"steps\":[]},\"index\":0}"
+        }
+      ],
+      "forcedTail": [
+        {
+          "at": "editors/vscode/fixtures/effect-namespaces.wxw#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":11,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":{\"Consumed\":[\"AtInstalledC\",0]}}]},\"check\":3}"
+        },
+        {
+          "at": "examples/services.wxw#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":8,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]},{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":2}"
+        },
+        {
+          "at": "test/fx-services-programs.mjs:fake#1#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":8,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]},{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":2}"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:aroundBoth#1#around",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":1,\"path\":{\"root\":\"InBody\",\"steps\":[]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":3}"
+        }
+      ],
+      "floor": 2805
+    },
+    "effect pin": {
+      "candidates": 2832,
+      "faults": [
+        {
+          "at": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw#statsEvidence",
+          "fault": "UnreadImage (FreshVar {\"root\":\"InBody\",\"steps\":[{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]},{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Apply\"]},{\"Named\":[\"function\"]},{\"Named\":[\"FieldAccess\"]},{\"Named\":[\"record\"]}]} Rest)"
+        },
+        {
+          "at": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw#statsEvidence",
+          "fault": "UnreadImage (FreshVar {\"root\":\"InBody\",\"steps\":[{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]},{\"Named\":[\"RecordLiteral\"]},{\"Named\":[\"fields\"]},{\"Index\":[0]},{\"Named\":[\"value\"]},{\"Named\":[\"Apply\"]},{\"Named\":[\"function\"]},{\"Named\":[\"FieldAccess\"]},{\"Named\":[\"record\"]}]} Rest)"
+        },
+        {
+          "at": "inline:fx032#g",
+          "fault": "Declined (OperationWithRow 1 0)"
+        },
+        {
+          "at": "test/fixtures/r0/audit/expected-handler.pinned-selection.json#k",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:r2#1#run",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:r9#1#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/f3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev7/late1.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev7/late2.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev8/one3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rev8/two3.wxw#main",
+          "fault": "Declined UnframedInstall"
+        },
+        {
+          "at": "test/fx008-probes/rigid.wxw#main",
+          "fault": "Declined UnframedInstall"
+        }
+      ],
+      "refusals": [
+        {
+          "at": "examples/records.wxw#details",
+          "refusal": "RequirementUnjudged {\"decl\":5,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"Match\"]},{\"Named\":[\"arms\"]},{\"Index\":[0]},{\"Named\":[\"body\"]},{\"Named\":[\"Interpolate\"]},{\"Named\":[\"parts\"]},{\"Index\":[2]}]},\"index\":0}"
+        },
+        {
+          "at": "research/division-campaign/compile/split-selection.md#1#divide",
+          "refusal": "RequirementUnjudged {\"decl\":0,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"Block\"]},{\"Named\":[\"items\"]},{\"Index\":[0]},{\"Named\":[\"Let\"]},{\"Named\":[\"value\"]},{\"Named\":[\"Lambda\"]},{\"Named\":[\"body\"]}]},\"index\":0}"
+        },
+        {
+          "at": "research/division-campaign/r0/probes/f05-print-key.wxw#shown",
+          "refusal": "RequirementUnjudged {\"decl\":0,\"path\":{\"root\":\"InBody\",\"steps\":[]},\"index\":0}"
+        }
+      ],
+      "forcedTail": [
+        {
+          "at": "editors/vscode/fixtures/effect-namespaces.wxw#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":11,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":{\"Consumed\":[\"AtInstalledC\",0]}}]},\"check\":3}"
+        },
+        {
+          "at": "examples/services.wxw#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":8,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]},{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":2}"
+        },
+        {
+          "at": "test/fx-services-programs.mjs:fake#1#main",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":8,\"path\":{\"root\":\"InBody\",\"steps\":[{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]},{\"Named\":[\"With\"]},{\"Named\":[\"body\"]},{\"Named\":[\"Block\"]},{\"Named\":[\"result\"]}]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":2}"
+        },
+        {
+          "at": "test/fx008-defer-programs.mjs:aroundBoth#1#around",
+          "refusal": "NotCertifiable ForcedTail {\"provenance\":{\"AtSite\":[{\"decl\":1,\"path\":{\"root\":\"InBody\",\"steps\":[]},\"rule\":{\"ExprRule\":[21]},\"role\":\"InstallSite\"}]},\"check\":3}"
+        }
+      ],
+      "floor": 2813
+    }
+  },
+  "explanations": []
+}

@@ -4,7 +4,8 @@
 // §18.155 (7)'s condition fails on either denominator
 // (test/r0-t2-honest-gate.mjs `admission`: a Malformed, a read fault
 // outside the identified ones, a refusal other than the three named
-// RequirementUnjudged with certify's own refusal, an approved entry
+// RequirementUnjudged with certify's own refusal and the four named
+// ForcedTail refusals certify accepts (§18.157), an approved entry
 // missing without `--explain`), and when the re-pin rule refuses
 // (test/r0-t2-honest-repin.mjs: no `--repin`, a vanished entry
 // without `--explain=<why>`, a denominator the old pin lacks, and a
@@ -27,7 +28,8 @@ const explanation = process.argv.find(arg => arg.startsWith('--explain='))
 const explained = explanation !== undefined;
 
 const found = await denominators(load);
-const after = { ruling: 'dossier §18.155 (7)', denominators: {} };
+const after = { ruling: 'dossier §18.155 (7), §18.157',
+  denominators: {} };
 const problems = [];
 const covers = [];
 for (const [name, { origins, rows }] of Object.entries(found)) {

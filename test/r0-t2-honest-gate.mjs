@@ -3,16 +3,21 @@
 // serial test, the pin script (scripts/r0-t2-honest-pin.mjs) and the
 // regression probes. Per denominator the pin holds (a) the declarations
 // without a package, each with its read fault, (b) the packages I3 or
-// the validator refuses, each with its refusal, and (c) the floor on
-// validated packages, candidates − |a| − |b|.
+// the validator refuses, each with its refusal, apart from (b′) the
+// admitted `NotCertifiable ForcedTail` refusals (§18.157), recorded
+// separately, and (c) the floor on validated packages,
+// candidates − |a| − |b| − |b′|.
 //
 // `admission` is ruling (7)'s condition on an initial pin: (a) exactly
 // the identified unsupported declarations (`Declined`) and the two
 // statsEvidence `UnreadImage`s; (b) only the three named
 // `RequirementUnjudged` declarations, each with the refusal today's
-// `certify` gives, the same by its own Eq (checked per entry); an
-// approved entry missing only with an explanation. Anything else, a
-// `Malformed` included, is a stop: it names the entry, never adjusts.
+// `certify` gives, the same by its own Eq (checked per entry); (b′) only
+// the four named declarations `certify` accepts, each refused
+// `NotCertifiable ForcedTail` (§18.157: known compatibility gaps, not an
+// approved loss); an approved entry missing only with an explanation.
+// Anything else, a `Malformed` included, is a stop: it names the entry,
+// never adjusts.
 // `gateProblems` compares an observation with a pin in both directions.
 const baseline = 'docs/plans/2026-10-21-c001-explicit/baseline/';
 
@@ -39,7 +44,23 @@ export const unreadImages = [
 
 export const maxUnjudged = 3;
 
+// The four ForcedTail refusals the author admitted (§18.157), by
+// identity; a fifth, or one of these refused otherwise, is not admitted.
+export const forcedTail = [
+  'editors/vscode/fixtures/effect-namespaces.wxw#main',
+  'examples/services.wxw#main',
+  'test/fx-services-programs.mjs:fake#1#main',
+  'test/fx008-defer-programs.mjs:aroundBoth#1#around'];
+
+const isForced = text => text.startsWith('NotCertifiable ForcedTail');
+
 const byAt = (left, right) => (left.at < right.at ? -1 : 1);
+
+// The packages the validator refuses, with certify's verdict.
+const refusedOf = rows => rows.filter(row => row.read === 'package'
+  && row.validate !== 'validated')
+  .map(row => ({ at: row.at, refusal: row.validate,
+    certify: row.certify, sameG0: row.sameG0 })).sort(byAt);
 
 // One denominator's observation: its lists and counts.
 export const observe = rows => ({
@@ -49,10 +70,8 @@ export const observe = rows => ({
     .map(row => ({ at: row.at, i3: row.i3 })),
   faults: rows.filter(row => row.read !== 'package')
     .map(row => ({ at: row.at, fault: row.read })).sort(byAt),
-  refusals: rows.filter(row => row.read === 'package'
-    && row.validate !== 'validated')
-    .map(row => ({ at: row.at, refusal: row.validate,
-      certify: row.certify, sameG0: row.sameG0 })).sort(byAt),
+  refusals: refusedOf(rows).filter(entry => !isForced(entry.refusal)),
+  forcedTail: refusedOf(rows).filter(entry => isForced(entry.refusal)),
   // Declarations today's `certify` accepts: each must be validated or
   // in (a) or (b).
   accepted: rows.filter(row => row.certify === 'accepted')
@@ -89,13 +108,15 @@ const allowedFaults = origins => new Map([
 export const vanishedApproved = (observed, origins) => {
   const faults = new Map(observed.faults.map(entry =>
     [entry.at, entry.fault]));
-  const refused = new Set(observed.refusals.map(entry => entry.at));
+  const refused = new Set([...observed.refusals, ...observed.forcedTail]
+    .map(entry => entry.at));
   return [
     ...[...allowedFaults(origins)].filter(([at, fault]) =>
       !approved(fault, faults.get(at)))
       .map(([at, fault]) => `approved read fault not observed: ${at} `
         + fault),
-    ...unjudged.filter(at => inside(origins)(at) && !refused.has(at))
+    ...[...unjudged, ...forcedTail].filter(at => inside(origins)(at)
+      && !refused.has(at))
       .map(at => `approved refusal not observed: ${at}`)];
 };
 
@@ -114,6 +135,10 @@ export const admission = (observed, origins, explained = false) => {
       || !entry.sameG0 || entry.certify !== entry.refusal)
       problems.push(`unexpected validator refusal: ${entry.at} `
         + `${entry.refusal} (certify: ${entry.certify})`);
+  for (const entry of observed.forcedTail)
+    if (!forcedTail.includes(entry.at) || entry.certify !== 'accepted')
+      problems.push(`ForcedTail not admitted: ${entry.at} `
+        + `${entry.refusal} (certify: ${entry.certify})`);
   if (observed.refusals.length > maxUnjudged)
     problems.push(`${observed.refusals.length} refusals, more than `
       + `${maxUnjudged}`);
@@ -125,11 +150,13 @@ export const admission = (observed, origins, explained = false) => {
 export const pinOf = observed => ({
   candidates: observed.candidates,
   faults: observed.faults,
-  refusals: observed.refusals.map(entry =>
-    ({ at: entry.at, refusal: entry.refusal })),
+  refusals: observed.refusals.map(pinEntry),
+  forcedTail: observed.forcedTail.map(pinEntry),
   floor: observed.candidates - observed.faults.length
-    - observed.refusals.length
+    - observed.refusals.length - observed.forcedTail.length
 });
+
+const pinEntry = entry => ({ at: entry.at, refusal: entry.refusal });
 
 const listed = entries => entries.map(entry =>
   `${entry.at} ${entry.fault ?? entry.refusal}`);
@@ -143,15 +170,16 @@ const apart = (name, pinned, found) => [
 // Every way `observed` departs from `pin` (one denominator); [] holds.
 export const gateProblems = (pin, observed) => {
   const faults = listed(observed.faults);
-  const refusals = listed(observed.refusals);
-  // Pinned (a) and (b): the only declarations not validated.
-  const excused = new Set([...pin.faults, ...pin.refusals]
-    .map(entry => entry.at));
-  const unvalidated = new Set([...observed.faults, ...observed.refusals]
-    .map(entry => entry.at));
+  // Pinned (a), (b) and (b′): the only declarations not validated.
+  const excused = new Set([...pin.faults, ...pin.refusals,
+    ...pin.forcedTail].map(entry => entry.at));
+  const unvalidated = new Set([...observed.faults, ...observed.refusals,
+    ...observed.forcedTail].map(entry => entry.at));
   return [
     ...apart('read fault', listed(pin.faults), faults),
-    ...apart('refusal', listed(pin.refusals), refusals),
+    ...apart('refusal', listed(pin.refusals), listed(observed.refusals)),
+    ...apart('ForcedTail', listed(pin.forcedTail),
+      listed(observed.forcedTail)),
     ...(observed.candidates === pin.candidates ? []
       : [`candidates ${observed.candidates}, pinned ${pin.candidates}`]),
     ...(observed.validated >= pin.floor ? []

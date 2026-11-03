@@ -15,8 +15,9 @@
 // new, is kept in the pin with what it covers.
 const ats = entries => new Set(entries.map(entry => entry.at));
 
-// The pinned entries of one denominator: (a) and (b).
-const entriesOf = pin => [...pin.faults, ...pin.refusals];
+// The pinned entries of one denominator: (a), (b) and (b′).
+const entriesOf = pin => [...pin.faults, ...pin.refusals,
+  ...pin.forcedTail];
 
 // Entries of the old pin the new one lacks: each needs an explanation.
 const vanished = (name, old, now) => {

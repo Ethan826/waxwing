@@ -13,8 +13,7 @@ const helper = (name, file, needle, replacement, probe, message) =>
     message });
 
 export const t2HonestRows = [
-  // Admission takes a refusal `certify` accepts (as the four
-  // ForcedTail refusals of the first run) into (b).
+  // Admission takes a refusal `certify` accepts into (b).
   helper('r0-t2-honest-admits-refusal', gate,
     '    if (!unjudged.includes(entry.at) || !isUnjudged(entry.refusal)\n'
       + '      || !entry.sameG0 || entry.certify !== entry.refusal)\n',
@@ -26,6 +25,19 @@ export const t2HonestRows = [
     '    if (!unjudged.includes(entry.at) || !isUnjudged(entry.refusal)\n',
     '    if (!isUnjudged(entry.refusal)\n',
     'r0-t2-honest-gate', /r0-t2-honest-gate: .*"newRefusal"/),
+  // The four ForcedTail refusals admitted by class, not identity
+  // (§18.157): a fifth is admitted.
+  helper('r0-t2-honest-forced-unnamed', gate,
+    '    if (!forcedTail.includes(entry.at) '
+      + '|| entry.certify !== \'accepted\')\n',
+    '    if (entry.certify !== \'accepted\')\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"fifthAdmitted"/),
+  // The pinned ForcedTail list left out of the gate's comparison: a
+  // fifth, or one of the four gone, passes the list check.
+  helper('r0-t2-honest-forced-ungated', gate,
+    '    ...apart(\'ForcedTail\', listed(pin.forcedTail),\n',
+    '    ...apart(\'ForcedTail\', listed(observed.forcedTail),\n',
+    'r0-t2-honest-gate', /r0-t2-honest-gate: .*"forcedMissing"/),
   // The re-pin rule without its vanished check: an entry leaves (a) or
   // (b) unexplained.
   helper('r0-t2-honest-repin-vanish', repinRule,

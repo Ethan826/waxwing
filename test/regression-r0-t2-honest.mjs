@@ -33,7 +33,9 @@ const mustFail = ['extraRefusal', 'removedEntry', 'belowFloor',
   'acceptedRefused', 'malformed', 'extraFault', 'missingFault',
   'otherRefusal', 'differentG0', 'fourUnjudged', 'vanishedRefusal',
   'newRefusal', 'withoutRepin', 'repinVanish', 'repinLowered',
-  'repinMissing', 'explainedFloor', 'explainedCandidates'];
+  'repinMissing', 'explainedFloor', 'explainedCandidates', 'fifthForced',
+  'fifthAdmitted', 'forcedMissing', 'forcedMissingAdmitted',
+  'forcedChanged', 'forcedCertifyRefuses'];
 const mustHold = ['holds', 'admitted', 'explainedVanish', 'repinHolds',
   'explainedEqual', 'explainedHigher'];
 

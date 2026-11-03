@@ -4,13 +4,14 @@
 // (test/regression-r0-t2-honest.mjs). Each case returns the problems
 // `gateProblems`, `admission` or the re-pin rule (`repin`) names; []
 // means it holds.
-import { admission, gateProblems, observe, pinOf, unjudged, unreadImages,
-  unsupported } from './r0-t2-honest-gate.mjs';
+import { admission, forcedTail, gateProblems, observe, pinOf, unjudged,
+  unreadImages, unsupported } from './r0-t2-honest-gate.mjs';
 import { repin } from './r0-t2-honest-repin.mjs';
 
 export { admission };
 
 const refusal = 'RequirementUnjudged {"decl":0}';
+const forced = 'NotCertifiable ForcedTail {"at":0}';
 const [u0, u1, u2] = unjudged;
 const row = (at, fields = {}) => ({ at, read: 'package', i3: 'ok',
   validate: 'validated', certify: 'accepted', sameG0: false, ...fields });
@@ -19,12 +20,14 @@ const refused = (at, refusal, certify = refusal, sameG0 = true) =>
   row(at, { validate: refusal, certify, sameG0 });
 
 // One denominator: every approved fault, the three named
-// RequirementUnjudged and three validated packages.
+// RequirementUnjudged, the four admitted ForcedTail and three validated
+// packages.
 const baseRows = () => [
   ...Object.entries(unsupported).map(([at, kind]) =>
     faulted(at, `Declined ${kind}`)),
   ...unreadImages.map(at => faulted(at, 'UnreadImage {"FreshVar":[0]}')),
   ...unjudged.map(at => refused(at, refusal)),
+  ...forcedTail.map(at => refused(at, forced, 'accepted', false)),
   row('v.wxw#a'), row('v.wxw#b'), row('v.wxw#c')];
 
 const origins = rows => new Set(rows.map(entry =>
@@ -69,7 +72,7 @@ export const gateCases = () => ({
   // A named declaration refused otherwise than certify: three refusals
   // still, so only the refusal itself is named.
   otherRefusal: () => admitted(replaced(u2,
-    refused(u2, 'NotCertifiable ForcedTail', 'accepted', false))),
+    refused(u2, 'ObligationFailed {}', 'accepted', false))),
   differentG0: () => admitted(replaced(u0,
     refused(u0, refusal, refusal, false))),
   fourUnjudged: () => admitted([...baseRows(),
@@ -81,6 +84,20 @@ export const gateCases = () => ({
   // A new (b) entry with G0's own refusal, three in all: refused.
   newRefusal: () => admitted(replaced(u2, row(u2)).map(entry =>
     (entry.at === 'v.wxw#a' ? refused('v.wxw#a', refusal) : entry)), true),
+  // The admitted ForcedTail refusals (§18.157): a fifth, one missing,
+  // one refused otherwise, one certify refuses.
+  fifthForced: () => against(replaced('v.wxw#c',
+    refused('v.wxw#c', forced, 'accepted', false))),
+  fifthAdmitted: () => admitted(replaced('v.wxw#c',
+    refused('v.wxw#c', forced, 'accepted', false))),
+  forcedMissing: () => against(replaced(forcedTail[1],
+    row(forcedTail[1]))),
+  forcedMissingAdmitted: () => admitted(replaced(forcedTail[1],
+    row(forcedTail[1]))),
+  forcedChanged: () => against(replaced(forcedTail[2],
+    refused(forcedTail[2], 'ObligationFailed {}', 'accepted', false))),
+  forcedCertifyRefuses: () => admitted(replaced(forcedTail[3],
+    refused(forcedTail[3], forced, refusal, false))),
   // The re-pin rule.
   repinHolds: () => repinned(baseRows()).problems,
   repinKeeps: () => repinned(replaced(u1, row(u1)),
