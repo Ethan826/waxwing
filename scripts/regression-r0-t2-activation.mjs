@@ -33,6 +33,25 @@ export const t2ActivationRows = [
       + '    || !String',
     '  ...d.forcedTail.filter(entry => false\n    || !String',
     /r0-t2-activation-gate: .*"fifthForced"/),
+  // A section up to §18.157 read as a ruling (review I1): §18.157
+  // itself records C6 as undecided.
+  helper('r0-t2-activation-any-section', evidence,
+    '  if (!isLater(cite))\n',
+    '  if (false && !isLater(cite))\n',
+    /r0-t2-activation-gate: .*"c6Early"/),
+  // §18.157's figures not checked (review I3): a pin lowered
+  // consistently, without a re-pin ruling, reads as approved.
+  helper('r0-t2-activation-figures-unchecked', pin,
+    '  if (d.candidates === approved.candidates '
+      + '&& d.floor === approved.floor\n',
+    '  if (true\n',
+    /r0-t2-activation-gate: .*"pinLowered"/),
+  // The measurement's own budget read before the status's (review I4).
+  helper('r0-t2-activation-own-budget', gate,
+    '    const budget = perf.budget?.[part]?.[metric];\n',
+    '    const budget = file[part]?.[metric]?.budget\n'
+      + '      ?? perf.budget?.[part]?.[metric];\n',
+    /r0-t2-activation-gate: .*"overOwnBudget"/),
   // Unreadable evidence read as met.
   helper('r0-t2-activation-throw-met', gate,
     "    return result([`evidence unreadable: ${error.message}`], []);\n",

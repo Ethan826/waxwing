@@ -1,21 +1,26 @@
 // The A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md;
 // the seven criteria of dossier §18.156's report, §18.157), as pure
-// functions over committed evidence: `evaluate(evidence)` gives seven
+// functions over evidence in the working tree: `evaluate(evidence)` gives seven
 // results, each `{ id, title, met, state }`, `state` the measured lines.
 // `evidence` holds the gate-status file (`status`), Task 13's pin
 // (`pin`), the dossier's and the statements' text, the regression
 // registry's row names (`rows`, a Set) and the files the status cites
 // (`files`, path to parsed JSON or null). Nothing here decides: a
 // criterion that needs the author is met only when the status cites a
-// dossier section that exists and names the matter. Absent or misshapen
-// evidence is unmet, never assumed met; a measure that throws is unmet
-// with its message. scripts/r0-t2-activation-gate.mjs gathers the
-// evidence and prints `reportText`; it runs neither corpus nor compiler.
-import { missing, result, ruling, standing, statementsSeven, statusKey }
-  from './r0-t2-activation-evidence.mjs';
+// dossier section after §18.157 that exists and names the matter.
+// Absent or misshapen evidence is unmet, never assumed met; a measure
+// that throws is unmet with its message.
+// scripts/r0-t2-activation-gate.mjs gathers the evidence and prints
+// `reportText`; it runs neither corpus nor compiler.
+import { citesWhole, missing, result, ruling, standing, statementsSeven,
+  statusKey } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
 
-export const landedItems = ['R034 (2)', 'R034 (10)'];
+// Each R034 item with the tag its regression row's name must carry, so
+// an unrelated row, or one row for both, does not count (BACKLOG itself
+// is not read).
+export const landedItems = [['R034 (2)', 'r034-2'],
+  ['R034 (10)', 'r034-10']];
 export const comparisonKeys = ['census', 'window', 'rt8', 'shadow'];
 export const perfParts = ['readBack', 'validator'];
 export const perfMetrics = ['compileTime', 'peakMemory'];
@@ -32,18 +37,29 @@ const ruled = (evidence, key, token) => {
 // 3. The author's C6 decision (A2 spec §12 C6: open until replacement).
 const c6 = evidence => ruled(evidence, 'c6', 'C6');
 
-// 4. BACKLOG R034 (2) and (10) landed: each names a regression row the
-// registry holds (a fix lands with its restored-defect row).
+const tagged = (row, tag) => new RegExp(`(^|-)${tag}(-|$)`).test(row);
+
+// One item's row: recorded, tagged for the item, in the registry.
+const landedLine = (evidence, [item, tag], row) => {
+  if (typeof row !== 'string') return [false, `${item}: not landed `
+    + '(no regression row recorded)'];
+  if (!tagged(row, tag))
+    return [false, `${item}: row ${row} does not carry the tag ${tag}`];
+  return evidence.rows.has(row) ? [true, `${item}: landed, row ${row}`]
+    : [false, `${item}: row ${row} not in the regression registry`];
+};
+
+// 4. BACKLOG R034 (2) and (10) landed: each names its own regression
+// row, which the registry holds (a fix lands with its restored-defect
+// row).
 const landed = evidence => {
   const items = statusKey(evidence, 'landed');
   if (!isObject(items)) return missing('landed');
-  const lines = landedItems.map(item => {
-    const row = items[item];
-    if (typeof row !== 'string') return [false, `${item}: not landed `
-      + '(no regression row recorded)'];
-    return evidence.rows.has(row) ? [true, `${item}: landed, row ${row}`]
-      : [false, `${item}: row ${row} not in the regression registry`];
-  });
+  const rows = landedItems.map(([item]) => items[item]);
+  const lines = [...landedItems.map((item, index) =>
+    landedLine(evidence, item, rows[index])),
+  ...(typeof rows[0] === 'string' && rows[0] === rows[1]
+    ? [[false, `one row for both items: ${rows[0]}`]] : [])];
   return result(lines.filter(([met]) => !met).map(([, line]) => line),
     lines.filter(([met]) => met).map(([, line]) => line));
 };
@@ -65,17 +81,23 @@ const comparison = evidence => {
       `${key} ${file[key].moved.length} moved`).join(', ')} (${path})`]);
 };
 
-// One part's measurements: each metric measured within its budget.
-const partProblems = (path, file, part) => perfMetrics.flatMap(metric => {
-  const found = file[part]?.[metric];
-  if (!Number.isFinite(found?.budget) || !Number.isFinite(found?.measured))
-    return [`${path}: ${part} lacks ${metric} budget and measurement`];
-  return found.measured <= found.budget ? []
-    : [`${path}: ${part} ${metric} ${found.measured} over ${found.budget}`];
-});
+// One part's measurements, each within the status file's budget for
+// it; budgets in the measurement file are not read (review I4).
+const partProblems = (perf, path, file, part) =>
+  perfMetrics.flatMap(metric => {
+    const budget = perf.budget?.[part]?.[metric];
+    const measured = file[part]?.[metric]?.measured;
+    if (!Number.isFinite(budget))
+      return [`gate status lacks the ${part} ${metric} budget`];
+    if (!Number.isFinite(measured))
+      return [`${path}: ${part} lacks a ${metric} measurement`];
+    return measured <= budget ? []
+      : [`${path}: ${part} ${metric} ${measured} over ${budget}`];
+  });
 
-// 6. Performance qualification (BACKLOG R035): an approved budget and a
-// committed measurement within it, read-back and validator apart.
+// 6. Performance qualification (BACKLOG R035): a budget ruled after
+// §18.157 with its figures in the status, and a recorded measurement
+// within them, read-back and validator apart.
 const performance = evidence => {
   const perf = statusKey(evidence, 'performance');
   if (!isObject(perf)) return missing('performance');
@@ -84,10 +106,12 @@ const performance = evidence => {
   const file = typeof path === 'string' ? evidence.files[path] ?? null
     : null;
   const problems = [...(budget.met ? [] : [`budget ${budget.line}`]),
+    ...(isObject(perf.budget) ? [] : ['no budget figures recorded']),
     ...(file === null ? ['not measured (no measurement recorded)']
       : [...(typeof file.conditions === 'string' ? []
         : [`${path}: no conditions`]),
-      ...perfParts.flatMap(part => partProblems(path, file, part))])];
+      ...perfParts.flatMap(part =>
+        partProblems(perf, path, file, part))])];
   return result(problems, problems.length > 0 ? []
     : [`budget ${budget.line}; measured within it (${path})`]);
 };
@@ -98,7 +122,7 @@ const routing = evidence => {
   const decided = ruled(evidence, 'routing', 'routing');
   const seven = statementsSeven(evidence.statements);
   const cite = statusKey(evidence, 'routing');
-  const cited = decided.met && seven !== null && seven.includes(cite);
+  const cited = decided.met && citesWhole(seven, cite);
   const held = ['U4', 'U6'].map(name =>
     [name, standing(evidence.statements, name)]);
   return result([
@@ -115,7 +139,7 @@ const routing = evidence => {
 export const criteria = [
   { id: 1, title: 'Task 13\'s pin approved; no unexpected refusal',
     measure: pinApproved },
-  { id: 2, title: 'A1: every candidate validated or on a ruled list',
+  { id: 2, title: 'A1: each gap list\'s loss on replacement ruled',
     measure: acceptance },
   { id: 3, title: 'the author\'s C6 decision', measure: c6 },
   { id: 4, title: 'BACKLOG R034 (2) and (10) landed', measure: landed },

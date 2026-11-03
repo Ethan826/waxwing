@@ -5,14 +5,18 @@ import { expected, gateCases, wrongCases }
   from './r0-t2-activation-gate-cases.mjs';
 import { criteria, evaluate, reportText }
   from './r0-t2-activation-gate.mjs';
-import { section } from './r0-t2-activation-evidence.mjs';
+import { readFileSync } from 'node:fs';
+import { dossierFile, section, statementsFile }
+  from './r0-t2-activation-evidence.mjs';
+import { met } from './r0-t2-activation-gate-met.mjs';
 
 // The A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 // on synthetic evidence (fixture-level): all seven met on `met`, and
 // each must-fail case leaves unmet exactly the criteria it names,
-// absent evidence included. Then the committed tree, read as the
-// report script reads it: the report is consistent with its exit code
-// whatever the gate's state.
+// absent evidence included. Then the real dossier: sections up to
+// §18.157 record these matters as undecided and must not count as
+// rulings (review I1). Last, the working tree as the report script
+// reads it: the report agrees with its exit code whatever the state.
 const cases = gateCases();
 
 test('the met evidence meets all seven criteria', () => {
@@ -37,6 +41,19 @@ test('absent evidence is unmet, never assumed met', () => {
     statements: null, rows: new Set(), files: {} });
   assert.deepEqual(nothing.filter(found => found.met), []);
   assert.match(reportText(nothing), /gate: not met \(1, 2, 3, 4, 5, 6, 7\)/);
+});
+
+test('sections up to §18.157 on the real dossier rule nothing', () => {
+  const evidence = { ...met(),
+    dossier: readFileSync(dossierFile, 'utf8'),
+    statements: readFileSync(statementsFile, 'utf8') };
+  evidence.status = { ...evidence.status, c6: '§18.157',
+    routing: '§18.155', losses: { faults: '§18.155',
+      refusals: '§18.155', forcedTail: '§18.157' },
+    performance: { ...evidence.status.performance, ruling: '§18.157' } };
+  const unmetIds = evaluate(evidence).filter(found => !found.met)
+    .map(found => found.id);
+  for (const id of [2, 3, 6, 7]) assert.ok(unmetIds.includes(id), `${id}`);
 });
 
 test('a section is found by its whole number only', () => {

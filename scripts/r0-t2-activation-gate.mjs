@@ -1,6 +1,6 @@
 // Prints the A2 activation gate's report (docs/plans/2026-11-03-a2-
 // activation-gate.md): each of the seven criteria with its measured
-// state, read from committed evidence only (the gate-status file
+// state, read from files in the working tree only (the gate-status file
 // test/fixtures/r0/t2-activation-gate.json, Task 13's honest pin, the
 // dossier, the statements, the regression registry's row names and the
 // files the status cites). It runs neither the corpus nor the compiler,
