@@ -89,6 +89,18 @@ export const gateCases = () => ({
   repinVanish: () => repinned(replaced(u1, row(u1))).problems,
   repinLowered: () => repinned(replaced('v.wxw#a',
     refused('v.wxw#a', refusal))).problems,
+  // §18.157: an explanation never permits a lower floor or candidate
+  // count. A validated package refused lowers the floor; an approved
+  // fault gone with its declaration lowers the candidates only.
+  explainedFloor: () => repinned(replaced('v.wxw#a',
+    refused('v.wxw#a', refusal)), { explanation: 'why' }).problems,
+  explainedCandidates: () => repinned(baseRows().filter(entry =>
+    entry.at !== unreadImages[0]), { explanation: 'why' }).problems,
+  // An equal or higher floor and count, explained: accepted.
+  explainedEqual: () => repinned(baseRows(),
+    { explanation: 'why' }).problems,
+  explainedHigher: () => repinned([...baseRows(), row('v.wxw#d')],
+    { explanation: 'why' }).problems,
   repinMissing: () => repin({ denominators: {} },
     { denominators: { d: pinOf(observe(baseRows())) } },
     { repin: true }).problems

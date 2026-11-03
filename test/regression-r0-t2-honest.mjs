@@ -33,8 +33,9 @@ const mustFail = ['extraRefusal', 'removedEntry', 'belowFloor',
   'acceptedRefused', 'malformed', 'extraFault', 'missingFault',
   'otherRefusal', 'differentG0', 'fourUnjudged', 'vanishedRefusal',
   'newRefusal', 'withoutRepin', 'repinVanish', 'repinLowered',
-  'repinMissing'];
-const mustHold = ['holds', 'admitted', 'explainedVanish', 'repinHolds'];
+  'repinMissing', 'explainedFloor', 'explainedCandidates'];
+const mustHold = ['holds', 'admitted', 'explainedVanish', 'repinHolds',
+  'explainedEqual', 'explainedHigher'];
 
 export const t2HonestProbes = {
   'r0-t2-honest-gate': async context => {

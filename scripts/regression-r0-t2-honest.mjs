@@ -6,7 +6,7 @@
 // of test/), the others the compiler.
 const gate = 'test/r0-t2-honest-gate.mjs';
 const repinRule = 'test/r0-t2-honest-repin.mjs';
-const counted = "    ...['floor', 'candidates'].filter(key => ";
+const fell = "  .filter(key => now[key] < old[key])\n";
 
 const helper = (name, file, needle, replacement, probe, message) =>
   ({ name, tree: 'test', edits: [{ file, needle, replacement }], probe,
@@ -29,14 +29,21 @@ export const t2HonestRows = [
   // The re-pin rule without its vanished check: an entry leaves (a) or
   // (b) unexplained.
   helper('r0-t2-honest-repin-vanish', repinRule,
-    '      !kept.has(entry.at))\n',
-    '      !kept.has(entry.at) && false)\n',
+    '.filter(entry => !kept.has(entry.at))\n',
+    '.filter(entry => !kept.has(entry.at) && false)\n',
     'r0-t2-honest-gate', /r0-t2-honest-gate: .*"repinVanish"/),
   // A floor lowered by one passes the re-pin rule unexplained.
-  helper('r0-t2-honest-repin-floor', repinRule,
-    `${counted}now[key] < old[key])\n`,
-    `${counted}now[key] < old[key] - 1)\n`,
+  helper('r0-t2-honest-repin-floor', repinRule, fell,
+    '  .filter(key => now[key] < old[key] - 1)\n',
     'r0-t2-honest-gate', /r0-t2-honest-gate: .*"repinLowered"/),
+  // The pre-§18.157 rule: an explanation permits a lower floor or
+  // candidate count.
+  helper('r0-t2-honest-repin-explained', repinRule,
+    '        problems.push(...fallen(name, old, now));\n',
+    '        (options.explanation === undefined ? problems : covers)\n'
+      + '          .push(...fallen(name, old, now));\n',
+    'r0-t2-honest-gate',
+    /r0-t2-honest-gate: .*"explainedFloor","explainedCandidates"/),
   // Earlier explanations dropped on a re-pin.
   helper('r0-t2-honest-repin-keeps', repinRule,
     '    explanations: [...before?.explanations ?? [], ...added] } };\n',

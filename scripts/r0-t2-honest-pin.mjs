@@ -6,11 +6,13 @@
 // outside the identified ones, a refusal other than the three named
 // RequirementUnjudged with certify's own refusal, an approved entry
 // missing without `--explain`), and when the re-pin rule refuses
-// (test/r0-t2-honest-repin.mjs: no `--repin`, a vanished entry or a
-// lower floor or candidate count without `--explain=<why>`, a
-// denominator the old pin lacks). The explanation is recorded with
-// what it covers. Floors derive from the lists and the denominators
-// (`pinOf`); there is no option to lower one or add an exception.
+// (test/r0-t2-honest-repin.mjs: no `--repin`, a vanished entry
+// without `--explain=<why>`, a denominator the old pin lacks, and a
+// lower floor or candidate count whatever the explanation, §18.157).
+// The explanation documents an approved change and is recorded with
+// what it covers; it approves nothing. Floors derive from the lists and
+// the denominators (`pinOf`); there is no option to lower one or add an
+// exception.
 //   node scripts/r0-t2-honest-pin.mjs [--repin] [--explain=<why>]
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { load } from '../test/r0-generate-support.mjs';

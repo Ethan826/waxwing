@@ -10,6 +10,9 @@ import { unjudged } from './r0-t2-honest-gate.mjs';
 // and a fourth RequirementUnjudged. test/r0-t2-honest.serial.test.mjs
 // runs the same probes on the corpus.
 const cases = gateCases();
+const lowered = (key, from, to) => `d: ${key} ${from} to ${to} refused; `
+  + 'a lower floor or candidate count needs the author\'s ruling, '
+  + 'not --explain';
 
 test('the gate holds on its own observation', () => {
   assert.deepEqual(cases.holds(), []);
@@ -63,14 +66,23 @@ test('the re-pin rule refuses what it must and keeps explanations',
     assert.deepEqual(cases.withoutRepin(), ['a pin exists: --repin']);
     assert.deepEqual(cases.repinVanish(),
       [`needs --explain: d: vanished ${unjudged[1]}`]);
-    assert.deepEqual(cases.repinLowered(),
-      ['needs --explain: d: floor 3 to 2']);
+    assert.deepEqual(cases.repinLowered(), [lowered('floor', 3, 2)]);
     assert.deepEqual(cases.repinMissing(),
       ['the old pin has no denominator d']);
     assert.deepEqual(cases.repinKeeps(), [
       { explanation: 'earlier', covers: [] },
       { explanation: 'why', covers: [`d: vanished ${unjudged[1]}`] }]);
   });
+
+// §18.157: `--explain` documents a change; it never permits a lower
+// floor or candidate count.
+test('an explanation does not permit a lower floor or count', () => {
+  assert.deepEqual(cases.explainedFloor(), [lowered('floor', 3, 2)]);
+  assert.deepEqual(cases.explainedCandidates(),
+    [lowered('candidates', 18, 17)]);
+  assert.deepEqual(cases.explainedEqual(), []);
+  assert.deepEqual(cases.explainedHigher(), []);
+});
 
 test('admission is the function the pin script calls', () => {
   assert.equal(typeof admission, 'function');
