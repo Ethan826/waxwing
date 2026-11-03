@@ -5,9 +5,15 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-02): **Stage B stopped at Task 13 for the author
-(§18.156): Tasks 3-12, 14, 15 and Task 13's tooling integrated; Task
-13's pin and Task 16 wait.** Before that: (2026-11-01, later)
+Status (2026-11-03): **resumed under §18.157: the four ForcedTail
+refusals admitted to the pin (floors 2805 and 2813), the pin script's
+`--explain` corrected, and Task 16 authorized; A2's Task 16 held.**
+ForcedTail identifies dependency on the provisional forcing restriction,
+not demonstrated causation (§18.157 (1)); these four losses join the
+earlier forcing-loss evidence (stand-in runs: aroundBoth and k2f
+refused, A2 validator plan Provenance V1a); neither list is
+exhaustive. Before that: (2026-11-02) **Stage B stopped at Task 13 for
+the author (§18.156).** Before that: (2026-11-01, later)
 **Stage A complete (§18.154); Stage B
 (Tasks 3-16 below) authorized with rulings, dossier §18.155; A2's Task
 16, replacement, F14's retirement and pushing held.** Before that:
@@ -404,7 +410,9 @@ test/fixtures/r0/t2-honest.json and its reviewed pin script.
   unexpected refusal) is a stop; no floor lowered, no exception added.
 - [ ] Assertions both ways, must-fail probes (extra refusal, removed
   entry, floor minus one), the 11 annotation declarations validated
-  (H2 observed or a stop).
+  (H2 observed or a stop). Observed (§18.157 (2)): the 11 validate;
+  with the defect restored ten refuse at the reported checks (nine at
+  `Consumed` `InstallR` check 0, one `RigidExact`), not at E1.
 - [ ] Ruling (8)'s test: every dropped partial-stage row is traced
   unconstrained, settles empty, and its consumption obligation passes;
   the result names its scope (those stages only).

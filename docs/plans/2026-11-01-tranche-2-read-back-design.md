@@ -303,6 +303,14 @@ holds. **Reasoned**: no package was built and `validate` was not run.
 Stage B Task 8 observes it, and Task 3a's restored-defect row shows it
 (§I).
 
+**Observed (Task 13; §18.157 (2)); the prediction above is retired.**
+With the correction all eleven validate. With the defect restored, ten
+refuse at the reported checks, nine at their `Consumed` `InstallR`
+consumption (ObligationFailed, check 0) and one `RigidExact`
+(amb3#f); form.annotation-label#g validates anyway. None refuses at
+E1 as reasoned here. The restored-defect proof is tied to these
+observed failures, not to E1.
+
 ## C. The live-value trace
 
 ### C.1 What is traced, and where the checker allocates it
@@ -782,7 +790,7 @@ should try to break each with a program the table does not cover.
 | # | Claim | Check | Standing |
 |---|---|---|---|
 | H1 | The correction renames exactly the implicit annotation tails, to the enclosing lambda's `EffectOf`; written rows, C rows, marks and positions unchanged; nothing minted twice | 31 renamed = 31 moved (effect pin); marked-corpus 4 of 4 with the C1 fix; annotation reads 11 → 0 apart; B.4 examples; Stage B unit tests and the double-mint row. (The problem pin's 0 moved shows only that atoms are unchanged.) | corpus-observed; tests owed |
-| H2 | Without the correction an honest package fails E1 on the 11; with it, E1 holds there | B.5 | reasoned; Task 8 and Task 3a's restored defect owed |
+| H2 | With the correction the 11 validate; without it, 10 refuse (9 at `Consumed` `InstallR` check 0, 1 `RigidExact`), not at E1 as B.5 reasoned | B.5 (observed paragraph), Task 13's H2 test | observed (§18.157 (2)); B.5's E1 prediction retired |
 | H3 | Collecting the trace adds no constraint and changes no inference decision | opaque type, no instances, export scan; `same.mjs` with the research hook: 3,061 `recheck` results, 1,138 first diagnostics and Go identical | reasoned; hook-observed, not production; Task 3d owed |
 | H4 | The span key identifies one use site per kind in a declaration; (span, argument span) one applied stage | 0 shared keys of 40,287; every applied lookup single; clash is the read fault `Clash` | corpus-observed; test owed |
 | H5 | The role table reads the live value the recorded role names | traced = located on every overlap (EffInst 914, OpenedRow 76, use stages 194, Opened 7, Instantiated 1); applied/piped rows = the callee's arrow rows (975) | corpus-observed agreement with today's checker only |
@@ -982,8 +990,9 @@ each then belongs in (b) with that refusal, which the first run settles
 (re-review N5). **The author approves** the
 first pinned lists and counts, any non-empty (b) (each entry is a stop
 until ruled), and every later re-pin. Restored-defect row for 3a: with
-`EffRigid` restored in an isolated copy, the 11 refuse at E1 and the
-gate fails. 0.45-0.6M.
+`EffRigid` restored in an isolated copy, the gate fails (observed:
+ten of the 11 refuse, none at E1; B.5's observed paragraph, §18.157
+(2)). 0.45-0.6M.
 
 **Task 9 (plan Task 8). Owed compatibility checks** (spec §2.5, §11)
 on honest packages: `erase` = today's σ by the canonical comparison;
