@@ -1,5 +1,31 @@
 # Bootstrap evidence and current checkpoint
 
+## Tranche 2 read-back: Stage B Tasks 13 and 16 (2026-11-03)
+
+Resumed under dossier §18.157. Task 13 (abc0260, b0d20c1, d375ffc):
+the re-pin rule refuses a lower floor or candidate count, or a dropped
+denominator, whatever `--explain` says; the honest-package pin
+(test/fixtures/r0/t2-honest.json) is written from a fresh run with the
+four ForcedTail refusals listed by identity apart from the three
+RequirementUnjudged: corpus loader 2823 candidates, floor 2805, 11 read
+faults; effect pin 2832, 2813, 12. The serial gate
+(test/r0-t2-honest.serial.test.mjs, reworked from d78874c) is green;
+on the corpus no stage is marked "consumption unchecked" (no refused
+package has a dropped stage), and the mark is shown on the inline
+fixture by its own probe and two restored-defect rows. Records
+(7d9122c): H2 as observed (ten refusals with the defect restored, none
+at E1), ForcedTail as dependency, BACKLOG R035 (performance).
+
+Task 16 (850de13..0563207, b647706): the activation gate,
+docs/plans/2026-11-03-a2-activation-gate.md, and its report,
+`node scripts/r0-t2-activation-gate.mjs`, which reads files in the
+working tree and exits 1 while any criterion is unmet. Today: **not
+met (2, 3, 4, 5, 6, 7)**; criterion 1 (the pin as approved) is met. A
+cited ruling counts only if numbered after §18.157. 48 cases (47
+must-fail, 1 must-hold); 8 regression rows, 8 of 8 proved. Nothing is
+activated; A2's Task 16 (minting) stays held. Whole-branch reviews and
+the routine verify follow.
+
 ## a-min approval review and corrections; local landing; push (2026-10-25)
 
 Landing: branch landing-2026-10-25 (FX033, arithmetic Tasks 1-2, the

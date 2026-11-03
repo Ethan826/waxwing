@@ -4,7 +4,12 @@ Implementation plan (implemented through Task 15 as a non-minting
 validator; Task 16, the minting switch, held; dossier §18.147):
 docs/plans/2026-10-31-a2-validator-plan.md.
 
-Status (2026-11-01): **implemented as a non-minting validator, plan Tasks
+Status (2026-11-03): **honest packages now come from tranche 2's
+read-back, and `validate` judges them on the corpus (2805 / 2813
+validated; §18.157); the activation gate is specified and not met
+(docs/plans/2026-11-03-a2-activation-gate.md); C6 and Task 16, the
+minting switch, stay held.** Earlier status (2026-11-01):
+**implemented as a non-minting validator, plan Tasks
 0-15 (dossier §18.145-§18.147); Task 16, the minting switch, held, so the
 existing substitution-only `certify` still mints under F14 (joint-checker
 assurance); no soundness claim.** Amended 2026-11-01 for the completion

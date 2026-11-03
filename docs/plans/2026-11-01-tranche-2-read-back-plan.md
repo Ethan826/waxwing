@@ -5,8 +5,11 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-03): **resumed under §18.157: the four ForcedTail
-refusals admitted to the pin (floors 2805 and 2813), the pin script's
+Status (2026-11-03, later): **Tasks 13 and 16 done (pin, gate
+specification and report); whole-branch reviews and the routine
+verify pending.** Before that: (2026-11-03) **resumed under
+§18.157: the four ForcedTail refusals admitted to the pin (floors
+2805 and 2813), the pin script's
 `--explain` corrected, and Task 16 authorized; A2's Task 16 held.**
 ForcedTail identifies dependency on the provisional forcing restriction,
 not demonstrated causation (§18.157 (1)); these four losses join the

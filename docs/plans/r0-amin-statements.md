@@ -1,6 +1,14 @@
 # a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
-Status (2026-11-01): the A2 validator is implemented as a non-minting
+Status (2026-11-03): tranche 2's read-back builds honest effect
+packages from the live checker (dossier §18.155-§18.157); on the corpus
+2805 of 2823 (corpus loader) and 2813 of 2832 (effect-pin sources)
+validate, the rest pinned by name (read faults, three
+RequirementUnjudged, four ForcedTail), and H2 is observed. §7's
+routing after activation is not ruled: it is criterion 7 of the
+activation gate (docs/plans/2026-11-03-a2-activation-gate.md), which
+is not met. Minting stays held; no effect-soundness claim. Earlier
+status (2026-11-01): the A2 validator is implemented as a non-minting
 `validate` (docs/plans/2026-10-31-a2-validator-plan.md, dossier §18.147);
 it judges these obligations on hand-built packages; no read-back yet
 produces effect packages, the minting switch (Task 16) is held, and no

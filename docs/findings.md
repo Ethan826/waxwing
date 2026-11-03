@@ -5226,3 +5226,28 @@ totals unchanged, 0 defects, 0 position findings.
   AtDeferredRow) have no accepted-package coverage, binding-label marks
   are never mutated, and completion and settling are shared with the
   validator (§18.146).
+
+## Tranche 2: findings from Tasks 13 and 16 (2026-11-03)
+
+- H2's reasoning in design §B.5 was wrong about where the defect shows.
+  With the generation correction reverted, ten of the 11 annotation
+  declarations refuse, nine at their `Consumed` `InstallR` consumption
+  (ObligationFailed, check 0) and one `RigidExact` (amb3#f), and
+  form.annotation-label#g validates anyway; none refuses at E1. Check:
+  Task 13's H2 test; §18.157 (2) retired the prediction.
+- Four honest packages that `certify` accepts are refused
+  `NotCertifiable ForcedTail` (§18.156 lists them). This shows the
+  refusal depends on the provisional forcing restriction (E4′); it does
+  not show the restriction alone causes it (§18.157 (1)). Check: the
+  pin's `forcedTail` list, compared both ways by the honest gate.
+- On the corpus no refused package has a dropped partial stage, so the
+  "consumption unchecked" mark is never exercised there; it is shown
+  only on the inline fixture (probe r0-t2-honest-stages-unchecked and
+  rows r0-t2-honest-stages-unmarked, -mismarked).
+- A "ruling recorded" check that matches a dossier heading is spoofed
+  by sections that record a matter as open: §18.157 for C6, §18.155
+  for routing. The activation gate counts only rulings numbered after
+  §18.157 and still cannot read what a later section decides (its
+  blind-spot list). Check: the real-dossier test in
+  test/r0-t2-activation-gate.test.mjs and row
+  r0-t2-activation-any-section.

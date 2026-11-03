@@ -1,6 +1,10 @@
 # Tranche 2 read-back: design note (Task 2, 2026-11-01)
 
-Status (2026-11-01): **approved with rulings for Stage B (dossier
+Status (2026-11-03): **Stage B implemented (Tasks 3-16), the pin
+approved with four ForcedTail admitted (§18.157), the activation
+gate specified; whole-branch reviews and the routine verify
+pending.** Earlier status (2026-11-01): **approved with rulings for
+Stage B (dossier
 §18.155); revision 3 re-reviewed, ready with conditions, conditions
 met (§18.154).** Earlier status: design and research only. Task 2
 of docs/plans/2026-11-01-tranche-2-read-back-plan.md, under the
