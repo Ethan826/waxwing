@@ -1,4 +1,4 @@
-# RESUME HERE (2026-10-30, 22:16 America/New_York; overnight run)
+# RESUME HERE (2026-11-03, America/New_York)
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -8,48 +8,33 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-No milestone has moved since 2026-10-25.
+No milestone has moved since 2026-10-25. Tranche 2 Stage B, the
+evidence milestone 1 needs, is complete and awaits the author's
+acceptance; milestone 1 itself waits on the activation gate.
 
 ## What is running now
 
-Nothing: paused by the author on 2026-11-02 to pace credit use.
+Nothing. Tranche 2 Stage B finished on 2026-11-03 (dossier §18.158):
+Tasks 3-16, two whole-branch reviews and their fixes, routine verify
+passed at 7e0492b (3385/3385, 230/230, 437/437, growth 2.140). No
+stop condition occurred.
 
-**Resume with exactly this (dossier §18.157, authorized, no further
-checkpoint unless a stop condition occurs):**
-1. Task 13's pin: on branch t2/honest (worktree .claude/worktrees/
-   on-lane-c), redo the serial gate (d78874c, red) on top of the
-   integrated tooling (r0-t2-d1 has 90ec094, dadf29c): admit exactly
-   the four ForcedTail refusals named in §18.157, recorded separately
-   from the three RequirementUnjudged; floors 2805 (corpus loader) and
-   2813 (effect-pin sources). The stage check now marks stages in
-   refused packages "consumption unchecked": rewrite d78874c's
-   all-pass assertion accordingly.
-2. Pin script correction (scripts/r0-t2-honest-pin.mjs,
-   test/r0-t2-honest-repin.mjs, tests and rows): `--explain` must not
-   permit a lower floor or candidate denominator; any such re-pin
-   needs an explicit author ruling.
-3. Record corrections: ForcedTail is dependency, not causation
-   (§18.157 (1)); link to the earlier forcing-loss evidence; H2 as
-   observed (ten refusals at the reported checks; §B.5's E1 prediction
-   retired) in the design note and plan.
-4. The trace's compile-time (+22%) and memory cost recorded as a
-   performance issue requiring qualification before activation
-   (BACKLOG item), not a functional blocker.
-5. This plan's Task 16: activation-gate specification (the seven
-   criteria in the last report, §18.156), records (statements, spec
-   §11 owed checks now run, closure checklist, progress, findings,
-   BACKLOG), two whole-branch reviews (read-back semantics; gates,
-   pins, live) over 823f628..head, their fixes, then one routine
-   `npm run verify` alone under the lock; performance reported
-   separately.
+**Waiting on the author:**
+1. Accept Stage B as functionally complete (§18.158), or not.
+2. The activation gate (docs/plans/2026-11-03-a2-activation-gate.md;
+   `node scripts/r0-t2-activation-gate.mjs`) reads not met (2-7):
+   loss-on-replacement rulings per gap list, C6, R034 (2) and (10),
+   the minting comparison, performance (R035) with a budget, and
+   statements §7's routing with U4/U6. Each needs a ruling or work;
+   rulings count only if numbered after §18.157.
+3. Whether and when to run `npm run perf`.
 Held: A2's Task 16 (minting switch), C6, F14's retirement, replacement
-losses, any push.
+losses, any push. Before activation: R036 (1)-(3).
 
-Integrated state: r0-t2-d1 at 441e19a (Stage B Tasks 3-12, 14, 15,
-Task 13 tooling; all focused and serial tests green at b166c6c).
-Ledger (git-ignored): .superpowers/sdd/2026-11-01-tranche-2-read-back-
-plan/progress.md. Spend so far in Stage B about 4.9M of the 4.9-6.8M
-estimate.
+Integrated state: r0-t2-d1 at the §18.158 records commit (functional
+head 7e0492b). Ledger (git-ignored, kept until landing):
+.superpowers/sdd/2026-11-01-tranche-2-read-back-plan/progress.md.
+Stage B spend about 6.4M against the 4.9-6.8M estimate.
 
 ## Where the work is
 
@@ -75,6 +60,10 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
+- Tranche 2 routine verify **passed** at 7e0492b (§18.158): parallel
+  3385/3385, serial 230/230, regression proofs 437/437, growth ratio
+  2.140 against 3.0. Failed run kept: cb54ed5 (3380/3385; moved
+  citations and one test input, fixed in tests).
 - A2 acceptance verify **passed** at ad3557b (§18.149): parallel
   3218/3218, serial 209/209, regression proofs 336/336, growth ratio
   2.274 against 3.0.

@@ -8147,3 +8147,72 @@ authorized; A2's Task 16 (the minting switch) stays held. C6, F14's
 retirement and actual replacement losses stay undecided. No push.
 
 Paused by the author (2026-11-02) to pace credit use; nothing running.
+
+### 18.158 Stage B complete: pin, activation gate, reviews, verify (2026-11-03)
+
+Resumed under §18.157 and run to completion without a checkpoint; no
+stop condition occurred. Integrated on r0-t2-d1 at 7e0492b. Nothing
+is pushed, nothing is activated, and there is no soundness claim.
+
+Task 13 (abc0260, b0d20c1, d375ffc). The honest-package pin
+(test/fixtures/r0/t2-honest.json), written from a fresh run, matched
+the ruling exactly: corpus loader 2823 candidates, floor 2805, 11 read
+faults; effect-pin sources 2832, 2813, 12. Each has three
+RequirementUnjudged and the four ForcedTail listed by identity, in
+separate lists. The re-pin rule refuses a lower floor or candidate
+count, or a dropped denominator, whatever `--explain` says. A fast test
+now fails a hand-lowered pin (35f9d1e), and the serial test checks
+that each denominator's figures add up. The "consumption unchecked"
+mark is never reached on the corpus, because no refused package has a
+dropped stage. It is shown on the inline fixture.
+
+Records (7d9122c, 7ae7eef, e374e07). H2 is recorded as observed and
+§B.5's E1 prediction is retired. ForcedTail is recorded as dependency,
+not causation, and linked to the stand-in evidence. BACKLOG R035
+covers the performance qualification owed before activation. R036
+files the tranche's deferred items, with three to take before
+activation: the eager read-back in Online, two fallbacks that are not
+fail-closed, and a coarsened read fault. The A2 spec's §11 now cites
+the owed checks that Tasks 13 and 14 ran.
+
+Task 16 (850de13..0563207, b647706). The activation gate is
+docs/plans/2026-11-03-a2-activation-gate.md, reported by
+`node scripts/r0-t2-activation-gate.mjs`. Today it reads **not met
+(2, 3, 4, 5, 6, 7)**. Criterion 1 (the pin as ruled) is met. Criterion
+2 measures A1 strictly: each gap list's loss on replacement needs its
+own ruling, because §18.157 and §18.155 (6) withhold approval of those
+losses, so it is not met. A ruling counts only if numbered after
+§18.157. The gate cannot read what such a ruling decides; this is
+listed among its blind spots.
+
+Whole-branch reviews (two, Opus). Both returned ready with fixes;
+neither found anything Critical. Semantics: the trust boundary holds,
+the validator is frozen apart from Task 4, and H3 holds by
+construction. One Important finding: a partial call whose result is
+an arrow paired the wrong live type and lost its package, failing
+closed; the corpus does not reach it. It is fixed in 66fb0d5, with
+fixtures and a restored-defect row. Gates: all 98 tranche 2 row
+needles are unique, and the 26 test-tree rows detect their defects.
+No protected pin moved other than the effect pin's ruled 31. The fix
+wave (66fb0d5..12d5e00) also added shape checks for data owners and
+annotation keys, delimited ForcedTail classification, failure on a
+repeated declaration, and compat skips pinned by identity. A scoped
+re-review approved all ten items.
+
+Verification. The routine verify at cb54ed5 **failed**: 3380 of 3385
+parallel tests passed. The causes were four citations of source lines
+that the trace commits moved unchanged (96a737c, d55253d) and one
+older read-back test that handed Online a hand-built null state, which
+the real checker never builds. Both were fixed in tests only
+(b727b22, 16a7865) and reviewed. The log of the failed run is kept.
+The routine verify at 7e0492b **passed**, alone under the lock:
+parallel 3385/3385, serial 230/230, regression proofs 437/437, growth
+ratio 2.140 against 3.0. Logs are in
+.build/evidence/2026-11-03-t2-verify/ (git-ignored). Performance
+qualification (`npm run perf`) was not run; the trace's cost stays
+R035.
+
+For the author: whether to accept Stage B as functionally complete on
+this evidence. The gate's open items (2-7) are the author's rulings
+and later work. A2's Task 16 (minting), C6, F14's retirement,
+replacement losses and any push stay held.

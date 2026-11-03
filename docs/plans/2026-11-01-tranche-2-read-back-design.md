@@ -2,8 +2,8 @@
 
 Status (2026-11-03): **Stage B implemented (Tasks 3-16), the pin
 approved with four ForcedTail admitted (§18.157), the activation
-gate specified; whole-branch reviews and the routine verify
-pending.** Earlier status (2026-11-01): **approved with rulings for
+gate specified; whole-branch reviews done and routine verify passed
+at 7e0492b (§18.158).** Earlier status (2026-11-01): **approved with rulings for
 Stage B (dossier
 §18.155); revision 3 re-reviewed, ready with conditions, conditions
 met (§18.154).** Earlier status: design and research only. Task 2

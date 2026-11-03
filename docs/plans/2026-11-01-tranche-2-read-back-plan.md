@@ -5,9 +5,12 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status (2026-11-03, later): **Tasks 13 and 16 done (pin, gate
-specification and report); whole-branch reviews and the routine
-verify pending.** Before that: (2026-11-03) **resumed under
+Status (2026-11-03, final): **Stage B complete (§18.158): Tasks 3-16
+done, two whole-branch reviews and their fixes integrated, routine
+verify passed at 7e0492b (3385/3385, 230/230, 437/437, growth 2.140);
+activation gate not met (2-7); for the author's acceptance.** Before
+that: (2026-11-03, later) **Tasks 13 and 16 done.** Before that:
+(2026-11-03) **resumed under
 §18.157: the four ForcedTail refusals admitted to the pin (floors
 2805 and 2813), the pin script's
 `--explain` corrected, and Task 16 authorized; A2's Task 16 held.**

@@ -23,8 +23,18 @@ working tree and exits 1 while any criterion is unmet. Today: **not
 met (2, 3, 4, 5, 6, 7)**; criterion 1 (the pin as approved) is met. A
 cited ruling counts only if numbered after §18.157. 48 cases (47
 must-fail, 1 must-hold); 8 regression rows, 8 of 8 proved. Nothing is
-activated; A2's Task 16 (minting) stays held. Whole-branch reviews and
-the routine verify follow.
+activated; A2's Task 16 (minting) stays held.
+
+Two whole-branch reviews (semantics; gates, pins, live), ready with
+fixes; fix wave 66fb0d5..12d5e00 (a partial call's arrow result,
+data-owner and annotation shape checks, §18.157's figures enforced,
+ForcedTail by whole name, repeated declarations, compat skips by
+identity), re-review approved. Routine verify at cb54ed5 failed
+(3380/3385: four moved citations, one test's hand-built null state;
+fixed in tests, b727b22, 16a7865). Routine verify at 7e0492b passed:
+parallel 3385/3385, serial 230/230, regression proofs 437/437, growth
+ratio 2.140 against 3.0 (logs .build/evidence/2026-11-03-t2-verify/).
+`npm run perf` not run (R035). Dossier §18.158.
 
 ## a-min approval review and corrections; local landing; push (2026-10-25)
 
