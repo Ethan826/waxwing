@@ -1,10 +1,16 @@
 -- trusted surface: every diff needs token review; see docs/engineering.md
+-- The marker above is the review-required lowering boundary's (AGENTS.md;
+-- test/structure-trusted.test.mjs requires it): this module is a helper
+-- generation reads, not one of the pinned importers in
+-- scripts/trusted-surface.json, nor on the review-required trusted
+-- surface `Valid`'s soundness rests on.
 -- A finished body's holes (R0 Task 7.1, moved from Features.Check.Scheme
--- unchanged, a behaviour-preserving refactor): `holes` renumbers the
--- metas still unsolved, and `foldHoles` visits a type's metas in the
--- order `holes` numbers them. Here, apart from the checker's `State`, so
--- that D1's `build` can renumber its body as `checkFunction` does without
--- reaching checker state (D1 spec §9; T10).
+-- unchanged, a behaviour-preserving refactor; tranche 2 Task 5 exported
+-- `numbering`): `holes` renumbers the metas still unsolved, and
+-- `foldHoles` visits a type's metas in the order `holes` numbers them.
+-- Here, apart from the checker's `State`, so that D1's `build` can
+-- renumber its body as `checkFunction` does without reaching checker
+-- state (D1 spec §9; T10).
 module Features.Check.Holes
   ( holes
   , numbering

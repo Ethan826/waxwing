@@ -1,13 +1,14 @@
 -- Least mark terms over today's live mark graph (statements §5, "FX008
 -- ⇒ package"; tranche 2 read-back design §F): the store's `bindings`
 -- read as equalities (each `meta ↦ mark` joins two nodes), its `edges`
--- as lower ⊑ upper. Classes by union-find (Galler and Fischer 1964;
--- Tarjan 1975), constants reaching each class by a fixpoint over the
--- edges (Kleene iteration of reachability). A class holding a constant
--- takes it; any other takes M if M reaches it, else the join `J S` of
--- the rigid constants reaching it, N if none. Untrusted search; the
--- research reading it agrees with is research/t2-read-back-inventory/
--- least.mjs.
+-- as lower ⊑ upper. Classes by plain union-find (Galler and Fischer
+-- 1964), with no path compression or union by rank, so Tarjan's (1975)
+-- near-linear bound is not claimed; constants reaching each class by a
+-- fixpoint over the edges (Kleene iteration of reachability). A class
+-- holding a constant takes it; any other takes M if M reaches it, else
+-- the join `J S` of the rigid constants reaching it, N if none.
+-- Untrusted search; the research reading it agrees with is
+-- research/t2-read-back-inventory/least.mjs.
 --
 -- Standing (§18.153): bounded agreement with the stated definition (the
 -- oracle's families: research/t2-read-back-design/marks-oracle.mjs, a
