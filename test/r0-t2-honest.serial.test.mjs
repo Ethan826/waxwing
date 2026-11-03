@@ -37,6 +37,13 @@ test('the observation matches the approved pin, both ways', () => {
   for (const name of names)
     assert.deepEqual(gateProblems(pin.denominators[name], observed[name]),
       [], name);
+  // Final review B-I1: the pinned floor is the candidates less the three
+  // lists, so it can fall only with a list growing.
+  for (const name of names) {
+    const d = pin.denominators[name];
+    assert.equal(d.floor + d.faults.length + d.refusals.length
+      + d.forcedTail.length, d.candidates, `${name}: pinned figures`);
+  }
 });
 
 test('no package is Malformed', () => {

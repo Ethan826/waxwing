@@ -6,9 +6,10 @@ import { expected, gateCases, wrongCases }
 import { criteria, evaluate, reportText }
   from './r0-t2-activation-gate.mjs';
 import { readFileSync } from 'node:fs';
-import { dossierFile, section, statementsFile }
+import { dossierFile, section, statementsFile, statusFile }
   from './r0-t2-activation-evidence.mjs';
 import { met } from './r0-t2-activation-gate-met.mjs';
+import { pinApproved, pinFile } from './r0-t2-activation-pin.mjs';
 
 // The A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 // on synthetic evidence (fixture-level): all seven met on `met`, and
@@ -54,6 +55,22 @@ test('sections up to §18.157 on the real dossier rule nothing', () => {
   const unmetIds = evaluate(evidence).filter(found => !found.met)
     .map(found => found.id);
   for (const id of [2, 3, 6, 7]) assert.ok(unmetIds.includes(id), `${id}`);
+});
+
+// Final review B-I1: §18.157's figures hold on the committed tree, so
+// verify sees a pin that departs from them (criterion 1 on the real pin,
+// dossier and status file). Must-fail: the same pin hand-lowered to
+// 2822 candidates, floor 2804 (still balanced), with no re-pin ruling.
+test("criterion 1 holds on the committed pin, §18.157's figures", () => {
+  const json = file => JSON.parse(readFileSync(file, 'utf8'));
+  const committed = { status: json(statusFile), pin: json(pinFile),
+    dossier: readFileSync(dossierFile, 'utf8') };
+  const found = pinApproved(committed);
+  assert.ok(found.met, found.state.join('\n'));
+  const lowered = structuredClone(committed.pin);
+  lowered.denominators['corpus loader'].candidates = 2822;
+  lowered.denominators['corpus loader'].floor = 2804;
+  assert.equal(pinApproved({ ...committed, pin: lowered }).met, false);
 });
 
 test('a section is found by its whole number only', () => {
