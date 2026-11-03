@@ -434,7 +434,7 @@ violation is `RecordDefect`. The checks, numbered by their index j in
   InDeclaredLists, path: Nothing }` with check 6. Repeated references
   to a variable or position in types and obligations stay valid; only
   a repeated listing is a defect (fixture-level,
-  test/r0-a2-record-duplicates.test.mjs; corpus: no defect,
+  test/r0-a2-record-duplicates.test.mjs; corpus-observed: no defect,
   test/r0-a2-record-corpus.serial.test.mjs);
 - a recorded `AtDeferredRow` is **not** a defect (A4): its condition is
   supported (labels-only, §9) and evaluated; it occurs 0 times in the
@@ -759,7 +759,8 @@ connected to a forced tail by §5.1's edges.
 
 ## 11. Owed checks
 
-Status (2026-11-01, plan Task 15 and earlier tasks): each item is
+Status (2026-11-03, tranche 2 Tasks 13 and 14; earlier 2026-11-01,
+plan Task 15 and earlier tasks): each item is
 marked run, with its label and test file, or still owed. Run results
 are bounded: fixture-level holds on the listed packages only;
 corpus-observed and corpus-derived hold on today's pinned corpus only.
@@ -769,8 +770,9 @@ corpus-observed and corpus-derived hold on today's pinned corpus only.
   (test/r0-a2-erase.test.mjs "settle commutes with erase").
 - `erase` of the honest package = today's read-back substitution, on
   the corpus (the compatibility property for nullary data and every
-  other constructor). **Still owed** until tranche 2's read-back
-  produces honest packages. Today's σ has record fields out of label
+  other constructor). **Run, corpus-observed (tranche 2 Task 14,
+  2026-11-02):** 0 counterexamples on both denominators
+  (test/r0-t2-compat.serial.test.mjs). Today's σ has record fields out of label
   order in 14 of 2820 corpus candidates, and `erase` sorts them
   (docs/findings.md; test/r0-a2-properties.serial.test.mjs), so the
   property is stated **up to record field order (approved by the
@@ -806,20 +808,27 @@ corpus-observed and corpus-derived hold on today's pinned corpus only.
 - G0 accepts `erase P_c` whenever it accepts `erase (settle P_in)`.
   **Run, fixture-level** over the case packages
   (test/r0-a2-properties.test.mjs "G0 monotonicity on fixtures").
+  **Also run, corpus-observed and corpus-derived (tranche 2 Task 14):**
+  0 violations on honest packages, force in 53 derived runs
+  (test/r0-t2-compat.serial.test.mjs).
 - Whether any pinned witness or test records fresh hole numerals that
   completion's numbering (§2.4) would change. **Type part run,
   corpus-observed and corpus-derived:** completion numbers as
   `bindingsOf` on every corpus candidate and on each less its first or
   last variable; no pinned fixture records a `Free n`
   (test/r0-a2-properties.serial.test.mjs "hole numerals"). **Effect
-  part still owed** (no effect hole until tranche 2's read-back).
+  part run, corpus-observed and corpus-derived (tranche 2 Task 14):**
+  completion never reuses a hole; today's `bindingsOf` would in 1112
+  derived runs, as §2.4 predicts (test/r0-t2-compat.serial.test.mjs).
 - A3's completeness impact: how many honest packages the all-sort
   solved form refuses at I3 (related evidence only: 0 of 14,867
   `Inline` images name a non-hole fresh variable over Solved rows,
   statements §11 U8). **Type part run, corpus-observed:** 0 of 2030
   Solved candidates refused by `unsolvedKey`
   (test/r0-a2-properties.serial.test.mjs "A3 impact, type part").
-  **Effect part still owed** (tranche 2).
+  **Effect part run, corpus-observed (tranche 2 Task 13):** 0 honest
+  packages refused at I3 (test/r0-t2-honest.serial.test.mjs "no
+  package is Malformed").
 - Dep's claim (§5.1) that no check relates a node outside Dep to a
   forced binding: a test that every check of §9 relates only mentions
   of its own obligation. **Run, fixture-level,** with a control showing
