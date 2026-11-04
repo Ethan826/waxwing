@@ -115,6 +115,25 @@ export const rowsChecks = async load => {
       new Rows.UserEffect(1), [], Rows.Unmarked.value)], Nothing.value));
     return named(found) === 'Left' ? [] : ['unmarked'];
   };
+  // R036 (3): a user label with no term is `RowUnconverted`, never
+  // `Unread`: one planted with no mark, and one the terms do not read.
+  const unconvertedWrong = () => {
+    const item = live(sources.uses, 'applied');
+    const key = keyAt(sources.uses, 'let f = add', 'let f = '.length);
+    const [use] = Maps.lookup(keyOrd)(key)(item.trace.uses).value0;
+    const label = new cases.Row.Label(new cases.Row.UserEffect(0), [],
+      cases.Row.Unmarked.value);
+    const planted = { ...use, stages: [new cases.Row.Row([label],
+      use.stages[0].value1)] };
+    const unmarked = faultOf(item, { ...item.trace, uses: Maps.insert(
+      keyOrd)(key)([planted])(item.trace.uses) });
+    const call = live(sources.uses, 'call');
+    const found = read(call, call.trace, () => cases.Nothing.value);
+    const unreadMark = named(found) === 'Left' ? named(found.value0) : '';
+    return [['unmarked', unmarked], ['unread mark', unreadMark]].filter(
+      ([, fault]) => fault !== 'RowUnconverted').map(([name]) => name);
+  };
   return { clashWrong, appliedWrong, failWrong, apartWrong, entryWrong,
-    unreadWrong, pipedWrong, consoleWrong, payloadWrong, unmarkedWrong };
+    unreadWrong, pipedWrong, consoleWrong, payloadWrong, unmarkedWrong,
+    unconvertedWrong };
 };

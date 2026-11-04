@@ -131,3 +131,16 @@ test('an auxiliary with data rows, a handler or a rigid row is a fault',
     assert.equal(cases.plantedFault('handler'), 'UnreadImage');
     assert.equal(cases.plantedFault('rigid'), 'UnreadImage');
   });
+
+// R036 (3): a value at the position whose user label the injected terms
+// do not read is `ImageUnconverted`, not `UnreadImage`.
+test('an unmarked label at a position is ImageUnconverted', () => {
+  const { item, readBack } = declaration(sources.uses, 'held');
+  const { Nothing } = cases;
+  const found = cases.Images.readImages(() => Nothing.value)(item.problem)(
+    item.checked)(readBack);
+  assert.equal(named(found), 'Left');
+  assert.equal(named(found.value0), 'ImageUnconverted');
+  assert.deepEqual(shape(found.value0.value0), shape(slotVar(item, 'id(')));
+  assert.equal(named(found.value0.value1), 'UserEffect');
+});

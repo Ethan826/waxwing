@@ -190,3 +190,34 @@ test('located and traced disagree is Apart', () => {
   assert.equal(named(found.value0), 'Apart');
   assert.equal(named(found.value0.value0.value1), 'Stage');
 });
+
+// R036 (3): a conversion failure is its own fault, not `Unread`. A user
+// label with no mark (Convert's `Unmarked` arm) and one whose mark the
+// injected terms do not read (its `terms mark` arm).
+test('an unmarked user label is RowUnconverted', () => {
+  const item = live(sources.uses, 'applied');
+  const start = Number(spanOf(item.source, 'let f = add').split('-')[0])
+    + 'let f = '.length;
+  const key = spanKey(`${start}-${start + 'add'.length}`);
+  const [use] = Maps.lookup(keyOrd)(key)(item.trace.uses).value0;
+  const label = new cases.Row.Label(new cases.Row.UserEffect(0), [],
+    cases.Row.Unmarked.value);
+  const planted = { ...use, stages: [new cases.Row.Row([label],
+    use.stages[0].value1)] };
+  const found = read(item, { ...item.trace, uses: Maps.insert(keyOrd)(key)(
+    [planted])(item.trace.uses) });
+  assert.equal(named(found), 'Left');
+  assert.equal(named(found.value0), 'RowUnconverted');
+  assert.equal(named(found.value0.value0.value1), 'Stage');
+  assert.equal(named(found.value0.value1), 'UserEffect');
+  const unread = read(live(sources.uses, 'call'), undefined,
+    () => cases.Nothing.value);
+  assert.equal(named(unread.value0), 'RowUnconverted');
+  assert.equal(named(unread.value0.value0.value1), 'EffInst');
+});
+
+test('no source is still Unread', () => {
+  const item = live(sources.uses, 'call');
+  const found = read(item, { ...item.trace, uses: Maps.empty });
+  assert.equal(named(found.value0), 'Unread');
+});

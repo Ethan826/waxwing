@@ -19,11 +19,13 @@ export const t2PackageRows = [
     '  maybe (Right unit) (Left <<< Declined) (declined problem)\n',
     '  maybe (Right unit) (const (Right unit)) (declined problem)\n',
     /r0-t2-package-declined: \["rigid"\]/),
-  // Least terms with a clash used to read rows anyway.
+  // Least terms with a clash used to read rows anyway. The clashing
+  // class reads no term, so the row read-back meets a user label with no
+  // term: `RowUnconverted` since R036 (3) (`Unread` before).
   row('r0-t2-package-mark-clash', assembly,
     '  when (terms.clashes > 0) (Left MarkClash)\n',
     '  when (terms.clashes < 0) (Left MarkClash)\n',
-    /r0-t2-package-mark-clash: \["Unread"\]/),
+    /r0-t2-package-mark-clash: \["RowUnconverted"\]/),
   // EffectRows reads the forced tails: the assembly's assertion faults.
   { name: 'r0-t2-package-forced', ...forcedSkipped,
     probe: 'r0-t2-package-forced',
@@ -71,8 +73,8 @@ export const t2PackageRows = [
     /r0-t2-package-theta-effects: \["effects"\]/),
   // Type images not read under θ: the erasure guard sees θ's value.
   row('r0-t2-package-theta-images', `${dir}Images.purs`,
-    '  filed info = imageOf reading unread today info >>= reading.bound\n',
-    '  filed info = imageOf reading unread today info >>= pure\n',
+    '  filed info = imageOf reading variable today info >>= reading.bound\n',
+    '  filed info = imageOf reading variable today info >>= pure\n',
     /r0-t2-package-theta-images: \["ImageApart"\]/),
   // A binding the package cannot hold kept as the bare hole.
   row('r0-t2-package-theta-unread', bound,

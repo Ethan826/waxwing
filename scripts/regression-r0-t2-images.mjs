@@ -40,8 +40,9 @@ export const t2ImagesRows = [
     // A positioned image converted from today's σ, not the live type.
     name: 'r0-t2-images-live',
     file: images,
-    needle: '  position → note unread (reading.live position)\n',
-    replacement: '  _ → note unread (rowFree reading.arities today)\n',
+    needle: '  position → reading.live variable position\n',
+    replacement: '  _ → note (UnreadImage variable)'
+      + ' (rowFree reading.arities today)\n',
     probe: 'r0-t2-images-live',
     message: /r0-t2-images-live: \["f05"\]/
   },

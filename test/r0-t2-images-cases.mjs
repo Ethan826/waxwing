@@ -156,7 +156,15 @@ export const imagesChecks = async load => {
   // Planted auxiliary values no package can hold are UnreadImage.
   const plantedWrong = kinds => () => kinds.filter(kind =>
     cases.plantedFault(kind) !== 'UnreadImage');
+  // R036 (3): a live label the terms do not read is `ImageUnconverted`.
+  const unconvertedWrong = () => {
+    const { item, readBack } = declaration(sources.uses, 'held');
+    const found = cases.Images.readImages(() => cases.Nothing.value)(
+      item.problem)(item.checked)(readBack);
+    return faultOf(found) === 'ImageUnconverted' ? [] : ['held'];
+  };
   return { auxiliaryWrong, guardWrong, orderWrong, liveWrong,
+    unconvertedWrong,
     namableWrong: plantedWrong(['flexibleField', 'flexibleTail']),
     rowDataWrong: plantedWrong(['rowData']),
     handlerWrong: plantedWrong(['handler']),

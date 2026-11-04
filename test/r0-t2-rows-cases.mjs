@@ -86,7 +86,7 @@ export const rowsCases = async load => {
 
   // A stub for Task 9's least terms (`Mark → Maybe Term`, total here):
   // N, M, J {k}, and M for a meta.
-  const { Just } = await load('Data.Maybe');
+  const { Just, Nothing } = await load('Data.Maybe');
   const termOf = mark => {
     switch (named(mark)) {
     case 'NoFail': return Package.TermN.value;
@@ -161,7 +161,7 @@ export const rowsCases = async load => {
   const rowText = row => `[${row.labels.map(labelText).join(' ')}|`
     + `${tailText(row.tail)}]`;
   return { live, read, varsOf, valueOf, rowText, pairs, stub, same, named,
-    consumedOf, keyOrd, Tuple, Row, Package, Maps, Just };
+    consumedOf, keyOrd, Tuple, Row, Package, Maps, Just, Nothing };
 };
 
 // A value as plain data, for comparing PureScript values.

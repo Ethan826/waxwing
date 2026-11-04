@@ -8,10 +8,10 @@
 -- terms). Forced tails (Effects/Forced.purs) are not package-owned and
 -- are not read. Untrusted search: it builds plain rows only.
 --
--- Fail-closed, never choosing: a variable no source reads, or whose
--- value cannot be converted, is `Unread v`; two sources that read v
--- differently are `Apart v`; two trace entries under one key are
--- `Clash`, wherever met.
+-- Fail-closed, never choosing: a variable no source reads is `Unread v`;
+-- one whose value holds a user label with no term is `RowUnconverted v e`
+-- (R036 (3)); two sources that read v differently are `Apart v`; two
+-- trace entries under one key are `Clash`, wherever met.
 module Features.Check.Strategy.ReadBack.EffectRows (readRows) where
 
 import Prelude
@@ -32,7 +32,10 @@ import Domain.Row (Mark)
 import Domain.Type (TyRow)
 import Domain.Verdict.EffectPackage (PRow, Term)
 import Features.Check.Strategy.Effects.Forced (forcedTails)
-import Features.Check.Strategy.ReadBack.Convert (convertRow)
+import Features.Check.Strategy.ReadBack.Convert
+  ( Unconverted(..)
+  , convertRow
+  )
 import Features.Check.Strategy.ReadBack.EffectPlaces (locatedFacts)
 import Features.Check.Strategy.ReadBack.EffectSites (tracedRow)
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
@@ -67,9 +70,9 @@ readOne
   → EVar
   → Either ReadFault (Tuple EVar PRow)
 readOne terms found variable =
-  either unread chosen (traverse (convertRow terms) values)
+  either unconverted chosen (traverse (convertRow terms) values)
   where
-  unread _ = Left (Unread variable)
+  unconverted (UnmarkedLabel effect) = Left (RowUnconverted variable effect)
   chosen converted = maybe (Left (Unread variable)) (agreed converted)
     (Array.head converted)
   values = fromMaybe [] (Map.lookup variable found)

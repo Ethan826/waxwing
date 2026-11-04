@@ -31,7 +31,7 @@ module Features.Check.Strategy.ReadBack.Images
 
 import Prelude
 import Data.Array (foldM, sortWith)
-import Data.Either (Either(..), hush, note)
+import Data.Either (Either(..), either, hush, note)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -57,14 +57,17 @@ import Features.Check.Spine (spine, unspine)
 import Features.Check.Strategy.Effects.Package (eraseTy)
 import Features.Check.Strategy.ReadBack (ReadBack, slotted)
 import Features.Check.Strategy.ReadBack.Bound (boundTy)
-import Features.Check.Strategy.ReadBack.Convert (convertTy)
+import Features.Check.Strategy.ReadBack.Convert
+  ( Unconverted(..)
+  , convertTy
+  )
 import Features.Check.Strategy.ReadBack.Fault (ReadFault(..))
 import Features.Check.Strategy.ReadBack.Position (liveAt, liveType)
 
 type Images = { types ∷ Map Var PTy, rows ∷ Map Var PRecordRow }
 
 type Reading =
-  { live ∷ CheckedName → Maybe PTy
+  { live ∷ Var → CheckedName → Either ReadFault PTy
   , vars ∷ Map Var VarInfo
   , arities ∷ Map TypeId DataArity
   , bound ∷ PTy → Either ReadFault PTy
@@ -91,10 +94,17 @@ readImages terms problem checked found =
         }
     }
   ranked = slotted problem
-  live name = hush (liveAt checked.body ranked name) >>= converted
-  -- Convert's `UnmarkedLabel` is `UnreadImage v` too: ReadFault (shared
-  -- with the row read-back) has no finer constructor for it.
-  converted = hush <<< convertTy terms <<< liveType
+  -- A position failure stays `UnreadImage v`; a conversion failure is
+  -- `ImageUnconverted v e` (R036 (3)). `Nothing` here is the position's.
+  live variable name =
+    note (UnreadImage variable)
+      (hush (liveAt checked.body ranked name))
+      >>= converted variable
+  converted variable = either (unconverted variable) Right
+    <<< convertTy terms
+    <<< liveType
+  unconverted variable (UnmarkedLabel effect) =
+    Left (ImageUnconverted variable effect)
 
 -- One variable's image, filed by its sort once its erasure agrees.
 placed ∷ Reading → Images → Tuple Var RTExpr → Either ReadFault Images
@@ -102,7 +112,7 @@ placed reading images (Tuple variable today) =
   note unread (Map.lookup variable reading.vars) >>= filed
   where
   unread = UnreadImage variable
-  filed info = imageOf reading unread today info >>= reading.bound
+  filed info = imageOf reading variable today info >>= reading.bound
     >>= sorted info.sort
   sorted sort image = case sort of
     SortType → typed image <$ agreed image
@@ -116,10 +126,10 @@ placed reading images (Tuple variable today) =
   rowed row = images { rows = Map.insert variable row images.rows }
 
 -- The live type at a position, or an auxiliary's row-free image.
-imageOf ∷ Reading → ReadFault → RTExpr → VarInfo → Either ReadFault PTy
-imageOf reading unread today info = case info.position of
-  Auxiliary → note unread (rowFree reading.arities today)
-  position → note unread (reading.live position)
+imageOf ∷ Reading → Var → RTExpr → VarInfo → Either ReadFault PTy
+imageOf reading variable today info = case info.position of
+  Auxiliary → note (UnreadImage variable) (rowFree reading.arities today)
+  position → reading.live variable position
 
 -- A record-row variable's image: a record, or a bare hole read as its
 -- tail (ReadBack.Type `readSorted`, R022). The tail reading applies at
