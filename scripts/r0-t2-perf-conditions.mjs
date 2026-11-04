@@ -1,7 +1,8 @@
 // Shared-machine conditions recorded before every sample of the paired
 // performance measurement (docs/plans/2026-11-04-performance-protocol.md
 // §7): the load average, the five busiest processes, the memory free
-// percentage, the memory pressure level and swap use. Recorded, never
+// percentage, the memory pressure level, swap use, the power source
+// and the thermal notes `pmset` gives. Recorded, never
 // gated: the author keeps using the computer (dossier §18.159
 // criterion 6). The host is injected (`run`, `loadavg`, `now`), so the
 // parsers are tested on fixed text (test/r0-t2-perf.test.mjs). A value
@@ -22,7 +23,9 @@ export const commands = {
   top: ['ps', ['-A', '-r', '-o', 'pid=,pcpu=,rss=,comm=']],
   memoryFree: ['sysctl', ['-n', 'kern.memorystatus_level']],
   pressure: ['sysctl', ['-n', 'kern.memorystatus_vm_pressure_level']],
-  swap: ['sysctl', ['-n', 'vm.swapusage']]
+  swap: ['sysctl', ['-n', 'vm.swapusage']],
+  power: ['pmset', ['-g', 'batt']],
+  thermal: ['pmset', ['-g', 'therm']]
 };
 
 // `ps -A -r -o pid=,pcpu=,rss=,comm=` (sorted by CPU, busiest first):
@@ -62,8 +65,26 @@ export const parseSwap = text => {
       String(text).trim())}`);
 };
 
+// `pmset -g batt`: the source (`AC Power`, `Battery Power`) and charge.
+export const parsePower = text => {
+  const source = /Now drawing from '([^']+)'/.exec(String(text));
+  const charge = /(\d+)%/.exec(String(text));
+  return source === null ? unavailable('pmset batt not recognized')
+    : `${source[1]}${charge === null ? '' : ` ${charge[1]}%`}`;
+};
+
+// `pmset -g therm`: its lines as given (e.g. `Note: No thermal warning
+// level has been recorded`) and any CPU speed limit it states.
+export const parseThermal = text => {
+  const lines = String(text).split('\n').map(line => line.trim())
+    .filter(line => line !== '');
+  const limit = /CPU_Speed_Limit\s*=\s*(\d+)/.exec(String(text));
+  return { lines, cpuSpeedLimit: limit === null ? null : Number(limit[1]) };
+};
+
 const parsers = { top: parseTop, memoryFree: parseMemoryFree,
-  pressure: parsePressure, swap: parseSwap };
+  pressure: parsePressure, swap: parseSwap, power: parsePower,
+  thermal: parseThermal };
 
 export const host = { run: makeRunner(spawnSync), loadavg,
   now: () => new Date() };
