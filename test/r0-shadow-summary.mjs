@@ -9,7 +9,6 @@
 import { falseContradictions, knownValid } from './r0-shadow-known.mjs';
 import { classEntry, t6Classes, windowClasses }
   from './r0-shadow-classes.mjs';
-import { rt8DefectClass } from './r0-shadow-table.mjs';
 import { outsideKinds } from './r0-census-classify.mjs';
 
 const rowsOf = program => program.results
@@ -106,9 +105,10 @@ export const summaryOf = programs => ({
     && row.blockers.length === 0 && !row.programCompiles)
     .map(row => row.at),
   // Today's known defects by their ids, then (T6) each RT8 defect by
-  // its RT8 class, so the window reports it rather than aborting.
+  // its RT8 class, so the window reports it rather than aborting; a
+  // known defect with an RT8 defect too is listed both ways.
   defects: [...programs.flatMap(rowsOf).filter(row => row.class === 'defect')
     .map(row => `${row.at}: ${row.defect.id}`),
-  ...programs.flatMap(rowsOf).filter(row => row.class === rt8DefectClass)
+  ...programs.flatMap(rowsOf).filter(row => row.rt8.startsWith('DEFECT'))
     .map(row => `${row.at}: ${row.rt8}`)]
 });

@@ -76,22 +76,39 @@ export const windowClasses = {
   'its BACKLOG entry')
 };
 
-// T6 (dossier §18.161 (4)): classes only the minting path reaches (a
-// validator refusal reaching Decide) or a defect reaches, so the
-// committed path, where none occurs, lists none of them: the summary
+// T6 (dossier §18.161 (4); fix round 1): classes only the minting path
+// reaches (a validator refusal reaching Decide) or a defect reaches, so
+// the committed path, where none occurs, lists none of them: the summary
 // lists one only when a row has it (test/r0-shadow-summary.mjs), and
-// window.json does not move. Labels are the implementer's reading:
-// a decline the check makes is a strategy limitation (R-b2: (b)).
+// window.json does not move. One class per decline kind. Labels are the
+// implementer's reading: a limitation is a strategy limitation (R-b2:
+// (b)); a read fault is a replacement loss, unresolved (§18.161 (1)). A
+// record defect is never a decline: RT8 reads it as a generation defect.
 export const rt8DefectClass = 'defect found by RT8 (reported, unlabelled)';
-const declines = 'reading (§18.161 (4): a check decline is an intended'
+export const compilingDecline = kind =>
+  `the check declines the candidate (${kind}): compiles today`;
+export const refusedDecline = kind =>
+  `today refuses, the check declines the candidate (${kind})`;
+const limitation = 'reading (§18.161 (4): a check decline is an intended'
   + ' decline; the author\'s ruling R-b2: a strategy limitation stays (b))';
+const readFault = 'reading (§18.161 (4): a read fault declines; §18.161'
+  + ' (1): the read-fault losses stay unresolved)';
+const lossTarget = 'per the replacement-loss ruling (§18.161 (1):'
+  + ' unresolved)';
 export const t6Classes = {
-  'the check declines the candidate: compiles today': entry(b, declines,
-    'candidates the check declines (a record defect or a limitation,'
-      + ' A2 spec §6)', 'Solved', 'a check that certifies them (the RT8'
-      + ' class names the refusal)'),
-  'today refuses, the check declines the candidate': entry(b, declines,
-    refusedFocus, undetermined, classify),
+  [compilingDecline('a limitation')]: entry(b, limitation, 'candidates the'
+    + ' check declines for a limitation (A2 spec §6)', 'Solved', 'a check'
+    + ' that certifies them (the RT8 class names the refusal)'),
+  [compilingDecline('a read fault')]: entry(b, readFault, 'candidates'
+    + ' whose effect package was not read', lossTarget, 'the read-back'
+    + ' reading the package (the RT8 class names the refusal)'),
+  [refusedDecline('a limitation')]: entry(b, limitation, refusedFocus,
+    undetermined, classify),
+  [refusedDecline('a read fault')]: entry(b, readFault, refusedFocus,
+    undetermined, classify),
+  [refusedDecline('an open requirement')]: entry(a, 'reading (§18.161'
+    + ' (4): a RequirementOpen refusal declines, G-A-i(f))', refusedFocus,
+  'per the G-ValidR ruling', 'G-ValidR'),
   [rt8DefectClass]: entry(null, 'none (defect rows are not labelled)',
     'none (a defect of the shadow run; its RT8 class names it)',
     'its separately authorized fix', 'its BACKLOG entry')

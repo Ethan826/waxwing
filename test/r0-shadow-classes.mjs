@@ -13,7 +13,8 @@ import { boundHoleClass, checkDeclined, checkDeclinedRefused }
   from './r0-rt8-account.mjs';
 import { defects, falseContradictions, knownValid }
   from './r0-shadow-known.mjs';
-import { rt8DefectClass } from './r0-shadow-table.mjs';
+import { compilingDecline, refusedDecline, rt8DefectClass }
+  from './r0-shadow-table.mjs';
 
 export { classEntry, defectClasses, t6Classes, windowClasses }
   from './r0-shadow-table.mjs';
@@ -50,7 +51,7 @@ const compiles = facts => {
   if (rt8 === '(a) blocked: Unresolved Unsupported RequirementAtoms')
     return 'BQ pending G-ValidR: compiles today';
   if (checkDeclined.test(rt8))
-    return 'the check declines the candidate: compiles today';
+    return compilingDecline(checkDeclined.exec(rt8)[1]);
   // A trailing `EffectsUnchecked [UnframedInstall]` (§18.124, §18.126)
   // keeps the class: the row was already blocked by its markers.
   const outside = '^\\(a\\) blocked: Unresolved Unsupported Outside \\w+'
@@ -86,7 +87,7 @@ const refused = facts => {
   if (rt8 === '(b) declined by g0Guard, today refuses')
     return declined(facts, true);
   if (checkDeclinedRefused.test(rt8))
-    return 'today refuses, the check declines the candidate';
+    return refusedDecline(checkDeclinedRefused.exec(rt8)[1]);
   return fail(facts, 'no window class where today refuses');
 };
 

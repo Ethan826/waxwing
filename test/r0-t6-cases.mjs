@@ -17,11 +17,14 @@ import { summaryOf } from './r0-shadow-summary.mjs';
 
 const Search = await load('Domain.Verdict.Search');
 const Verdict = await load('Domain.Verdict');
+const Effect = await load('Domain.Recorded.Effect');
 const { Left, Right } = await load('Data.Either');
 
 const name = Verdict.OnlineSolver.value;
 const atom = { decl: 0, path: { root: null, steps: [] }, index: 0 };
-const at = { provenance: null, check: 0 };
+const provenance = new Effect.InRecord({ decl: 0, table: null,
+  path: null });
+const at = { provenance, check: 0 };
 const forced = new Verdict.Unresolved({ reason: new Verdict.Unsupported([
   new Verdict.EffectLimit(Search.ForcedTail.value)]), hints: [] });
 const verdictText = 'Unresolved Unsupported EffectLimit ForcedTail';
@@ -45,28 +48,39 @@ const refusals = {
 const open = '(a) RequirementOpen';
 const ambiguous = 'ambiguous several-tail read-back (Heuristic)';
 const refused = refusal => `DEFECT: candidate refused, ${refusal}`;
-const declines = refusal => `declined by the check (${refusal})`;
-const accepts = refusal => `${declines(refusal)}: ${verdictText}`;
-const refusesDeclined = refusal => `${declines(refusal)}, today refuses`;
+const declines = (kind, refusal) =>
+  `declined by the check, ${kind} (${refusal})`;
+const accepts = (refusal, kind = 'a limitation', text = verdictText) =>
+  `${declines(kind, refusal)}: ${text}`;
+const refusesDeclined = (refusal, kind = 'a limitation') =>
+  `${declines(kind, refusal)}, today refuses`;
 const refusesDefect = 'DEFECT: CheckFailed where today refuses';
-const substantive = refusal => [refused(refusal), ambiguous, refusesDefect];
-const declined = refusal => [accepts(refusal), accepts(refusal),
-  refusesDeclined(refusal)];
+const generation = 'DEFECT: generation defect, RecordDefect';
+const blocked = 'DEFECT: generation defect, RecordDefective block in the'
+  + ' verdict';
+// G0's refusals: ambiguous when the candidate is Heuristic.
+const g0 = refusal => [refused(refusal), ambiguous, refusesDefect];
+// The validator's: a defect under either claim (fix round 1, I2).
+const validator = refusal => [refused(refusal),
+  `DEFECT: Heuristic candidate refused, ${refusal}`, refusesDefect];
 
 export const refusalClasses = {
-  RequirementOpen: [open, open, refusesDeclined('RequirementOpen')],
-  Unsatisfied: substantive('Unsatisfied'),
-  Undefined: substantive('Undefined'),
-  NotEntailed: substantive('NotEntailed'),
-  RequirementFails: substantive('RequirementFails'),
+  RequirementOpen: [open, open,
+    refusesDeclined('RequirementOpen', 'an open requirement')],
+  Unsatisfied: g0('Unsatisfied'),
+  Undefined: g0('Undefined'),
+  NotEntailed: g0('NotEntailed'),
+  RequirementFails: g0('RequirementFails'),
   // The backstop: a defect whatever the claim (review I-2).
   RequirementUnjudged: [refused('RequirementUnjudged'),
     refused('RequirementUnjudged'), refusesDefect],
-  NotGeneric: substantive('NotGeneric'),
-  RecordDefect: declined('RecordDefect'),
-  Malformed: substantive('Malformed'),
-  NotCertifiable: declined('NotCertifiable'),
-  ObligationFailed: substantive('ObligationFailed')
+  NotGeneric: g0('NotGeneric'),
+  // Fix round 1, C1: a generation defect, never a decline.
+  RecordDefect: [generation, generation, generation],
+  Malformed: validator('Malformed'),
+  NotCertifiable: [accepts('NotCertifiable'), accepts('NotCertifiable'),
+    refusesDeclined('NotCertifiable')],
+  ObligationFailed: validator('ObligationFailed')
 };
 
 const today = { accepts: new Right({}), refuses: new Left({}) };
@@ -84,16 +98,46 @@ const rt8Cases = () => Object.entries(refusalClasses).flatMap(
     [`${refusal} today refuses`, accountFor(today.refuses, checkFailed(
       Verdict.ClaimsComplete.value, refusal)), refusing]]);
 
+const decided = (verdict, attempt) => new Right({ verdict,
+  attempts: [attempt], searchFaults: [] });
+const recordBlock = new Verdict.Unresolved({ reason: new Verdict
+  .Unsupported([new Verdict.RecordDefective(provenance)]), hints: [] });
+const certifying = limitation => decided(forced, new Verdict.CheckFailed(
+  name, Verdict.ClaimsComplete.value, new Search.NotCertifiable(limitation,
+    at)));
+
+// Fix round 1, M2: each limitation; a record defect with its block, in
+// every attempt and both of today's results (I1).
+const moreRt8Cases = () => [
+  ['NotCertifiable RigidExact', accountFor(today.accepts,
+    certifying(Search.RigidExact.value)), accepts('NotCertifiable')],
+  ['NotCertifiable UnsupportedRecorded', accountFor(today.accepts,
+    certifying(new Search.UnsupportedRecorded({}))), accepts(
+    'NotCertifiable')],
+  ['RecordDefect with its block, Heuristic', accountFor(today.accepts,
+    decided(recordBlock, new Verdict.CheckFailed(name,
+      Verdict.Heuristic.value, refusals.RecordDefect()))), generation],
+  ['RecordDefective block, Accepted', accountFor(today.accepts,
+    decided(recordBlock, new Verdict.Accepted(name, null, null))), blocked],
+  ['RecordDefective block, today refuses', accountFor(today.refuses,
+    decided(recordBlock, new Verdict.Searched(name,
+      Verdict.Exhausted.value))), blocked],
+  ['RecordDefective block, declined', accountFor(today.refuses,
+    decided(recordBlock, new Verdict.Declined(name,
+      Verdict.RequirementAtoms.value))), blocked]];
+
 const facts = (rt8, more = {}) => ({ at: 'p.wxw#f', rt8, today: null,
   r0: { verdict: verdictText, attempt: 'CheckFailed' }, staticRefusals: [],
   erased: [], guard: [], ...more });
 const todayRefuses = { code: 'E_TYPE', text: 'Expected Int, found Bool' };
-const compilesDecline = 'the check declines the candidate: compiles today';
-const refusesDecline = 'today refuses, the check declines the candidate';
+const compilesDecline = 'the check declines the candidate (a limitation):'
+  + ' compiles today';
+const refusesDecline = 'today refuses, the check declines the candidate'
+  + ' (a limitation)';
 // The minting comparison's own reading (§18.160): a read fault declines
 // as `PackageUnread`, a constructor only the scratch change has.
-const unread = 'declined by the check (PackageUnread): Unresolved'
-  + ' Unsupported EffectsUnread';
+const unread = accepts('PackageUnread', 'a read fault', 'Unresolved'
+  + ' Unsupported EffectsUnread');
 
 const classOf = input => {
   try { return windowClassOf(input); } catch (error) {
@@ -108,9 +152,14 @@ const windowCases = () => [
     { today: todayRefuses })), rt8DefectClass],
   ['decline, compiles', classOf(facts(accepts('NotCertifiable'))),
     compilesDecline],
-  ['decline, minting reading', classOf(facts(unread)), compilesDecline],
-  ['decline, refuses', classOf(facts(refusesDeclined('RecordDefect'),
-    { today: todayRefuses })), refusesDecline]];
+  ['decline, minting reading', classOf(facts(unread)),
+    'the check declines the candidate (a read fault): compiles today'],
+  ['decline, refuses', classOf(facts(refusesDeclined('NotCertifiable'),
+    { today: todayRefuses })), refusesDecline],
+  ['open requirement, refuses', classOf(facts(refusesDeclined(
+    'RequirementOpen', 'an open requirement'), { today: todayRefuses })),
+  'today refuses, the check declines the candidate (an open requirement)'],
+  ['generation defect', classOf(facts(generation)), rt8DefectClass]];
 
 const rowOf = (at, rt8, className) => ({ at, today: 'compiles',
   r0: { verdict: verdictText }, rt8, class: className, blockers: [],
@@ -125,6 +174,9 @@ const summaryCases = () => {
     rowOf('p.wxw#d', refused('NotCertifiable'), rt8DefectClass),
     rowOf('p.wxw#e', accepts('NotCertifiable'), compilesDecline)])]);
   const plain = summaryOf([programOf([])]);
+  // M4: a known defect with an RT8 defect too is listed both ways.
+  const both = summaryOf([programOf([{ ...rowOf('p.wxw#k', generation,
+    'defect'), defect: { id: 'FX9' } }])]);
   return [
     ['RT8 defect counted', found.classes[rt8DefectClass]?.declarations, 1],
     ['decline counted', found.classes[compilesDecline]?.declarations, 1],
@@ -132,11 +184,14 @@ const summaryCases = () => {
       `p.wxw#d: ${refused('NotCertifiable')}`],
     ['no T6 class unless present', Object.keys(plain.classes).join('\n'),
       Object.keys(windowClasses).join('\n')],
+    ['known and RT8 defect both listed', both.defects.join('\n'),
+      `p.wxw#k: FX9\np.wxw#k: ${generation}`],
     ['T6 classes apart', Object.keys(t6Classes).filter(key =>
       key in windowClasses).length, 0]];
 };
 
-export const t6Cases = () => [...rt8Cases(), ...windowCases(),
+export const t6Cases = () => [...rt8Cases(), ...moreRt8Cases(),
+  ...windowCases(),
   ...summaryCases()];
 
 // The cases whose found value differs from the expected one, by name.

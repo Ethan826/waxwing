@@ -79,12 +79,21 @@ const cases = [
   // check's decline has its own class either way.
   ['an RT8 defect', facts('DEFECT: candidate refused, Unsatisfied'),
     rt8DefectClass],
-  ['check decline', facts('declined by the check (NotCertifiable):'
-    + ' Unresolved Unsupported EffectLimit ForcedTail'),
-  'the check declines the candidate: compiles today'],
-  ['refused, check decline', facts('declined by the check (RecordDefect),'
-    + ' today refuses', { today: refused }),
-  'today refuses, the check declines the candidate']
+  ['check decline', facts('declined by the check, a limitation'
+    + ' (NotCertifiable): Unresolved Unsupported EffectLimit ForcedTail'),
+  'the check declines the candidate (a limitation): compiles today'],
+  ['read-fault decline', facts('declined by the check, a read fault'
+    + ' (PackageUnread): Unresolved Unsupported EffectsUnread'),
+  'the check declines the candidate (a read fault): compiles today'],
+  ['refused, check decline', facts('declined by the check, a limitation'
+    + ' (NotCertifiable), today refuses', { today: refused }),
+  'today refuses, the check declines the candidate (a limitation)'],
+  ['refused, read-fault decline', facts('declined by the check, a read'
+    + ' fault (PackageUnread), today refuses', { today: refused }),
+  'today refuses, the check declines the candidate (a read fault)'],
+  ['refused, open requirement', facts('declined by the check, an open'
+    + ' requirement (RequirementOpen), today refuses', { today: refused }),
+  'today refuses, the check declines the candidate (an open requirement)']
 ];
 
 test('each window class is assigned on its injected facts', () => {
@@ -99,8 +108,13 @@ test('each window class is assigned on its injected facts', () => {
 // No catch-all: an input no case names throws rather than becoming a
 // class.
 const unknown = [
-  ['a check decline with no verdict', facts('declined by the check'
-    + ' (NotCertifiable)')],
+  ['a check decline with no verdict', facts('declined by the check,'
+    + ' a limitation (NotCertifiable)')],
+  // Fix round 1: the old unkinded form, and a kind not compiling.
+  ['an unkinded check decline', facts('declined by the check'
+    + ' (NotCertifiable): Unresolved Unsupported EffectLimit ForcedTail')],
+  ['an open requirement where today compiles', facts('declined by the'
+    + ' check, an open requirement (RequirementOpen): Solved')],
   ['SearchBroke outside the defect list', facts('today\'s own internal'
     + ' failure (SearchBroke)', { today: refused })],
   ['an unknown compiling class', facts('(a) blocked: Unresolved Limit')],

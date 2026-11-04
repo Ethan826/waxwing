@@ -18,6 +18,8 @@ test('T6: every case finds its expected class', () => {
 
 // The table names every `CheckRefusal` constructor the compiler has, read
 // from its corefn, so a new constructor has no class until it is named.
+// The corefn is the last build's: after a source change without a
+// rebuild it is stale, and this test reads the old constructors.
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const constructorsOf = (module, typeName) => JSON.parse(readFileSync(
   join(root, 'output', module, 'corefn.json'), 'utf8')).decls
@@ -32,14 +34,17 @@ test('T6: the table names each CheckRefusal constructor once', () => {
   assert.deepEqual(Object.keys(refusalClasses).sort(), [...found].sort());
 });
 
-// The spec's split (A2 spec §6): `RequirementOpen`, `RecordDefect` and
-// `NotCertifiable` decline; every other refusal of a ClaimsComplete
-// candidate is a defect; no decline is a defect under either claim.
-test('T6: declines and defects split as Decide reads them', () => {
-  const declining = ['NotCertifiable', 'RecordDefect', 'RequirementOpen'];
+// Fix round 1 (C1, I2): `RequirementOpen` and `NotCertifiable` decline
+// and are never a defect; a `RecordDefect` is a generation defect under
+// either claim and either of today's results; every other refusal of a
+// ClaimsComplete candidate is a defect.
+test('T6: declines and defects split as RT8 reads them', () => {
+  const declining = ['NotCertifiable', 'RequirementOpen'];
   for (const [refusal, classes] of Object.entries(refusalClasses)) {
     const decline = declining.includes(refusal);
     assert.equal(isDefect(classes[0]), !decline, refusal);
     if (decline) assert.ok(!classes.some(isDefect), refusal);
   }
+  assert.ok(refusalClasses.RecordDefect.every(found =>
+    found.startsWith('DEFECT: generation defect')));
 });
