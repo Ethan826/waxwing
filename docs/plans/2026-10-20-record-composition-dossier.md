@@ -8306,3 +8306,74 @@ occurred. Nothing is activated or pushed; no soundness claim.
 
 For the author: the decisions in the packet's section 4. Held: the
 minting switch, F14's retirement, live replacement, pushing.
+
+### 18.161 Prerequisites implementation authorized; rulings on the packet (2026-11-04)
+
+The author authorized the prerequisites implementation
+(docs/plans/2026-11-04-activation-prerequisites-proposal.md), T6's
+tooling fixes included, with the proposed parallel split, internal
+reviews and one final routine verify; the 1.8-3.0M estimate plus T6 and
+coordination is acceptable as an estimate. Activation stays held.
+
+Two compatibility measures are kept, and neither establishes what users
+would lose when the live checker is replaced: sixteen declarations lose
+substitution-only certification; two move from Solved in the scratch
+comparison.
+
+Rulings:
+1. Replacement losses stay unresolved. The named read-fault and
+   ForcedTail lists are preserved; the three `RequirementUnjudged` stay
+   existing certification refusals. This authorization accepts no
+   replacement loss.
+2. T1-T4 approved as proposed. The narrow second validator-freeze
+   exception for owner multiplicity in check 4 is allowed: owners
+   counted by provenance, regardless of value. The broader
+   every-obligation uniqueness rule is a separate follow-up.
+   Conversion failures split as proposed, the remaining `UnreadImage`
+   coarsening documented. The polymorphic traversal and injected
+   resolver are used; existing numbering is preserved.
+3. T5 approved as a termination and partiality audit with narrower
+   claims: a scan and reviewed loop arguments are evidence, not a proof
+   of totality or exception freedom. Ordinary recursive cycles are
+   included, not only `tailRec` calls. Copied, fuelled loops test the
+   copies, so agreement checks connect them to production. A lazy
+   field could avoid unused work before activation but would not solve
+   termination when forced.
+4. T6 is mandatory before activation: RT8 distinguishes intended
+   declines from defects, heuristic candidates included; the window
+   reporter retains and reports defects rather than aborting or
+   relabelling them as harmless. Committed-path pins are expected
+   unchanged. The disposable minting comparison is repeated afterward,
+   every movement listed, nothing re-pinned.
+5. Criterion 4 is extended to R036 (1)-(3) and T6, with must-fail
+   cases. "Met" still means evidence exists, not permission to
+   activate.
+6. The `Holes.purs` fallback is investigated in this batch: whether
+   collection and renaming visit exactly the same metas. A reachable
+   collision is not inferred from the fallback's presence. If the
+   invariant holds, its argument and detection tests are recorded; if
+   it fails, stop with the separating case and a proposed
+   lowering-boundary repair (a new diagnostic or changed compilation
+   behavior needs its own ruling). Other live-checker fallbacks are
+   filed separately.
+
+Performance: no numerical budget is approved. The third-quartile rule
+describes current cost; it does not establish acceptable cost. The
+×14.1 read-back CPU and +471 MiB need investigation first. Whole-process
+peak RSS stays the primary memory measure; setup-adjusted figures are
+supporting evidence. The read-back is profiled and a cost-reduction
+proposal prepared alongside the prerequisites work, after determining
+whether repeated work, per-candidate evaluation or another mechanism
+dominates. After compile-path changes, the paired measurements are
+repeated under the recorded protocol. The two failed perf files stay
+failed qualification evidence; before activation their failures are
+attributed well enough to distinguish shared-load sensitivity from
+added compiler cost, without requiring an idle computer, retrying for
+green or changing bounds.
+
+C6 stays a shadow-only expected divergence; criterion 3's "met" records
+the ruling and does not approve live widening.
+
+Return one packet with the fixes, reviews, verify, the updated scratch
+comparison, the numbering findings and the performance proposal. Held:
+the minting switch, F14's retirement, live replacement, pushing.
