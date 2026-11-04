@@ -11,11 +11,11 @@
     "R034 (2)": null,
     "R034 (10)": null
   },
-  "comparison": null,
+  "comparison": "test/fixtures/r0/t2-minting-comparison.json",
   "performance": {
     "ruling": null,
     "budget": null,
-    "measurement": null
+    "measurement": "test/fixtures/r0/t2-performance.json"
   },
   "routing": "§18.159"
 }

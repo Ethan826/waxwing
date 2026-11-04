@@ -5251,3 +5251,24 @@ totals unchanged, 0 defects, 0 position findings.
   blind-spot list). Check: the real-dossier test in
   test/r0-t2-activation-gate.test.mjs and row
   r0-t2-activation-any-section.
+
+## Activation evidence: findings (2026-11-04)
+
+- The online read-back costs about ×14 the CPU of `recheck` alone on
+  the effect pin's sources (+58 s over 2,832 candidates, +471 MiB peak
+  RSS). The earlier "+80% on the shadow test" hid this, because that
+  test spends most of its time elsewhere. Check: the paired
+  measurement, test/fixtures/r0/t2-performance.json.
+- R035's earlier memory figures (tranche 2 Task 7's trace-cost probe)
+  measured a "without" process that also loaded the collecting
+  compiler through the corpus forms; its memory ratios are biased
+  toward 1. Check: the protocol review's C1; the new worker imports no
+  test module (scripts/r0-t2-perf-worker.mjs).
+- Under validator minting, RT8's accounting labels a decline as a
+  DEFECT, and the window classifier throws on the first DEFECT, so the
+  shadow pin test aborts at load. Check: the criterion 5 comparison's
+  logs; owed: a fix and a test before the real switch (proposal T6).
+- A gate check that accepts any certify text other than `accepted` as a
+  refusal fails open; criterion 2 now recognizes only `accepted` or a
+  whole CheckRefusal constructor and cross-checks the pin. Check: cases
+  forcedRelabelled, certifyUnrecognised and their rows.

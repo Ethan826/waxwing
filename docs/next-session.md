@@ -8,33 +8,29 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-No milestone has moved since 2026-10-25. Tranche 2 Stage B, the
-evidence milestone 1 needs, is complete and awaits the author's
-acceptance; milestone 1 itself waits on the activation gate.
+No milestone has moved since 2026-10-25. Stage B is accepted
+(§18.159); milestone 1 waits on the activation gate, not met (2, 4, 6).
 
 ## What is running now
 
-Nothing. Tranche 2 Stage B finished on 2026-11-03 (dossier §18.158):
-Tasks 3-16, two whole-branch reviews and their fixes, routine verify
-passed at 7e0492b (3385/3385, 230/230, 437/437, growth 2.140). No
-stop condition occurred.
+Nothing. The activation packet is returned (dossier §18.160;
+docs/plans/2026-11-04-activation-packet.md).
 
-**Waiting on the author:**
-1. Accept Stage B as functionally complete (§18.158), or not.
-2. The activation gate (docs/plans/2026-11-03-a2-activation-gate.md;
-   `node scripts/r0-t2-activation-gate.mjs`) reads not met (2-7):
-   loss-on-replacement rulings per gap list, C6, R034 (2) and (10),
-   the minting comparison, performance (R035) with a budget, and
-   statements §7's routing with U4/U6. Each needs a ruling or work;
-   rulings count only if numbered after §18.157.
-3. Whether and when to run `npm run perf`.
-Held: A2's Task 16 (minting switch), C6, F14's retirement, replacement
-losses, any push. Before activation: R036 (1)-(3).
+**Waiting on the author** (packet section 4):
+1. Criterion 2: loss rulings for the read-fault and ForcedTail lists,
+   or keep them unresolved.
+2. Criterion 6: budgets (proposed, none approved), the memory figure
+   they bind, and whether the online read-back's ×14 CPU must fall
+   first (R035).
+3. The prerequisites proposal
+   (docs/plans/2026-11-04-activation-prerequisites-proposal.md), its
+   Q1-Q9; T2 needs a second validator-freeze exception.
+4. Whether the two over-bound `npm run perf` files need attribution.
+Held: the minting switch, F14's retirement, live replacement, push.
 
-Integrated state: r0-t2-d1 at the §18.158 records commit (functional
-head 7e0492b). Ledger (git-ignored, kept until landing):
+Integrated state: r0-t2-d1 (packet commit). Ledgers (git-ignored):
+.superpowers/sdd/2026-11-04-activation-packet/progress.md and
 .superpowers/sdd/2026-11-01-tranche-2-read-back-plan/progress.md.
-Stage B spend about 6.4M against the 4.9-6.8M estimate.
 
 ## Where the work is
 

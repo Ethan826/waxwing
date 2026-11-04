@@ -8266,3 +8266,40 @@ parallel, one implementation proposal covering R034's prerequisites
 and R036's activation blockers, with review and verification included.
 Return with one consolidated activation packet. Held: the minting
 switch, F14's retirement, live replacement, pushing.
+
+### 18.160 The activation packet returned (2026-11-04)
+
+The work §18.159 authorized is done and consolidated in
+docs/plans/2026-11-04-activation-packet.md. No stop condition
+occurred. Nothing is activated or pushed; no soundness claim.
+
+- Criterion 5: the disposable minting comparison
+  (test/fixtures/r0/t2-minting-comparison.json; scratch change
+  docs/plans/2026-11-04-minting-comparison-scratch.diff, never on a
+  branch). Census 0, RT8 15, window 16, shadow 16 movements, all on the
+  honest pin's gap lists; two Solved acceptances lost (UnreadImage
+  statsEvidence); none unexpected; no C6 movement. Tooling gaps: RT8
+  labels declines DEFECT; the window classifier throws on one.
+- Criterion 2: today's verdicts (test/fixtures/r0/t2-gap-verdicts.json):
+  losses are the read faults (11 / 12) and the four ForcedTail; the
+  three RequirementUnjudged are existing refusals. The gate now reads
+  existing refusals apart and cross-checks the pin.
+- Criterion 6: one `npm run perf` at 354ce6e, exit 1, 24 of 26 files
+  (fn-linear-timing 4 of 8 forms ×1.13-1.44 over bound; fn-scale one
+  phase over), preserved, no retry. Paired measurements under a
+  protocol fixed and reviewed before the run
+  (docs/plans/2026-11-04-performance-protocol.md;
+  test/fixtures/r0/t2-performance.json): trace ×1.12 compile, ×1.44
+  recheck CPU; the online read-back ×14.1 CPU (+58 s, +471 MiB); the
+  validator ×2.24 CPU over certify, no peak-memory increase. Budgets
+  proposed, none approved; recommended: reduce the read-back cost
+  before any budget for it.
+- The prerequisites proposal
+  (docs/plans/2026-11-04-activation-prerequisites-proposal.md), with
+  one adversarial review, a revision and an approving re-review: T1-T5
+  for R034 (2), (10) and R036 (1)-(3), optional T6 for the tooling
+  gaps; T2 needs a second validator-freeze exception; 1.8-3.0M.
+- Gate: not met (2, 4, 6).
+
+For the author: the decisions in the packet's section 4. Held: the
+minting switch, F14's retirement, live replacement, pushing.
