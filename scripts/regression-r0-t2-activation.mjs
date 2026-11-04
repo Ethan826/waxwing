@@ -70,12 +70,14 @@ export const t2ActivationRows = [
     '  ...(entry?.loss === lossOf(entry ?? {}) ? []\n',
     '  ...(true ? []\n',
     /r0-t2-activation-gate: .*"lossMarkedRefusal"/),
-  // The verdict file not compared with the pin: a stale file backs it.
+  // The verdict file not compared with the pin: a file lacking a
+  // pinned entry backs it. (A changed RequirementUnjudged text is also
+  // caught by the certify cross-check, so `verdictsStale` holds here.)
   helper('r0-t2-activation-verdicts-stale', verdicts,
     '    problems.push(...apart(name, entries.map(keyOf),\n'
       + '      recorded.map(keyOf)),\n',
     '    problems.push(\n',
-    /r0-t2-activation-gate: .*"verdictsStale"/),
+    /r0-t2-activation-gate: .*"verdictLacks"/),
   // Losses read from the first denominator only: the effect pin's own
   // read fault is lost unruled.
   helper('r0-t2-activation-loss-one-denominator', losses,
