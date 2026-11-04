@@ -6,7 +6,8 @@
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fail, passed } from './regression-r0-amin-support.mjs';
-import { mergeCases } from './r0-a2-prerequisites-cases.mjs';
+import { mergeCases, ownerCases, ownerMissed }
+  from './r0-a2-prerequisites-cases.mjs';
 
 const loader = context => name => import(pathToFileURL(
   resolve(dirname(context.compilerPath), '..', name, 'index.js')));
@@ -29,5 +30,11 @@ export const a2PrerequisiteProbes = {
     (cases, k1) => [cases.unchecked([k1])]),
   'r0-a2-r034-2-unlimited-unmerged': mergeProbe('declines unmerged',
     () => [],
-    (cases, k1, k2) => [cases.unchecked([k1]), cases.unchecked([k2])])
+    (cases, k1, k2) => [cases.unchecked([k1]), cases.unchecked([k2])]),
+  // R034 (10): an owner recorded twice is check 4 at its provenance.
+  'r0-a2-r034-10-owner-twice': async context => {
+    const wrong = ownerMissed(await ownerCases(loader(context)));
+    if (wrong.length > 0) fail(`owners twice not check 4: ${wrong.join(', ')}`);
+    passed(context);
+  }
 };

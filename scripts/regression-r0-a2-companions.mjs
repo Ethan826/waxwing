@@ -26,8 +26,9 @@ export const a2CompanionRows = [
     // An owner's required companions not looked for.
     name: 'r0-a2-companion-required',
     file: companions,
-    needle: '      not (all once (owner.companions site))\n',
-    replacement: '      not (all (const true) (owner.companions site))\n',
+    needle: '      not (all once (owner.companions site)) || repeated site\n',
+    replacement: '      not (all (const true) (owner.companions site))'
+      + ' || repeated site\n',
     probe: 'r0-a2-companion-deleted',
     message: exactly('deleted', ['InstallR', 'AtInstalledC', 'ClauseIntoR',
       'ClauseIntoC', 'AtDefer', 'UnframedInstall', 'C15 InstallR'])

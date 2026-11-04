@@ -26,8 +26,11 @@
 --      arrow, a handler, or a record with a tail;
 --   4  an `Install`, `HandlerLit` or `Defer` lacking exactly one of each
 --      companion its table row requires, or with an identity not the
---      table's, or a companion no owner requires
---      (Effects.RecordCompanions; dossier §18.148 (2)).
+--      table's, or sharing its provenance with another owner, whatever
+--      their values; or a companion no owner requires
+--      (Effects.RecordCompanions; dossier §18.148 (2), §18.161 (2)). A
+--      repeated owner is folded into check 4, a coarsening: the index
+--      does not say whether an owner or a companion was miscounted.
 --   5  an effect label or data type the recorded arities lack or count
 --      otherwise, judged only when the arities are valid; for the
 --      `InDeclarations` entry, invalid arities (Effects.RecordArity;

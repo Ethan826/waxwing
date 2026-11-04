@@ -5,6 +5,7 @@
 // whole, compiling form. Each name carries its activation-gate criterion
 // 4 tag (`r034-2`, `r034-10`) as a hyphen-separated part.
 const reason = 'src/Features/Check/Decide/Reason.purs';
+const companions = 'src/Features/Check/Strategy/Effects/RecordCompanions.purs';
 
 export const a2PrerequisiteRows = [
   {
@@ -27,5 +28,18 @@ export const a2PrerequisiteRows = [
       + ' (declines strategies)))\n',
     probe: 'r0-a2-r034-2-unlimited-unmerged',
     message: /^declines unmerged: 2 EffectsUnchecked entries$/m
+  },
+  {
+    // R034 (10): owners not counted, so an owner recorded twice at one
+    // identity passes when each copy finds its companions once.
+    name: 'r0-a2-r034-10-owner-twice',
+    file: companions,
+    needle: '  repeated _ = length (filter (eq placed.provenance)'
+      + ' companions.owners) > 1\n',
+    replacement: '  repeated _ = false\n',
+    probe: 'r0-a2-r034-10-owner-twice',
+    message: new RegExp('^owners twice not check 4: Install twice, '
+      + 'Install beside an unframed copy, HandlerLit with no clauses twice, '
+      + 'HandlerLit twice, Defer twice$', 'm')
   }
 ];

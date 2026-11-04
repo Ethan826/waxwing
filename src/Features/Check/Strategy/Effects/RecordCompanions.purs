@@ -17,8 +17,10 @@
 -- (`Defer`'s `row`) are read as rows of their variable alone, as
 -- generation records them (Generate.Effect `installed`, Generate.Literal
 -- `literalAt`, Generate.Obligation `deferAt`). An owner violates check 4
--- unless its identity is the table's and each required companion occurs
--- exactly once; a companion-kind obligation (those consumption sites, an
+-- unless its identity is the table's, each required companion occurs
+-- exactly once, and no other owner has its provenance (owners counted by
+-- provenance whatever their values; BACKLOG R034 (10), dossier
+-- §18.161 (2)); a companion-kind obligation (those consumption sites, an
 -- `UnframedInstall`) violates it unless some owner requires it. The
 -- flags (`marks`, `bare`) are check 0's. Local record consistency only:
 -- this does not show that generation recorded every source site that
@@ -34,7 +36,15 @@ module Features.Check.Strategy.Effects.RecordCompanions
   ) where
 
 import Prelude
-import Data.Array (any, concat, concatMap, filter, length, mapWithIndex)
+import Data.Array
+  ( any
+  , concat
+  , concatMap
+  , filter
+  , length
+  , mapMaybe
+  , mapWithIndex
+  )
 import Data.Foldable (all)
 import Data.Maybe (Maybe(..), fromMaybe, maybe, maybe')
 import Domain.Recorded.Effect
@@ -52,10 +62,14 @@ import Domain.Recorded.Effect
 import Domain.Recorded.Origin (Path, RuleId(..))
 import Domain.Resolved (FunctionId)
 
--- The record's obligations and every companion an owner among them
--- requires; opaque, built by `companionsOf` only.
+-- The record's obligations, every companion an owner among them
+-- requires, and every owner's provenance; opaque, built by
+-- `companionsOf` only.
 newtype Companions = Companions
-  { obligations ∷ Array (Placed Obligation), required ∷ Array Companion }
+  { obligations ∷ Array (Placed Obligation)
+  , required ∷ Array Companion
+  , owners ∷ Array Provenance
+  }
 
 -- An obligation's identity at a site.
 type Site =
@@ -86,8 +100,13 @@ deferRule = ExprRule 16
 
 companionsOf ∷ Array (Placed Obligation) → Companions
 companionsOf obligations =
-  Companions { obligations, required: concatMap requiredBy obligations }
+  Companions
+    { obligations
+    , required: concatMap requiredBy obligations
+    , owners: mapMaybe ownedAt obligations
+    }
   where
+  ownedAt placed = map (const placed.provenance) (ownerOf placed.value)
   requiredBy placed = maybe [] (atOwner placed.provenance)
     (ownerOf placed.value)
   atOwner provenance owner = case provenance of
@@ -101,10 +120,11 @@ companionWrong (Companions companions) placed =
   where
   owned owner = case placed.provenance of
     AtSite site | identified owner site →
-      not (all once (owner.companions site))
+      not (all once (owner.companions site)) || repeated site
     _ → true
   once companion =
     length (filter (fits companion) companions.obligations) == 1
+  repeated _ = length (filter (eq placed.provenance) companions.owners) > 1
   unowned _ = companionKind placed.value
     && not (any (flip fits placed) companions.required)
 
