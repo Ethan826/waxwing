@@ -144,3 +144,19 @@ test('an unmarked label at a position is ImageUnconverted', () => {
   assert.deepEqual(shape(found.value0.value0), shape(slotVar(item, 'id(')));
   assert.equal(named(found.value0.value1), 'UserEffect');
 });
+
+// The other arm of the same conversion: a user label at the position
+// with no mark at all (`Unmarked`, planted in a fresh check's body).
+test('an Unmarked label at a position is ImageUnconverted', () => {
+  const { item, readBack } = declaration(sources.uses, 'held');
+  const variable = slotVar(item, 'id(');
+  const live = liveSlot(item, variable);
+  assert.equal(named(live), 'TFun');
+  const [label] = live.value1.value0;
+  live.value1.value0[0] = new cases.Row.Label(label.value0, label.value1,
+    cases.Row.Unmarked.value);
+  const found = cases.imagesOf(item, readBack);
+  assert.equal(named(found), 'Left');
+  assert.equal(named(found.value0), 'ImageUnconverted');
+  assert.deepEqual(shape(found.value0.value0), shape(variable));
+});

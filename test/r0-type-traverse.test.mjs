@@ -34,34 +34,42 @@ test('traverseTy agrees with rename on the traced fixtures', () => {
   assert.deepEqual(types.filter(ty => !agrees(traversed, ty)).length, 0);
 });
 
-// The agreement check's own must-fail case: a planted traversal that
-// skips label arguments (it traverses the type with every label's
-// arguments dropped) disagrees.
-const strip = ty => {
-  if (ty instanceof Core.TFun)
-    return new Core.TFun(strip(ty.value0), stripRow(ty.value1),
-      strip(ty.value2));
-  if (ty instanceof Core.TData)
-    return new Core.TData(ty.value0, ty.value1.map(strip),
-      ty.value2.map(stripRow));
-  if (ty instanceof Core.THandler)
-    return new Core.THandler(stripLabel(ty.value0), {
-      inference: stripRow(ty.value1.inference),
-      clauses: ty.value1.clauses instanceof cases.Just
-        ? new cases.Just(stripRow(ty.value1.clauses.value0))
-        : ty.value1.clauses });
-  if (ty instanceof Core.TRecord)
-    return new Core.TRecord({ fields: ty.value0.fields.map(field =>
-      new cases.Tuple(field.value0, strip(field.value1))),
-    tails: ty.value0.tails });
-  return ty;
+// The agreement check's own must-fail cases: planted traversals that
+// each skip one part (they traverse the type with that part dropped)
+// must disagree: label arguments, record tails, a handler's clause row,
+// data rows, data arguments, a row's tail variable.
+const { Nothing, Just, Tuple } = cases;
+const planted = drop => {
+  const label = each => new Row.Label(each.value0, drop.labelArgs ? []
+    : each.value1.map(ty), each.value2);
+  const row = each => new Row.Row(each.value0.map(label), drop.rowTail
+    ? Nothing.value : each.value1);
+  const ty = each => {
+    if (each instanceof Core.TFun)
+      return new Core.TFun(ty(each.value0), row(each.value1),
+        ty(each.value2));
+    if (each instanceof Core.TData)
+      return new Core.TData(each.value0, drop.dataArgs ? []
+        : each.value1.map(ty), drop.dataRows ? [] : each.value2.map(row));
+    if (each instanceof Core.THandler)
+      return new Core.THandler(label(each.value0), {
+        inference: row(each.value1.inference),
+        clauses: drop.clauseRow || each.value1.clauses instanceof Nothing
+          ? Nothing.value : new Just(row(each.value1.clauses.value0)) });
+    if (each instanceof Core.TRecord)
+      return new Core.TRecord({ fields: each.value0.fields.map(field =>
+        new Tuple(field.value0, ty(field.value1))),
+      tails: drop.recordTails ? [] : each.value0.tails });
+    return each;
+  };
+  return each => traversed(ty(each));
 };
-const stripLabel = label => new Row.Label(label.value0, [], label.value2);
-const stripRow = row => new Row.Row(row.value0.map(stripLabel), row.value1);
 
-test('a planted traversal dropping label arguments disagrees', () => {
-  const dropping = ty => traversed(strip(ty));
-  assert.ok(disagreements(dropping).length > 0);
+test('planted traversals dropping one part each disagree', () => {
+  for (const part of ['labelArgs', 'recordTails', 'clauseRow', 'dataRows',
+    'dataArgs', 'rowTail'])
+    assert.ok(disagreements(planted({ [part]: true })).length > 0, part);
+  assert.equal(disagreements(planted({})).length, 0);
 });
 
 test('an unnumbered meta is Left, never kept raw', () => {

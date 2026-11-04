@@ -94,6 +94,10 @@ export const traceRun = async (load, corpus) => {
     const { trace, ...state } = found.value0.state;
     // A build before R036 (2) holds a `Traced`, one since an `Either`; a
     // `Left` throws (a trace that did not finish is a stop, never zero).
+    // The `Either` is recognized by its constructor's name, as the
+    // compiled module's own instances are not loaded here: a `Traced`
+    // is a plain object, whose constructor is `Object`, so it cannot be
+    // taken for one.
     add(counts, found.value0.trace?.constructor?.name === 'Right'
       || found.value0.trace?.constructor?.name === 'Left'
       ? finished(found.value0.trace) : found.value0.trace);

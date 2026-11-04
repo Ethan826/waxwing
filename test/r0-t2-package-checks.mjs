@@ -189,6 +189,7 @@ export const packageChecks = async load => {
     const marks = [new Tuple(new Row.MarkMeta(0), Row.NoFail.value),
       new Tuple(new Row.MarkMeta(0), Row.Plain.value)];
     const clashing = cases.Least.leastOfGraph(marks)([]);
+    if (clashing.clashes === 0) return ['planted terms do not clash'];
     const withTerms = (item, terms) => cases.Assembly.readEffectsWith(
       item.problem)(item.readBack)(item.checked)(terms)(unfinished);
     return [['declined', faultOf(effectsOf(declined, undefined,

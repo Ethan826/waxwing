@@ -84,8 +84,12 @@ traverseArrow change arrow =
   rebuilt stages result = Array.foldr link result stages
   link each rest = TFun each.parameter each.row rest
 
--- An arrow node's parameter and row. `stagesThrough` keeps only arrows,
--- so the other arm never runs (as in `foldStages`).
+-- An arrow node's parameter and row. `stagesThrough` keeps only arrows
+-- (its `take` keeps a node only when it is a `TFun`), so the other arm
+-- never runs, as in `foldStages`. It is not made to fail: a general
+-- `Applicative` has no failure to report it with, so the arm could only
+-- drop the node or invent one; dropping is `foldStages`'s choice, and a
+-- dropped stage would fail the rename-agreement test.
 stageOf ∷ ∀ v. Ty v → Maybe (Stage v)
 stageOf = case _ of
   TFun parameter row _ → Just { parameter, row }

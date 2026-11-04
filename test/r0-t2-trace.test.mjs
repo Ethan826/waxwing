@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
+import { finished as finishedTrace } from './r0-t2-finished.mjs';
 import { exprAt, sources, spanOf, traceCases }
   from './r0-t2-trace-cases.mjs';
 
@@ -103,8 +104,8 @@ const pure = new Row.Row([], Nothing.value);
 // `finish` takes the declaration's row since the entry-tail ruling; a
 // closed one here. Its resolver is a type and a row function (R036 (2)),
 // and its result an `Either`.
-const finished = trace => Trace.finish({ ty: ty => ty, row: row => row })(
-  Maps.empty)(new Row.Row([], Nothing.value))(trace).value0;
+const finished = trace => finishedTrace(Trace.finish({ ty: ty => ty,
+  row: row => row })(Maps.empty)(new Row.Row([], Nothing.value))(trace));
 
 test('entries under one key are kept in arrival order', () => {
   const uses = finished(Trace.recordUse(span(0, 1))(useOf(Core.TBool.value))(

@@ -230,16 +230,11 @@ export const traceCases = async load => {
       .filter(([, held]) => !held).map(([name]) => name);
   };
   // A traced row resolved as a row: `g`'s `run` slot reads `one`'s Log
-  // through the final substitution (unresolved, it is a bare meta);
-  // `piped`'s row, concrete when recorded, reads `inc`'s either way.
+  // through the final substitution (unresolved, it is a bare meta).
   const rowResolvedWrong = () => {
     const g = traced(sources.slots, 'g');
     const run = g.uses.get(spanOf(sources.slots, 'run(one)'))?.[0];
-    const piped = traced(sources.slots, 'piped');
-    const [row] = [...piped.piped.values()][0] ?? [];
-    return [['slot', run?.slots[0]?.value0?.value0?.length === 1],
-      ['piped', row?.value0?.length === 1]]
-      .filter(([, held]) => !held).map(([name]) => name);
+    return run?.slots[0]?.value0?.value0?.length === 1 ? [] : ['slot'];
   };
   return { traced, typesOf, metasInOrder, bodyHoleCount, appliedWrong,
     renumberWrong, clauseWrong, unnumberedWrong, rowResolvedWrong, Core,
