@@ -91,18 +91,18 @@ name is looked up once, at the worker's composition root.
   (the controller's ruling, 2026-11-04): in an even round `without`
   runs first, in an odd round `with`. The pair is the two adjacent
   samples of one round.
-- The split: round 0, the warm-up, runs `without` first. Of the 11
-  measured rounds (1 to 11), the six odd ones run `with` first and the
-  five even ones `without` first, in every comparison. The split is
-  6 to 5, not exactly half, because N is odd.
+- The split: round 0, the warm-up, runs `without` first. Of the 12
+  measured rounds (1 to 12), the six odd ones run `with` first and the
+  six even ones `without` first, in every comparison. The split is
+  6 to 6: N = 12 (the controller's ruling) makes it exact.
 - Warm-ups: round 0 (one pair per comparison) is discarded from the
   statistics and kept in the raw log and the file.
-- N = 11 measured pairs per comparison, rounds 1 to 11. In all, 12
-  rounds × 4 comparisons × 2 arms = 96 samples.
+- N = 12 measured pairs per comparison, rounds 1 to 12. In all, 13
+  rounds × 4 comparisons × 2 arms = 104 samples.
 - No retries. A sample that exits non-zero, prints a malformed line or
   exceeds the termination safeguard (600 s, perf.mjs `fileTimeoutMs`;
   not a budget) is recorded as failed with its reason, and the run goes
-  on. A comparison with any failed sample, fewer than 11 measured pairs
+  on. A comparison with any failed sample, fewer than 12 measured pairs
   or a failed count check has no figure. Its `measured` is null, which
   the gate reads as unmet. The driver exits 1. Another attempt is a new
   authorized run, and the failed one stays on record.
@@ -121,16 +121,16 @@ Per sample, around `run` only:
 
 ## 6. Statistics
 
-- Per comparison and metric, over the 11 pairs: the paired ratio
+- Per comparison and metric, over the 12 pairs: the paired ratio
   (with ÷ without) and the paired difference (with − without), each as
   median, Tukey hinges (q1, q3) and min/max; each arm's own values in
-  the same form. Median: the middle value (N is odd).
+  the same form. Median: the mean of the two middle values (N is even).
 - The gate's figure for a part: `compileTime.measured` is the largest
   median paired CPU ratio over the part's comparisons; `peakMemory`
   likewise for maxRSS. readBack takes three comparisons and validator
   one. Unit: a ratio, so a budget is a ratio too.
 - No significance test or confidence interval is claimed: one machine,
-  one run, N = 11. The spread is reported, not interpreted.
+  one run, N = 12. The spread is reported, not interpreted.
 
 ## 7. Conditions
 
@@ -173,10 +173,10 @@ and recheck 2.2-3.0 s per corpus pass) plus guesses for what has never
 been timed alone: about 8 s for a compile sample, 5 s for a recheck
 sample, 8-11 s for an online sample and about 12 s for a validator
 sample (whose `prepare` runs the whole online path). That makes about
-70 s per round and 14 minutes for 12 rounds. Add 1-3 minutes for the
+70 s per round and 15 minutes for 13 rounds. Add 1-3 minutes for the
 baseline build (purs on the edited modules; compileTree's limit is
-180 s) and its corpus check. Expected: 15-20 minutes on a lightly
-loaded machine, up to about 35 minutes under the load seen in Tasks 7
+180 s) and its corpus check. Expected: 16-22 minutes on a lightly
+loaded machine, up to about 38 minutes under the load seen in Tasks 7
 and 12. These are estimates; the run records the real times.
 
 ## 10. Threats to validity
@@ -186,7 +186,7 @@ and 12. These are estimates; the run records the real times.
   conditions show when a burst happened; no sample is dropped for it.
 - Order. Counterbalancing spreads the first-runner's advantage or
   penalty (file cache, thermal state, scheduler history) over both
-  arms, but not evenly: `with` runs first in 6 of 11 measured pairs.
+  arms, evenly: each arm runs first in 6 of the 12 measured pairs.
   Carry-over from the previous comparison's last sample remains. Each
   sample's side and round are kept, so an order effect can be examined
   afterward; it is not corrected for.

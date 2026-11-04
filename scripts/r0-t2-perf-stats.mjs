@@ -7,9 +7,9 @@
 // does, and test/r0-t2-perf.test.mjs checks these functions.
 
 // Fixed before any run (protocol §4): one warm-up pair discarded from
-// the statistics (kept in the raw log), then eleven measured pairs.
+// the statistics (kept in the raw log), then twelve measured pairs.
 export const warmups = 1;
-export const pairs = 11;
+export const pairs = 12;
 
 // Each comparison names its two arms; which runs first alternates by
 // round (`sidesOf`). The part says which gate part it feeds.
@@ -31,8 +31,9 @@ export const gateMetrics = { compileTime: 'cpuMs', peakMemory: 'maxRssMiB' };
 
 // Counterbalanced order (the controller's ruling, 2026-11-04): in an
 // even round `without` runs first, in an odd round `with`. Round 0 is
-// the warm-up, so of the eleven measured rounds (1 to 11) six run
-// `with` first (the odd ones) and five `without` first.
+// the warm-up, so of the twelve measured rounds (1 to 12) six run
+// `with` first (the odd ones) and six `without` first (the controller's
+// ruling: N = 12, so the split is exact).
 export const sidesOf = round => round % 2 === 0 ? ['without', 'with']
   : ['with', 'without'];
 

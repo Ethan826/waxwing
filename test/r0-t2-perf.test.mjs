@@ -31,14 +31,15 @@ test('the schedule is counterbalanced, warm-ups first, fixed', () => {
     assert.equal(first.round, second.round);
     assert.deepEqual([first.side, second.side], sidesOf(first.round));
   }
-  // Measured pairs per comparison: six with `with` first, five with
+  // Measured pairs per comparison: six with `with` first, six with
   // `without` first; the warm-up (round 0) runs `without` first.
   const firsts = order.filter((entry, at) => at % 2 === 0
     && entry.comparison === 'validator');
   const measured = firsts.filter(entry => !entry.warmup);
   assert.equal(measured.filter(entry => entry.side === 'with').length, 6);
   assert.equal(measured.filter(entry => entry.side === 'without').length,
-    5);
+    6);
+  assert.equal(measured.length, 12);
   assert.equal(firsts[0].side, 'without');
   assert.equal(order[comparisons.length * 2].side, 'with');
 });
