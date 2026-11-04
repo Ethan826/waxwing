@@ -17,18 +17,19 @@ depth. The header's claim ("a walk costs its depth, not the width of
 the nodes on it") is false. Each path is also looked up about four
 times. The 10,000-part interpolation program
 (test/text-scale-programs.mjs, `scalePrograms#2`, `main`: one
-`Interpolate` node of 20,001 parts) makes 110,003 lookups, each
-building 20,000 child wrappers: 2.2 × 10⁹ wrappers, 99.7% of the
-corpus total. That declaration is 93% of `readEffects` time, and its
-allocation drives the GC share and the peak RSS rise.
+`Interpolate` node of 20,000 parts, 2n for n = 10,000) makes
+110,003 lookups, each building 20,000 child wrappers: 2.2 × 10⁹
+wrappers, 99.7% of the corpus total. That declaration is 93% of
+`readEffects` time, and its allocation drives the GC share and the
+peak RSS rise.
 
-Without that declaration, read-back plus package costs about ×2.2 the
-recheck alone (one sample, under load), not ×14.
+Without that declaration, read-back plus package costs about ×1.8 to
+×2.2 the recheck alone in loaded single samples (§2.4), not ×14.
 
 ## 2. Evidence
 
 Conditions: Apple M2 Pro, 10 cores, 16 GiB, node v26.6.0, AC power,
-shared machine with other lanes building (load average 4.7 to 12.7
+shared machine with other lanes building (load average 4.7 to 16.2
 during the runs). Every figure below is one run, for attribution only;
 none is a budget or a replacement for the protocol's run. Inputs: the
 protocol's (`writeInputs`, 1,138 corpus and 1,142 effect pin sources;
@@ -41,8 +42,8 @@ Scripts (all new, all measurement only):
   per step and per candidate, with walk tallies when the build counts,
   and a digest of every type read-back and package;
 - scripts/r0-t2-readback-variant.mjs: a cloned build with Walk's
-  compiled output patched (`counting`, `memo`, `lazy`), never src/ or
-  output/;
+  compiled output patched (`counting`, `wrapping`, `memo`, `lazy`,
+  composable with `+`), never src/ or output/;
 - scripts/r0-t2-readback-scaling.mjs: the online path on generated
   declarations of growing width or depth;
 - scripts/r0-t2-readback-cpuprofile.mjs: reads a `--cpu-prof` file
@@ -83,13 +84,18 @@ recheck 7.9 s and readBack 3.5 s in the same run.
 | | lookups | distinct paths | levels | children built |
 |---|---|---|---|---|
 | scalePrograms#2 main | 110,003 | 30,001 | 140,000 | 2,200,030,000 |
-| other 2,830 candidates | 438,899 | 108,130 | 2,291,336 | 7,459,260 |
+| other 2,830 candidates † | 438,899 | 108,130 | 2,291,336 | 7,459,260 |
+
+† The 2,832 less `main` and the same program's `id` (3 lookups, 1
+path, 0 levels): 548,905 − 110,003 − 3 = 438,899 lookups.
 
 Built per lookup on `main` is 20,000, the `Interpolate` width. Lookups
-per distinct path are 3.67 there and 3.97 over all candidates: the
-same paths are read by `nodeFacts`, `literalFacts` and `nodeMarks`
-(each over `effects.nodes`, 30,001 on `main`), and again by
-`tracedRow` and the instance and annotation readers.
+per distinct path are 3.67 there and 3.97 over all candidates. The
+package's readers: `nodeFacts`, `literalFacts` and `nodeMarks` (each
+over `effects.nodes`, 30,001 on `main`), `tracedRow`, `directMarks`
+(Marks.purs:129, through `exprAt`), `instanceFacts` and the
+annotation readers. The type read-back reads the body too (Position.purs
+:94): 46,548 lookups over all candidates, none on `main`.
 
 ### 2.4 Separating experiments
 
@@ -106,7 +112,7 @@ the 2,832 candidates:
 So repetition is a factor of about 3.6, and width is the rest: with
 no sibling built, `main` falls by two orders of magnitude.
 
-Width (`scaling.mjs width`, n parts, one node of 2n + 1 parts):
+Width (`scaling.mjs width`, n parts, one node of 2n parts):
 
 | n | 625 | 1,250 | 2,500 | 5,000 | 10,000 |
 |---|---|---|---|---|---|
@@ -122,27 +128,47 @@ node's width. `lazy` is linear. recheck and readBack stay linear
 
 Depth (`scaling.mjs depth`, an `Add` chain): 16, 32, 64, 120 terms give
 levels 720, 2,976, 12,096, 42,840 and readEffects 3.5, 2.7, 7.5,
-27.8 ms. Levels grow as n², and each level also copies the path
-(`after`'s `take`/`drop`), but the parser refuses nesting past 128
-(`NestingTooDeep` from 130 terms; 129 parse), so the depth term stays
-below about 30 ms per declaration.
+27.8 ms. Levels grow as n² and each level copies the path
+(`after`'s `take`/`drop`, O(n)), so the bound is cubic (observed
+exponent 2.1 to 2.5 from 64 to 120). The parser refuses nesting past
+128 (`NestingTooDeep` from 130 terms; 129 parse): at 129 terms, about
+34 ms by the cubic, per declaration.
 
 GC (`node --trace-gc`, width 2,500): 487 scavenges freeing 14.5 GB,
 about 106 bytes per child built, and 2 mark-compacts. The heap churn
 comes from the same wrappers (`AtExpr`, `Tuple` and two arrays per
 child).
 
-Worker samples, one each (worker-attribution.txt; load 9.5-12.7):
+Worker samples, one per arm, two batches (worker-attribution.txt at
+load 9.5-12.7; worker-attribution-2.txt at load 14.6-16.2):
 
-| Inputs, build | recheck alone CPU, maxRSS | with CPU, maxRSS, run increment |
+| Inputs, build | batch 1: alone, with CPU s; increment | batch 2: alone, with CPU s; increment |
 |---|---|---|
-| all, plain | 6.5 s, 571 MiB | 78.6 s, 865 MiB, +301 MiB |
-| all but scalePrograms#2, plain | 6.0 s, 375 MiB | 13.0 s, 396 MiB, 0 |
-| all, `lazy` | 6.4 s, 596 MiB | 18.2 s, 550 MiB, 0 |
+| all, plain | 6.5, 78.6 (×12.1); +301 MiB | 9.9, 89.6 (×9.1); +97 MiB |
+| all but scalePrograms#2, plain | 6.0, 13.0 (×2.2); 0 | 5.4, 9.8 (×1.8); +13 MiB |
+| all, `lazy` | 6.4, 18.2 (×2.9); 0 | 8.8, 18.9 (×2.1); 0 |
+| all but scalePrograms#2, `lazy` | | 4.7, 16.7 (×3.5); +76 MiB |
 
-The RSS rise goes away both when the declaration is left out and when
-the walk stops building siblings, so it comes from the walk's churn,
-not from retained packages.
+The RSS rise shrinks to near zero both when the declaration is left
+out and when the walk stops building siblings, so it comes from the
+walk's churn, not from retained packages.
+
+Calibration. Load compresses the ratio: the plain pair reads ×12.1 and
+×9.1 against the protocol's ×14.1, factors 1.17 and 1.55. Scaled by
+its own batch's factor, `lazy` reads ×3.3 in both batches and the
+pair without scalePrograms#2 ×2.5 and ×2.8.
+
+The gap between them is not explained. `lazy` with every input costs
+4.8 s more CPU than plain without scalePrograms#2 in batch 1 (11.8 s
+against 7.0 s over recheck alone), though `main`'s `lazy` readEffects
+is 0.52 s. Profiles put it in GC +1.6 s, walk +1.4 s, other +1.2 s and
+readBack +0.7 s. Proxy overhead, which A would not have, is a
+candidate, but the in-process split does not show it: readEffects over
+the other 2,831 candidates is 4.60 s under `lazy` and 4.56 s plain
+(split-lazy.json, split-output.json). Batch 2 at higher load reverses
+the order on the reduced inputs (`lazy` +12.0 s, plain +4.4 s). Single
+loaded samples spread wider than the gap, so the prediction in §3
+carries the whole spread.
 
 ### 2.5 What the brief's other mechanisms showed
 
@@ -153,7 +179,10 @@ not from retained packages.
   being true at activation, when the validator reads it.
 - The remaining cost, after `lazy` (with-lazy.cpuprofile, 37.6 s of
   samples): recheck 6.27 s, readBack 4.03 s + 0.44 s walk, readEffects
-  walk 2.79 s, readEffects other 2.57 s, GC 6.72 s. In readBack, 2.7 s
+  walk 2.79 s, readEffects other 2.57 s, GC 6.72 s. Most of that GC
+  is not the read-back's: without scalePrograms#2, plain, GC is 5.13 s,
+  so the read-back's share is about 1.6 s by difference. In readBack,
+  2.7 s
   is `completed` substituting every equation under the positioned
   values (`Map Var` lookups, Path comparisons in
   `Domain.Recorded.Origin` `compare`).
@@ -165,7 +194,7 @@ Program.Compile reaches 408 modules, none of them ReadBack.* or
 Strategy.Online (a transitive import scan of output/), so compile
 output cannot move. Results can: Walk is read by the type read-back
 (Position, hence σ and RT8) and by the package (EffectPlaces,
-EffectSites, Instances, Marks). So every option is judged by an
+EffectSites, Instances, Marks). Every option is judged by an
 unchanged digest of every candidate's type read-back and package
 (§2.4's) before any pin is run.
 
@@ -174,16 +203,21 @@ raw array and the wrapper; `item` indexes, then wraps the one item
 (`Array.index` before `map`). It is what the header already claims.
 Published source: none needed, constant-time array indexing; no new
 algorithm. Predicted effect, from the `lazy` experiment: readEffects
-68 s to about 5 s; onlineReadBack CPU ratio from ×14.1 to roughly ×2
-to ×3; run RSS increment to about 0, so the peakMemory ratio near
-1.0. Risk: `findMap`'s first-match order must stay the same (`Apply`
-lists `Apply/function`, `Apply/args`, then the over-applied
-`Call/args`); A keeps the child list and changes only when items are
-wrapped. Touches Walk.purs alone (untrusted read-back plumbing).
+68 s to about 5 s; onlineReadBack median CPU ratio from ×14.1 to
+about ×2.5 to ×3.3 (§2.4's calibration; not an interval, and the
+unexplained gap is inside it); run RSS increment to about 0, so the
+peakMemory ratio near 1.0. A alone still builds each node's `Child`
+list (fixed per constructor) and the over-applied `supplied <> more`
+copy (Walk.purs:135-139, O(arguments) per `Apply` passed). Risk:
+`findMap`'s first-match order must stay the same (`Apply` lists
+`Apply/function`, `Apply/args`, then the over-applied `Call/args`); A
+keeps the child list and changes only when items are wrapped. Touches
+Walk.purs alone (untrusted read-back plumbing).
 
 **B. One path index per body.** One traversal builds a map from a
 path to its node (a trie on steps; Fredkin 1960, "Trie memory", CACM
-3(9)), shared by every reader of one candidate, so each lookup costs
+3(9)), shared by every reader of one candidate, in both phases (the
+type read-back's Position and the package's readers), so a lookup costs
 the path's length. It removes the repetition (§2.3, about ×4) and the
 depth term. Predicted: after A, the remaining walk (2.79 s +
 0.44 s under the profiler) to well under 1 s. Risk: the index must list the
@@ -201,14 +235,23 @@ per-level `take`/`drop` copy; the depth term it touches is capped by
 the parser's 128 (§2.4). Small; fold into A or B if touched.
 
 **E. Filter equations before substituting** in `completed`
-(ReadBack.purs), about 2.7 s. It is equivalent only if no positioned
-value mentions a flexible problem variable; that is not argued here
-and needs an argument and a check before it is proposed for adoption.
+(ReadBack.purs), about 2.7 s. Needs an argument; not proposed for
+adoption. It is equivalent only if both hold: (1) no positioned value
+mentions a flexible problem variable, so `mentions unknown` reads the
+same before and after substitution; (2) no equation that filtering
+would drop makes `substitute` fail. `traverse placed equations` is
+`Nothing` when any substitution fails (Merge `substitute` returns
+`Maybe`), and `completed` then reads `ClaimsComplete` with no unifier
+and empty `holeBindings`. Filtering first could drop that failing
+non-auxiliary equation and reach `mgu`, changing the claim, the
+`holeBindings` and the bound values: an Online decision.
 
 Rejected: leaving out or shrinking scalePrograms#2 (it is in both
 pinned denominators, 2,832 and 2,823: a pin movement, so a STOP);
-making Online's package lazy (it moves the cost to activation, when
-the validator reads every package, and changes `Certificate`).
+making Online's package lazy. §18.161 (3) notes that a lazy field
+avoids unused work before activation; here it would hide the cost
+before activation without reducing it, since the validator forces
+every package after, and it changes `Certificate`.
 
 ## 4. Pins and decisions each option could touch
 
@@ -229,19 +272,33 @@ A digest movement is a STOP under the common rules, never a re-pin.
    reduced build gives the §2.4 digest. Any other digest stops.
 2. The pins the table names: the effect pin, t2-honest, gap verdicts,
    RT8 and shadow rows, with no movement.
-3. Growth, timing-free: on the `counting` variant, children built per
-   lookup bounded by the labels on the path (not by width) on the
-   width family; a regression row would use test/growth.mjs, the only
-   place a routine elapsed-time comparison is allowed.
+3. Growth, timing-free: the `wrapping` variant counts every `AtExpr`
+   and `AtPattern` constructed. It patches only `Node`'s constructors,
+   which A leaves alone, so it reads the same before and after A
+   (`counting`'s `built` does not: it counts `Many` lengths, equal to
+   wrappers only while `map` is eager, and its patch matches text A
+   changes). Check: on the width family, wrappers grow ×2 per doubling
+   of n, not ×4. Shown both ways (scaling-width-wrapping.jsonl, n =
+   625, 1,250, 2,500): today 8,602,503, 34,392,503, 137,535,003 (×4,
+   fails); `lazy+wrapping` 15,628, 31,253, 62,503 (×2, passes).
+   Counts, no clock, so no test/growth.mjs.
 4. The recorded protocol, unchanged, as a new authorized run: the
    onlineReadBack comparison's median CPU and maxRSS ratios, with the
-   predictions above stated beforehand (A: CPU ×2-×3, maxRSS near 1.0).
+   predictions above stated beforehand (A: CPU ×2.5-×3.3, maxRSS
+   near 1.0).
    No budget is proposed here; the author sets it from that run.
 
 ## 6. Open
 
-- Whether the remaining ×2-×3 (§2.5: type read-back substitution,
+- Whether the remaining ×2.5-×3.3 (§2.5: type read-back substitution,
   repeated lookups, GC) needs B and E before a budget is set is the
   author's call once A is measured.
-- Walk.purs's header claim is contradicted by §2.3 and §2.4; it should
-  be corrected with whichever change lands, or now if none does.
+- Walk.purs's comment on `Child` (lines 28-30) is contradicted by
+  §2.3 and §2.4. Proposed text today: "One child under its label, or
+  an array of them under one label, each item with the steps after its
+  index. `children` wraps every item of a node before `item` indexes
+  one, so a lookup costs the summed width of the nodes on its path,
+  not only its depth (readback-cost proposal §2.3-§2.4)." After A:
+  "... A path's index reaches its item directly and only that item is
+  wrapped, so a walk costs its depth and each node's fixed child list,
+  not the width of the arrays on it."

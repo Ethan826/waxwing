@@ -61,7 +61,7 @@ const itemsOf = async (load, inputs) => {
 };
 
 const fresh = () => ({ lookups: 0, steps: 0, levels: 0, built: 0,
-  keys: new Map() });
+  wrapped: 0, keys: new Map() });
 const distinct = tally =>
   [...tally.keys.values()].reduce((sum, set) => sum + set.size, 0);
 
@@ -92,7 +92,8 @@ const profiled = (step, size, item) => {
     nodes: size(effects.nodes), flexEff: effects.flexEff.length,
     vars: size(step.fields(item.problem).vars),
     walk: { lookups: walk.lookups, distinct: distinct(walk),
-      steps: walk.steps, levels: walk.levels, built: walk.built },
+      steps: walk.steps, levels: walk.levels, built: walk.built,
+      wrapped: walk.wrapped },
     typeWalk: { lookups: typeWalk.lookups, levels: typeWalk.levels,
       built: typeWalk.built },
     digest: digest(shown(made.value0) + shown(read)) };
@@ -115,7 +116,7 @@ const summary = rows => {
     readBackMs: sum(rows, row => row.readBackMs ?? 0),
     readEffectsMs: effectsMs,
     topShare: { 1: share(1), 10: share(10), 100: share(100) },
-    walk: ['lookups', 'distinct', 'steps', 'levels', 'built']
+    walk: ['lookups', 'distinct', 'steps', 'levels', 'built', 'wrapped']
       .map(key => [key, sum(candidates, row => row.walk[key])]),
     typeWalk: ['lookups', 'levels', 'built']
       .map(key => [key, sum(candidates, row => row.typeWalk[key])]),

@@ -3,7 +3,7 @@
 // (r0-t2-readback-profile.mjs `profiled`) on generated declarations,
 //   node scripts/r0-t2-readback-scaling.mjs <build> <family> <n>...
 // family `width`: test/text-scale-programs.mjs's "10,000 interpolation
-// parts" program with n parts (one Interpolate node of 2n + 1 parts);
+// parts" program with n parts (one Interpolate node of 2n parts);
 // family `depth`: `1 + 1 + … + 1` with n terms (an Add chain n - 1
 // deep). Prints one JSON line per size: each step's time and, on the
 // counting variant (r0-t2-readback-variant.mjs), the walk's tallies.
@@ -21,7 +21,7 @@ const families = {
 };
 
 const fresh = () => ({ lookups: 0, steps: 0, levels: 0, built: 0,
-  keys: new Map() });
+  wrapped: 0, keys: new Map() });
 
 const measured = async (load, source) => {
   const parsed = (await load('Format.Parse')).parse(source);
@@ -50,9 +50,9 @@ const measured = async (load, source) => {
   const read = readEffects(problem)(found)(live.function)(
     live.state.subst.marks)(live.trace);
   const readEffectsMs = ms(start);
-  const { lookups, steps, levels, built } = globalThis.readBackWalk;
+  const { lookups, steps, levels, built, wrapped } = globalThis.readBackWalk;
   return { recheckMs, readBackMs, readEffectsMs, read: right(read),
-    walk: { lookups, steps, levels, built } };
+    walk: { lookups, steps, levels, built, wrapped } };
 };
 
 if (process.argv[1] !== undefined
