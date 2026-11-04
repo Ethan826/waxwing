@@ -368,7 +368,7 @@ Existing rows affected: `r0-t2-package-mark-clash`
 now reaches a conversion failure, the message becomes
 `["RowUnconverted"]`. The implementer runs the probe, updates the
 regex to the observed fault and records why; detection is kept because
-the row still fails with the guard restored.
+the row still fails with the defect restored (the guard inverted).
 
 ### Pins
 
@@ -450,15 +450,19 @@ acceptance changes. After activation the finer fault is what
    - `TraceFault` lives in Features/Check/Trace/Types.purs. Trace.purs
      re-exports that module whole (`module Features.Check.Trace.Types`,
      Trace.purs:16), so scripts/structure-trace.mjs's `traceExports`
-     (:49-51) does not change; its reviewer confirms that.
+     (:49-51) does not change; its reviewer confirms that. That gate's
+     rule (6) lets only Features.Check.Trace import Trace.Types, so
+     Fault.purs, Package.purs and Function.purs reach `TraceFault` and
+     `traverseTraced` through Features.Check.Trace's re-export.
 3. Routing. `readEffects` and `readEffectsWith` (ReadBack/Package.purs)
    take `Either TraceFault Traced` and turn `Left` into a new
    `ReadFault`, `TraceUnfinished TraceFault`. It is ordered **after**
    `Declined` and before `MarkClash`: `Declined` is a fact of the
    problem alone (tranche 2 design §C.6; Package.purs:17-23), and on the
-   11 `Declined` corpus declarations a trace fault first would change
-   the gate's fault name. Online.purs:139-141 passes `found.trace` as
-   before, so its source does not change.
+   `Declined` declarations (9 on the corpus loader, 10 on the effect
+   pin's sources: 9 `UnframedInstall` and 1 `OperationWithRow`) a trace
+   fault first would change the gate's fault name. Online.purs:139-141
+   passes `found.trace` as before, so its source does not change.
 
 Sources: the applicative traversal (McBride and Paterson, "Applicative
 programming with effects", JFP 18(1), 2008), used as a renaming that can
@@ -500,9 +504,10 @@ proof. No invented machinery. The alternatives are in open question 4.
 - test/r0-t2-package.test.mjs: "Declined before TraceUnfinished" (a
   `Left` trace plus an `Unsupported` obligation gives `Declined`) and
   "TraceUnfinished before MarkClash".
-- Readers of the trace: 22 test files and 5 scripts mention `.trace`,
-  and `readEffects` or `readEffectsWith` has 17 call sites outside
-  Package.purs (counts from the review's scan). The test readers move
+- Readers of the trace: 19 test files read `.trace` (some scripts
+  mention it only as needle text), and `readEffects` or
+  `readEffectsWith` has 17 call sites outside Package.purs (counts from
+  the review's scan). The test readers move
   to one shared helper that unwraps `Right` and fails on `Left`; the
   call sites pass the `Either` or unwrap through it.
 - scripts/r0-t2-trace-removal.mjs:57-62 matches the `finish` call
@@ -595,11 +600,14 @@ Strategy.ReadBack (with Entailed, Entailed.Mgu, Entailed.Triangular,
 Entailed.Merge, Mentions and Candidate), ReadBack.Type,
 Effects.Package (`eraseTy`), Effects.Forced, MarkStore,
 Features.Check.Search, Spine, Holes, Trace, Walk and Domain.* modules.
-15 of them use `tailRec` with no recorded termination argument, among
-them MarkStore, Search, Spine, Effects.Package and Domain.Type.Core and
-Compare. So the closure and the loop list are not written into this
-proposal by hand: the scan test derives both, and each listed loop gets
-its argument.
+15 of them use `tailRec`. This proposal argues 6 (Least, Convert,
+Bound, EffectMatch, EffectPlaces, Instances); about 9 have no argument
+yet (Domain.Syntax, Domain.Type.Compare, Domain.Type.Core, Entailed.Mgu,
+Entailed.Triangular, MarkStore, Search, Spine, Effects.Package). So the
+closure and the loop list are not written into this proposal by hand:
+the scan test derives both, and each listed loop gets its argument. The
+table covers the module closure, so Mgu and Triangular get rows even
+though `packaged` does not reach them at run time.
 
 In pure PureScript running on Node, an exception can come from
 partiality, from FFI (src's or a library's), from coercion that breaks
@@ -613,10 +621,13 @@ only from recursion that is not well-founded.
   ReadBack.Package. Over the src modules in it (`inSrc`, as
   forgery.mjs:40 does) it fails on an import of `Partial.Unsafe`,
   `Partial`, `Effect.Unsafe`, `Effect.Exception.Unsafe` or
-  `Data.Array.Partial`, on a `Partial ⇒` constraint, on any module in
-  forgery.mjs's `forgingModules` (`Unsafe.Coerce`, `Record.Unsafe` and
-  the invariant-breaking Internal modules, :28-34; that scan already
-  forbids them in src, so this is a cross-check), and on a src module
+  `Data.Array.Partial`, on a `Partial ⇒` constraint, on a src module
+  that directly imports a member of forgery.mjs's `forgingModules`
+  (`Unsafe.Coerce`, `Record.Unsafe` and the invariant-breaking Internal
+  modules, :28-34), as forgery.mjs does, not on transitive membership
+  (Data.Map itself depends on Data.Map.Internal; that scan already
+  forbids such imports in src, so this is a cross-check), and on a src
+  module
   with FFI. Today grep finds no partiality in the read-back or the trace,
   and the only src FFI module is Runtime.Node
   (scripts/foreign-surface.json), which is outside the closure. Library
@@ -723,6 +734,9 @@ git-ignored) and relevant to activation:
   validator decline (`RecordDefect`, `NotCertifiable …`) is a
   `CheckFailed` that Decide reads as a decline, so RT8 reports declines
   as DEFECT.
+- A Heuristic candidate refused by the validator (`RecordDefect` or
+  `NotCertifiable`) is labelled "ambiguous several-tail read-back
+  (Heuristic)" by test/r0-rt8-account.mjs:60-69 rather than a decline.
 - The window classifier throws on the first RT8 DEFECT, which aborts
   test/r0-shadow.serial at load instead of reporting.
 
@@ -826,8 +840,9 @@ the harness fixes join as T6.
    the output, and the rename-agreement test checks that every variable
    is visited). Two alternatives:
    - Published, and prevents the case outright: one walk that assigns
-     numbers as it renames, in the State applicative (McBride and
-     Paterson's relabelling example, the same 2008 paper). `numbers`
+     numbers as it renames, by `traverse` in the State applicative
+     (Gibbons and Oliveira, "The Essence of the Iterator Pattern", JFP
+     19, 2009; applicative functors from McBride and Paterson 2008). `numbers`
      and the renaming then come from one walk, so they cannot disagree.
      Risk: the numbering order would follow that walk rather than
      `foldHoles`'s, so extension hole numbers could change, which moves
@@ -865,8 +880,8 @@ the harness fixes join as T6.
    number exactly as R036 (2) describes for the trace, so R036 (2)'s fix
    alone does not secure that numbering. Recommended: treat it as an
    activation blocker, fixed the same way (the traversal, `Left` on an
-   unnumbered meta, routed as a check failure the compile path already
-   reports) in a separate task after T4, because it is a
+   unnumbered meta; a new internal-fault path, since no existing
+   diagnostic covers it) in a separate task after T4, because it is a
    lowering-boundary change that can move compile output and needs its
    own review and pins. The arrow-wrapping fallbacks in the live checker
    (Scheme.purs:141-144 `flexibleRow`, falling back to `openRow
