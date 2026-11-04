@@ -108,6 +108,13 @@ test('property: one EffectsUnchecked, the union, others in order', () => {
     const anyUnchecked = input.some(entry =>
       entry instanceof Verdict.EffectsUnchecked);
     assert.equal(merged.length, anyUnchecked ? 1 : 0, `seed ${seed}`);
+    // The merged entry stands where the first EffectsUnchecked was:
+    // after the distinct other entries recorded before it.
+    const first = input.findIndex(entry =>
+      entry instanceof Verdict.EffectsUnchecked);
+    if (anyUnchecked)
+      assert.equal(found.findIndex(isUnchecked), new Set(input
+        .slice(0, first).map(text)).size, `seed ${seed}`);
     if (anyUnchecked)
       assert.deepEqual(merged[0].EffectsUnchecked[0].map(item =>
         JSON.stringify(item)), union, `seed ${seed}`);

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
 import { ownerCases, ownerMissed } from './r0-a2-prerequisites-cases.mjs';
+import { shape } from './regression-r0-amin-support.mjs';
 
 // BACKLOG R034 (10), dossier §18.161 (2): record check 4 counts owners
 // (`Install`, `HandlerLit`, `Defer`) by provenance, whatever their
@@ -30,11 +31,13 @@ test('every rejected case repeats an owner', () => {
 });
 
 // (a), (b), (d), (e) and (f): check 4 at the first copy's provenance.
+// (e) is the proposal's one fixture (HandlerLit and Defer twice), with
+// each owner kind twice on its own beside it.
 // (b) separates identity from value: the copy's handler differs.
 // (d) has no companions at all, so the count rests on owners alone.
 // (f) is the nearest weaker case, already a companion-count defect.
 test('an owner recorded twice is check 4 at its provenance', () => {
-  assert.equal(Object.keys(cases.rejected).length, 6);
+  assert.equal(Object.keys(cases.rejected).length, 7);
   assert.deepEqual(ownerMissed(cases), []);
 });
 
@@ -54,4 +57,19 @@ test('repeated non-owners and distinct owners are accepted', () => {
   assert.deepEqual(Object.keys(cases.accepted), ['Equal twice',
     'Consume AtCall twice', 'two Installs at two paths',
     'a HandlerLit inside an Install']);
+});
+
+// (c)'s fixtures hold what they claim: exactly one provenance of the
+// intended non-owner kind is recorded twice, none more often.
+test('each accepted (c) case repeats one non-owner', () => {
+  for (const [name, which] of Object.entries(cases.repeatedKinds)) {
+    const counts = new Map();
+    for (const placed of cases.accepted[name].effects.obligations
+      .filter(which)) {
+      const key = JSON.stringify(shape(placed.provenance));
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    assert.deepEqual([...counts.values()].filter(count => count > 1), [2],
+      name);
+  }
 });

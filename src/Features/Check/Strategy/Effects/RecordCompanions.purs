@@ -124,7 +124,7 @@ companionWrong (Companions companions) placed =
     _ → true
   once companion =
     length (filter (fits companion) companions.obligations) == 1
-  repeated _ = length (filter (eq placed.provenance) companions.owners) > 1
+  repeated site = length (filter (eq (AtSite site)) companions.owners) > 1
   unowned _ = companionKind placed.value
     && not (any (flip fits placed) companions.required)
 

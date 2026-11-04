@@ -34,12 +34,12 @@ export const a2PrerequisiteRows = [
     // identity passes when each copy finds its companions once.
     name: 'r0-a2-r034-10-owner-twice',
     file: companions,
-    needle: '  repeated _ = length (filter (eq placed.provenance)'
+    needle: '  repeated site = length (filter (eq (AtSite site))'
       + ' companions.owners) > 1\n',
     replacement: '  repeated _ = false\n',
     probe: 'r0-a2-r034-10-owner-twice',
     message: new RegExp('^owners twice not check 4: Install twice, '
       + 'Install beside an unframed copy, HandlerLit with no clauses twice, '
-      + 'HandlerLit twice, Defer twice$', 'm')
+      + 'HandlerLit twice, Defer twice, HandlerLit and Defer twice$', 'm')
   }
 ];

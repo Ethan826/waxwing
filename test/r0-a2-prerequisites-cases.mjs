@@ -85,6 +85,11 @@ export const ownerCases = async load => {
     'HandlerLit twice': [twice(literal, is(Effect.HandlerLit)),
       owner(literal, Effect.HandlerLit)],
     'Defer twice': [twice(use, is(Effect.Defer)), owner(use, Effect.Defer)],
+    // (e) as the proposal states it, one fixture: the HandlerLit is
+    // recorded before the Defer, so it is reported.
+    'HandlerLit and Defer twice': [twice(inline, placed =>
+      is(Effect.HandlerLit)(placed) || is(Effect.Defer)(placed)),
+    owner(inline, Effect.HandlerLit)],
     'owner and companions twice': [twice(use, installed), install.provenance]
   };
   const accepted = {
@@ -93,7 +98,11 @@ export const ownerCases = async load => {
     'two Installs at two paths': twoWith,
     'a HandlerLit inside an Install': inline
   };
-  return { Record, Effect, rejected, accepted, problems: { use, literal,
+  // The non-owner kind each accepted (c) case records twice.
+  const repeatedKinds = { 'Equal twice': is(Effect.Equal),
+    'Consume AtCall twice': site(Effect.AtCall) };
+  return { Record, Effect, rejected, accepted, repeatedKinds,
+    problems: { use, literal,
     unframed, empty, twoWith, inline } };
 };
 
