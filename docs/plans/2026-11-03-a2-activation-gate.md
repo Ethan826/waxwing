@@ -51,12 +51,13 @@ An absent file, an absent key or a misshapen value is unmet, and so is
 a measure that throws. Nothing is assumed met.
 
 The gate-status file is the record of what the author has ruled and
-what has been run. Today every value in it is null:
+what has been run. At 354ce6e only `c6` and `routing` are set, both
+to §18.159; every other value is null:
 
 | Key | Holds | Criterion |
 |---|---|---|
 | `repin` | the dossier section of a later re-pin ruling, if the pin departs from §18.157 | 1 |
-| `losses` | per gap list (`faults`, `refusals`, `forcedTail`), the section ruling its loss on replacement | 2 |
+| `losses` | per gap list (`faults`, `refusals`, `forcedTail`), the section ruling its loss on replacement; read only for a list holding a loss | 2 |
 | `c6` | the section recording the C6 decision | 3 |
 | `landed` | per item, `"R034 (2)"` and `"R034 (10)"`, the name of its restored-defect regression row | 4 |
 | `comparison` | the path of the comparison file | 5 |
