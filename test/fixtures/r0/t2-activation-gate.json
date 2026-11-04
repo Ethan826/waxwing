@@ -10,9 +10,9 @@
   "landed": {
     "R034 (2)": "r0-a2-r034-2-unmerged",
     "R034 (10)": "r0-a2-r034-10-owner-twice",
-    "R036 (1)": null,
-    "R036 (2)": null,
-    "R036 (3)": null,
+    "R036 (1)": "r0-t2-r036-1-scan-blind",
+    "R036 (2)": "r0-t2-r036-2-meta-raw",
+    "R036 (3)": "r0-t2-r036-3-row-coarse",
     "T6": "r0-t6-rt8-declines-defect"
   },
   "comparison": "test/fixtures/r0/t2-minting-comparison.json",
