@@ -4,7 +4,9 @@ One consolidated return for the work §18.159 authorized: the minting
 comparison, the performance evidence, today's verdicts for the gap
 declarations, and one proposal for the activation prerequisites. Nothing
 is activated. The minting switch, F14's retirement, live replacement and
-pushing stay held. No soundness claim.
+pushing stay held. No soundness claim. Routine verify at dd66543
+passed: parallel 3399/3399, serial 233/233, regression proofs 443/443,
+growth 2.196 against 3.0.
 
 The gate (`node scripts/r0-t2-activation-gate.mjs`, spec
 docs/plans/2026-11-03-a2-activation-gate.md) now reads **not met (2, 4,

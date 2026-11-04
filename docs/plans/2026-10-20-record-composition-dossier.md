@@ -8300,6 +8300,9 @@ occurred. Nothing is activated or pushed; no soundness claim.
   for R034 (2), (10) and R036 (1)-(3), optional T6 for the tooling
   gaps; T2 needs a second validator-freeze exception; 1.8-3.0M.
 - Gate: not met (2, 4, 6).
+- Routine verify at dd66543 passed, alone under the lock: parallel
+  3399/3399, serial 233/233, regression proofs 443/443,
+  growth ratio 2.196 against 3.0 (log .build/evidence/2026-11-04-verify/).
 
 For the author: the decisions in the packet's section 4. Held: the
 minting switch, F14's retirement, live replacement, pushing.
