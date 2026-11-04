@@ -9,8 +9,10 @@ import assert from 'node:assert/strict';
 // test/r0-holes-walks.mjs: E, T, H1 (no meta anywhere in the body is
 // outside the numbering, so the renamed body holds no raw meta) and H2.
 // The planted must-fail drops one meta per body from the numbering and
-// must fail H1 on every body that has a meta. Corpus-observed; the
-// argument from the code is in
+// must fail H1 on every body that has a meta: a wiring check (the corpus
+// bodies reach the checks, and H1 reads them), not evidence that a
+// diverging walk is seen; test/r0-holes-walks.test.mjs carries that.
+// Corpus-observed; the argument from the code is in
 // docs/plans/2026-11-04-holes-numbering-findings.md.
 const { load } = await import('./r0-generate-support.mjs');
 const { loadCorpus } = await import('./r0-corpus.mjs');

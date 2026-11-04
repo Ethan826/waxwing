@@ -129,21 +129,26 @@ export const tally = (check, bodies) => {
 };
 
 // Planted walks, each broken in one way (the must-fail cases).
-// `missing`: a numbering without `meta`, and `holes` renaming by it, as
-// Holes.purs does.
-export const missingMeta = (M, meta) => {
+// `holes` as Holes.purs does it (renaming every type `retype` visits by
+// `rename`), but by a given numbering.
+const holesBy = (M, numbering) => body => {
   const real = productionWalks(M);
+  const named = numbering(body);
+  const renumber = variable => variable instanceof M.Open.Hole
+    ? new M.Open.Hole(M.Maybe.maybe(variable.value0)(number => number)(
+      M.Map.lookup(M.Ord.ordInt)(variable.value0)(named)))
+    : variable;
+  return real.retype(real.rename(renumber))(body);
+};
+
+// A numbering without `meta`. A wiring check: it removes a key after
+// the walk, so it shows the checks read the numbering, not that they
+// see a walk diverge.
+export const missingMeta = (M, meta) => {
   const numbering = body => M.Map.delete(M.Ord.ordInt)(meta)(
-    real.numbering(body));
-  const holes = body => {
-    const named = numbering(body);
-    const renumber = variable => variable instanceof M.Open.Hole
-      ? new M.Open.Hole(M.Maybe.maybe(variable.value0)(number => number)(
-        M.Map.lookup(M.Ord.ordInt)(variable.value0)(named)))
-      : variable;
-    return real.retype(real.rename(renumber))(body);
-  };
-  return { ...real, numbering, holes };
+    M.Holes.numbering(body));
+  return { ...productionWalks(M), numbering,
+    holes: holesBy(M, numbering) };
 };
 
 // `foldHoles` run on the type with every label's arguments removed.
@@ -161,17 +166,40 @@ export const droppingLabels = M => {
 // rest is.
 const types = ['TInt', 'TBool', 'TData', 'TVar', 'TFun', 'TUnit',
   'THandler', 'TText', 'TRecord'];
-export const droppingRests = M => {
-  const real = productionWalks(M);
+const withoutRests = M => body => {
   const isType = value => types.some(name => value instanceof M.Core[name]);
   const strip = value => {
     if (value instanceof M.Open.NamedRest)
       return new M.Open.NamedRest(value.value0, M.Core.TInt.value);
     return isType(value) ? value : undefined;
   };
+  return rebuilt(body, strip);
+};
+
+export const droppingRests = M => {
+  const real = productionWalks(M);
   return { ...real,
     foldTypes: step => found => body => real.foldTypes(step)(found)(
-      rebuilt(body, strip)) };
+      withoutRests(M)(body)) };
+};
+
+// The walk-level divergence carried into the numbering: the production
+// `numbering` run on the body as the stripped `foldTypes` sees it (named
+// rests' types unvisited), and `holes` renaming the whole body by it.
+// A meta only in a named rest's type stays raw: H1 must fail.
+export const restsUnnumbered = M => {
+  const numbering = body => M.Holes.numbering(withoutRests(M)(body));
+  return { ...droppingRests(M), numbering, holes: holesBy(M, numbering) };
+};
+
+// The `Node` constructors, read from the source's `data Node`
+// declaration, so a constructor added there fails the coverage test
+// until the generator draws it.
+export const nodeNames = source => {
+  const block = source.slice(source.indexOf('data Node\n'));
+  const end = block.search(/\n\n(type|data|newtype) /);
+  return [...block.slice(0, end).matchAll(/^ {2}[=|] (\w+)/gm)]
+    .map(found => found[1]);
 };
 
 export const modulesOf = async load => ({

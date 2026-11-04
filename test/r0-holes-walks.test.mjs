@@ -2,9 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
 import { mulberry } from './row-merge-gen.mjs';
-import { bounds, generatorOf, nodeCount } from './r0-holes-gen.mjs';
+import { readFileSync } from 'node:fs';
+import { bounds, generatorOf } from './r0-holes-gen.mjs';
 import { bodyChecks, droppingLabels, droppingRests, metasOf, missingMeta,
-  modulesOf, productionWalks, tally, typeCheck } from './r0-holes-walks.mjs';
+  modulesOf, nodeNames, productionWalks, restsUnnumbered, tally, typeCheck }
+  from './r0-holes-walks.mjs';
 
 // Dossier §18.161 (6): do `numbering` (collection) and `holes`'s
 // renaming visit the same metas? Over the grammar fixed in
@@ -27,12 +29,18 @@ test('the generated samples reach every node and many metas', () => {
   const nodes = new Set();
   const visit = value => {
     if (value === null || typeof value !== 'object') return;
+    // A compiled name may carry `$$` (`Boolean` is `$$Boolean`).
     if (value instanceof M.Open.Expr) nodes.add(value.value0.node
-      .constructor.name);
+      .constructor.name.replace(/^\$\$/, ''));
     Object.values(value).forEach(visit);
   };
   bodies.forEach(visit);
-  assert.equal(nodes.size, nodeCount);
+  const declared = nodeNames(readFileSync(new URL(
+    '../src/Domain/Checked/Internal.purs', import.meta.url), 'utf8'));
+  // The parse found the declaration, and each name is compiled.
+  assert.ok(declared.length > 30, `${declared}`);
+  assert.ok(declared.every(name => typeof M.Open[name] === 'function'));
+  assert.deepEqual([...nodes].sort(), [...declared].sort());
   const withMetas = bodies.filter(body => metasOf(M.Open, body).length > 1);
   assert.ok(withMetas.length > bodies.length * 0.8, `${withMetas.length}`);
 });
@@ -48,8 +56,9 @@ test('foldHoles, rename and the generic walk agree on every type', () => {
   assert.equal(disagreeing.length, 0);
 });
 
-// Must-fail: a numbering missing meta 0, in a body where 0's raw number
-// is also 5's hole number. H2 alone does not see it; H1 does.
+// Must-fail, a wiring check: a numbering missing meta 0, in a body
+// where 0's raw number is also 5's hole number. H2 alone does not see
+// it; H1 does.
 test('planted: a missing meta that collides fails H1', () => {
   const hole = meta => new M.Core.TVar(new M.Open.Hole(meta));
   const pure = new M.Row.Row([], M.Maybe.Nothing.value);
@@ -70,5 +79,13 @@ test('planted: foldHoles without label arguments fails T', () => {
 
 test('planted: foldTypes without named rests fails E', () => {
   const found = tally(bodyChecks(M, droppingRests(M)), bodies);
+  assert.ok(found.failures.E > 0);
+});
+
+// Must-fail: the stripped `foldTypes`'s blind spot carried through the
+// production `numbering`; a meta seen only in a named rest stays raw.
+test('planted: a numbering blind to named rests fails H1', () => {
+  const found = tally(bodyChecks(M, restsUnnumbered(M)), bodies);
+  assert.ok(found.failures.H1 > 0);
   assert.ok(found.failures.E > 0);
 });

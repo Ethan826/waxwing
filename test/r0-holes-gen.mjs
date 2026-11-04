@@ -110,6 +110,3 @@ export const generatorOf = (M, next) => {
   return { body: () => expr(bounds.bodyDepth),
     type: () => ty(bounds.typeDepth), span };
 };
-
-// Node constructors the generator draws, for its own coverage check.
-export const nodeCount = 33;
