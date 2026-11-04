@@ -3,9 +3,10 @@
 // functions over evidence in the working tree: `evaluate(evidence)` gives seven
 // results, each `{ id, title, met, state }`, `state` the measured lines.
 // `evidence` holds the gate-status file (`status`), Task 13's pin
-// (`pin`), the dossier's and the statements' text, the regression
-// registry's row names (`rows`, a Set) and the files the status cites
-// (`files`, path to parsed JSON or null). Nothing here decides: a
+// (`pin`), the gap-verdict file (`verdicts`, test/fixtures/r0/
+// t2-gap-verdicts.json), the dossier's and the statements' text, the
+// regression registry's row names (`rows`, a Set) and the files the
+// status cites (`files`, path to parsed JSON or null). Nothing here decides: a
 // criterion that needs the author is met only when the status cites a
 // dossier section after §18.157 that exists and names the matter.
 // Absent or misshapen evidence is unmet, never assumed met; a measure

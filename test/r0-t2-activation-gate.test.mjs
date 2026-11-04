@@ -9,7 +9,9 @@ import { readFileSync } from 'node:fs';
 import { dossierFile, section, statementsFile, statusFile }
   from './r0-t2-activation-evidence.mjs';
 import { met } from './r0-t2-activation-gate-met.mjs';
-import { pinApproved, pinFile } from './r0-t2-activation-pin.mjs';
+import { acceptance, pinApproved, pinFile }
+  from './r0-t2-activation-pin.mjs';
+import { verdictsFile } from './r0-t2-gap-verdicts.mjs';
 
 // The A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 // on synthetic evidence (fixture-level): all seven met on `met`, and
@@ -71,6 +73,34 @@ test("criterion 1 holds on the committed pin, §18.157's figures", () => {
   lowered.denominators['corpus loader'].candidates = 2822;
   lowered.denominators['corpus loader'].floor = 2804;
   assert.equal(pinApproved({ ...committed, pin: lowered }).met, false);
+});
+
+// §18.159 criterion 2 on the committed tree: the three
+// RequirementUnjudged are existing refusals, needing no loss ruling;
+// the read faults and the ForcedTail are losses, needing one (whether
+// it is recorded is the status file's, not pinned here). Must-fail:
+// without the verdict file no list reads as existing refusals.
+test('criterion 2 on the committed tree: refusals apart from losses', () => {
+  const json = file => JSON.parse(readFileSync(file, 'utf8'));
+  const committed = { status: json(statusFile), pin: json(pinFile),
+    verdicts: json(verdictsFile),
+    dossier: readFileSync(dossierFile, 'utf8') };
+  const state = acceptance(committed).state.join('\n');
+  const counts = (label, loader, pin) => new RegExp(`${label} \\(`
+    + `corpus loader: ${loader}; effect pin: ${pin}\\): `);
+  assert.match(state, new RegExp(counts('RequirementUnjudged',
+    'losses 0, existing refusals 3', 'losses 0, existing refusals 3')
+    .source + 'existing refusals only, no loss ruling needed'));
+  assert.match(state, new RegExp(counts('ForcedTail',
+    'losses 4, existing refusals 0', 'losses 4, existing refusals 0')
+    .source + 'ruling recorded: '));
+  assert.match(state, new RegExp(counts('read faults',
+    'losses 11, existing refusals 0', 'losses 12, existing refusals 0')
+    .source + 'ruling recorded: '));
+  const absent = acceptance({ ...committed, verdicts: null });
+  assert.equal(absent.met, false);
+  assert.doesNotMatch(absent.state.join('\n'), /existing refusals only/);
+  assert.match(absent.state.join('\n'), /t2-gap-verdicts\.json missing/);
 });
 
 // Task 16 final review, item 10: the report says why a re-pin or a

@@ -1,10 +1,12 @@
 // A synthetic body of evidence on which all seven criteria of the A2
 // activation gate hold (fixture-level: its dossier, statements, status
 // and files are invented; the pin carries §18.157's figures and the
-// honest gate's named lists). test/r0-t2-activation-gate-cases.mjs
-// changes one thing at a time from it.
+// honest gate's named lists, and the gap-verdict file backs it).
+// test/r0-t2-activation-gate-cases.mjs changes one thing at a time from
+// it.
 import { forcedTail, unjudged, unreadImages, unsupported }
   from './r0-t2-honest-gate.mjs';
+import { gapEntriesOf, verdictFileOf } from './r0-t2-gap-verdicts.mjs';
 
 export const dossier = ['# Dossier', '### 18.150 Earlier',
   'C6, routing, read fault, ForcedTail and R035 named, not ruled.',
@@ -49,7 +51,24 @@ const budget = () => ({ compileTime: 2, peakMemory: 2 });
 const within = () => ({ compileTime: { measured: 1 },
   peakMemory: { measured: 2 } });
 
-export const met = () => ({
+// Today's verdicts as the gap-verdict file records them: `certify`
+// accepts the read faults and the ForcedTail (losses) and refuses the
+// RequirementUnjudged (existing refusals), as observed on the corpus.
+const verdictOf = list => ({ decide: 'Unresolved',
+  reason: 'Unresolved Unsupported', checker: 'compiles',
+  certify: list === 'refusals' ? 'RequirementUnjudged {}' : 'accepted',
+  shadow: 'markers' });
+
+export const verdictsOf = pin => verdictFileOf(pin, new Map(
+  Object.values(gapEntriesOf(pin)).flat()
+    .map(entry => [entry.at, verdictOf(entry.list)])));
+
+const pinOf = () => ({ ruling: 'dossier §18.155 (7), §18.157',
+  explanations: [],
+  denominators: { 'corpus loader': denominator(2823, 2805, 11),
+    'effect pin': denominator(2832, 2813, 12) } });
+
+const withPin = pin => ({
   status: { repin: null, losses: { faults: '§18.303',
     refusals: '§18.303', forcedTail: '§18.303' }, c6: '§18.300',
   landed: { 'R034 (2)': 'r0-a2-r034-2-merge',
@@ -57,10 +76,7 @@ export const met = () => ({
   performance: { ruling: '§18.302', measurement: 'perf.json',
     budget: { readBack: budget(), validator: budget() } },
   routing: '§18.301' },
-  pin: { ruling: 'dossier §18.155 (7), §18.157', explanations: [],
-    denominators: { 'corpus loader': denominator(2823, 2805, 11),
-      'effect pin': denominator(2832, 2813, 12) } },
-  dossier, statements,
+  pin, verdicts: verdictsOf(pin), dossier, statements,
   rows: new Set(['r0-a2-r034-2-merge', 'r0-a2-r034-10-owner',
     'r0-a2-defect-block', 'r0-r034-2-r034-10']),
   files: { 'cmp.json': { build: 'abc', census: { moved: [] },
@@ -68,3 +84,5 @@ export const met = () => ({
   'perf.json': { conditions: 'quiet machine', readBack: within(),
     validator: within() } }
 });
+
+export const met = () => withPin(pinOf());

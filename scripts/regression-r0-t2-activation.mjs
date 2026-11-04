@@ -6,6 +6,8 @@
 const evidence = 'test/r0-t2-activation-evidence.mjs';
 const pin = 'test/r0-t2-activation-pin.mjs';
 const gate = 'test/r0-t2-activation-gate.mjs';
+const losses = 'test/r0-t2-activation-verdicts.mjs';
+const verdicts = 'test/r0-t2-gap-verdicts.mjs';
 
 const helper = (name, file, needle, replacement, message) =>
   ({ name, tree: 'test', edits: [{ file, needle, replacement }],
@@ -56,5 +58,28 @@ export const t2ActivationRows = [
   helper('r0-t2-activation-throw-met', gate,
     "    return result([`evidence unreadable: ${error.message}`], []);\n",
     '    return result([], [`evidence unreadable: ${error.message}`]);\n',
-    /r0-t2-activation-gate: .*"unreadable"/)
+    /r0-t2-activation-gate: .*"unreadable"/),
+  // §18.159 criterion 2: an existing refusal still asked for a loss
+  // ruling, as before the verdict file.
+  helper('r0-t2-activation-refusal-ruled', losses,
+    '  if (losses.length === 0)\n', '  if (false)\n',
+    /r0-t2-activation-gate: .*"refusalUnruled"/),
+  // A loss read from the file's own label, not from `certify`: a loss
+  // marked an existing refusal passes unruled.
+  helper('r0-t2-activation-loss-unchecked', verdicts,
+    '  ...(entry?.loss === lossOf(entry ?? {}) ? []\n',
+    '  ...(true ? []\n',
+    /r0-t2-activation-gate: .*"lossMarkedRefusal"/),
+  // The verdict file not compared with the pin: a stale file backs it.
+  helper('r0-t2-activation-verdicts-stale', verdicts,
+    '    problems.push(...apart(name, entries.map(keyOf),\n'
+      + '      recorded.map(keyOf)),\n',
+    '    problems.push(\n',
+    /r0-t2-activation-gate: .*"verdictsStale"/),
+  // Losses read from the first denominator only: the effect pin's own
+  // read fault is lost unruled.
+  helper('r0-t2-activation-loss-one-denominator', losses,
+    '  const losses = lossNames(entries.flat());\n',
+    '  const losses = lossNames(entries[0]);\n',
+    /r0-t2-activation-gate: .*"effectPinLoss"/)
 ];

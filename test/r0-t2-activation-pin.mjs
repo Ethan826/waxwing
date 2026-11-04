@@ -2,13 +2,15 @@
 // activation-gate.md), read from Task 13's honest pin in the working
 // tree (test/fixtures/r0/t2-honest.json) against the named lists of
 // test/r0-t2-honest-gate.mjs, §18.157's figures and the dossier
-// sections that rule on them. They read the pin as it stands; the live
-// comparison of the corpus with the pin is
+// sections that rule on them, and criterion 2's losses from the
+// gap-verdict file (test/r0-t2-activation-verdicts.mjs). They read the
+// pin as it stands; the live comparison of the corpus with the pin is
 // test/r0-t2-honest.serial.test.mjs's, not this gate's.
 import { forcedTail, isForced, unjudged, unreadImages, unsupported }
   from './r0-t2-honest-gate.mjs';
 import { citesWhole, result, ruling, section, statusKey }
   from './r0-t2-activation-evidence.mjs';
+import { lossRulings } from './r0-t2-activation-verdicts.mjs';
 
 export const pinFile = 'test/fixtures/r0/t2-honest.json';
 export const denominatorNames = ['corpus loader', 'effect pin'];
@@ -119,29 +121,11 @@ const faultNamed = entry => (unsupported[entry.at] === undefined
     && String(entry.fault).startsWith('UnreadImage ')
   : entry.fault === `Declined ${unsupported[entry.at]}`);
 
-// Each nonempty gap list's loss on replacement, ruled after §18.157.
-const lossRulings = (evidence, found, problems) => {
-  const losses = statusKey(evidence, 'losses');
-  if (losses === null || typeof losses !== 'object') {
-    problems.push('gate status lacks "losses"');
-    return [];
-  }
-  return gapLists.filter(list => found.some(([, d]) =>
-    d[list.key].length > 0)).flatMap(list => {
-    const count = found.map(([name, d]) =>
-      `${d[list.key].length} ${name}`).join(', ');
-    const got = ruling(evidence.dossier, losses[list.key], list.token);
-    const line = `loss on replacement, ${list.label} (${count}): `
-      + got.line;
-    if (got.met) return [line];
-    problems.push(line);
-    return [];
-  });
-};
-
 // Criterion 2 (A1): each denominator's candidates are the floor
 // (validated) plus its three lists, every listed entry is on a named
-// list, and each list's loss on replacement has a ruling after §18.157.
+// list, and each list holding a loss (an entry today's `certify`
+// accepts, by the verdict file) has a ruling after §18.157; an
+// existing refusal needs none (§18.159 criterion 2).
 export const acceptance = evidence => {
   if (evidence.pin === null) return result([`${pinFile} missing`], []);
   const problems = [];
@@ -163,6 +147,6 @@ export const acceptance = evidence => {
       + `validated + ${d.faults.length} read faults + ${d.refusals.length} `
       + `RequirementUnjudged + ${d.forcedTail.length} ForcedTail`;
   });
-  const ruled = lossRulings(evidence, found, problems);
+  const ruled = lossRulings(evidence, found, gapLists, problems);
   return result(problems, [...state, ...ruled]);
 };

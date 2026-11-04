@@ -6,12 +6,22 @@ retirement and the losses an actual replacement would cause (dossier
 §18.157). F14's retirement is the author's and is not a criterion.
 
 The gate is the seven criteria shown to the author in §18.156's report.
-Each one below has the check that measures it, its state as measured
-on 2026-11-03 (branch t2/gate from d375ffc), and the evidence that
-would meet it. None of them is a decision. Where a criterion needs the
-author, the gate measures only whether the ruling is recorded, and
-where. A met gate means the stated evidence exists. It does not mean
-the checker should be switched on; that call stays with the author.
+Each one below has the check that measures it, its state as measured on
+2026-11-03 (branch t2/gate from d375ffc; criterion 2 measured again at
+354ce6e for §18.159), and the evidence that would meet it. None of them
+is a decision. Where a criterion needs the author, the gate measures
+only whether the ruling is recorded, and where. A met gate means the
+stated evidence exists. It does not mean the checker should be
+switched on; that call stays with the author.
+
+The gate is an evidence checklist (§18.159). Its citation checks read
+that a cited section exists, comes after §18.157 and names the
+matter; they cannot establish that the section approves anything. A
+criterion met by a citation says only that a ruling is cited. For
+example, §18.159 names C6 and routing, so criteria 3 and 7 read met,
+yet its C6 ruling retains the expected shadow divergence and
+authorizes no live acceptance widening, and its routing ruling
+approves a direction, not activation.
 
 ## The report
 
@@ -23,6 +33,8 @@ neither the corpus nor the compiler and writes nothing. It reads:
 - the gate-status file, test/fixtures/r0/t2-activation-gate.json;
 - Task 13's honest pin, test/fixtures/r0/t2-honest.json, against the
   named lists in test/r0-t2-honest-gate.mjs and §18.157's figures;
+- the gap-verdict file, test/fixtures/r0/t2-gap-verdicts.json
+  (criterion 2);
 - the dossier, docs/plans/2026-10-20-record-composition-dossier.md, by
   section heading;
 - the statements, docs/plans/r0-amin-statements.md (§7, and U4's and
@@ -33,7 +45,8 @@ neither the corpus nor the compiler and writes nothing. It reads:
 BACKLOG.md is not read. Criterion 4 reads regression rows instead.
 
 The criteria are pure functions in test/r0-t2-activation-gate.mjs,
-test/r0-t2-activation-pin.mjs and test/r0-t2-activation-evidence.mjs.
+test/r0-t2-activation-pin.mjs, test/r0-t2-activation-verdicts.mjs and
+test/r0-t2-activation-evidence.mjs.
 An absent file, an absent key or a misshapen value is unmet, and so is
 a measure that throws. Nothing is assumed met.
 
@@ -58,23 +71,34 @@ A cited ruling counts as recorded only if all three hold:
   is later, §18.16 is not). §18.157 and the sections before it record
   these matters as undecided or deferred: §18.157 lists C6 and the
   replacement losses as undecided, and §18.155 (5) leaves routing to
-  Task 16. Citing one of them is therefore never a ruling.
+  Task 16. Citing one of them is therefore never a ruling on these
+  matters. The restriction applies to these currently open decisions
+  only; it is not a general rule invalidating earlier rulings
+  (§18.159).
 - The dossier has a `###` heading with exactly that number.
 - The section's text names the matter: `C6` for criterion 3, `R035`
   for 6, `routing` for 7, and for criterion 2 `read fault`,
   `RequirementUnjudged` or `ForcedTail` according to the list.
 
-Checks: `node --test test/r0-t2-activation-gate.test.mjs` (7 tests).
-A synthetic body of evidence meets all seven criteria. Each of 47
-must-fail cases changes one thing and must leave unmet exactly the
-criteria it names, with every other criterion still met. One further
-case must hold: a lowered pin with a later re-pin ruling that names
-its figures. Every criterion has a case that fails it alone. With no
+Checks: `node --test test/r0-t2-activation-gate.test.mjs` (10
+tests). A synthetic body of evidence meets all seven criteria. Each of
+58 must-fail cases changes one thing and must leave unmet exactly the
+criteria it names, with every other criterion still met. Three further
+cases must hold: a lowered pin with a later re-pin ruling that names
+its figures; the `RequirementUnjudged` ruling absent while the verdict
+file records them as existing refusals; and no ruling at all while the
+verdict file records no loss. A case that changes the pin's lists
+writes the synthetic verdict file again for the changed pin, so only
+the check it aims at sees the change. Every criterion has a case that
+fails it alone. With no
 evidence at all, all seven are unmet. On the real dossier, a status
 citing §18.157 for C6, the losses and the budget, and §18.155 for
-routing and the losses, leaves criteria 2, 3, 6 and 7 unmet. The last
-test runs the script on the working tree and checks that its exit
-status agrees with the criteria it names.
+routing and the losses, leaves criteria 2, 3, 6 and 7 unmet. On the
+committed tree, criterion 2 reads the three `RequirementUnjudged` as
+existing refusals on both denominators and the read faults and
+ForcedTail as losses; without the verdict file it reads none as an
+existing refusal. The last test runs the script on the working tree
+and checks that its exit status agrees with the criteria it names.
 
 The regression rows in scripts/regression-r0-t2-activation.mjs (probe
 `r0-t2-activation-gate`, test/regression-r0-t2-activation.mjs) each
@@ -87,7 +111,13 @@ restore one defect in the gate's helpers:
 - the measurement file's own budget read before the status file's;
 - A1's count left unchecked;
 - ForcedTail admitted by class rather than by name;
-- an unreadable piece of evidence read as met.
+- an unreadable piece of evidence read as met;
+- an existing refusal still asked for a loss ruling (§18.159);
+- a loss read from the verdict file's own label rather than from
+  `certify`'s verdict, so a loss marked an existing refusal passes;
+- the verdict file not compared with the pin, so a stale file backs
+  it;
+- losses read from the first denominator only.
 
 ## Criteria
 
@@ -133,36 +163,80 @@ Check:
 - Every read fault is either an identified unsupported declaration
   with its kind or one of the two `UnreadImage` declarations (§18.155
   (6), (7)), and every refusal is named as in criterion 1.
-- Each nonempty gap list has a ruling on its loss on replacement,
-  cited in `losses` and recorded after §18.157. The gap lists are the
-  read faults (`UnreadImage` and `Declined` together), the
-  `RequirementUnjudged` refusals and the ForcedTail refusals. The
-  report prints one line per list, giving its size in each
-  denominator and whether its ruling is recorded.
+- The gap-verdict file backs the pin entry for entry, on both
+  denominators: the same declarations on the same lists with the
+  pin's own fault or refusal text, none repeated, each with today's
+  verdicts as text, and each `loss` the one its `certify` verdict
+  gives (below). An absent, unreadable or stale file is unmet, and
+  then no list is read as existing refusals.
+- A gap entry whose recorded `certify` verdict is a refusal is an
+  existing refusal: it is not a loss and needs no loss ruling
+  (§18.159). An entry today's `certify` accepts is a loss. Each list
+  holding a loss on either denominator needs a ruling on its loss on
+  replacement, cited in `losses` and recorded after §18.157. The gap
+  lists are the read faults (`UnreadImage` and `Declined` together),
+  the `RequirementUnjudged` refusals and the ForcedTail refusals. The
+  report prints one line per list: its losses and existing refusals
+  in each denominator, then either "existing refusals only, no loss
+  ruling needed" or whether the ruling is recorded, with every loss
+  named.
 
-Measured: not met. Corpus loader: 2823 candidates = floor 2805 + 11
-read faults + 3 + 4. Effect-pin sources: 2832 = 2813 + 12 + 3 + 4. The
-counts balance and every entry is on a named list. No list has a
-ruling on its loss: §18.155 (6) keeps the two `UnreadImage`
-declarations as "named compatibility gaps", and §18.157 admits the
-four ForcedTail but "does not approve losing those programs when the
-old checker is replaced".
+The verdict file. For each declaration on the pin's gap lists, on each
+denominator, test/fixtures/r0/t2-gap-verdicts.json records `at`,
+`origin`, `list`, `pinned` (the pin's fault or refusal), `decide` (the
+shadow `decide`'s verdict class), `reason` (its verdict as described),
+`checker` (today's whole checker), `certify` (the substitution-only
+`certify`, which mints under F14: `accepted` or its refusal), `shadow`
+(the shadow differential's window class, or the agreement a row-less
+declaration stands for) and `loss`. Every listed declaration is one
+the validator does not validate, so `loss` is `yes` exactly when
+`certify` accepts. scripts/r0-t2-gap-verdicts-pin.mjs writes it from
+the committed checker (test/r0-t2-gap-verdicts-run.mjs; it refuses
+to write a file that does not back the pin), and
+test/r0-t2-gap-verdicts.serial.test.mjs recomputes it and compares
+both ways, with must-fail cases for a moved verdict, a relabelled
+loss and a stale file. The gate reads the file; whether it still
+matches the checker is the serial test's.
 
-Three points are reasoned rather than checked. A declaration today's
+Measured at 354ce6e (branch ap/verdicts): not met. Corpus loader:
+2823 candidates = floor 2805 + 11 read faults + 3 + 4. Effect-pin
+sources: 2832 = 2813 + 12 + 3 + 4. The counts balance, every entry is
+on a named list and the verdict file backs the pin. Today's verdicts:
+
+| List | Corpus loader | Effect pin | `certify` | `decide` |
+|---|---|---|---|---|
+| read faults | 11 losses, 0 existing refusals | 12 losses, 0 existing refusals | accepts all | Solved (2 `UnreadImage`), Unresolved Unsupported (the rest) |
+| `RequirementUnjudged` | 0 losses, 3 existing refusals | 0 losses, 3 existing refusals | refuses all (`RequirementUnjudged`) | Unresolved Unsupported RequirementAtoms |
+| ForcedTail | 4 losses, 0 existing refusals | 4 losses, 0 existing refusals | accepts all | Unresolved Unsupported Outside HandlerType |
+
+Today's whole checker compiles all of them. The `RequirementUnjudged`
+list needs no ruling. The read faults and the ForcedTail have no
+ruling on their losses: §18.159 keeps the four ForcedTail and the two
+`UnreadImage` unresolved for replacement and says that listing a gap
+is not approval to lose it. The losses, by name: the two
+`UnreadImage` (c7-pure-stages-construction and q7-pure-construction
+`statsEvidence`), the nine `Declined UnframedInstall`, `inline:fx032#g`
+(`Declined (OperationWithRow 1 0)`, effect-pin sources only) and the
+four ForcedTail (effect-namespaces, services, fx-services fake,
+fx008-defer aroundBoth). The report prints each in full.
+
+One point is reasoned rather than checked: a declaration today's
 `certify` accepts is a candidate, because
-test/r0-t2-honest-report.mjs runs `certify` only on online candidates.
-The pin script admitted each `RequirementUnjudged` only with
-`certify`'s own refusal. The pin does not record `certify`'s verdict
-on the read faults. The live A1 check ("certify accepts, not
-validated nor pinned") is `gateProblems` in the serial test.
+test/r0-t2-honest-report.mjs runs `certify` only on online
+candidates. The live A1 check ("certify accepts, not validated nor
+pinned") is `gateProblems` in the serial test.
 
 ### 3. The author's C6 decision
 
 Check: `c6` cites a section after §18.157 that names C6.
 
-Measured: not met; no ruling recorded. A2 specification §12 C6 leaves
-the replacement-compatibility decision open "to resolve before the new
-checker is enabled live", and §18.157 lists C6 as undecided.
+Measured on 2026-11-03: not met; no ruling recorded. A2 specification
+§12 C6 leaves the replacement-compatibility decision open "to resolve
+before the new checker is enabled live", and §18.157 lists C6 as
+undecided. Since 354ce6e the status cites §18.159, so the criterion
+reads met. That ruling retains the expected shadow divergence and
+does not authorize live acceptance widening; the gate reads only the
+citation.
 
 ### 4. BACKLOG R034 (2) and (10) landed
 
@@ -227,10 +301,12 @@ statements' §0e table, the only rows it reads. The gate requires both
 rows to be present and judges neither; the author weighs them in the
 routing ruling.
 
-Measured: not met; no ruling recorded. Statements §7 cites only
-§18.155 (5), which says routing after activation "is part of Task
-16's approval". U4: "unresolved". U6: "argued; fixtures and mutants
-never run".
+Measured on 2026-11-03: not met; no ruling recorded. Statements §7
+cited only §18.155 (5), which says routing after activation "is part
+of Task 16's approval". Since 354ce6e the status and statements §7
+cite §18.159, so the criterion reads met; that ruling approves the
+routing direction, not activation. U4: "unresolved". U6: "argued;
+fixtures and mutants never run".
 
 ## What the gate cannot see
 
@@ -242,6 +318,11 @@ never run".
   catches that.
 - It reads the pin as it stands. Whether the corpus still matches is
   checked by the serial test.
+- It reads the gap-verdict file as recorded, against the pin. Whether
+  the file still matches the committed checker is checked by
+  test/r0-t2-gap-verdicts.serial.test.mjs, not by the gate. A loss
+  counts as an existing refusal only by `certify`'s recorded verdict;
+  the gate does not judge whether a refusal is the right one.
 - A named regression row shows that a correctly tagged row exists,
   not that it proves the fix. The regression run in verify proves
   that.
@@ -261,12 +342,28 @@ the script prints them in full.
 A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 1 met: Task 13's pin approved; no unexpected refusal
 2 NOT MET: A1: each gap list's loss on replacement ruled
-3 NOT MET: the author's C6 decision
+3 met: the author's C6 decision
 4 NOT MET: BACKLOG R034 (2) and (10) landed
 5 NOT MET: scratch-build comparison with the validator minting
 6 NOT MET: performance qualified, read-back and validator apart
-7 NOT MET: routing after activation; U4 and U6 standing
-gate: not met (2, 3, 4, 5, 6, 7)
+7 met: routing after activation; U4 and U6 standing
+gate: not met (2, 4, 5, 6)
+```
+
+Criterion 2's lines on the working tree at 354ce6e (branch
+ap/verdicts), each wrapped here and with the loss names left out:
+
+```text
+loss on replacement, RequirementUnjudged (corpus loader: losses 0,
+  existing refusals 3; effect pin: losses 0, existing refusals 3):
+  existing refusals only, no loss ruling needed
+  (test/fixtures/r0/t2-gap-verdicts.json)
+loss on replacement, read faults (corpus loader: losses 11, existing
+  refusals 0; effect pin: losses 12, existing refusals 0): ruling
+  recorded: no; losses: …
+loss on replacement, ForcedTail (corpus loader: losses 4, existing
+  refusals 0; effect pin: losses 4, existing refusals 0): ruling
+  recorded: no; losses: …
 ```
 
 Today the gate is not met, which is what the evidence in the working

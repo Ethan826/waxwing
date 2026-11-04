@@ -7,7 +7,8 @@
 // must stay met. `gateCases()` gives, per case, the ids `evaluate` finds
 // unmet.
 import { evaluate, unmet } from './r0-t2-activation-gate.mjs';
-import { met, statements } from './r0-t2-activation-gate-met.mjs';
+import { met, statements, verdictsOf }
+  from './r0-t2-activation-gate-met.mjs';
 
 const loader = evidence => evidence.pin.denominators['corpus loader'];
 
@@ -19,6 +20,28 @@ const lowered = evidence => {
 };
 
 const status = evidence => evidence.status;
+
+// A change to the pin's lists, with the verdict file written again for
+// the changed pin, so only the check the case aims at sees it.
+const listsChanged = change => evidence => {
+  change(evidence);
+  evidence.verdicts = verdictsOf(evidence.pin);
+};
+
+// The gap-verdict entries of one list, both denominators.
+const verdicts = (evidence, list) => Object.values(
+  evidence.verdicts.denominators).flat()
+  .filter(entry => entry.list === list);
+
+// The effect pin's read fault the corpus loader lacks.
+const effectOnly = evidence =>
+  evidence.pin.denominators['effect pin'].faults[11].at;
+
+// Today's `certify` refusing an entry, its loss marked to agree.
+const refused = entry => {
+  entry.certify = 'RequirementUnjudged {}';
+  entry.loss = 'no';
+};
 
 // Each case: [criteria left unmet, the change].
 const changes = {
@@ -42,22 +65,22 @@ const changes = {
     evidence.pin.ruling = 'dossier §18.155 (7), §18.1570'; }],
   explanationsNotList: [[1], evidence => {
     evidence.pin.explanations = 'none'; }],
-  fifthForced: [[1, 2], evidence => {
-    loader(evidence).forcedTail[0].at = 'examples/other.wxw#main'; }],
-  forcedOtherClass: [[1, 2], evidence => {
-    loader(evidence).forcedTail[0].refusal = 'NotCertifiable RigidExact'; }],
+  fifthForced: [[1, 2], listsChanged(evidence => {
+    loader(evidence).forcedTail[0].at = 'examples/other.wxw#main'; })],
+  forcedOtherClass: [[1, 2], listsChanged(evidence => {
+    loader(evidence).forcedTail[0].refusal = 'NotCertifiable RigidExact'; })],
   // A constructor name that only starts with ForcedTail's (review B-M3).
-  forcedSuffix: [[1, 2], evidence => {
+  forcedSuffix: [[1, 2], listsChanged(evidence => {
     loader(evidence).forcedTail[0].refusal =
-      'NotCertifiable ForcedTailX {}'; }],
-  otherRefusal: [[1, 2], evidence => {
-    loader(evidence).refusals[0].refusal = 'ObligationFailed {}'; }],
-  unruledFault: [[2], evidence => {
-    loader(evidence).faults[0].fault = 'Declined PositionApart'; }],
+      'NotCertifiable ForcedTailX {}'; })],
+  otherRefusal: [[1, 2], listsChanged(evidence => {
+    loader(evidence).refusals[0].refusal = 'ObligationFailed {}'; })],
+  unruledFault: [[2], listsChanged(evidence => {
+    loader(evidence).faults[0].fault = 'Declined PositionApart'; })],
   // One more named fault than the count allows, figures unchanged.
-  uncounted: [[2], evidence => {
+  uncounted: [[2], listsChanged(evidence => {
     loader(evidence).faults.push(evidence.pin.denominators['effect pin']
-      .faults[11]); }],
+      .faults[11]); })],
   denominatorMissing: [[1, 2], evidence => {
     delete evidence.pin.denominators['effect pin']; }],
   unreadable: [[2], evidence => { loader(evidence).faults.push(null); }],
@@ -66,6 +89,50 @@ const changes = {
   lossEarly: [[2], evidence => {
     status(evidence).losses.faults = '§18.155'; }],
   lossesAbsent: [[2], evidence => { delete status(evidence).losses; }],
+  // §18.159 criterion 2: an existing refusal needs no loss ruling, and
+  // the verdict file is the evidence for it.
+  refusalUnruled: [[], evidence => {
+    status(evidence).losses.refusals = null; }],
+  noLossNoRuling: [[], evidence => {
+    for (const list of ['faults', 'forcedTail'])
+      verdicts(evidence, list).forEach(refused);
+    delete status(evidence).losses; }],
+  verdictsMissing: [[2], evidence => {
+    evidence.verdicts = null;
+    status(evidence).losses.refusals = null; }],
+  verdictsOtherPin: [[2], evidence => {
+    evidence.verdicts.pin = 'test/fixtures/r0/other.json'; }],
+  // A loss marked as an existing refusal: `certify` accepts it.
+  lossMarkedRefusal: [[2], evidence => {
+    verdicts(evidence, 'forcedTail').forEach(entry => {
+      entry.loss = 'no'; });
+    status(evidence).losses.forcedTail = null; }],
+  refusalMarkedLoss: [[2], evidence => {
+    verdicts(evidence, 'refusals')[0].loss = 'yes'; }],
+  // A refusal today's `certify` accepts is a loss, ruled or not.
+  refusalLossUnruled: [[2], evidence => {
+    verdicts(evidence, 'refusals').forEach(entry => {
+      entry.certify = 'accepted';
+      entry.loss = 'yes'; });
+    status(evidence).losses.refusals = null; }],
+  // One loss, on the effect pin only (its extra read fault).
+  effectPinLoss: [[2], evidence => {
+    verdicts(evidence, 'faults').filter(entry =>
+      entry.at !== effectOnly(evidence)).forEach(refused);
+    status(evidence).losses.faults = null; }],
+  // The verdict file disagreeing with the pin: a pinned refusal's text,
+  // an entry it lacks, an entry the pin lacks.
+  verdictsStale: [[2], evidence => {
+    loader(evidence).refusals[0].refusal = 'RequirementUnjudged {"x":1}';
+  }],
+  verdictLacks: [[2], evidence => {
+    evidence.verdicts.denominators['corpus loader'].pop(); }],
+  verdictExtra: [[2], evidence => {
+    evidence.verdicts.denominators['corpus loader'].push({
+      ...verdicts(evidence, 'faults').find(entry =>
+        entry.at === effectOnly(evidence)) }); }],
+  verdictNoReason: [[2], evidence => {
+    delete verdicts(evidence, 'faults')[0].reason; }],
   statusMissing: [[2, 3, 4, 5, 6, 7], evidence => {
     evidence.status = null; }],
   c6Unruled: [[3], evidence => { status(evidence).c6 = null; }],
