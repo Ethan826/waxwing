@@ -11,7 +11,7 @@ module Features.Check.Decide.Reason
 import Prelude
 import Data.Array (all, filter, mapMaybe, nubEq, null)
 import Data.Array.NonEmpty as NonEmptyArray
-import Data.Foldable (any)
+import Data.Foldable (class Foldable, any, fold, foldMap)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Domain.Recorded (RecordedProblem, fields)
@@ -94,8 +94,36 @@ reason blocked attempts =
     (NonEmptyArray.fromArray blocked)
   where
   readings = map reading attempts
-  withDeclines found = Unsupported
-    (NonEmptyArray.nubEq (NonEmptyArray.appendArray found (declines readings)))
+  withDeclines found =
+    Unsupported (NonEmptyArray.nubEq (merged (withAll found)))
+  withAll found = NonEmptyArray.appendArray found (declines readings)
+
+-- R034 (2): an `Unsupported` reason names each unsupported kind once,
+-- as `unchecked` does. Every `EffectsUnchecked` among the blocks and
+-- declines becomes one with the union of all their kinds, in first
+-- occurrence order (the join of the powerset semilattice); the `nubEq`
+-- after it keeps the first, so one entry stands at the first one's
+-- place. Every other entry keeps its place, and an `EffectsUnchecked []`
+-- still counts as an entry.
+merged ∷ ∀ f. Functor f ⇒ Foldable f ⇒ f Unsupport → f Unsupport
+merged entries = map joined entries
+  where
+  kinds = nubEq (foldMap (fold <<< uncheckedKinds) entries)
+  joined entry =
+    maybe entry (const (EffectsUnchecked kinds)) (uncheckedKinds entry)
+
+-- No wildcard: a new `Unsupport` fails to compile until it is placed.
+uncheckedKinds ∷ Unsupport → Maybe (Array UnsupportedKind)
+uncheckedKinds = case _ of
+  EffectsUnchecked found → Just found
+  Outside _ → Nothing
+  RequirementAtoms → Nothing
+  GuardOutsideFragment _ → Nothing
+  SeveralTailSubtraction → Nothing
+  SecondSpread → Nothing
+  ClassF _ → Nothing
+  RecordDefective _ → Nothing
+  EffectLimit _ → Nothing
 
 -- A refused `ClaimsComplete` candidate, or an untrusted search's own
 -- broken invariant (G-Q13): neither stops the run.
@@ -115,7 +143,7 @@ unlimited readings =
   if null strategies then Inference NoStrategyApplies
   else if all declined strategies then
     maybe' (const (inference readings)) Unsupported
-      (NonEmptyArray.fromArray (nubEq (declines strategies)))
+      (NonEmptyArray.fromArray (nubEq (merged (declines strategies))))
   else inference readings
   where
   strategies = filter byStrategy readings
