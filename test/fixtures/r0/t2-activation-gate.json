@@ -6,7 +6,7 @@
     "refusals": null,
     "forcedTail": null
   },
-  "c6": null,
+  "c6": "§18.159",
   "landed": {
     "R034 (2)": null,
     "R034 (10)": null
@@ -17,5 +17,5 @@
     "budget": null,
     "measurement": null
   },
-  "routing": null
+  "routing": "§18.159"
 }

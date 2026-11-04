@@ -1205,7 +1205,12 @@ obligation, whatever the caller's routing.
   certificate's `effects` field, the candidate kept and legacy G0
   certification unchanged under F14; it never appears as successful
   effect validation. Routing after activation is part of Task 16's
-  approval.
+  approval. **Amended (author, 2026-11-04, dossier §18.159, direction
+  only):** after activation, a missing effect package declines
+  certification with its read fault preserved; it never falls back to
+  substitution-only certification. Unexpected record defects remain
+  generation faults. This approves the routing direction, not
+  activation and not F14's retirement.
 - Acceptance mints `Certified Valid (Witnessed (strip P))`.
 
 ## 7a. Trace: FX008's failing cleanup

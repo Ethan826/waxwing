@@ -8216,3 +8216,53 @@ For the author: whether to accept Stage B as functionally complete on
 this evidence. The gate's open items (2-7) are the author's rulings
 and later work. A2's Task 16 (minting), C6, F14's retirement,
 replacement losses and any push stay held.
+
+### 18.159 Stage B accepted; rulings on the gate's criteria 2-7 (2026-11-04)
+
+The author accepted tranche 2 Stage B as functionally complete, having
+checked the saved verify log (3,385 parallel tests, 230 serial tests
+and 437 regression proofs at 7e0492b, exit 0). The failed run at
+cb54ed5 stays part of the record. Performance qualification has not
+been run. This accepts the read-back implementation and its scoped
+corpus evidence. Activation and replacement stay held.
+
+Rulings on the activation gate's criteria:
+- **Criterion 2, replacement losses.** The four ForcedTail and the two
+  UnreadImage cases stay unresolved for replacement. Actual losses are
+  to be separated from existing refusals: the three
+  `RequirementUnjudged` declarations that today's `certify` already
+  refuses are not new certification losses. Today's verdict for each
+  unsupported or read-fault declaration is to be recorded before a
+  loss ruling is asked for. Listing a gap is not approval to lose it.
+- **Criterion 3, C6.** The expected shadow divergence is retained.
+  Live acceptance widening is not authorized yet.
+- **Criterion 4, prerequisites.** R034 (2), R034 (10) and R036's
+  before-activation items remain blockers; Stage B acceptance does not
+  waive them.
+- **Criterion 5, comparison.** Authorized: an isolated, disposable
+  build that exercises validator minting solely to produce the census,
+  window, RT8 and shadow comparison. The committed path stays
+  unchanged. Every movement is listed; nothing is re-pinned.
+- **Criterion 6, performance.** Authorized: one `npm run perf`, with
+  every result preserved and no retries or bound changes; and paired
+  read-back/trace and validator measurements, peak memory included,
+  with the protocol fixed before running. Budgets are to be proposed
+  from those results; no budget is approved. Shared-machine conditions
+  are recorded, without requiring the author to stop using the
+  computer.
+- **Criterion 7, routing.** After activation, a missing effect package
+  declines certification with its read fault preserved; it never falls
+  back to substitution-only certification. Unexpected record defects
+  remain generation faults. This approves the routing direction, not
+  activation and not F14's retirement.
+
+The gate remains an evidence checklist: its citation checks cannot
+establish that a section approves something. The "after §18.157"
+restriction is acceptable for these currently open decisions; it is
+not a general rule invalidating earlier rulings.
+
+Next, authorized: the comparison and the performance evidence; in
+parallel, one implementation proposal covering R034's prerequisites
+and R036's activation blockers, with review and verification included.
+Return with one consolidated activation packet. Held: the minting
+switch, F14's retirement, live replacement, pushing.
