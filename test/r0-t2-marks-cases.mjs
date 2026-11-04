@@ -9,6 +9,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sources as rowSources } from './r0-t2-rows-cases.mjs';
 import { aroundBoth } from './fx008-defer-programs.mjs';
+import { finished } from './r0-t2-finished.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const named = value => value.constructor.name;
@@ -105,7 +106,8 @@ export const marksCases = async load => {
       signatures)(decl), 'generate'));
     const found = right(Function.recheck(functional(program.ctors))(
       program)(decl), 'recheck');
-    return { source, problem, checked: found.function, trace: found.trace,
+    return { source, problem, checked: found.function,
+      trace: finished(found.trace, name),
       store: found.state.subst.marks };
   };
   const read = (item, trace = item.trace) => Marks.readMarks(least(

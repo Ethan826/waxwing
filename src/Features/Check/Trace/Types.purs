@@ -1,7 +1,8 @@
 -- The trace's finished form and its traversals (tranche 2 read-back
 -- design §C.6; Task 6b): the types `Traced` holds, every type and row in
--- it changed at once, and the numbering extended over it. Only
--- Features.Check.Trace imports this module; it re-exports the types.
+-- it traversed at once, the numbering extended over it, and the
+-- renumbering, which fails on a meta the numbering lacks (R036 (2)).
+-- Only Features.Check.Trace imports this module; it re-exports it.
 module Features.Check.Trace.Types
   ( SpanKey
   , TraceKey(..)
@@ -10,22 +11,28 @@ module Features.Check.Trace.Types
   , ClauseTrace
   , InstallTrace
   , Traced
+  , TraceFault(..)
+  , Changes
   , emptyTraced
-  , mapTraced
+  , traverseTraced
   , extended
+  , renumbered
   ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple)
-import Domain.Checked.Internal (Open)
+import Domain.Checked.Internal (Open(..))
 import Domain.Row (Mark, Row(..))
 import Domain.Type (Ty(..), TyRow)
+import Domain.Type.Traverse (traverseRow, traverseTy)
 import Features.Check.Holes (foldHoles)
 
 -- A span's start and end offsets.
@@ -115,31 +122,45 @@ emptyTraced =
   , row: Row [] Nothing
   }
 
--- Every type and row in the trace changed by `change`; marks are kept.
-mapTraced ∷ (Ty Open → Ty Open) → Traced → Traced
-mapTraced change traced =
-  { uses: map (map changedUse) traced.uses
-  , applied: map (map (onRow change)) traced.applied
-  , piped: map (map (onRow change)) traced.piped
-  , clauses: map (map changedClause) traced.clauses
-  , deferrals: map (map (onRow change)) traced.deferrals
-  , installations: map (map changedInstall) traced.installations
-  , row: onRow change traced.row
-  }
+-- What a traversal does to each type and to each row: rows by a row
+-- function, never through a wrapped arrow (R036 (2)).
+type Changes f =
+  { ty ∷ Ty Open → f (Ty Open), row ∷ TyRow Open → f (TyRow Open) }
+
+-- Why a finished trace could not be built: a meta in it that the
+-- extended numbering does not number (`extended` and `renumbered` walk
+-- by different code, `foldHoles` and `traverseTy`).
+data TraceFault = Unnumbered Int
+
+derive instance eqTraceFault ∷ Eq TraceFault
+
+-- Every type and row in the trace traversed by `change`, through Map's
+-- and Array's `Traversable` instances; marks are kept.
+traverseTraced ∷ ∀ f. Applicative f ⇒ Changes f → Traced → f Traced
+traverseTraced change traced = tracedOf
+  <$> traverse (traverse (changedUse change)) traced.uses
+  <*> traverse (traverse change.row) traced.applied
+  <*> traverse (traverse change.row) traced.piped
+  <*> traverse (traverse (changedClause change)) traced.clauses
+  <*> traverse (traverse change.row) traced.deferrals
+  <*> traverse (traverse (changedInstall change)) traced.installations
+  <*> change.row traced.row
   where
-  changedUse use = use
-    { slots = map (onSlot change) use.slots
-    , opened = map (onRow change) use.opened
-    , stages = map (onRow change) use.stages
-    , fields = map change use.fields
-    , result = change use.result
-    }
-  changedClause entry = entry
-    { row = onRow change entry.row
-    , inference = onRow change entry.inference
-    , clauses = onRow change entry.clauses
-    }
-  changedInstall entry = entry { current = onRow change entry.current }
+  tracedOf uses applied piped clauses deferrals installations row =
+    { uses, applied, piped, clauses, deferrals, installations, row }
+
+-- Each hole renumbered by `numbers`; a meta `numbers` lacks is
+-- `Unnumbered`, never kept raw (a raw meta shares the space of hole
+-- numbers). Rigids are kept.
+renumbered ∷ Map Int Int → Traced → Either TraceFault Traced
+renumbered numbers =
+  traverseTraced { ty: traverseTy renumber, row: traverseRow renumber }
+  where
+  renumber = case _ of
+    Hole meta → maybe (unnumbered meta) (Right <<< Hole)
+      (Map.lookup meta numbers)
+    Rigid variable → Right (Rigid variable)
+  unnumbered meta = Left (Unnumbered meta)
 
 -- The body's numbering extended over the trace's other metas: uses,
 -- then applied, then piped, then clause entries, deferrals and
@@ -161,18 +182,35 @@ extended numbering traced = (foldl visit start types).seen
     <> map installType (entries traced.installations)
     <> [ arrowOf traced.row ]
 
-onSlot ∷ (Ty Open → Ty Open) → Slot → Slot
-onSlot change = case _ of
-  TypeSlot ty → TypeSlot (change ty)
-  RowSlot row → RowSlot (onRow change row)
+changedUse ∷ ∀ f. Applicative f ⇒ Changes f → UseTrace → f UseTrace
+changedUse change use = usedWith
+  <$> traverse (changedSlot change) use.slots
+  <*> traverse change.row use.opened
+  <*> traverse change.row use.stages
+  <*> traverse change.ty use.fields
+  <*> change.ty use.result
+  where
+  usedWith slots opened stages fields result =
+    { slots, marks: use.marks, opened, stages, fields, result }
 
--- A row changed as the row of a one-arrow type. `resolve` and `rename`
--- keep an arrow an arrow, so the fallback (the row unchanged) is never
--- taken.
-onRow ∷ (Ty Open → Ty Open) → TyRow Open → TyRow Open
-onRow change row = case change (TFun TUnit row TUnit) of
-  TFun _ found _ → found
-  _ → row
+changedSlot ∷ ∀ f. Applicative f ⇒ Changes f → Slot → f Slot
+changedSlot change = case _ of
+  TypeSlot ty → TypeSlot <$> change.ty ty
+  RowSlot row → RowSlot <$> change.row row
+
+changedClause
+  ∷ ∀ f. Applicative f ⇒ Changes f → ClauseTrace → f ClauseTrace
+changedClause change entry = enteredWith <$> change.row entry.row
+  <*> change.row entry.inference
+  <*> change.row entry.clauses
+  where
+  enteredWith row inference clauses =
+    { row, own: entry.own, inference, clauses }
+
+changedInstall
+  ∷ ∀ f. Applicative f ⇒ Changes f → InstallTrace → f InstallTrace
+changedInstall change entry = { frame: entry.frame, current: _ }
+  <$> change.row entry.current
 
 -- A map's entries in key order, each key's in arrival order.
 entries ∷ ∀ k a. Map k (Array a) → Array a

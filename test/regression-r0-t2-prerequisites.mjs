@@ -16,6 +16,12 @@ const rowsOf = async context =>
 const imagesOf = async context => (await import('./r0-t2-images-cases.mjs'))
   .imagesChecks(loader(context));
 
+const traceOf = async context => (await import('./r0-t2-trace-cases.mjs'))
+  .traceCases(loader(context));
+const packageOf = async context =>
+  (await import('./r0-t2-package-checks.mjs')).packageChecks(
+    loader(context));
+
 const probe = (of, check) => async context => {
   const wrong = await (await of(context))[check]();
   if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
@@ -23,6 +29,9 @@ const probe = (of, check) => async context => {
 };
 
 export const t2PrerequisitesProbes = {
+  'r0-t2-r036-2-meta-raw': probe(traceOf, 'unnumberedWrong'),
+  'r0-t2-r036-2-row-unresolved': probe(traceOf, 'rowResolvedWrong'),
+  'r0-t2-r036-2-trace-first': probe(packageOf, 'traceOrderWrong'),
   'r0-t2-r036-3-row-coarse': probe(rowsOf, 'unconvertedWrong'),
   'r0-t2-r036-3-image-coarse': probe(imagesOf, 'unconvertedWrong')
 };

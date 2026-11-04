@@ -16,8 +16,11 @@
 --
 -- Fail-closed, in this order, the first fault returned (§C.6's single
 -- routing: `Left`, never a partial package): an `Unsupported` obligation,
--- the first in the record's obligation order, is `Declined kind`; least
--- terms meeting a clash are `MarkClash`; then the rows, the marks and
+-- the first in the record's obligation order, is `Declined kind`; a
+-- trace `finish` could not build is `TraceUnfinished fault` (R036 (2);
+-- after `Declined`, a fact of the problem alone, so a declined
+-- declaration keeps its fault name); least terms meeting a clash are
+-- `MarkClash`; then the rows, the marks and
 -- the images, each with its own faults; last, a forced `ResultClauses`
 -- tail among the effects (spec §3: an input package holds none) is
 -- `ForcedRead v`.
@@ -28,7 +31,7 @@ module Features.Check.Strategy.ReadBack.Package
 
 import Prelude
 import Data.Array (find, head, mapMaybe)
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
@@ -52,14 +55,14 @@ import Features.Check.Strategy.ReadBack.Marks
   , readMarks
   , termOf
   )
-import Features.Check.Trace (Traced)
+import Features.Check.Trace (TraceFault, Traced)
 
 readEffects
   ∷ RecordedProblem
   → ReadBack
   → Checked.FunctionDecl
   → MarkStore (Ty Flex)
-  → Traced
+  → Either TraceFault Traced
   → Either ReadFault EffectPackage
 readEffects problem found checked store =
   readEffectsWith problem found checked (leastTerms store)
@@ -71,10 +74,11 @@ readEffectsWith
   → ReadBack
   → Checked.FunctionDecl
   → MarkTerms
-  → Traced
+  → Either TraceFault Traced
   → Either ReadFault EffectPackage
-readEffectsWith problem found checked terms traced = do
+readEffectsWith problem found checked terms finished = do
   maybe (Right unit) (Left <<< Declined) (declined problem)
+  traced ← unfinished finished
   when (terms.clashes > 0) (Left MarkClash)
   read ← readRows term problem checked traced
   effects ← traverse (boundRow under) read
@@ -83,6 +87,7 @@ readEffectsWith problem found checked terms traced = do
   unforced problem effects
   pure { types: images.types, rows: images.rows, effects, marks }
   where
+  unfinished = either (Left <<< TraceUnfinished) Right
   term = termOf terms
   arities = (fields problem).effects.declarations.types
   under = { bindings: found.holeBindings, image: rowFree arities }

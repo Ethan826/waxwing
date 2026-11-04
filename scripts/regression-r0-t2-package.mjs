@@ -47,11 +47,11 @@ export const t2PackageRows = [
   // The trace keeps raw metas: a meta the body shares reads another
   // number on the effect side, and the two live sources of `w`'s handler
   // row disagree (fail-closed, `Apart`).
-  row('r0-t2-package-shared', 'src/Features/Check/Trace.purs',
-    '    Hole meta → Hole (maybe meta identity '
-      + '(Map.lookup meta numbers))\n',
-    '    Hole meta → Hole (maybe meta (const meta) '
-      + '(Map.lookup meta numbers))\n',
+  // (Since R036 (2) the renumbering arm is Trace/Types.purs's.)
+  row('r0-t2-package-shared', types,
+    '    Hole meta → maybe (unnumbered meta) (Right <<< Hole)\n',
+    '    Hole meta → maybe (unnumbered meta) '
+      + '(Right <<< const (Hole meta))\n',
     /r0-t2-package-shared: \["Apart"\]/),
   // The body's numbering gives every meta one number.
   row('r0-t2-package-distinct', 'src/Features/Check/Holes.purs',

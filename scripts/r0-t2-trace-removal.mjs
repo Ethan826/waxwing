@@ -54,9 +54,9 @@ export const removalEdits = [
   [`${check}/Install.purs`, '    , trace = recordInstallation span'
     + ' { frame, current: env.current }\n        framed.trace\n', ''],
   // `row` (Task 8): the closed empty row, as `emptyTraced` has it.
-  [`${check}/Function.purs`, '    , trace: finish (resolved settledSubst)'
+  [`${check}/Function.purs`, '    , trace: finish (resolver settledSubst)'
     + ' (numbering settled) entryRow\n        marked.trace\n',
-  '    , trace:\n        { uses: Map.empty, applied: Map.empty,'
+  '    , trace: Right\n        { uses: Map.empty, applied: Map.empty,'
     + ' piped: Map.empty\n        , clauses: Map.empty,'
     + ' deferrals: Map.empty, installations: Map.empty\n'
     + '        , row: Row [] Nothing\n        }\n']

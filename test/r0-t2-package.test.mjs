@@ -75,3 +75,9 @@ test('a partial call with an arrow result validates', () => {
 test('a mark the injected terms do not read is an unread label', () => {
   assert.deepEqual(checks.unmarkedWrong(), []);
 });
+
+// R036 (2): a trace `finish` could not build is `TraceUnfinished`,
+// ordered after `Declined` and before `MarkClash`.
+test('Declined before TraceUnfinished before MarkClash', () => {
+  assert.deepEqual(checks.traceOrderWrong(), []);
+});

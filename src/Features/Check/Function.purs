@@ -9,9 +9,9 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (rigid, Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Resolved as Resolved
-import Domain.Row (Row(..))
+import Domain.Row (Row(..), openRow)
 import Domain.Syntax (Diagnostic)
-import Domain.Type (Ty(..), TyRow, VarId(..))
+import Domain.Type (Ty(..), TyRow, VarId(..), substituteRow)
 import Features.Check.Comparable (comparable)
 import Features.Check.Defer (judgeDeferrals)
 import Features.Check.Entry as Entry
@@ -27,16 +27,19 @@ import Features.Check.Holes (holes, numbering)
 import Features.Check.Scheme (State, firstTooDeep, resolved, start)
 import Features.Check.Seed (joined, required, seeded)
 import Features.Check.Settle (settleRestricted)
-import Features.Check.Trace (Traced, finish)
+import Features.Check.Trace (TraceFault, Traced, finish)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (retype)
 
 -- One function checked alone: its checked form, final state, and the
 -- trace of its live values, finished with the body (tranche 2 design
--- §C.3, §C.6).
+-- §C.3, §C.6), or why it could not be finished (R036 (2)).
 type Rechecked =
-  { function ∷ Checked.FunctionDecl, state ∷ State, trace ∷ Traced }
+  { function ∷ Checked.FunctionDecl
+  , state ∷ State
+  , trace ∷ Either TraceFault Traced
+  }
 
 recheck
   ∷ Functional
@@ -114,11 +117,31 @@ checkFunction holders env function = do
         , span: function.span
         }
     , state: marked
-    , trace: finish (resolved settledSubst) (numbering settled) entryRow
+    , trace: finish (resolver settledSubst) (numbering settled) entryRow
         marked.trace
     }
   where
   parameterType parameter = rigid parameter.ty
+
+-- The final substitution as the trace's resolver (R036 (2)): types by
+-- Scheme `resolved`; rows by `Unify.resolveRow` between two row renames
+-- (the substitution `rename` uses), so a row is resolved as a row and
+-- no wrapped arrow can fall back.
+resolver
+  ∷ Subst → { ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open }
+resolver subst =
+  { ty: resolved subst
+  , row: toOpenRow <<< Unify.resolveRow subst <<< toFlexRow
+  }
+  where
+  toFlexRow = substituteRow { types: TVar <<< toFlex, rows: openRow <<< toFlex }
+  toOpenRow = substituteRow { types: TVar <<< toOpen, rows: openRow <<< toOpen }
+  toFlex = case _ of
+    Rigid id → Unify.Rigid id
+    Hole meta → Unify.Meta meta
+  toOpen = case _ of
+    Unify.Rigid id → Rigid id
+    Unify.Meta meta → Hole meta
 
 -- R005 Tranche B B4: once the body is settled, a `Merge` predicate still
 -- waiting is classified by H and reported (Features.Check.EndReport).

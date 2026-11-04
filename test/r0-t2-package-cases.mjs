@@ -88,8 +88,9 @@ export const packageCases = async load => {
       trace: found.trace, store: found.state.subst.marks,
       readBack: right(RB.readBack(problem)(found.function), 'read-back') };
   };
-  const effectsOf = (item, readBack = item.readBack) => Assembly.readEffects(
-    item.problem)(readBack)(item.checked)(item.store)(item.trace);
+  const effectsOf = (item, readBack = item.readBack, trace = item.trace) =>
+    Assembly.readEffects(item.problem)(readBack)(item.checked)(item.store)(
+      trace);
   const packageOf = item => right(effectsOf(item), `${item.name}'s package`);
   const faultOf = found => (named(found) === 'Left'
     ? named(found.value0) : 'Right');

@@ -22,6 +22,8 @@ export const packageChecks = async load => {
   const Substitution = await load('Features.Check.Strategy.Substitution');
   const { Nothing } = await load('Data.Maybe');
   const { Tuple } = await load('Data.Tuple');
+  const Either = await load('Data.Either');
+  const Trace = await load('Features.Check.Trace');
   const text = value => JSON.stringify(value);
   const failing = (checks, item) => Object.entries(checks)
     .filter(([, check]) => !check(item)).map(([name]) => name);
@@ -177,7 +179,27 @@ export const packageChecks = async load => {
     return named(Substitution.validate(item.problem)(found.value0))
       === 'Right' ? [] : [`${name}:refused`];
   });
-  return { declinedWrong, declinedOrderWrong, recordTailWrong, clashWrong,
+  // R036 (2): a trace `finish` could not build is `TraceUnfinished`,
+  // after `Declined` (a fact of the problem alone) and before
+  // `MarkClash`.
+  const traceOrderWrong = () => {
+    const unfinished = new Either.Left(new Trace.Unnumbered(7));
+    const declined = live(sources.unframed, 'main');
+    const supported = live(sources.uses, 'logged');
+    const marks = [new Tuple(new Row.MarkMeta(0), Row.NoFail.value),
+      new Tuple(new Row.MarkMeta(0), Row.Plain.value)];
+    const clashing = cases.Least.leastOfGraph(marks)([]);
+    const withTerms = (item, terms) => cases.Assembly.readEffectsWith(
+      item.problem)(item.readBack)(item.checked)(terms)(unfinished);
+    return [['declined', faultOf(effectsOf(declined, undefined,
+      unfinished)) === 'Declined'],
+    ['unfinished', faultOf(effectsOf(supported, undefined, unfinished))
+      === 'TraceUnfinished'],
+    ['clash', faultOf(withTerms(supported, clashing)) === 'TraceUnfinished']]
+      .filter(([, held]) => !held).map(([name]) => name);
+  };
+  return { traceOrderWrong, declinedWrong, declinedOrderWrong,
+    recordTailWrong, clashWrong,
     forcedWrong, sortsWrong, sharedWrong, distinctWrong, extensionWrong,
     thetaWrong, thetaFaultWrong, unmarkedWrong, arrowResultWrong };
 };

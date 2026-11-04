@@ -101,9 +101,10 @@ const useOf = result => ({ slots: [], marks: [], opened: Nothing.value,
   stages: [], fields: [], result });
 const pure = new Row.Row([], Nothing.value);
 // `finish` takes the declaration's row since the entry-tail ruling; a
-// closed one here.
-const finished = trace => Trace.finish(ty => ty)(Maps.empty)(
-  new Row.Row([], Nothing.value))(trace);
+// closed one here. Its resolver is a type and a row function (R036 (2)),
+// and its result an `Either`.
+const finished = trace => Trace.finish({ ty: ty => ty, row: row => row })(
+  Maps.empty)(new Row.Row([], Nothing.value))(trace).value0;
 
 test('entries under one key are kept in arrival order', () => {
   const uses = finished(Trace.recordUse(span(0, 1))(useOf(Core.TBool.value))(
@@ -192,12 +193,22 @@ test("the declaration's row is renumbered with the trace", async () => {
   const root = new URL('..', import.meta.url);
   const item = traced(readFileSync(new URL('examples/services.wxw', root),
     'utf8'), 'main');
-  const tail = item.found.trace.row.value1.value0;
+  const tail = item.trace.row.value1.value0;
   assert.equal(named(tail), 'Hole');
   assert.ok(tail.value0 >= 0);
-  for (const [, list] of pairs(item.found.trace.installations))
+  for (const [, list] of pairs(item.trace.installations))
     for (const entry of list)
       assert.equal(entry.current.value1.value0.value0, tail.value0);
   // `recheck`'s checked row itself keeps the raw meta.
   assert.notEqual(item.found.function.row.value1.value0.value0, tail.value0);
+});
+
+// R036 (2): the renumbering is a traversal that fails on a meta the
+// numbering lacks, and rows are resolved by a row function.
+test('an unnumbered meta is a fault, and a rigid is kept', () => {
+  assert.deepEqual(cases.unnumberedWrong(), []);
+});
+
+test('a row is resolved as a row', () => {
+  assert.deepEqual(cases.rowResolvedWrong(), []);
 });

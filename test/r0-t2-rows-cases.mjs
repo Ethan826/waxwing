@@ -6,6 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { finished } from './r0-t2-finished.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const research = name => readFileSync(join(root, 'research', name), 'utf8');
@@ -107,7 +108,8 @@ export const rowsCases = async load => {
       signatures)(decl), 'generate'));
     const found = right(Function.recheck(functional(program.ctors))(
       program)(decl), 'recheck');
-    return { source, problem, checked: found.function, trace: found.trace };
+    return { source, problem, checked: found.function,
+      trace: finished(found.trace, name) };
   };
   const read = (item, trace = item.trace, terms = stub) =>
     Rows.readRows(terms)(item.problem)(item.checked)(trace);

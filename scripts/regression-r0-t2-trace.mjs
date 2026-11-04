@@ -7,13 +7,13 @@ const trace = 'src/Features/Check/Trace.purs';
 export const t2TraceRows = [
   {
     // `finish` skips the renumbering: every meta keeps its raw number,
-    // so a meta the body shares no longer reads the body's hole.
+    // so a meta the body shares no longer reads the body's hole. Since
+    // R036 (2) the renumbering arm is in Trace/Types.purs `renumbered`.
     name: 'r0-t2-trace-renumber',
-    file: trace,
-    needle: '    Hole meta → Hole (maybe meta identity '
-      + '(Map.lookup meta numbers))\n',
-    replacement: '    Hole meta → Hole (maybe meta (const meta) '
-      + '(Map.lookup meta numbers))\n',
+    file: 'src/Features/Check/Trace/Types.purs',
+    needle: '    Hole meta → maybe (unnumbered meta) (Right <<< Hole)\n',
+    replacement: '    Hole meta → maybe (unnumbered meta) '
+      + '(Right <<< const (Hole meta))\n',
     probe: 'r0-t2-trace-renumber',
     message: /r0-t2-trace-renumber: \["Nil","length"\]/
   },

@@ -5,6 +5,9 @@
 // loader, so a probe reads the compiler under test only. Each check
 // returns the names of the cases that differ (empty when all hold).
 // Fixture-level.
+import { finished } from './r0-t2-finished.mjs';
+import { shape } from './regression-r0-amin-support.mjs';
+
 const right = (result, phase) => {
   if (result.constructor.name !== 'Right')
     throw new Error(`${phase} refused: ${JSON.stringify(result.value0)}`);
@@ -103,64 +106,67 @@ export const traceCases = async load => {
   const { unfoldableArray } = await load('Data.Unfoldable');
   const Holes = await load('Features.Check.Holes');
   const Core = await load('Domain.Type.Core');
+  const Trace = await load('Features.Check.Trace');
+  const { ordInt } = await load('Data.Ord');
   const pairs = map => Maps.toUnfoldable(unfoldableArray)(map)
     .map(pair => [pair.value0, pair.value1]);
   const keyText = key => `${key.value0}-${key.value1}`;
   const arrow = row => new Core.TFun(Core.TUnit.value, row, Core.TUnit.value);
 
-  // `recheck`'s result for the named declaration, its Traced maps keyed
-  // by "start-end" text ("start-end start-end" for an applied row).
+  // `recheck`'s result for the named declaration, its finished trace
+  // (`trace`), and the trace's maps keyed by "start-end" text
+  // ("start-end start-end" for an applied row).
   const traced = (source, name) => {
     const program = right(resolve(right(parse(source), 'parse')),
       'resolve');
     const decl = program.functions.find(item => item.name === name);
     const found = right(Function.recheck(functional(program.ctors))(
       program)(decl), 'recheck');
-    const { uses, applied, piped } = found.trace;
+    const trace = finished(found.trace, name);
+    const { uses, applied, piped } = trace;
     const bySpan = map => new Map(pairs(map).map(([k, v]) =>
       [keyText(k), v]));
-    return { found,
-      clauses: bySpan(found.trace.clauses),
-      deferrals: bySpan(found.trace.deferrals),
-      installations: bySpan(found.trace.installations),
+    return { found, trace,
+      clauses: bySpan(trace.clauses),
+      deferrals: bySpan(trace.deferrals),
+      installations: bySpan(trace.installations),
       uses: new Map(pairs(uses).map(([k, v]) => [keyText(k), v])),
       applied: new Map(pairs(applied).map(([k, v]) =>
         [`${keyText(k.value0)} ${keyText(k.value1)}`, v])),
       piped: new Map(pairs(piped).map(([k, v]) => [keyText(k), v])) };
   };
 
-  // Every hole occurrence in the finished trace, in the extension order
-  // of design §C.3: uses, then applied, then piped, each in key order,
-  // then clause entries, deferrals, installations, and the declaration's
-  // row last; within a use, slots, opened tail, stages, fields, result.
-  const metasInOrder = item => {
+  // Every type of the finished trace, rows as one-arrow types, in the
+  // extension order of design §C.3: uses, then applied, then piped, each
+  // in key order, then clause entries, deferrals, installations, and the
+  // declaration's row last; within a use, slots, opened tail, stages,
+  // fields, result.
+  const typesOf = item => {
     const found = [];
-    const visit = ty => Holes.foldHoles(seen => meta => {
-      seen.push(meta);
-      return seen;
-    })(found)(ty);
-    const visitSlot = slot => visit(slot.constructor.name === 'RowSlot'
+    const slotType = slot => (slot.constructor.name === 'RowSlot'
       ? arrow(slot.value0) : slot.value0);
     for (const list of item.uses.values()) for (const use of list) {
-      use.slots.forEach(visitSlot);
+      found.push(...use.slots.map(slotType));
       if (use.opened.constructor.name === 'Just')
-        visit(arrow(use.opened.value0));
-      use.stages.forEach(row => visit(arrow(row)));
-      use.fields.forEach(visit);
-      visit(use.result);
+        found.push(arrow(use.opened.value0));
+      found.push(...use.stages.map(arrow), ...use.fields, use.result);
     }
     for (const list of [...item.applied.values(), ...item.piped.values()])
-      list.forEach(row => visit(arrow(row)));
+      found.push(...list.map(arrow));
     for (const list of item.clauses.values()) for (const entry of list)
-      [entry.row, entry.inference, entry.clauses].forEach(row =>
-        visit(arrow(row)));
-    for (const list of item.deferrals.values())
-      list.forEach(row => visit(arrow(row)));
+      found.push(...[entry.row, entry.inference, entry.clauses].map(arrow));
+    for (const list of item.deferrals.values()) found.push(...list.map(arrow));
     for (const list of item.installations.values())
-      list.forEach(entry => visit(arrow(entry.current)));
-    visit(arrow(item.found.trace.row));
+      found.push(...list.map(entry => arrow(entry.current)));
+    found.push(arrow(item.trace.row));
     return found;
   };
+  // Every hole occurrence in the finished trace, in that order.
+  const metasInOrder = item => typesOf(item).reduce((seen, ty) =>
+    Holes.foldHoles(into => meta => {
+      into.push(meta);
+      return into;
+    })(seen)(ty), []);
   const bodyHoleCount = item =>
     Maps.size(Holes.numbering(item.found.function.body));
 
@@ -204,6 +210,38 @@ export const traceCases = async load => {
         && list[0].row.value0.length === 1]]
       .filter(([, held]) => !held).map(([name]) => name);
   };
-  return { traced, metasInOrder, bodyHoleCount, appliedWrong,
-    renumberWrong, clauseWrong, Core };
+  // R036 (2): the renumbering given numbers lacking one meta is
+  // `Left (Unnumbered m)`, never the raw meta; given every meta, it
+  // changes nothing and keeps rigids.
+  const numbersOf = (metas, skip) => metas.filter(meta => meta !== skip)
+    .reduce((map, meta) => Maps.insert(ordInt)(meta)(meta)(map), Maps.empty);
+  const unnumberedWrong = () => {
+    const item = traced(sources.slots, 'g');
+    const metas = [...new Set(metasInOrder(item))];
+    const skip = metas[metas.length - 1];
+    const lacking = Trace.renumbered(numbersOf(metas, skip))(item.trace);
+    const whole = Trace.renumbered(numbersOf(metas, null))(item.trace);
+    return [['lacking', lacking.constructor.name === 'Left'
+      && lacking.value0.constructor.name === 'Unnumbered'
+      && lacking.value0.value0 === skip],
+    ['whole', whole.constructor.name === 'Right' && JSON.stringify(
+      shape(whole.value0)) === JSON.stringify(shape(item.trace))],
+    ['rigid', JSON.stringify(shape(item.trace)).includes('"Rigid"')]]
+      .filter(([, held]) => !held).map(([name]) => name);
+  };
+  // A traced row resolved as a row: `g`'s `run` slot reads `one`'s Log
+  // through the final substitution (unresolved, it is a bare meta);
+  // `piped`'s row, concrete when recorded, reads `inc`'s either way.
+  const rowResolvedWrong = () => {
+    const g = traced(sources.slots, 'g');
+    const run = g.uses.get(spanOf(sources.slots, 'run(one)'))?.[0];
+    const piped = traced(sources.slots, 'piped');
+    const [row] = [...piped.piped.values()][0] ?? [];
+    return [['slot', run?.slots[0]?.value0?.value0?.length === 1],
+      ['piped', row?.value0?.length === 1]]
+      .filter(([, held]) => !held).map(([name]) => name);
+  };
+  return { traced, typesOf, metasInOrder, bodyHoleCount, appliedWrong,
+    renumberWrong, clauseWrong, unnumberedWrong, rowResolvedWrong, Core,
+    Trace };
 };

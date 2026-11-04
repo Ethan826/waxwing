@@ -27,24 +27,28 @@ module Features.Check.Trace
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
-import Domain.Checked.Internal (Open(..))
+import Domain.Checked.Internal (Open)
 import Domain.Syntax (Span)
-import Domain.Type (Ty, TyRow, rename)
+import Domain.Type (Ty, TyRow)
 import Features.Check.Trace.Types
-  ( ClauseTrace
+  ( Changes
+  , ClauseTrace
   , InstallTrace
   , Slot(..)
   , SpanKey
+  , TraceFault(..)
   , TraceKey(..)
   , Traced
   , UseTrace
   , emptyTraced
   , extended
-  , mapTraced
+  , renumbered
+  , traverseTraced
   )
 
 -- Raw values, metas as allocated.
@@ -90,21 +94,28 @@ recordInstallation span entry (Trace raw) = Trace raw
   { installations = appended (spanKey span) entry raw.installations }
 
 -- The declaration's resolved row (Check/Function.purs: the value of the
--- checked row) is kept as `row`. Every type and row resolved by `resolve`
--- (the final substitution), then each meta in the body's `numbering`
--- takes its number there, and every other meta an extension number from
--- the numbering's size upward, in first-occurrence order over the trace,
--- the row last (design §C.3).
+-- checked row) is kept as `row`. Every type and row resolved by the
+-- injected `resolve` (the final substitution; rows by a row function,
+-- R036 (2)), then each meta in the body's `numbering` takes its number
+-- there, and every other meta an extension number from the numbering's
+-- size upward, in first-occurrence order over the trace, the row last
+-- (design §C.3). A meta the extended numbering lacks is `Left`, never
+-- kept raw (`renumbered`).
 finish
-  ∷ (Ty Open → Ty Open) → Map Int Int → TyRow Open → Trace → Traced
-finish resolve numbering row (Trace raw) =
-  mapTraced (rename renumber) resolved
-  where
-  resolved = mapTraced resolve raw { row = row }
-  numbers = extended numbering resolved
-  renumber = case _ of
-    Hole meta → Hole (maybe meta identity (Map.lookup meta numbers))
-    rigid → rigid
+  ∷ { ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open }
+  → Map Int Int
+  → TyRow Open
+  → Trace
+  → Either TraceFault Traced
+finish resolve numbering row (Trace raw) = do
+  resolved ← traverseTraced (always resolve) raw { row = row }
+  renumbered (extended numbering resolved) resolved
+
+-- The resolve pass's functions, which cannot fail, as a traversal's.
+always
+  ∷ { ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open }
+  → Changes (Either TraceFault)
+always resolve = { ty: Right <<< resolve.ty, row: Right <<< resolve.row }
 
 spanKey ∷ Span → SpanKey
 spanKey span = Tuple span.start.offset span.end.offset

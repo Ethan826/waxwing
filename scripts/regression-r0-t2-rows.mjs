@@ -59,8 +59,9 @@ export const t2RowsRows = [
     // `finish` drops the declaration's row: the trace's row is closed.
     name: 'r0-t2-rows-entry-finish',
     file: 'src/Features/Check/Trace.purs',
-    needle: '  resolved = mapTraced resolve raw { row = row }\n',
-    replacement: '  resolved = mapTraced resolve raw '
+    needle: '  resolved ← traverseTraced (always resolve) raw '
+      + '{ row = row }\n',
+    replacement: '  resolved ← traverseTraced (always resolve) raw '
       + '{ row = const raw.row row }\n',
     probe: 'r0-t2-rows-entry-finish',
     message: /r0-t2-rows-entry-finish: \[/

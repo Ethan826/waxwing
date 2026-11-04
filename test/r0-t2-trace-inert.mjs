@@ -16,6 +16,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { finished } from './r0-t2-finished.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const inertFixture = 'test/fixtures/r0/t2-trace-inert.json';
@@ -91,7 +92,11 @@ export const traceRun = async (load, corpus) => {
     if (found.constructor.name !== 'Right')
       return { refused: shape(found.value0) };
     const { trace, ...state } = found.value0.state;
-    add(counts, found.value0.trace);
+    // A build before R036 (2) holds a `Traced`, one since an `Either`; a
+    // `Left` throws (a trace that did not finish is a stop, never zero).
+    add(counts, found.value0.trace?.constructor?.name === 'Right'
+      || found.value0.trace?.constructor?.name === 'Left'
+      ? finished(found.value0.trace) : found.value0.trace);
     add(collected, trace);
     return { function: shape(found.value0.function), state: shape(state) };
   };

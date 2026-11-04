@@ -9,7 +9,26 @@ const dir = 'src/Features/Check/Strategy/ReadBack/';
 const row = (name, file, needle, replacement, message) =>
   ({ name, file, needle, replacement, probe: name, message });
 
+const types = 'src/Features/Check/Trace/Types.purs';
+
 export const t2PrerequisitesRows = [
+  // R036 (2): a meta the numbering lacks kept raw, not a fault.
+  row('r0-t2-r036-2-meta-raw', types,
+    '  unnumbered meta = Left (Unnumbered meta)\n',
+    '  unnumbered meta = Right (Hole meta)\n',
+    /r0-t2-r036-2-meta-raw: \["lacking"\]/),
+  // R036 (2): Function.purs injects no row resolution.
+  row('r0-t2-r036-2-row-unresolved', 'src/Features/Check/Function.purs',
+    '  , row: toOpenRow <<< Unify.resolveRow subst <<< toFlexRow\n',
+    '  , row: const identity (toOpenRow <<< Unify.resolveRow subst '
+      + '<<< toFlexRow)\n',
+    /r0-t2-r036-2-row-unresolved: \["slot"\]/),
+  // R036 (2): the trace's fault taken ahead of `Declined`.
+  row('r0-t2-r036-2-trace-first', `${dir}Package.purs`,
+    'readEffectsWith problem found checked terms finished = do\n',
+    'readEffectsWith problem found checked terms finished =\n'
+      + '  unfinished finished *> do\n',
+    /r0-t2-r036-2-trace-first: \["declined"\]/),
   // R036 (3): EffectRows maps a conversion failure back to `Unread`.
   row('r0-t2-r036-3-row-coarse', `${dir}EffectRows.purs`,
     '  unconverted (UnmarkedLabel effect) = Left (RowUnconverted variable '

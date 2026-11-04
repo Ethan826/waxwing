@@ -30,7 +30,9 @@
 --   repeating a label, a bound record tail that is not a record, a value
 --   with no row-free image).
 --
--- `Declined k`: an `Unsupported` problem. `ForcedRead v`: the assembled
+-- `Declined k`: an `Unsupported` problem. `TraceUnfinished f`: the
+-- trace could not be finished (Check/Trace.purs `finish`: a meta the
+-- extended numbering lacks; R036 (2)). `ForcedRead v`: the assembled
 -- effects bind a forced `ResultClauses` tail v (A2 spec §3), which only a
 -- defect in the row read-back could produce (Task 11's assertion).
 module Features.Check.Strategy.ReadBack.Fault (ReadFault(..)) where
@@ -39,7 +41,7 @@ import Prelude
 import Domain.Recorded.Atom (Var)
 import Domain.Recorded.Effect (EVar, Position, UnsupportedKind)
 import Domain.Row (EffectRef)
-import Features.Check.Trace (TraceKey)
+import Features.Check.Trace (TraceFault, TraceKey)
 
 data ReadFault
   = Unread EVar
@@ -53,6 +55,7 @@ data ReadFault
   | ImageUnconverted Var EffectRef
   | ImageApart Var
   | Declined UnsupportedKind
+  | TraceUnfinished TraceFault
   | ForcedRead EVar
 
 derive instance eqReadFault ∷ Eq ReadFault

@@ -17,6 +17,8 @@
 // per such stage; `completed` is null when the package was refused,
 // and then the consumption is not checked and the stage says so among
 // its problems (it never reads as passing).
+import { finished } from './r0-t2-finished.mjs';
+
 const named = value => value.constructor.name;
 
 const argumentsOf = node => {
@@ -77,7 +79,8 @@ export const stagesCheck = async load => {
   // The trace's row for the stage, as the read-back finds it: a bare
   // meta (no labels) is what "traced unconstrained" means on that side.
   const tracedBare = (live, variable) => {
-    const read = Sites.tracedRow(live.trace)(live.function.body)(variable);
+    const read = Sites.tracedRow(finished(live.trace))(live.function.body)(
+      variable);
     if (named(read) !== 'Right') return false;
     const row = just(read.value0);
     return row !== null && unlabelled(row);
