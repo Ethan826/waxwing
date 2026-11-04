@@ -8,11 +8,11 @@ retirement and the losses an actual replacement would cause (dossier
 The gate is the seven criteria shown to the author in §18.156's report.
 Each one below has the check that measures it, its state as measured on
 2026-11-03 (branch t2/gate from d375ffc; criterion 2 measured again at
-354ce6e for §18.159), and the evidence that would meet it. None of them
-is a decision. Where a criterion needs the author, the gate measures
-only whether the ruling is recorded, and where. A met gate means the
-stated evidence exists. It does not mean the checker should be
-switched on; that call stays with the author.
+the head of branch ap/verdicts for §18.159), and the evidence that
+would meet it. None of them is a decision. Where a criterion needs the
+author, the gate measures only whether the ruling is recorded, and
+where. A met gate means the stated evidence exists. It does not mean
+the checker should be switched on; that call stays with the author.
 
 The gate is an evidence checklist (§18.159). Its citation checks read
 that a cited section exists, comes after §18.157 and names the
@@ -81,18 +81,18 @@ A cited ruling counts as recorded only if all three hold:
   for 6, `routing` for 7, and for criterion 2 `read fault`,
   `RequirementUnjudged` or `ForcedTail` according to the list.
 
-Checks: `node --test test/r0-t2-activation-gate.test.mjs` (10
-tests). A synthetic body of evidence meets all seven criteria. Each of
-58 must-fail cases changes one thing and must leave unmet exactly the
+Checks: `node --test test/r0-t2-activation-gate.test.mjs` (10 tests).
+A synthetic body of evidence meets all seven criteria. Each of 60
+must-fail cases changes one thing and must leave unmet exactly the
 criteria it names, with every other criterion still met. Three further
 cases must hold: a lowered pin with a later re-pin ruling that names
 its figures; the `RequirementUnjudged` ruling absent while the verdict
-file records them as existing refusals; and no ruling at all while the
-verdict file records no loss. A case that changes the pin's lists
-writes the synthetic verdict file again for the changed pin, so only
-the check it aims at sees the change. Every criterion has a case that
-fails it alone. With no
-evidence at all, all seven are unmet. On the real dossier, a status
+file records them as existing refusals; and the read-fault ruling
+absent while the verdict file records every read fault refused. A case
+that changes the pin's lists writes the synthetic verdict file again
+for the changed pin, so only the check it aims at sees the change.
+Every criterion has a case that fails it alone. With no evidence at
+all, all seven are unmet. On the real dossier, a status
 citing §18.157 for C6, the losses and the budget, and §18.155 for
 routing and the losses, leaves criteria 2, 3, 6 and 7 unmet. On the
 committed tree, criterion 2 reads the three `RequirementUnjudged` as
@@ -118,7 +118,10 @@ restore one defect in the gate's helpers:
   `certify`'s verdict, so a loss marked an existing refusal passes;
 - the verdict file not compared with the pin, so a stale file backs
   it;
-- losses read from the first denominator only.
+- losses read from the first denominator only;
+- `certify`'s recorded verdict not checked against the pin, so a
+  ForcedTail relabelled refused reads as an existing refusal;
+- any text read as a `certify` refusal, so a typo reads as one.
 
 ## Criteria
 
@@ -168,8 +171,14 @@ Check:
   denominators: the same declarations on the same lists with the
   pin's own fault or refusal text, none repeated, each with today's
   verdicts as text, and each `loss` the one its `certify` verdict
-  gives (below). An absent, unreadable or stale file is unmet, and
-  then no list is read as existing refusals.
+  gives (below). Each `certify` is `accepted` or a refusal by a whole
+  `CheckRefusal` constructor name (the only verdicts `certify` gives);
+  any other text is unmet, never a refusal. Where the pin fixes
+  `certify`'s verdict, the file must agree: a `RequirementUnjudged`
+  entry carries exactly the pinned refusal (the pin admitted each only
+  with `certify`'s own refusal), and a ForcedTail entry `accepted`
+  (admitted only where `certify` accepts). An absent, unreadable or
+  stale file is unmet, and then no list is read as existing refusals.
 - A gap entry whose recorded `certify` verdict is a refusal is an
   existing refusal: it is not a loss and needs no loss ruling
   (§18.159). An entry today's `certify` accepts is a loss. Each list
@@ -199,7 +208,7 @@ both ways, with must-fail cases for a moved verdict, a relabelled
 loss and a stale file. The gate reads the file; whether it still
 matches the checker is the serial test's.
 
-Measured at 354ce6e (branch ap/verdicts): not met. Corpus loader:
+Measured at the head of branch ap/verdicts: not met. Corpus loader:
 2823 candidates = floor 2805 + 11 read faults + 3 + 4. Effect-pin
 sources: 2832 = 2813 + 12 + 3 + 4. The counts balance, every entry is
 on a named list and the verdict file backs the pin. Today's verdicts:
@@ -220,6 +229,14 @@ is not approval to lose it. The losses, by name: the two
 (`Declined (OperationWithRow 1 0)`, effect-pin sources only) and the
 four ForcedTail (effect-namespaces, services, fx-services fake,
 fx008-defer aroundBoth). The report prints each in full.
+`inline:fx032#g`'s shadow class is `defect`: it is FX032, a known
+defect under the author's G-erased ruling item 5
+(test/r0-shadow-known.mjs), which matters when ruling on the read-fault
+losses.
+
+Criterion 2 reads certification losses, as §18.159 defines them.
+Whether the existing-refusal programs, all of which compile today,
+survive the replacement of the old checker is not measured here.
 
 One point is reasoned rather than checked: a declaration today's
 `certify` accepts is a candidate, because
@@ -323,7 +340,10 @@ fixtures and mutants never run".
   the file still matches the committed checker is checked by
   test/r0-t2-gap-verdicts.serial.test.mjs, not by the gate. A loss
   counts as an existing refusal only by `certify`'s recorded verdict;
-  the gate does not judge whether a refusal is the right one.
+  the gate does not judge whether a refusal is the right one. A read
+  fault's verdict is not fixed by the pin, so a read fault recorded
+  with a well-formed refusal it was never given is caught only by
+  the serial test.
 - A named regression row shows that a correctly tagged row exists,
   not that it proves the fix. The regression run in verify proves
   that.
@@ -351,8 +371,8 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 gate: not met (2, 4, 5, 6)
 ```
 
-Criterion 2's lines on the working tree at 354ce6e (branch
-ap/verdicts), each wrapped here and with the loss names left out:
+Criterion 2's lines on the working tree at the head of branch
+ap/verdicts, each wrapped here and with the loss names left out:
 
 ```text
 loss on replacement, RequirementUnjudged (corpus loader: losses 0,
