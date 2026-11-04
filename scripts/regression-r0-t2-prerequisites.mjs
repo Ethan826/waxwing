@@ -11,7 +11,20 @@ const row = (name, file, needle, replacement, message) =>
 
 const types = 'src/Features/Check/Trace/Types.purs';
 
+const scan = 'test/readback-total-scan.mjs';
+
 export const t2PrerequisitesRows = [
+  // R036 (1): the audit scan's forbidden list without Partial.Unsafe.
+  { ...row('r0-t2-r036-1-scan-blind', scan,
+    "export const forbiddenImports = ['Partial', 'Partial.Unsafe',\n",
+    "export const forbiddenImports = ['Partial',\n",
+    /r0-t2-r036-1-scan-blind: \["Partial\.Unsafe"\]/), tree: 'test' },
+  // R036 (1): the loop table compared for ReadBack's modules only.
+  { ...row('r0-t2-r036-1-loop-unlisted', scan,
+    '  const derived = entries;\n',
+    "  const derived = entries.filter(entry => entry.key.includes("
+      + "'.ReadBack.'));\n",
+    /r0-t2-r036-1-loop-unlisted: \["MarkStore"\]/), tree: 'test' },
   // R036 (2): a meta the numbering lacks kept raw, not a fault.
   row('r0-t2-r036-2-meta-raw', types,
     '  unnumbered meta = Left (Unnumbered meta)\n',

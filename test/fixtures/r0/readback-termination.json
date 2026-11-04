@@ -1,0 +1,389 @@
+{
+  "about": "R036 (1), T5 (dossier §18.161 (3)): the reviewed termination arguments for every tailRec-family use, JS loop and reference cycle that test/readback-total-scan.mjs finds in the src module closure of Features.Check.Strategy.ReadBack.Package. Evidence for review, not a proof of totality or exception freedom; docs/plans/2026-11-04-readback-termination-audit.md. A new loop or cycle fails test/structure-readback-total.test.mjs until it has a row here.",
+  "entries": [
+    {
+      "key": "Domain.Problem.Names.{eqTypeName}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Recorded.Atom.sameSpine",
+      "kind": "loop",
+      "count": 1,
+      "argument": "Self tail call compiled to a loop ($tco): each step goes from an Arrow to its rest, a strict subterm of both finite spines; it stops at the first non-arrow or mismatch."
+    },
+    {
+      "key": "Domain.Recorded.Atom.sameSpine/{$tco_loop}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "The compiled loop body of sameSpine's self tail call (the loop row above): it is called once per iteration of that loop, not recursively."
+    },
+    {
+      "key": "Domain.Recorded.Atom.{eqRTExpr,sameSpine}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Recorded.Effect.{eqMTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Syntax.typeRefSpine",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Counting loop over a written type's FunRef spine: each step moves to the FunRef's result, a strict subterm; the second pass (mapAccumL) takes exactly the counted steps."
+    },
+    {
+      "key": "Domain.Type.Compare.sameSpines",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop over two arrows in step: each step moves both to their results (strict subterms); it stops when either is not an arrow or a stage differs."
+    },
+    {
+      "key": "Domain.Type.Compare.compareSpines",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop over two arrows in step: each step moves both to their results (strict subterms); it stops when either is not an arrow or a stage orders them."
+    },
+    {
+      "key": "Domain.Type.Core.arrowCount",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop through `look`: each step moves to the arrow's result. With `look` = identity (substitute, traverseTy) that is a strict subterm. With a substitution's walk (Subst.resolve) it ends if the substitution is acyclic, which `unify`'s occurs check maintains (reasoned; the read-back's closure calls it with identity only)."
+    },
+    {
+      "key": "Domain.Type.Core.{eqTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Type.Core.{ordTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Type.Core.{substitute,substituteLabel,substituteRecord,substituteRow}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass substitution: recursion on strict subterms of the finite input; an image is spliced in, never substituted again; spines by stagesThrough's loop."
+    },
+    {
+      "key": "Domain.Type.Parts.{groundWith}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Domain.Type.Parts.{ground,groundLabel,groundRow}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Domain.Type.Parts.{mentionsTypeVariable}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Domain.Type.Traverse.{traverseArrow,traverseLabel,traverseRow,traverseTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass traversal (R036 (2)): recursion on strict subterms of the finite input; spines by stagesThrough's loop and Array.foldr; the injected function is applied to variables only and its result is not traversed."
+    },
+    {
+      "key": "Domain.Verdict.Counter.{eqCXGround}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Domain.Verdict.EffectPackage.Types.{eqPTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+    },
+    {
+      "key": "Features.Check.Entailed.{typeVariables}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Entailed.{tailVariables}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Entailed.{fragment}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Entailed.{canonical}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Entailed.Merge.{substitute}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass substitution: recursion on strict subterms of the finite input; a variable's image is returned as is (θ idempotent), never walked again."
+    },
+    {
+      "key": "Features.Check.Entailed.Mgu.freshIndex",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Counts up from `fresh` while the made row variable is in `taken`, a finite map: at most |taken| + 1 steps."
+    },
+    {
+      "key": "Features.Check.Entailed.Mgu.mgu",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Robinson unification in Martelli and Montanari's form (JACM 1982), with Rémy's row rule: each step either removes an equation, replaces one by equations on strict subterms, or binds a flexible variable (occurs-checked, so θ stays acyclic) removing it from later equations; R5's two-tail case binds two variables and makes one fresh. Measure: (unbound flexible variables, total equation size), lexicographic. Reasoned, not machine-checked; the read-back's closure reaches it only through the type read-back's θ."
+    },
+    {
+      "key": "Features.Check.Entailed.Triangular.reachable",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Layered search: each layer adds to `seen` only bound variables not yet in it, from θ's finite domain; a layer that adds none leaves an empty frontier, which ends the loop. At most |dom θ| + 1 layers."
+    },
+    {
+      "key": "Features.Check.Entailed.Triangular.reachable/{found,inserted,visit}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Local helpers of one layer (`visit` folds over the finite frontier; `inserted` and `found` name values): the cycle is a naming artifact of where-bindings referring to each other, with no recursive call."
+    },
+    {
+      "key": "Features.Check.GroundRule.{judge}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Holes.{foldHoles}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.MarkStore.resolveMark",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Follows a meta's binding chain in the store. It ends because the bindings are acyclic: UnifyMark binds only a chain's unbound end meta, to the other chain's end, when the two ends differ (reasoned from UnifyMark `equateMarks`; not checked here). The read-back reads the store through Least, not through this loop."
+    },
+    {
+      "key": "Features.Check.Mentions.{mentions}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Mentions.{mentioned}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Search.stackItems",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Counting loop down a finite explicit stack: each step moves to the item below; the second pass takes exactly the counted items."
+    },
+    {
+      "key": "Features.Check.Search.firstJust",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Index loop over a finite array: each step increments the index, and an index past the end stops it."
+    },
+    {
+      "key": "Features.Check.Spine.spine",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop: each step goes from an arrow node to its result, a strict subterm of a finite term; the loop stops at the first non-arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.Candidate.{canonical}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.Candidate.{under}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass substitution: recursion on strict subterms of the finite input; a variable's image is canonicalized (Candidate.canonical, structural), not substituted again."
+    },
+    {
+      "key": "Features.Check.Strategy.Effects.Package.stagesOf",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop: each step goes from an arrow node to its result, a strict subterm of a finite term; the loop stops at the first non-arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.Effects.Package.markedStages",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop: each step goes from an arrow node to its result, a strict subterm of a finite term; the loop stops at the first non-arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.Effects.Package.{settleLabel,settleRecord,settleRow,settleTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.Effects.Package.{eraseTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.Effects.Package.{arrowUnder,labelUnder,under,underRow}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass reading under a package: recursion on strict subterms of the finite recorded type; a variable's package image is returned as is, never read again; spines by markedStages's loop."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Bound.stagesOf",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop: each step goes from an arrow node to its result, a strict subterm of a finite term; the loop stops at the first non-arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Bound.{boundArrow,boundLabel,boundRecord,boundRow,boundTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "One-pass reading under θ: recursion on strict subterms of the finite image; a bound hole's value is converted by the injected row-free image (Images.rowFree, structural), not read under θ again."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Convert.stagesOf",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop: each step goes from an arrow node to its result, a strict subterm of a finite term; the loop stops at the first non-arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Convert.{convertArrow,convertLabel,convertRecord,convertRow,convertTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.EffectMatch.matchArrow",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop over a recorded and a live arrow in step: each step moves both to their results (strict subterms); it stops when either is not an arrow."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.EffectMatch.{matchArguments,matchArrow,matchRow,matchTy,takeLabel}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion on two finite values at once: every recursive call is on strict subterms of both (paired parameters, arguments, rows or labels); labels are taken by a fold over the finite recorded labels."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.EffectPlaces.rowAfter",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop with a counter: each step goes from an arrow to its result (a strict subterm of a finite term) and decrements a counter; it stops at a non-arrow or at zero."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Images.{rowFree}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Images.{fieldOrder}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Instances.afterArrows",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Spine loop with a counter: each step goes from an arrow to its result (a strict subterm of a finite term) and decrements a counter; it stops at a non-arrow or at zero."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Least.find",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Union-find root search (Galler and Fischer 1964): `union` links one root to a different root only, so parent links form a forest and the chain from a node to its root is finite (at most one step per node). Fuelled copy with an agreement check: test/r0-readback-least-fuel.test.mjs."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Least.reaching",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "Kleene iteration of a monotone map (insertWith Set.union only adds a root's entry or grows it) on a finite lattice: maps from the finitely many roots to sets of the finitely many constants, an absent root below the empty set, of height roots × (constants + 1); so a fixpoint within roots × (constants + 1) + 1 passes (Davey and Priestley, Introduction to Lattices and Order, ch. 8). Fuelled copy with an agreement check: test/r0-readback-least-fuel.test.mjs."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.MarkLabels.{inTy}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.MarkMatch.{marksOfLabel,marksOfRow,marksOfTy,takeLabel}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion on two finite values at once: every recursive call is on strict subterms of both (paired parameters, arguments, rows or labels); labels are taken by a fold over the finite recorded labels."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Type.{settled}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Type.{readType}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Type.{holesIn}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Strategy.ReadBack.Walk.{descend,item,nodeAt}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Path walk: each recursive call moves to a child node of the finite checked body (a strict subterm); the path is consumed as it goes."
+    },
+    {
+      "key": "Features.Check.Walk.{retypePattern}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Walk.{retype}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Walk.{foldPattern}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    },
+    {
+      "key": "Features.Check.Walk.{foldTypes}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+    }
+  ]
+}
