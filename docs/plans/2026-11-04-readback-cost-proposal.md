@@ -129,8 +129,8 @@ node's width. `lazy` is linear. recheck and readBack stay linear
 Depth (`scaling.mjs depth`, an `Add` chain): 16, 32, 64, 120 terms give
 levels 720, 2,976, 12,096, 42,840 and readEffects 3.5, 2.7, 7.5,
 27.8 ms. Levels grow as n² and each level copies the path
-(`after`'s `take`/`drop`, O(n)), so the bound is cubic (observed
-exponent 2.1 to 2.5 from 64 to 120). The parser refuses nesting past
+(`after`'s `take`/`drop`, O(n)): the observed exponent is about 2.1
+(64 to 120 terms); the cubic is the bound. The parser refuses nesting past
 128 (`NestingTooDeep` from 130 terms; 129 parse): at 129 terms, about
 34 ms by the cubic, per declaration.
 
@@ -149,26 +149,33 @@ load 9.5-12.7; worker-attribution-2.txt at load 14.6-16.2):
 | all, `lazy` | 6.4, 18.2 (×2.9); 0 | 8.8, 18.9 (×2.1); 0 |
 | all but scalePrograms#2, `lazy` | | 4.7, 16.7 (×3.5); +76 MiB |
 
-The RSS rise shrinks to near zero both when the declaration is left
-out and when the walk stops building siblings, so it comes from the
-walk's churn, not from retained packages.
+The RSS rise shrinks both when the declaration is left out and when
+the walk stops building siblings: to zero in batch 1 and for `lazy` on
+all inputs, to +13 and +76 MiB in batch 2 against plain's +97 MiB. So
+it comes mostly from the walk's churn, not from retained packages.
 
-Calibration. Load compresses the ratio: the plain pair reads ×12.1 and
-×9.1 against the protocol's ×14.1, factors 1.17 and 1.55. Scaled by
-its own batch's factor, `lazy` reads ×3.3 in both batches and the
-pair without scalePrograms#2 ×2.5 and ×2.8.
+Calibration, by increment. Load compresses the read-back's increment
+over recheck alone, so the batch's factor applies to r − 1, not to r.
+The protocol's plain increment is 13.12 (×14.12); the plain pairs read
+11.09 (batch 1) and 8.09 (batch 2), factors 1.18 and 1.62. Calibrated
+as 1 + (r − 1) × factor: `lazy` on all inputs ×3.19 and ×2.86; plain
+without scalePrograms#2 ×2.38 and ×2.34. The batch-2 row "all but
+scalePrograms#2, `lazy`" (4.7 s alone, 16.7 s with, ×3.5 raw) reads
+×5.1 calibrated. It looks like a load outlier: its wall time (20.2 s)
+exceeds its CPU (16.7 s), and the same build on all inputs, which
+includes it, is ×2.86. It is reported, not used.
 
-The gap between them is not explained. `lazy` with every input costs
-4.8 s more CPU than plain without scalePrograms#2 in batch 1 (11.8 s
-against 7.0 s over recheck alone), though `main`'s `lazy` readEffects
-is 0.52 s. Profiles put it in GC +1.6 s, walk +1.4 s, other +1.2 s and
-readBack +0.7 s. Proxy overhead, which A would not have, is a
-candidate, but the in-process split does not show it: readEffects over
-the other 2,831 candidates is 4.60 s under `lazy` and 4.56 s plain
-(split-lazy.json, split-output.json). Batch 2 at higher load reverses
-the order on the reduced inputs (`lazy` +12.0 s, plain +4.4 s). Single
-loaded samples spread wider than the gap, so the prediction in §3
-carries the whole spread.
+Loaded single samples cannot bound A's ratio; only the protocol run
+can. The range in §3 (about ×2.3-×3.2) is indicative.
+
+The gap is not explained. `lazy` with every input costs 4.8 s more CPU
+than plain without scalePrograms#2 in batch 1 (11.8 s against 7.0 s
+over recheck alone), though `main`'s `lazy` readEffects is 0.52 s.
+Profiles put it in GC +1.6 s, walk +1.4 s, other +1.2 s and readBack
++0.7 s. Proxy overhead, which A would not have, is a candidate, but
+the in-process split does not show it: readEffects over the other
+2,831 candidates is 4.60 s under `lazy` and 4.56 s plain
+(split-lazy.json, split-output.json).
 
 ### 2.5 What the brief's other mechanisms showed
 
@@ -204,8 +211,9 @@ raw array and the wrapper; `item` indexes, then wraps the one item
 Published source: none needed, constant-time array indexing; no new
 algorithm. Predicted effect, from the `lazy` experiment: readEffects
 68 s to about 5 s; onlineReadBack median CPU ratio from ×14.1 to
-about ×2.5 to ×3.3 (§2.4's calibration; not an interval, and the
-unexplained gap is inside it); run RSS increment to about 0, so the
+about ×2.3 to ×3.2, indicative only (§2.4: calibrated by increment
+from loaded single samples, which cannot bound it; the protocol run
+does); run RSS increment to about 0, so the
 peakMemory ratio near 1.0. A alone still builds each node's `Child`
 list (fixed per constructor) and the over-applied `supplied <> more`
 copy (Walk.purs:135-139, O(arguments) per `Apply` passed). Risk:
@@ -284,13 +292,13 @@ A digest movement is a STOP under the common rules, never a re-pin.
    Counts, no clock, so no test/growth.mjs.
 4. The recorded protocol, unchanged, as a new authorized run: the
    onlineReadBack comparison's median CPU and maxRSS ratios, with the
-   predictions above stated beforehand (A: CPU ×2.5-×3.3, maxRSS
-   near 1.0).
-   No budget is proposed here; the author sets it from that run.
+   predictions above stated beforehand (A: CPU about ×2.3-×3.2,
+   indicative; maxRSS near 1.0). No budget is proposed here; the
+   author sets it from that run.
 
 ## 6. Open
 
-- Whether the remaining ×2.5-×3.3 (§2.5: type read-back substitution,
+- Whether the remaining ×2.3-×3.2 (§2.5: type read-back substitution,
   repeated lookups, GC) needs B and E before a budget is set is the
   author's call once A is measured.
 - Walk.purs's comment on `Child` (lines 28-30) is contradicted by
