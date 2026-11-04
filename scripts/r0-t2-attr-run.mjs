@@ -1,22 +1,27 @@
 // The perf attribution measurement (dossier §18.161, performance
 // paragraph), run as docs/plans/2026-11-04-perf-attribution-protocol.md
 // fixes it, by the controller alone:
-//   node scripts/r0-t2-attr-run.mjs <scratch dir outside the worktree>
-// On a clean tree only. It writes the workloads' sources, builds the
-// three arms cold in the scratch directory (scripts/r0-t2-attr-builds.mjs),
-// runs every sample of the fixed schedule (scripts/r0-t2-attr-plan.mjs)
+//   node scripts/r0-t2-attr-run.mjs <scratch dir> --lock <verify lock dir>
+// On a clean tree only, and only while the caller holds the verify lock
+// (the directory must exist) and no verify, perf, regression or other
+// measurement process runs (`blockers`). It writes the workloads'
+// sources, builds the four arms cold in the scratch directory
+// (scripts/r0-t2-attr-builds.mjs), checks the Go output agrees across
+// them, runs every sample of the fixed schedule (scripts/r0-t2-attr-plan.mjs)
 // in a fresh worker process (scripts/r0-t2-attr-worker.mjs), recording
 // the machine's conditions before each (scripts/r0-t2-perf-conditions.mjs),
 // and removes the builds after. Every sample is kept: a failed or
-// timed-out one is recorded with its reason and never retried, and a
-// workload with one has no attribution. The raw log goes under
+// timed-out one is recorded with its reason and never retried; a workload
+// with fewer than minPairs verdict pairs has no attribution. Each run
+// writes a new evidence directory: an earlier run stays reported and is
+// never replaced. The raw log goes under
 // .build/evidence/r0-t2-attr-<time>/ as it goes (samples.jsonl), then
 // attribution.json; a failure of the run itself goes there as
-// failure.json. Exits 1 unless every workload is complete. Changes no
-// bound and calls no failed bound passing.
+// failure.json. Exits 1 unless every workload is usable. Attribution,
+// not qualification: changes no bound and calls no failed bound passing.
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, mkdirSync, rmSync, writeFileSync }
-  from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, rmSync, statSync,
+  writeFileSync } from 'node:fs';
 import { cpus, platform } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -24,7 +29,7 @@ import { sampleConditions } from './r0-t2-perf-conditions.mjs';
 import { cleanCommit } from './r0-t2-perf-builds.mjs';
 import { prepareArms, writeInputs } from './r0-t2-attr-builds.mjs';
 import { attributionFile } from './r0-t2-attr-file.mjs';
-import { parseWorkerOutput, schedule, workloads }
+import { fileNames, parseWorkerOutput, schedule }
   from './r0-t2-attr-plan.mjs';
 import { conditionsLine, hostFacts, makeRunner }
   from './verify-conditions.mjs';
@@ -39,6 +44,32 @@ const atRoot = { ...hostFacts, run: makeRunner((command, args, options) =>
   spawnSync(command, args, { ...options, cwd: repoRoot })) };
 const line = () => conditionsLine('r0-t2-attr', atRoot);
 
+// Processes that must not run alongside: anchored on the command line,
+// so a shell wrapper or an editor naming the script does not match.
+export const blockerPattern = '^([^ ]*/)?node scripts/(verify|perf|'
+  + 'regression|r0-t2-perf-run|r0-t2-attr-run)\\.mjs';
+
+// The pids `pgrep -f` reports, this process excluded. Exit 1 is "none".
+export const blockers = (run = spawnSync, own = process.pid) => {
+  const ran = run('pgrep', ['-f', blockerPattern], { encoding: 'utf8' });
+  if (ran.error !== undefined || ![0, 1].includes(ran.status))
+    throw new Error(`pgrep failed: ${ran.error?.message ?? ran.status}`);
+  return String(ran.stdout).split('\n').map(found => found.trim())
+    .filter(found => found !== '' && Number(found) !== own);
+};
+
+// Refuses to start without the lock directory or with a blocker running.
+export const startCheck = (lock, isDirectory, running) => {
+  if (lock === undefined || !isDirectory(lock))
+    throw new Error(`the verify lock directory ${JSON.stringify(lock)} `
+      + 'does not exist; take the lock first');
+  const found = running();
+  if (found.length > 0)
+    throw new Error(`other measurement processes run: ${found.join(', ')}`);
+};
+
+const isDirectory = path => existsSync(path) && statSync(path).isDirectory();
+
 // One sample: its conditions first, then the worker, once. A non-zero
 // exit, a timeout or a malformed line is a failure, kept as such.
 // `context` holds `buildOf` (arm to output dir), `inputs` (the file)
@@ -48,7 +79,7 @@ export const runSample = (entry, context, spawn = spawnSync,
   const { raw, ...conditions } = conditionsOf();
   const buildDir = context.buildOf(entry.arm);
   const ran = spawn(process.execPath,
-    [workerFile, buildDir, entry.workload, context.inputs],
+    [workerFile, buildDir, entry.file, context.inputs],
     { encoding: 'utf8', timeout: fileTimeoutMs, killSignal: 'SIGKILL',
       maxBuffer, env: context.env });
   const sample = { ...entry, buildDir, conditions };
@@ -59,8 +90,8 @@ export const runSample = (entry, context, spawn = spawnSync,
   if (ran.status !== 0)
     return { sample: { ...sample, failure: `exit ${ran.status}` }, log };
   try {
-    return { sample: { ...sample, result: parseWorkerOutput(ran.stdout) },
-      log };
+    return { sample: { ...sample,
+      result: parseWorkerOutput(ran.stdout, entry.file) }, log };
   } catch (failure) {
     return { sample: { ...sample, failure: failure.message }, log };
   }
@@ -86,9 +117,9 @@ const samplesRun = (context, evidence) => {
     appendFileSync(join(evidence, 'samples.jsonl'),
       `${JSON.stringify({ ...sample, ...log })}\n`);
     console.log(`r0-t2-attr: ${index + 1}/${order.length} round ${
-      entry.round}${entry.warmup ? ' (warm-up)' : ''} ${entry.workload} ${
-      entry.arm}: ${sample.failure ?? `wall ${Math.round(
-      sample.result.wallMs)} ms, load ${sample.conditions.loadavg[0]}`}`);
+      entry.round}${entry.warmup ? ' (warm-up)' : ''} ${entry.file} ${
+      entry.arm}: ${sample.failure ?? `load ${sample.conditions.loadavg[0]}`
+      }`);
   }
   return samples;
 };
@@ -97,7 +128,21 @@ const describeBuilds = builds => Object.fromEntries(Object.entries(builds)
   .map(([name, { commit, srcTree, digest }]) =>
     [name, { commit, srcTree, digest }]));
 
-const run = async (scratch, evidence, progress) => {
+// The scale sources compiled once in one build: their digests by name.
+const probeOf = inputs => output => {
+  const ran = spawnSync(process.execPath, [workerFile, output, 'scale',
+    inputs], { encoding: 'utf8', timeout: fileTimeoutMs, maxBuffer });
+  if (ran.error !== undefined || ran.status !== 0)
+    throw new Error(`digest probe in ${output}: ${ran.error?.message
+      ?? `exit ${ran.status}`} ${ran.stderr}`);
+  const found = parseWorkerOutput(ran.stdout, 'scale').entries;
+  return Object.fromEntries(Object.entries(found).map(([name, entry]) =>
+    [name, entry.digest]));
+};
+
+const run = async (scratch, lock, evidence, progress) => {
+  progress.stage = 'lock';
+  startCheck(lock, isDirectory, blockers);
   progress.stage = 'clean tree';
   const commit = cleanCommit();
   const env = { ...process.env };
@@ -106,7 +151,8 @@ const run = async (scratch, evidence, progress) => {
   progress.stage = 'inputs';
   const written = await writeInputs(scratch);
   progress.stage = 'builds';
-  const prepared = await prepareArms(scratch, commit);
+  const prepared = await prepareArms(scratch, commit,
+    probeOf(written.path));
   let samples;
   try {
     progress.stage = 'samples';
@@ -122,18 +168,20 @@ const run = async (scratch, evidence, progress) => {
     purs: pursVersion(), platform: platform(), cores: cpus().length,
     cpu: cpus()[0]?.model ?? 'unavailable', fileTimeoutMs,
     workerEnv: envOf(env), evidence, builds: describeBuilds(prepared.builds),
-    traces: prepared.traces,
+    lock, traces: prepared.traces, digests: prepared.digests,
     driverMaxRssMiB: Math.round(process.resourceUsage().maxRSS / 1024) };
-  const expected = Object.fromEntries(workloads.map(workload =>
-    [workload.name, written.inputs.workloads[workload.name].expected]));
+  const expected = Object.fromEntries(fileNames.flatMap(file =>
+    written.inputs.files[file].map(entry => [entry.name, entry.expected])));
   const file = attributionFile(header, samples, expected);
   writeFileSync(join(evidence, 'attribution.json'),
     `${JSON.stringify(file, null, 1)}\n`);
   for (const found of file.workloads)
-    console.log(`r0-t2-attr: ${found.name}: ${found.attribution.verdict}${
-      found.complete ? '' : ` (${found.problems.join('; ')})`}`);
+    console.log(`r0-t2-attr: ${found.name}: ${found.attribution.verdict}`
+      + ` (${found.verdictPairs} pairs; ${found.failures.length} failures`
+      + `${found.outputProblems.length === 0 ? ''
+        : `; ${found.outputProblems.join('; ')}`})`);
   console.log(`r0-t2-attr: wrote ${evidence}`);
-  return file.complete ? 0 : 1;
+  return file.usable ? 0 : 1;
 };
 
 const main = async () => {
@@ -143,10 +191,15 @@ const main = async () => {
   mkdirSync(evidence, { recursive: true });
   const progress = { stage: 'arguments' };
   try {
-    const scratch = process.argv[2];
-    if (scratch === undefined || scratch.startsWith('--'))
-      throw new Error('usage: node scripts/r0-t2-attr-run.mjs <scratch>');
-    process.exitCode = await run(scratch, evidence, progress);
+    const args = process.argv.slice(2);
+    const at = args.indexOf('--lock');
+    const lock = at === -1 ? undefined : args[at + 1];
+    const scratch = args.find((arg, index) => !arg.startsWith('--')
+      && args[index - 1] !== '--lock');
+    if (scratch === undefined)
+      throw new Error('usage: node scripts/r0-t2-attr-run.mjs <scratch>'
+        + ' --lock <verify lock dir>');
+    process.exitCode = await run(scratch, lock, evidence, progress);
   } catch (failure) {
     const record = { stage: progress.stage, message: failure.message,
       stack: failure.stack, start: startedAt, at: new Date().toISOString() };

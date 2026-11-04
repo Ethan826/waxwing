@@ -1,5 +1,5 @@
 // What the perf attribution measurement runs on
-// (docs/plans/2026-11-04-perf-attribution-protocol.md §3): three cold
+// (docs/plans/2026-11-04-perf-attribution-protocol.md §2-§3): four cold
 // scratch builds made the same way, and the workloads' sources as one
 // JSON file.
 // - Each arm's src is read from git (`git archive <commit> src`), never
@@ -9,10 +9,12 @@
 //   .spago (the dependency files are checked equal at both commits) and
 //   is compiled by plain purs into an empty output/: no build reuses
 //   another's output.
-// - Checks: preCommit is an ancestor of the head; the head arm's src
-//   digest equals this clean worktree's, the uncollected arm's equals
-//   it with the edits; over the pinned corpus the uncollected build
-//   collects nothing and the head build collects something.
+// - Checks: preCommit, then failedCommit, are ancestors of the head;
+//   the head arm's src digest equals this clean worktree's, the
+//   uncollected arm's equals it with the edits; over the pinned corpus
+//   the uncollected build collects nothing and the head build collects
+//   something; and before any sample, each scale source compiled once
+//   per arm (the injected `probe`) gives the same Go text in all four.
 // - The sources are the tests' own (test/fn-linear-sources.mjs,
 //   fn-scale-mixed.mjs, fn-scale-programs.mjs), written once so a
 //   worker imports nothing from test/.
@@ -26,8 +28,8 @@ import { compileTree } from './regression-clone.mjs';
 import { srcDigest } from './r0-t2-perf-builds.mjs';
 import { removalEdits, removeCollection, repoRoot }
   from './r0-t2-trace-removal.mjs';
-import { linearWidth, preCommit, scaleParameters, workloads }
-  from './r0-t2-attr-plan.mjs';
+import { armNames, failedCommit, fileNames, linearWidth, preCommit,
+  scaleSizes, workloadsOf } from './r0-t2-attr-plan.mjs';
 
 export const dependencyFiles = ['spago.yaml', 'spago.lock'];
 
@@ -52,6 +54,7 @@ export const outside = scratch => {
 const unchanged = () => undefined;
 export const recipesOf = head => ({
   pre: { commit: preCommit, edit: unchanged, edits: [] },
+  failed: { commit: failedCommit, edit: unchanged, edits: [] },
   head: { commit: head, edit: unchanged, edits: [] },
   uncollected: { commit: head, edit: removeCollection, edits: removalEdits }
 });
@@ -88,10 +91,19 @@ const traceCounts = async output => {
   return [...Object.values(run.counts), ...Object.values(run.collected)];
 };
 
-// All three builds, checked; the caller removes `roots` after the run.
-export const prepareArms = async (scratch, head) => {
-  git(['merge-base', '--is-ancestor', preCommit, head]);
-  git(['diff', '--quiet', preCommit, head, '--', ...dependencyFiles]);
+// The scale digests must agree across arms, workload by workload.
+export const digestProblems = digests => Object.keys(digests[armNames[0]])
+  .filter(name => new Set(armNames.map(arm => digests[arm][name])).size > 1)
+  .map(name => `${name}: Go output differs across arms`);
+
+// All four builds, checked; the caller removes `roots` after the run.
+// `probe(output)` compiles the scale sources once in that build and
+// returns their digests by workload name.
+export const prepareArms = async (scratch, head, probe) => {
+  git(['merge-base', '--is-ancestor', preCommit, failedCommit]);
+  git(['merge-base', '--is-ancestor', failedCommit, head]);
+  for (const commit of [failedCommit, head])
+    git(['diff', '--quiet', preCommit, commit, '--', ...dependencyFiles]);
   const roots = [];
   try {
     const builds = {};
@@ -111,27 +123,31 @@ export const prepareArms = async (scratch, head) => {
       `the uncollected arm still collects: ${traces.uncollected}`);
     assert.ok(traces.head.some(count => count > 0),
       'the head arm collects nothing');
-    return { builds, roots, traces };
+    const digests = Object.fromEntries(armNames.map(arm =>
+      [arm, probe(builds[arm].output)]));
+    const problems = digestProblems(digests);
+    assert.deepEqual(problems, [], problems.join('; '));
+    return { builds, roots, traces, digests };
   } catch (failure) {
     roots.forEach(root => rmSync(root, { recursive: true, force: true }));
     throw failure;
   }
 };
 
-// The workloads' sources and expected outcomes, from the tests' modules.
+// The workloads' sources and expected outcomes, from the tests' modules,
+// grouped by file in the tests' order.
 export const inputsOf = async () => {
   const linear = await import('../test/fn-linear-sources.mjs');
   const mixed = await import('../test/fn-scale-mixed.mjs');
-  const { generic } = await import('../test/fn-scale-programs.mjs');
-  const scale = { mixed: mixed.source,
-    generic: generic(scaleParameters).source };
-  return { linearWidth, scaleParameters,
-    workloads: Object.fromEntries(workloads.map(workload => [workload.name,
-      workload.kind === 'linear'
-        ? { kind: 'linear', source: linear.forms[workload.key](linearWidth),
-          expected: linear.expectedOutcome(workload.key) }
-        : { kind: 'scale', source: scale[workload.key],
-          expected: 'ok' }])) };
+  const programs = await import('../test/fn-scale-programs.mjs');
+  const scale = { mixed: mixed.source, ...Object.fromEntries(Object.entries(
+    scaleSizes).map(([key, size]) => [key, programs[key](size).source])) };
+  const entryOf = workload => workload.file === 'linear'
+    ? { name: workload.name, source: linear.forms[workload.key](linearWidth),
+      expected: linear.expectedOutcome(workload.key) }
+    : { name: workload.name, source: scale[workload.key], expected: 'ok' };
+  return { linearWidth, scaleSizes, files: Object.fromEntries(fileNames
+    .map(file => [file, workloadsOf(file).map(entryOf)])) };
 };
 
 export const writeInputs = async scratch => {
