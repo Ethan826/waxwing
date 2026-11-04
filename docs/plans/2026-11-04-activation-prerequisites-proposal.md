@@ -77,7 +77,11 @@ Decide/Reason.purs replaces every `EffectsUnchecked` entry with one
 entry at the first one's position. That entry's kinds are the
 concatenation in first-occurrence order with duplicates removed. Every
 other entry keeps its place, and `nubEq` then runs as now. `merged` is
-applied in `withDeclines` (:97-98) and in `unlimited` (:117-118).
+applied in `withDeclines` (:97-98) and in `unlimited` (:117-118). It
+matches every `Unsupport` constructor by name, with no wildcard arm, so
+a new constructor fails to compile until it is placed (the style of
+Effects/Record.purs:104). An `EffectsUnchecked []` contributes no kind
+but still counts as an entry to merge.
 
 Source: set union over kinds (the join of the powerset semilattice,
 which is idempotent, commutative and associative), kept in first
@@ -101,10 +105,14 @@ file would pass 250 lines), each shown failing before the change:
   [k1], Outside o]` plus a decline `[k2]` keeps `RecordDefective`
   first and `Outside` after the merged entry.
 - "unlimited path": with no blocks, two strategies declining `[k1]` and
-  `[k2]` → one entry `[k1, k2]`.
+  `[k2]` → one entry `[k1, k2]`. Only injected strategies reach this
+  path: a real candidate-level `EffectsUnchecked` implies a recorded
+  `Unsupported` obligation, so `unchecked` blocks and `withDeclines`
+  runs instead. The test guards the path; it does not show it occurs.
 - Property (seeded, bounded, with the grammar fixed before running: up
   to 6 entries drawn from every `Unsupport` constructor, with kinds from
-  3 values): at most one `EffectsUnchecked`; its kinds are distinct and
+  3 values and `EffectsUnchecked []` included): at most one
+  `EffectsUnchecked`; its kinds are distinct and
   equal the union of the input's; every other distinct entry appears
   once and in input order; `merged` is idempotent.
 
@@ -128,6 +136,15 @@ RT8 and shadow dumps must show no moved row (r0-results-diff, as A2
 Task 12 did), **to be checked by a run**. The honest pin is untouched
 because the honest report runs `validate` directly and reads no Decide
 reason.
+
+Effect on the criterion 5 comparison. That comparison has now run
+(.build/evidence/2026-11-04-comparison/summary.md in the r0-t2-d1
+worktree, git-ignored): 16 movements, all on t2-honest.json's gap
+lists, fx032#g's a reason-only window movement. Under minting, this
+fix changes a reason only for a problem recording two or more distinct
+unsupported kinds. How many corpus problems do is not known: it is
+**to be counted by a run** (a scan of the recorded problems), and the
+comparison should be rerun or its reason rows re-read after this lands.
 
 ### Surfaces and decisions
 
@@ -189,10 +206,20 @@ count). It is the same primitive check 4 already applies to companions
 
 Identity, not value: two owners with one provenance are rejected even
 when their values differ. A copy whose value differs usually fails
-today too, because its companions are missing. Rejecting by identity
-covers both cases and matches the provenance rule Effect.purs:145-148
-states (one obligation per declaration, path, rule and role). See open
-question 2.
+today too, because its companions are missing, but not always (case (b)
+below). See open question 2.
+
+Owners only, per R034 (10). The provenance rule Effect.purs:145-148
+states covers every obligation kind, and this change does not enforce
+it: a duplicated `Equal` (at `BesideAtom` or `AtSite`) or a duplicated
+`Consume` at `AtCall` or `AtPerform` passes today and still passes
+after (the reviewer probed both). The stronger rule, "no two
+obligations share a provenance" in record validation, is put to the
+author as a named alternative (open question 1).
+
+Coarsening, recorded: "owner repeated" is folded into check 4's index
+and provenance, so the report does not say whether a companion or the
+owner was miscounted. The Record.purs header and spec §4.1 say so.
 
 The header comments of RecordCompanions.purs (:20-23) and Record.purs
 (:27-30) gain the clause. The A2 specification §4.1 check 4 bullet
@@ -201,22 +228,29 @@ needs the same clause; that is the controller's record.
 ### Tests
 
 test/r0-a2-companions.test.mjs, plus a cases module beside
-test/regression-r0-a2-companions.mjs (174 lines) if needed, each shown
-failing before the change where marked:
+test/regression-r0-a2-companions.mjs (174 lines) if needed. Each case
+marked RED is shown failing before the change. The distinguishing
+examples name what today, this proposal, a value-based rule and the
+stronger every-obligation rule do:
 
-- "an Install recorded twice" (RED today: `Nothing`) → check 4 at its
-  provenance. The same for "a HandlerLit recorded twice" and "a Defer
-  recorded twice" (RED today).
-- "owner and companions all twice": check 4 today and after, by the
-  companion count. This is the nearest weaker case and it must stay a
-  defect.
-- "two Installs at different `with` paths, each with its companions":
-  no defect. This guards against a rule that rejects two owners of one
-  kind.
-- "a HandlerLit at a literal's path and an Install at its `with` path":
-  no defect (distinct roles and paths).
-- "a second Install at one identity with a different handler": check 4
-  (identity, not value).
+| Case | Today | Proposal | Value rule | Every-obligation rule |
+|---|---|---|---|---|
+| (a) an `MHandler` Install ×2, companions once | accepts (RED) | check 4 | check 4 | rejects |
+| (b) an `MHandler` Install, plus a non-handler Install at the same identity with its `UnframedWith` companion | accepts (RED) | check 4 | accepts | rejects |
+| (c) `Equal` ×2, or `Consume` at `AtCall` ×2 | accepts | accepts | accepts | rejects |
+| (d) a `HandlerLit` with zero clause rows ×2 (no companions at all) | accepts (RED) | check 4 | check 4 | rejects |
+| (e) a `HandlerLit` ×2 and a `Defer` ×2, companions once | accepts (RED) | check 4 | check 4 | rejects |
+| (f) owner and companions all twice | check 4 (companion count) | check 4 | check 4 | rejects |
+| (g) two Installs at different `with` paths, each with companions | accepts | accepts | accepts | accepts |
+| (h) a HandlerLit at a literal's path and an Install at its `with` path | accepts | accepts | accepts | accepts |
+
+(b) separates identity from value: the second Install is non-handler,
+so its only companion is `UnframedWith` (RecordCompanions.purs:144),
+which is present, and today's check 4 passes it. Without that
+companion it would already fail check 4 today, so the fixture must
+include it. (c) is kept as a test that the proposal accepts it, so a
+later widening is a visible change. (d) shows the count does not rest
+on companions. (f) is the nearest weaker case and must stay a defect.
 - The serial corpus test (test/r0-a2-record-corpus.serial.test.mjs)
   keeps "the corpus records no defect" (**to be checked by a run**).
 
@@ -251,6 +285,10 @@ backstop. Any such problem on the corpus is a stop.
 
 ## R036 (3): a conversion failure collapsed into `Unread`
 
+Correction (adversarial review): the first version said every
+remaining `UnreadImage` cause means "no value reaches v". That was
+false and is withdrawn; the causes are stated accurately below.
+
 ### Defect
 
 - src/Features/Check/Strategy/ReadBack/EffectRows.purs:69-73: `readOne`
@@ -277,12 +315,28 @@ must not pass as one of the two ruled `UnreadImage` declarations.
 EffectRows.readOne maps `UnmarkedLabel e` to `RowUnconverted variable
 e`. Images makes `live` return `Either ReadFault PTy`: a `liveAt`
 failure stays `UnreadImage v`, and a conversion failure is
-`ImageUnconverted v e`. The other `UnreadImage` causes stay one
-constructor, and this is recorded in Fault.purs's comment as a coarsening
-with its reason: no `vars` entry, an auxiliary that needs rows, no live
-value at the position, or a record-row variable whose image is no
-record. Each of them means "no value reaches v", not "a value that
-cannot be converted" (open question 5).
+`ImageUnconverted v e`. Both arms of `UnmarkedLabel` are covered: a
+user label that is `Unmarked` (Convert.purs:84) and one whose mark the
+injected terms do not read (:85).
+
+The other `UnreadImage` causes stay one constructor, as a recorded
+coarsening in Fault.purs's comment. They are of two kinds:
+
+- No value reaches v: no `vars` entry (Images.purs:102), or no live
+  value at v's position (`liveAt` failing, :94, raised at :122).
+- A value reaches v but the package cannot hold it: an auxiliary
+  needing rows, with no row-free image (Images.purs:121, `rowFree`;
+  this is the statsEvidence cause); a record-row variable whose image
+  is no record (:109); and, in ReadBack/Bound.purs, a θ-bound hole as a
+  row tail (:80), a merged record with repeated labels (:107), a bound
+  tail that is not a record (:119) and a bound value with no row-free
+  image (:145).
+
+Fault.purs:16-17 already says the second kind ("a hole θ binds to a
+value the package cannot hold"); that clause stays. Splitting Bound's
+four causes into their own constructors is an option (open question
+5); it would leave the statsEvidence faults alone only if their
+`rowFree` cause kept the name `UnreadImage`.
 
 No algorithm. One fault per cause, as R036 (3) asks.
 
@@ -307,6 +361,14 @@ spread into `t2Rows`):
 - `r0-t2-r036-3-row-coarse`: readOne maps the conversion failure back to
   `Unread`.
 - `r0-t2-r036-3-image-coarse`: Images hushes the conversion again.
+
+Existing rows affected: `r0-t2-package-mark-clash`
+(scripts/regression-r0-t2-package.mjs:23-26) expects the probe message
+`["Unread"]` once the clash guard is inverted. If the unguarded clash
+now reaches a conversion failure, the message becomes
+`["RowUnconverted"]`. The implementer runs the probe, updates the
+regex to the observed fault and records why; detection is kept because
+the row still fails with the guard restored.
 
 ### Pins
 
@@ -350,68 +412,131 @@ acceptance changes. After activation the finer fault is what
 
 ### Change
 
-1. Rows by type, not by a wrapped arrow. `finish` and `mapTraced` take
-   an injected `{ ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open
-   }`. `onRow` is deleted, and with it the fallback arm. Function.purs
-   builds the row resolver with `Subst.resolveRow` (Subst.purs:203)
-   between two row renames. A row rename is `substituteRow { types:
-   TVar <<< f, rows: openRow <<< f }` (Domain/Type/Core.purs:176; the
-   same substitution `rename` uses, :112-114). Nothing can fall back,
-   because a row function returns a row.
+1. Rows by type, not by a wrapped arrow. `finish` takes an injected
+   `{ ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open }` for the
+   resolve pass. `onRow` is deleted, and with it the fallback arm.
+   Function.purs builds the row resolver with `Subst.resolveRow`
+   (Subst.purs:203) between two row renames, each `substituteRow
+   { types: TVar <<< f, rows: openRow <<< f }` (Domain/Type/Core.purs:176;
+   the same substitution `rename` uses, :112-114). It does not reuse
+   Scheme.flexibleRow (Scheme.purs:141-144), which has its own
+   arrow-wrapping fallback. Nothing can fall back, because a row
+   function returns a row.
 2. An unnumbered meta is a fault. A new module Domain/Type/Traverse.purs
    (Core.purs is at 240 lines) holds `traverseTy ∷ ∀ f v w. Applicative
-   f ⇒ Ord w ⇒ (v → f w) → Ty v → f (Ty w)` and `traverseRow`. Record
-   tails are rebuilt with `spliceRecord` (Core.purs:194) so their order
-   matches `rename`'s, and spines are walked by a loop through `tailRecM`
-   (Either is MonadRec). `finish` renumbers with `traverseTy` in
-   `Either TraceFault`: a hole whose meta is not in `numbers` is `Left
-   (Unnumbered meta)`. `finish` returns `Either TraceFault Traced`, and
-   `Rechecked.trace` takes that type.
+   f ⇒ Ord w ⇒ (v → f w) → Ty v → f (Ty w)` and `traverseRow`.
+   - Spines: an `Applicative` cannot drive `tailRecM`, which needs
+     `MonadRec`. So the spine is taken by the existing pure loop
+     (`stagesThrough identity`, Core.purs:123-131), its stages array is
+     traversed (`traverse`, a loop over the array), and the arrow is
+     rebuilt with `foldStages` (Core.purs:135-140), as `substitute` does
+     (:164-169). No recursion per arrow. (The alternative, `MonadRec f`
+     with `tailRecM`, Freeman's "Stack safety for free", 2015, is not
+     needed for `Either` and would narrow the type.)
+   - Record tails are rebuilt with `spliceRecord` (Core.purs:194) so
+     their order matches `rename`'s.
+   - `finish` renumbers with `traverseTy` in `Either TraceFault`: a
+     hole whose meta is not in `numbers` is `Left (Unnumbered meta)`.
+     The rigid arm becomes explicit (`Rigid r → Right (Rigid r)`), with
+     no `rigid → rigid` catch-all.
+   - `mapTraced` becomes a traversal, `traverseTraced ∷ Applicative f ⇒
+     { ty ∷ Ty Open → f (Ty Open), row ∷ TyRow Open → f (TyRow Open) }
+     → Traced → f Traced`, through Map's and Array's `Traversable`
+     instances. The resolve pass uses it with plain functions wrapped in
+     `Right` (or a separate pure map of the same shape; the implementer
+     chooses one and names it).
+   - `finish` returns `Either TraceFault Traced`, and `Rechecked.trace`
+     takes that type.
+   - `TraceFault` lives in Features/Check/Trace/Types.purs. Trace.purs
+     re-exports that module whole (`module Features.Check.Trace.Types`,
+     Trace.purs:16), so scripts/structure-trace.mjs's `traceExports`
+     (:49-51) does not change; its reviewer confirms that.
 3. Routing. `readEffects` and `readEffectsWith` (ReadBack/Package.purs)
    take `Either TraceFault Traced` and turn `Left` into a new
-   `ReadFault`, `TraceUnfinished TraceFault`, ahead of every other
-   fault. Online.purs:139-141 passes `found.trace` as before, so its
-   source does not change.
+   `ReadFault`, `TraceUnfinished TraceFault`. It is ordered **after**
+   `Declined` and before `MarkClash`: `Declined` is a fact of the
+   problem alone (tranche 2 design §C.6; Package.purs:17-23), and on the
+   11 `Declined` corpus declarations a trace fault first would change
+   the gate's fault name. Online.purs:139-141 passes `found.trace` as
+   before, so its source does not change.
 
 Sources: the applicative traversal (McBride and Paterson, "Applicative
-programming with effects", JFP 18(1), 2008), used here as a renaming
-that can fail. Because `traverseTy` is polymorphic in `v` and `w`, it
-cannot return a `Ty w` without passing every variable through the
-function (parametricity: Wadler, "Theorems for free!", FPCA 1989). So
-no variable keeps its raw value without being seen. This is the
-argument for choosing it over a check against `foldHoles`. No invented
-machinery. An invented alternative is described under open question 4.
+programming with effects", JFP 18(1), 2008), used as a renaming that can
+fail. What its type gives, and no more: because `traverseTy` is
+polymorphic in `v` and `w`, a `Ty w` in the output cannot hold a
+variable of `Ty v` that did not pass through the function, so no unseen
+raw meta can appear in the output (parametricity: Wadler, "Theorems for
+free!", FPCA 1989). Parametricity does not show that every variable is
+visited; an implementation could drop a subterm. That every variable is
+visited is checked by the rename-agreement test below. Related
+evidence, from the reviewer's bounded oracle (walks-oracle.mjs, in the
+review's scratchpad, not in the repository): over 3 seeds × 20,000
+samples of the fixed grammar, `foldHoles` and `rename` visited the same
+metas with 0 disagreements, and a planted variant gave 3,399. That is
+evidence that today's fallback is not reached on that grammar, not a
+proof. No invented machinery. The alternatives are in open question 4.
 
 ### Tests
 
 - test/r0-t2-trace.test.mjs: "an unnumbered meta is a fault" (a planted
   numbering missing one meta: `Left (Unnumbered m)`; RED today: the raw
   meta is kept); "a row is resolved as a row" (a trace row whose tail
-  is bound in the final substitution comes back resolved).
-- A new test/r0-type-traverse.test.mjs: "traverseTy agrees with
-  rename" (for a total map, `traverseTy (Right <<< f) t == Right (rename
-  f t)`, over every traced type in the trace test's fixtures and over a
-  seeded generator of `Ty Open` with a fixed grammar: arrows to depth
-  6, records with up to 3 tails, handlers, data with row arguments); "a
-  1,000-deep spine does not overflow" (the shape used in
-  test/poly-depth-timing.serial.test.mjs).
-- test/r0-t2-package.test.mjs: "an unfinished trace is TraceUnfinished,
-  first" (a `Left` trace plus an `Unsupported` obligation still gives
-  `TraceUnfinished`).
-- About 13 test helpers read `found.value0.trace` (for example
-  test/r0-t2-trace-inert.mjs:94, test/r0-t2-package-checks.mjs). They
-  move to one shared helper that unwraps `Right` and fails on `Left`.
+  is bound in the final substitution comes back resolved); "a rigid is
+  kept" (explicit arm).
+- A new test/r0-type-traverse.test.mjs:
+  - "traverseTy agrees with rename": for a total map, `traverseTy
+    (Right <<< f) t == Right (rename f t)`, over every traced type in
+    the trace test's fixtures and over a seeded generator of `Ty Open`.
+    The grammar is fixed before running: arrows to depth 6, records with
+    up to 3 tails, handlers with label arguments and with and without a
+    clause row, data with type and row arguments, rows with label
+    arguments and open or closed tails. This is the check that every
+    variable is visited.
+  - "a planted dropping traversal disagrees": a test copy that skips
+    label arguments must fail the agreement test (the test's own
+    must-fail case).
+  - "a 1,000-deep spine does not overflow" (the shape used in
+    test/poly-depth-timing.serial.test.mjs).
+- test/r0-t2-package.test.mjs: "Declined before TraceUnfinished" (a
+  `Left` trace plus an `Unsupported` obligation gives `Declined`) and
+  "TraceUnfinished before MarkClash".
+- Readers of the trace: 22 test files and 5 scripts mention `.trace`,
+  and `readEffects` or `readEffectsWith` has 17 call sites outside
+  Package.purs (counts from the review's scan). The test readers move
+  to one shared helper that unwraps `Right` and fails on `Left`; the
+  call sites pass the `Either` or unwrap through it.
 - scripts/r0-t2-trace-removal.mjs:57-62 matches the `finish` call
   text exactly and replaces it with an empty `Traced`. Its replacement
   becomes `Right { … }`. It is a reviewed artifact, and its
   edit-must-match check fails the build if it is missed.
 
-Restored-defect rows in scripts/regression-r0-t2-prerequisites.mjs:
+Existing restored-defect rows whose needles T4 removes, and how each
+keeps its detection:
 
-- `r0-t2-r036-2-meta-raw`: `finish`'s unnumbered arm keeps the raw
-  meta (`pure (Hole meta)`). The probe expects `Unnumbered`.
+- `r0-t2-trace-renumber` (scripts/regression-r0-t2-trace.mjs:10-15) and
+  `r0-t2-package-shared` (scripts/regression-r0-t2-package.mjs:48-53)
+  both edit Trace.purs:106's `maybe meta identity` line, which T4
+  replaces. Each gets a new needle on the new renumber arm, restoring
+  the same defect it restored before (a meta shared with the body no
+  longer reads the body's hole), with its probe message unchanged
+  (`["Apart"]` for package-shared).
+- `r0-t2-rows-entry-finish` (scripts/regression-r0-t2-rows.mjs:58-64)
+  edits Trace.purs:103's `mapTraced resolve raw { row = row }`. Its
+  needle moves to the new resolve call, restoring "finish drops the
+  declaration's row".
+- New rows must not share a needle with these. The new meta row
+  therefore restores a different defect from `r0-t2-trace-renumber`'s.
+
+New restored-defect rows in scripts/regression-r0-t2-prerequisites.mjs:
+
+- `r0-t2-r036-2-meta-raw`: the `Nothing` arm of the renumber lookup
+  returns `Right (Hole meta)` instead of `Left (Unnumbered meta)`. The
+  probe expects `Unnumbered` on the planted numbering. Its needle is the
+  `Left (Unnumbered …)` line, which no existing row edits.
 - `r0-t2-r036-2-row-unresolved`: Function.purs passes `identity` as the
   row resolver. The probe expects the resolved row test to fail.
+- `r0-t2-r036-2-trace-first`: `TraceUnfinished` moved ahead of
+  `Declined`. The probe expects the ordering test to fail.
 
 ### Pins
 
@@ -463,48 +588,78 @@ where a throw happens.
 ### Change (recommended: option A)
 
 A. Record and check the totality argument for everything `packaged`
-reaches: ReadBack.Package and the modules it imports (Bound, Convert,
-EffectMatch, EffectPlaces, EffectRows, EffectSites, Fault, Images,
-Instances, Least, MarkLabels, MarkMatch, Marks, Position, Walk), and
-Trace.Types. In pure PureScript a throw can come only from partiality,
-FFI or the stack; a loop only from recursion that is not well-founded.
+reaches. The first version listed only ReadBack's own modules; that
+inventory was incomplete. The reviewer's source scan of ReadBack.Package's
+import closure finds 71 src modules. Besides ReadBack's, it includes
+Strategy.ReadBack (with Entailed, Entailed.Mgu, Entailed.Triangular,
+Entailed.Merge, Mentions and Candidate), ReadBack.Type,
+Effects.Package (`eraseTy`), Effects.Forced, MarkStore,
+Features.Check.Search, Spine, Holes, Trace, Walk and Domain.* modules.
+15 of them use `tailRec` with no recorded termination argument, among
+them MarkStore, Search, Spine, Effects.Package and Domain.Type.Core and
+Compare. So the closure and the loop list are not written into this
+proposal by hand: the scan test derives both, and each listed loop gets
+its argument.
 
-- Partiality and FFI: a source scan test,
+In pure PureScript running on Node, an exception can come from
+partiality, from FFI (src's or a library's), from coercion that breaks
+an invariant, or from the runtime itself (stack overflow as a
+`RangeError`, memory exhaustion). A loop that does not end can come
+only from recursion that is not well-founded.
+
+- Closure, partiality and FFI: a scan test,
   test/structure-readback-total.test.mjs. It reads the compiled module
-  graph, as scripts/forgery.mjs does, takes the closure of
-  ReadBack.Package, and fails on an import of `Partial.Unsafe`,
+  graph, as scripts/forgery.mjs does, and takes the closure of
+  ReadBack.Package. Over the src modules in it (`inSrc`, as
+  forgery.mjs:40 does) it fails on an import of `Partial.Unsafe`,
   `Partial`, `Effect.Unsafe`, `Effect.Exception.Unsafe` or
-  `Data.Array.Partial`, on a `Partial ⇒` constraint, or on a module
-  with FFI. Today grep finds none in the read-back or the trace, and the
-  only FFI module is Runtime.Node (scripts/foreign-surface.json). Must
-  fail: a planted fixture graph with each forbidden import.
-- Termination, one argument per loop, in each module's header and in
-  Online.purs's comment at :22-26:
+  `Data.Array.Partial`, on a `Partial ⇒` constraint, on any module in
+  forgery.mjs's `forgingModules` (`Unsafe.Coerce`, `Record.Unsafe` and
+  the invariant-breaking Internal modules, :28-34; that scan already
+  forbids them in src, so this is a cross-check), and on a src module
+  with FFI. Today grep finds no partiality in the read-back or the trace,
+  and the only src FFI module is Runtime.Node
+  (scripts/foreign-surface.json), which is outside the closure. Library
+  FFI (for example Data.Map's or Array's foreign code) is outside the
+  scan; it is trusted as the package set is. Must fail: a planted
+  fixture graph with each forbidden import, and one with a planted src
+  FFI module.
+- Loops: the same test lists every `tailRec`, `tailRecM` and
+  `Rec.tailRec` use in the closure, by module and declaration, and
+  compares the list with a reviewed table in the test, each row naming
+  its termination argument. A new loop in the closure fails the test
+  until its argument is added. The arguments already known:
   - Least.purs:152-155 `find`: parent links form a forest, because
     `union` (:140-150) links one root to a different root only
     (union-find, Galler and Fischer 1964). The chain to a root is finite.
-    Check: a property test over the marks oracle's families
-    (research/t2-read-back-design/marks-oracle.mjs) that every `find`
-    ends within the number of nodes.
   - Least.purs:158-166 `reaching`: Kleene iteration of a monotone map
     (`insertWith Set.union` only grows) on a finite lattice (sets of the
     finitely many constants per root). It reaches a fixpoint within
     roots × constants + 1 passes (Kleene; Davey and Priestley,
-    "Introduction to Lattices and Order", ch. 8). Check: the same
-    property with a pass counter in the test's copy of the loop, or the
-    observed passes reported on the oracle families.
-  - The `tailRec` spine loops (Convert.purs:105-111, Bound.purs:132,
-    EffectMatch.purs:96, EffectPlaces.purs:136, Instances.purs:55): each
-    step goes from a `TFun` (or `MArrow`) to its result, a strict
-    subterm of a finite term.
-  - The rest is structural recursion over finite `Ty`, rows, arrays and
-    maps.
+    "Introduction to Lattices and Order", ch. 8).
+  - The spine loops (Convert.purs:105-111, Bound.purs:132,
+    EffectMatch.purs:96, EffectPlaces.purs:136, Instances.purs:55, and
+    the Domain.Type.Core ones): each step goes from a `TFun` (or
+    `MArrow`) to its result, a strict subterm of a finite term.
+  - The rest of the 15 (MarkStore, Search, Spine, Effects.Package,
+    Compare and others the scan lists) get their arguments in T5; any
+    that has none is a finding for the author.
+  - Structural recursion over finite `Ty`, rows, arrays and maps needs
+    no table row.
+- Property checks for the two invariant-based loops, with fuel so a
+  failure is a test failure, not a hang: the test uses copies of `find`
+  and `reaching` with a step budget (nodes for `find`, roots ×
+  constants + 1 passes for `reaching`) over the marks oracle's families
+  (research/t2-read-back-design/marks-oracle.mjs). Running out of fuel
+  fails the test. The production loops stay unchanged.
 - Stack depth: the non-tail recursion in Convert, EffectMatch and
   Images goes as deep as a type's nesting outside arrow spines. A
   read-back fixture with a 1,000-deep data nesting, and the 1,000-deep
   spine of test/poly-depth-timing.serial.test.mjs, run through
   `readEffects`. **To be checked by a run**; if either overflows, that
   is a finding for the author, not a reason to raise a limit.
+- Not covered: memory exhaustion and a library's own throw. These are
+  stated in Online.purs's comment as outside the argument.
 
 B. Option, not recommended as the fix: carry `effects` as a thunk,
 `Lazy (Either ReadFault EffectPackage)` (purescript-lazy, call by need;
@@ -521,7 +676,10 @@ gives nothing that A does not.
 
 Restored-defect row in scripts/regression-r0-t2-prerequisites.mjs:
 `r0-t2-r036-1-scan-blind`, the scan's forbidden list without
-`Partial.Unsafe`. The probe expects the planted import to pass.
+`Partial.Unsafe`. The probe expects the planted import to pass. And
+`r0-t2-r036-1-loop-unlisted`: the loop list's comparison ignores
+modules outside ReadBack. The probe expects a planted loop in
+MarkStore's position to pass.
 
 ### Pins
 
@@ -554,6 +712,30 @@ commits. After integration the controller updates the gate status file
 BACKLOG rows, the A2 spec §4.1 check 4 bullet, the tranche 2 design's
 fault list (§C.6) and the dossier.
 
+## Related: harness gaps the minting comparison found
+
+Not one of the five items, but found by the criterion 5 comparison
+(.build/evidence/2026-11-04-comparison/summary.md in r0-t2-d1,
+git-ignored) and relevant to activation:
+
+- RT8's accounting labels every `CheckFailed` attempt other than
+  `RequirementOpen` and a heuristic refusal as DEFECT. Under minting, a
+  validator decline (`RecordDefect`, `NotCertifiable …`) is a
+  `CheckFailed` that Decide reads as a decline, so RT8 reports declines
+  as DEFECT.
+- The window classifier throws on the first RT8 DEFECT, which aborts
+  test/r0-shadow.serial at load instead of reporting.
+
+Neither is changed by this proposal, and neither touches the validator.
+Both would have to be fixed for the minting switch's pins to be read at
+all. Whether they are activation prerequisites, and whether they join
+this branch (as T6) or the Task 16 work, is open question 9. If they
+join, T6 would be: RT8 reads decline readings as declines (each
+`CheckRefusal` constructor named, no wildcard), the window classifier
+reports an RT8 DEFECT as a row instead of throwing, each with a test and
+a restored-defect row. No pin moves on today's committed path, where no
+validator refusal reaches Decide (predicted; to be checked by a run).
+
 ## Review plan
 
 - Per task: one fresh-context review (Opus) of spec compliance and code
@@ -563,25 +745,30 @@ fault list (§C.6) and the dossier.
   cannot see). T2's review also confirms that the freeze exception is
   used only for the owner count. T4's review confirms that Function.purs
   changes only the `trace` field and the injected resolver.
-- The reviewer of T1 and T2 tries to break the claim with the
-  distinguishing cases listed (adversarial review of a changed checker
-  rule). Each restored-defect row is shown failing in an isolated copy.
+- Distinguishing-case review for T1, T2 and T4: the reviewer tries to
+  break the claim with the cases listed (T2's table (a)-(h); T4's
+  rename-agreement grammar, the planted dropping traversal and the
+  fault order), as an adversarial review of a changed checker rule.
+  Each restored-defect row, old rows with moved needles included, is
+  shown failing in an isolated copy.
 - Whole branch: one Opus review after integration, of the semantics (no
   acceptance change, fail-closed routing, freeze use) and of the gates
-  (row needles unique, tags correct, probes detect).
+  (row needles unique across old and new rows, tags correct, probes
+  detect).
 - Fixes from either review go through one bounded fix round. A fix that
   touches T1 or T2 gets token review again.
 
 ## Verification plan
 
-After the perf run in progress and the queued criterion 2, 5 and 6 runs
+After the perf run in progress and the queued criterion 2 and 6 runs
 have finished, with nothing else running:
 
 - Per task, targeted only: build, purs-tidy, the task's tests, and its
   regression rows.
 - Once on the integrated, reviewed tree: the census, window, RT8 and
   shadow dumps compared with 354ce6e's by r0-results-diff (expected
-  exit 0, no moved row).
+  exit 0, no moved row), and the count of problems recording two or
+  more distinct unsupported kinds (R034 (2)).
 - One routine `npm run verify`, alone under the mkdir lock. It covers
   the serial pins (problem, first diagnostics, census, effect pin, trace
   inertness, honest, record corpus) and the regression proofs. Any pin
@@ -592,89 +779,122 @@ have finished, with nothing else running:
 
 ## Cost estimate
 
-An estimate, not a cap, in tokens (Opus implementers and reviewers):
+An estimate, not a cap, in tokens (Opus implementers and reviewers),
+revised up after the review's count of trace readers and the closure's
+size:
 
 | Part | Tokens | Dispatches |
 |---|---|---|
 | T1 implement + review | 0.15-0.25M | 2 |
-| T2 implement + review | 0.2-0.3M | 2 |
+| T2 implement + review | 0.2-0.35M | 2 |
 | T3 implement + review | 0.15-0.25M | 2 |
-| T4 implement + review | 0.35-0.5M | 2 |
-| T5 implement + review | 0.15-0.25M | 2 |
-| Fix rounds | 0.1-0.25M | 1-2 |
+| T4 implement + review | 0.5-0.8M | 2 |
+| T5 implement + review | 0.2-0.35M | 2 |
+| Fix rounds | 0.15-0.3M | 1-2 |
 | Whole-branch review | 0.2-0.3M | 1 |
 | Controller (integration, dumps, verify, records) | 0.25-0.4M | 0 |
-| **Total** | **1.55-2.5M** | **12-13** |
+| **Total** | **1.8-3.0M** | **12-13** |
 
-T4 is the largest, because of the new traversal and about 13 test
-helpers. If option B of R036 (1) is chosen, add 0.1-0.15M.
+T4 is the largest: the new traversal, 22 test files and 5 scripts that
+read the trace, 17 `readEffects` call sites, and three old rows to
+re-needle. T5 grows with the 71-module closure and its loop table. Add
+0.1-0.15M for option B of R036 (1), and 0.2-0.35M with 2 dispatches if
+the harness fixes join as T6.
 
 ## Open questions for the author
 
-1. **A second exception to the validator freeze for R034 (10).**
-   Recommended: yes, narrow, in check 4 only (RecordCompanions), with
-   no new check index. It is the owner-side twin of the companion count
-   check 4 already makes. A new check 7 would touch Record.purs's check
-   list and spec §4.1's order for no gain.
+1. **A second exception to the validator freeze for R034 (10), and its
+   scope.** Recommended: yes, narrow, in check 4 only (RecordCompanions),
+   for owners only as R034 (10) states, with no new check index. It is
+   the owner-side twin of the companion count check 4 already makes.
+   Named alternative: the stronger rule that no two obligations of any
+   kind share a provenance (Effect.purs:145-148's rule, which generation
+   is tested for). It would also reject a duplicated `Equal` or
+   `Consume` (case (c)), which pass today and under this proposal. It is
+   a wider exception to the freeze and a new check, and it would need
+   its own corpus run.
 2. **A duplicated owner by identity or by value.** Recommended:
-   identity (provenance). It is stricter, it matches the uniqueness rule
-   generation is tested for, and a differing copy at one site is no more
-   valid than an identical one.
+   identity (provenance). Case (b) is the difference: today and under a
+   value rule it is accepted, under identity rejected. A differing copy
+   at one site is no more valid than an identical one.
 3. **R036 (1): totality argument (A) or thunk (B).** Recommended: A
    alone. After Task 16 the package is always forced, so only totality
    removes the risk. B can be added later as an R035 measure if the
    paired measurements call for it.
 4. **R036 (2): how to make an unnumbered meta a fault.** Recommended:
-   the traversal (published; parametricity ensures every variable is
-   visited). Alternative, flagged as invented: before renaming each
-   traced type, apply `substitute` with numbered metas and rigids sent
-   to `TUnit` or the closed row and other metas kept, then require
-   `ground` (Domain/Type/Parts.purs:67) to succeed. It is a composition
-   of existing functions with the same visitation as `rename`, about 10
-   lines and no new walk code, but it adds two walks per traced type on
-   the compile path.
+   the traversal (published; its type rules out an unseen raw meta in
+   the output, and the rename-agreement test checks that every variable
+   is visited). Two alternatives:
+   - Published, and prevents the case outright: one walk that assigns
+     numbers as it renames, in the State applicative (McBride and
+     Paterson's relabelling example, the same 2008 paper). `numbers`
+     and the renaming then come from one walk, so they cannot disagree.
+     Risk: the numbering order would follow that walk rather than
+     `foldHoles`'s, so extension hole numbers could change, which moves
+     t2-honest.json's packages and any pin that records hole numerals.
+     It would need its own ruling and re-pin.
+   - Invented: before renaming each traced type, apply `substitute`
+     with numbered metas and rigids sent to `TUnit` or the closed row
+     and other metas kept, then require `ground`
+     (Domain/Type/Parts.purs:67) to succeed. A composition of existing
+     functions with the same visitation as `rename`, about 10 lines, but
+     two more walks per traced type on the compile path.
 5. **R036 (3): how far to split.** Recommended: split only the
    conversion cause (rows and images), and record the remaining
-   `UnreadImage` causes as one coarsening with its reason. Splitting the
-   auxiliary cause would rename the two ruled statsEvidence faults and
-   move t2-honest.json and the gate's vocabulary.
+   `UnreadImage` causes as one coarsening of two kinds (no value reaches
+   v; a value reaches v that the package cannot hold). Option: split
+   Bound's four causes too, keeping `rowFree`'s as `UnreadImage` so the
+   two ruled statsEvidence faults and t2-honest.json do not move.
 6. **Gate criterion 4 does not count R036.** §18.159 makes R036's
    before-activation items blockers, but criterion 4 reads only R034
    (2) and (10) (test/r0-t2-activation-gate.mjs:22-23). Recommended:
    extend `landedItems` with `R036 (1)`, `(2)` and `(3)` and the tags
-   `r036-1`, `r036-2` and `r036-3`, with must-fail cases. This changes
-   the gate spec (a controller record) and its tests, as part of this
-   branch.
+   `r036-1`, `r036-2` and `r036-3`, with must-fail cases. That changes
+   the gate spec, its test and the status file's `landed` keys, so it
+   needs the author's approval before it is made.
 7. **Measurement order.** T4 changes code on the compile path that the
    perf run in progress measures. Recommended: keep today's `npm run
    perf` as the baseline as authorized, and take criterion 6's paired
    read-back and validator measurements after this branch lands, so
    that the budget is set against the tree that would be activated.
-8. **The same raw-meta fallback outside the trace (found while
-   reading, out of scope).** Features/Check/Holes.purs:48-51 (`holes`,
-   on the lowering boundary) keeps an unnumbered meta raw in the checked
-   body, which the read-back also reads. Scheme.purs:141-144
-   (`flexibleRow`) falls back to `openRow (Unify.Meta 0)`, and
-   Entry.purs:22-26 (`resolvedRow`) to the input row, in the live
-   checker. Recommended: file as a new BACKLOG item, decided separately.
-   Changing `holes` is a lowering-boundary change that can move compile
-   output.
+8. **Holes.purs's raw-meta fallback: a candidate activation blocker.**
+   Features/Check/Holes.purs:48-51 (`holes`, on the lowering boundary)
+   keeps an unnumbered meta raw in the checked body. The read-back reads
+   that body, and Package.purs:10-15 rests on one hole numbering shared
+   by the body and the trace. A raw body meta could collide with a hole
+   number exactly as R036 (2) describes for the trace, so R036 (2)'s fix
+   alone does not secure that numbering. Recommended: treat it as an
+   activation blocker, fixed the same way (the traversal, `Left` on an
+   unnumbered meta, routed as a check failure the compile path already
+   reports) in a separate task after T4, because it is a
+   lowering-boundary change that can move compile output and needs its
+   own review and pins. The arrow-wrapping fallbacks in the live checker
+   (Scheme.purs:141-144 `flexibleRow`, falling back to `openRow
+   (Unify.Meta 0)`; Entry.purs:22-26 `resolvedRow`) do not feed the
+   read-back's numbering; recommended as a new BACKLOG item.
+9. **The RT8 and window harness gaps.** Recommended: yes, activation
+   prerequisites, because without them the minting switch's own pins
+   cannot be read. Best placed with the Task 16 work, which owns those
+   pins, unless the author wants them in this branch as T6.
 
 ## What could not be established without a run
 
 - That no corpus reason, verdict or dump row moves for T1 and T2 (dump
-  comparison, verify's serial pins).
+  comparison, verify's serial pins), and how many problems record two
+  or more distinct unsupported kinds.
 - That no corpus problem has a repeated owner provenance under the
   validator's own check (record-corpus serial test). The JS uniqueness
   test is the evidence today.
 - That the statsEvidence faults stay `UnreadImage` and no corpus row
   read hits a conversion failure (honest serial test, images corpus
-  test).
+  test), and what `r0-t2-package-mark-clash`'s probe reports after T3.
 - That every corpus trace finishes `Right` after T4, which also tests
   whether `foldHoles` and `substitute` visit the same metas (trace
   inertness serial test).
 - Whether `traverseTy` agrees with `rename` on corpus types (T4's
   property test over the corpus), and its compile-time cost.
+- The closure's full loop list and whether each loop has an argument
+  (T5's scan).
 - Whether the read-back survives 1,000-deep nesting (T5's fixture).
 - How many existing planted test cases are conversion failures and
   would change fault name under T3.
