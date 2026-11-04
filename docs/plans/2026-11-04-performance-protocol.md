@@ -20,10 +20,8 @@ of the activation gate (docs/plans/2026-11-03-a2-activation-gate.md).
 - scripts/r0-t2-perf-run.mjs: the driver, run once.
 - scripts/r0-t2-perf-worker.mjs: one sample in a fresh node process.
 - scripts/r0-t2-perf-stats.mjs: schedule, statistics, file shape (pure).
-- scripts/r0-t2-perf-conditions.mjs: conditions per sample, injected
-  host.
-- test/r0-t2-perf.test.mjs: the pure parts, fixture-level. It has not
-  been run (a performance run was in progress when it was written).
+- scripts/r0-t2-perf-conditions.mjs: conditions per sample (injected).
+- test/r0-t2-perf.test.mjs: the pure parts, fixture-level.
 
 Command, after `npm run build` on a clean commit:
 
@@ -89,8 +87,14 @@ name is looked up once, at the worker's composition root.
 - One sample is one fresh node process running one arm once (module
   load and JIT warm-up included, the same for both arms).
 - Order: rounds outermost; in each round the four comparisons in the
-  table's order; in each comparison `without` then `with` (ABAB). The
-  pair is the two adjacent samples of one round.
+  table's order; in each comparison the two arms, counterbalanced
+  (the controller's ruling, 2026-11-04): in an even round `without`
+  runs first, in an odd round `with`. The pair is the two adjacent
+  samples of one round.
+- The split: round 0, the warm-up, runs `without` first. Of the 11
+  measured rounds (1 to 11), the six odd ones run `with` first and the
+  five even ones `without` first, in every comparison. The split is
+  6 to 5, not exactly half, because N is odd.
 - Warm-ups: round 0 (one pair per comparison) is discarded from the
   statistics and kept in the raw log and the file.
 - N = 11 measured pairs per comparison, rounds 1 to 11. In all, 12
@@ -180,9 +184,12 @@ and 12. These are estimates; the run records the real times.
 - Shared machine. Adjacent pairing cancels slow drift. A burst of load
   during one arm does not cancel, and it widens the spread. The
   conditions show when a burst happened; no sample is dropped for it.
-- Order. `without` always runs first (ABAB, as fixed). The file cache,
-  thermal state and the scheduler's history can favor one side. ABBA
-  would balance this; it was not chosen.
+- Order. Counterbalancing spreads the first-runner's advantage or
+  penalty (file cache, thermal state, scheduler history) over both
+  arms, but not evenly: `with` runs first in 6 of 11 measured pairs.
+  Carry-over from the previous comparison's last sample remains. Each
+  sample's side and round are kept, so an order effect can be examined
+  afterward; it is not corrected for.
 - Heterogeneous cores and frequency. On Apple silicon a process may
   run on efficiency or performance cores, and a laptop may throttle.
   Either can affect one arm of a pair more than the other. Neither is
@@ -238,8 +245,6 @@ writes a budget.
 
 ## 12. What remains unrun
 
-Nothing here has run: not the measurement, not the baseline build, not
-test/r0-t2-perf.test.mjs, not verify. The files were syntax-checked
-(`node --check`) and width-checked only. The unit test runs when the
-controller says the machine is free (`node --test
-test/r0-t2-perf.test.mjs`). It joins verify's parallel phase after that.
+The measurement, the baseline build and verify have not run.
+test/r0-t2-perf.test.mjs has run alone (`node --test`); it joins
+verify's parallel phase.

@@ -11,8 +11,8 @@
 export const warmups = 1;
 export const pairs = 11;
 
-// Each comparison names its two arms: `without` runs first in every
-// pair, then `with` (ABAB). The part says which gate part it feeds.
+// Each comparison names its two arms; which runs first alternates by
+// round (`sidesOf`). The part says which gate part it feeds.
 export const comparisons = [
   { name: 'traceCompile', part: 'readBack', without: 'uncollected compile',
     with: 'collecting compile' },
@@ -29,14 +29,21 @@ export const metrics = ['cpuMs', 'wallMs', 'maxRssMiB'];
 // The gate's metric for each statistic it reads.
 export const gateMetrics = { compileTime: 'cpuMs', peakMemory: 'maxRssMiB' };
 
+// Counterbalanced order (the controller's ruling, 2026-11-04): in an
+// even round `without` runs first, in an odd round `with`. Round 0 is
+// the warm-up, so of the eleven measured rounds (1 to 11) six run
+// `with` first (the odd ones) and five `without` first.
+export const sidesOf = round => round % 2 === 0 ? ['without', 'with']
+  : ['with', 'without'];
+
 // Every sample in run order: rounds outermost, then the comparisons in
-// their fixed order, `without` before `with` in each.
+// their fixed order, the two arms in `sidesOf(round)`'s order.
 export const schedule = (list = comparisons, warm = warmups,
   count = pairs) => {
   const order = [];
   for (let round = 0; round < warm + count; round += 1)
     for (const comparison of list)
-      for (const side of ['without', 'with'])
+      for (const side of sidesOf(round))
         order.push({ round, warmup: round < warm,
           comparison: comparison.name, side, arm: comparison[side] });
   return order;
@@ -181,7 +188,8 @@ export const measurementFile = (header, samples, list = comparisons,
   };
   return { protocol: 'docs/plans/2026-11-04-performance-protocol.md',
     conditions: conditionsText(header, samples), header,
-    schedule: { warmups, pairs: count, order: 'ABAB, without first' },
+    schedule: { warmups, pairs: count, order: 'counterbalanced: even '
+      + 'rounds without first, odd rounds with first' },
     ...Object.fromEntries(parts.map(name => [name, part(name)])),
     samples };
 };

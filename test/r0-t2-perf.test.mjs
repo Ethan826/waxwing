@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { comparisons, denominatorsCheck, measurementFile, median, pairs,
-  parseWorkerOutput, partFigure, schedule, spread, summarize, warmups }
+  parseWorkerOutput, partFigure, schedule, sidesOf, spread, summarize,
+  warmups }
   from '../scripts/r0-t2-perf-stats.mjs';
 import { parseMemoryFree, parsePressure, parseSwap, parseTop,
   sampleConditions } from '../scripts/r0-t2-perf-conditions.mjs';
@@ -16,7 +17,7 @@ import { met } from './r0-t2-activation-gate-met.mjs';
 // the activation gate's criterion 6 itself. Fixture-level: no process
 // is measured and no build is loaded.
 
-test('the schedule is ABAB, warm-ups first, fixed in size', () => {
+test('the schedule is counterbalanced, warm-ups first, fixed', () => {
   const order = schedule();
   assert.equal(order.length, (warmups + pairs) * comparisons.length * 2);
   assert.deepEqual(order.slice(0, 4).map(entry => entry.arm),
@@ -25,10 +26,21 @@ test('the schedule is ABAB, warm-ups first, fixed in size', () => {
   assert.ok(order.filter(entry => entry.warmup)
     .every(entry => entry.round < warmups));
   for (let at = 0; at < order.length; at += 2) {
-    assert.equal(order[at].side, 'without');
-    assert.equal(order[at + 1].side, 'with');
-    assert.equal(order[at].comparison, order[at + 1].comparison);
+    const [first, second] = [order[at], order[at + 1]];
+    assert.equal(first.comparison, second.comparison);
+    assert.equal(first.round, second.round);
+    assert.deepEqual([first.side, second.side], sidesOf(first.round));
   }
+  // Measured pairs per comparison: six with `with` first, five with
+  // `without` first; the warm-up (round 0) runs `without` first.
+  const firsts = order.filter((entry, at) => at % 2 === 0
+    && entry.comparison === 'validator');
+  const measured = firsts.filter(entry => !entry.warmup);
+  assert.equal(measured.filter(entry => entry.side === 'with').length, 6);
+  assert.equal(measured.filter(entry => entry.side === 'without').length,
+    5);
+  assert.equal(firsts[0].side, 'without');
+  assert.equal(order[comparisons.length * 2].side, 'with');
 });
 
 test('median and Tukey hinges', () => {
