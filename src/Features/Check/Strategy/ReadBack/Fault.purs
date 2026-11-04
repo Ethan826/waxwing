@@ -25,7 +25,8 @@
 -- - a value reaches v that the package cannot hold: an auxiliary whose
 --   image needs rows (Images `rowFree`; the statsEvidence cause), an
 --   auxiliary whose image names a flexible variable outside the
---   package's domain (Images `namable`, C11), a record-row variable whose image is no record (Images `recordRow`),
+--   package's domain (Images `namable`, C11), a record-row variable
+--   whose image is no record (Images `recordRow`),
 --   and a hole θ binds to a value the package cannot hold (design §C.7,
 --   ReadBack/Bound.purs: a bound effect-row tail, a merged record
 --   repeating a label, a bound record tail that is not a record, a value

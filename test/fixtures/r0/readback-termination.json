@@ -335,7 +335,7 @@
       "key": "Features.Check.Strategy.ReadBack.MarkLabels.{inLabel,inRow,inTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Structural recursion through a point-free recursive definition (compiled as `$lazy_inTy`): inTy, inRow and inLabel each recurse on strict subterms (parameters, arguments, rows, label arguments) of a finite type; spines by recursion on TFun's parts, as deep as the type."
+      "argument": "Structural recursion through a point-free recursive definition (compiled as `$lazy_inTy`): inTy, inRow and inLabel each recurse on strict subterms (parameters, arguments, rows, label arguments) of a finite type; spines by recursion on MArrow's parts, as deep as the type."
     },
     {
       "key": "Features.Check.Strategy.ReadBack.MarkMatch.{marksOfLabel,marksOfRow,marksOfTy,takeLabel}",
