@@ -15,7 +15,7 @@
     "R036 (3)": "r0-t2-r036-3-row-coarse",
     "T6": "r0-t6-rt8-declines-defect"
   },
-  "comparison": "test/fixtures/r0/t2-minting-comparison.json",
+  "comparison": "test/fixtures/r0/t2-minting-comparison2.json",
   "performance": {
     "ruling": null,
     "budget": null,
