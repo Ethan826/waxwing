@@ -5,7 +5,7 @@
       "key": "Domain.Problem.Names.{eqTypeName}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Derived Eq on TypeName (no arrow constructor): structural recursion on strict subterms (arguments, labels) of two finite values."
     },
     {
       "key": "Domain.Recorded.Atom.sameSpine",
@@ -23,13 +23,13 @@
       "key": "Domain.Recorded.Atom.{eqRTExpr,sameSpine}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Hand-written Eq: eq is sameSpine, which walks two arrows' spines by its compiled $tco loop (the loop row) and recurses with `==` only into parameters, records' fields and applications' arguments, strict subterms of two finite values."
     },
     {
       "key": "Domain.Recorded.Effect.{eqMTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Derived Eq on MTy: structural recursion on strict subterms of two finite values, MArrow spines included (one frame per arrow; no loop), so as deep as the spine."
     },
     {
       "key": "Domain.Syntax.typeRefSpine",
@@ -59,13 +59,13 @@
       "key": "Domain.Type.Core.{eqTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Hand-written Eq on Ty: arrows compared by Compare.sameSpines's loop; recursion only into data arguments, rows, handler labels and records, strict subterms of two finite values."
     },
     {
       "key": "Domain.Type.Core.{ordTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Hand-written Ord on Ty: arrows ordered by Compare.compareSpines's loop; recursion only into data arguments, rows, handler parts and records, strict subterms of two finite values."
     },
     {
       "key": "Domain.Type.Core.{substitute,substituteLabel,substituteRecord,substituteRow}",
@@ -101,13 +101,13 @@
       "key": "Domain.Verdict.Counter.{eqCXGround}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Derived Eq on CXGround: structural recursion on strict subterms of two finite values, GroundArrow's parts included (one frame per arrow), so as deep as the term."
     },
     {
       "key": "Domain.Verdict.EffectPackage.Types.{eqPTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Eq or Ord instance: recursion on strict subterms of two finite values; arrow spines, where present, are compared by a loop (Domain.Type.Compare)."
+      "argument": "Derived Eq on PTy: structural recursion on strict subterms of two finite values, PArrow spines included (one frame per arrow; no loop), so as deep as the spine."
     },
     {
       "key": "Features.Check.Entailed.{typeVariables}",
@@ -149,7 +149,7 @@
       "key": "Features.Check.Entailed.Mgu.mgu",
       "kind": "tailRec",
       "count": 1,
-      "argument": "Robinson unification in Martelli and Montanari's form (JACM 1982), with Rémy's row rule: each step either removes an equation, replaces one by equations on strict subterms, or binds a flexible variable (occurs-checked, so θ stays acyclic) removing it from later equations; R5's two-tail case binds two variables and makes one fresh. Measure: (unbound flexible variables, total equation size), lexicographic. Reasoned, not machine-checked; the read-back's closure reaches it only through the type read-back's θ."
+      "argument": "Robinson unification in Martelli and Montanari's form (JACM 1982), with Rémy's row rule, over a triangular θ (Triangular: an equation is read through θ when taken). Each step removes an equation, replaces one by equations on strict subterms of the equation read under θ, or binds a flexible variable (occurs-checked against the image read under θ, so θ stays acyclic) that later equations then read through θ; R5's two-tail case binds two variables and makes one fresh. Measure, taken on equations read under θ: (unbound flexible variables, total equation size), lexicographic. Reasoned, not machine-checked; the read-back's closure reaches it only through the type read-back's θ."
     },
     {
       "key": "Features.Check.Entailed.Triangular.reachable",
@@ -198,6 +198,12 @@
       "kind": "tailRec",
       "count": 1,
       "argument": "Counting loop down a finite explicit stack: each step moves to the item below; the second pass takes exactly the counted items."
+    },
+    {
+      "key": "Features.Check.Search.tailRecM",
+      "kind": "tailRec",
+      "count": 1,
+      "argument": "A specialization purs generates (`tailRecM(monadRecEither)`), not a loop of its own: its one use, firstJust, is listed with its argument."
     },
     {
       "key": "Features.Check.Search.firstJust",
@@ -326,10 +332,10 @@
       "argument": "Kleene iteration of a monotone map (insertWith Set.union only adds a root's entry or grows it) on a finite lattice: maps from the finitely many roots to sets of the finitely many constants, an absent root below the empty set, of height roots × (constants + 1); so a fixpoint within roots × (constants + 1) + 1 passes (Davey and Priestley, Introduction to Lattices and Order, ch. 8). Fuelled copy with an agreement check: test/r0-readback-least-fuel.test.mjs."
     },
     {
-      "key": "Features.Check.Strategy.ReadBack.MarkLabels.{inTy}",
+      "key": "Features.Check.Strategy.ReadBack.MarkLabels.{inLabel,inRow,inTy}",
       "kind": "cycle",
       "count": 1,
-      "argument": "Structural recursion: every recursive call is on a strict subterm (a parameter, argument, field, label argument or row) of a finite value; arrow spines are taken by a loop, not by this recursion."
+      "argument": "Structural recursion through a point-free recursive definition (compiled as `$lazy_inTy`): inTy, inRow and inLabel each recurse on strict subterms (parameters, arguments, rows, label arguments) of a finite type; spines by recursion on TFun's parts, as deep as the type."
     },
     {
       "key": "Features.Check.Strategy.ReadBack.MarkMatch.{marksOfLabel,marksOfRow,marksOfTy,takeLabel}",

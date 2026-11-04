@@ -2,6 +2,7 @@
 // are in scripts/regression-r0-t2-prerequisites.mjs. Each loads modules
 // from the compiler under test only, through `context.compilerPath`, and
 // fails naming every case of its checks that differs.
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fail, passed } from './regression-r0-amin-support.mjs';
@@ -36,6 +37,12 @@ const scanOf = async () => {
   };
 };
 
+// The loop scan's checks (fix round 1, I1-I3), with the clone's
+// compiled Control.Monad.Rec.Class.
+const loopsOf = async context => (await import('./readback-total-checks.mjs'))
+  .loopChecks(readFileSync(resolve(dirname(context.compilerPath), '..',
+    'Control.Monad.Rec.Class', 'index.js'), 'utf8'));
+
 const probe = (of, check) => async context => {
   const wrong = await (await of(context))[check]();
   if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
@@ -43,6 +50,9 @@ const probe = (of, check) => async context => {
 };
 
 export const t2PrerequisitesProbes = {
+  'r0-t2-r036-1-lazy-overwrite': probe(loopsOf, 'lazyWrong'),
+  'r0-t2-r036-1-drivers-narrow': probe(loopsOf, 'driversWrong'),
+  'r0-t2-r036-1-alias-skipped': probe(loopsOf, 'aliasWrong'),
   'r0-t2-r036-1-scan-blind': probe(scanOf, 'blindWrong'),
   'r0-t2-r036-1-loop-unlisted': probe(scanOf, 'unlistedWrong'),
   'r0-t2-r036-2-meta-raw': probe(traceOf, 'unnumberedWrong'),

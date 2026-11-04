@@ -52,7 +52,14 @@ modules and fails on any of the following.
    today.
 2. Loops and cycles. The test parses each module's compiled JS with
    acorn and lists:
-   - every use of the `tailRec` family;
+   - every use of a Control.Monad.Rec.Class loop driver: every value
+     the module exports except the `Step` constructors and the
+     instances, so `tailRec`, `tailRecM`, `forever`, `whileJust`,
+     `untilJust`, `loop2`, `loop3` and their numbered forms. The test
+     pins that list. A point-free alias of a driver
+     (`x = tailRec step`, or a specialization purs generates) is
+     listed as its own entry, and its callers in the module are listed
+     as uses;
    - every JS loop statement, including the loops purs generates for
      self tail calls (`$tco`);
    - every reference cycle among a module's top-level declarations, and
@@ -67,28 +74,65 @@ modules and fails on any of the following.
    as stale.
 
 Data constructors, which purs compiles as self-referencing closures,
-are not cycles and are skipped. PureScript's module graph is acyclic,
-and dictionaries are passed by name, so any recursion through src code
-shows up as a reference cycle inside one module. Local bindings are
-matched by name within their top-level declaration. Two locals with
-the same name therefore merge, and a parameter that shares a binding's
-name adds an edge. Both errors over-approximate: they can add a
-spurious row, but they cannot hide a cycle.
+are not cycles and are skipped. A recursive point-free definition
+compiles to two declarations, `var $lazy_f = $runtime_lazy(…,
+function () { BODY })` and `var f = $lazy_f(n)`. The scan merges them
+under `f`, so BODY's references, loops, drivers and local cycles count
+as `f`'s. (The first version kept only the later declaration and lost
+BODY: MarkLabels' cycle `{inLabel,inRow,inTy}` was listed as `{inTy}`.)
+
+PureScript's module graph is acyclic, and dictionaries are passed by
+name, so named recursion through src code shows up as a reference
+cycle inside one module. The scan can miss recursion that needs no
+name:
+
+- self-application through a recursive type that holds a function of
+  itself (an untyped fixpoint);
+- a library loop driven by a src callback, such as `unfoldr` or
+  `iterate`.
+
+Neither occurs in the closure today. A grep over the closure's 72
+source files on 2026-11-04 found no `newtype` or `data` declaration
+holding a function type, and no use of `unfoldr`, `unfoldrM`,
+`iterate`, `fix`, `replicateM` or `until`. A later change could add
+one without failing the scan; review has to catch it.
+
+Local bindings are matched by name within their top-level
+declaration. Two locals with the same name therefore merge, a
+parameter that shares a binding's name adds an edge, and a local
+function declaration that refers to its own name is a self-edge. The
+callers of a driver alias are listed as uses. All of these
+over-approximate: they can add a spurious row, but they cannot hide a
+cycle the scan would otherwise see.
+
+The scan reads output/, so it audits the last build. A stale build
+(src changed and not rebuilt) is audited as it was built; verify builds
+before it tests.
 
 The must-fail cases in the same test plant each forbidden import, a
 `Partial` constraint, FFI by `foreign import` and by a JS file beside
 the source, a JS loop, a mutual cycle, a self-cycle, a local cycle, a
-`tailRec` use, a data constructor (which must not be listed), an
-unlisted entry, a stale row and a row with no argument. Two
-restored-defect rows check the scan itself. `r0-t2-r036-1-scan-blind`
-drops `Partial.Unsafe` from the forbidden list.
-`r0-t2-r036-1-loop-unlisted` compares only ReadBack's modules with the
-table.
+`tailRec` use, each of `forever`, `whileJust`, `untilJust` and
+`loop2`, a `$lazy_` body holding a while loop, a `tailRec`, a local
+self-cycle and a helper in a mutual cycle, a point-free `tailRec`
+alias that only another module calls, a data constructor (which must
+not be listed), an unlisted entry, a stale row and a row with no
+argument. Restored-defect rows check the scan itself:
 
-## The table: 64 rows
+- `r0-t2-r036-1-scan-blind` drops `Partial.Unsafe` from the forbidden
+  list;
+- `r0-t2-r036-1-loop-unlisted` compares only ReadBack's modules with
+  the table;
+- `r0-t2-r036-1-lazy-overwrite` keeps only the later of a `$lazy_`
+  pair;
+- `r0-t2-r036-1-drivers-narrow` matches the `tailRec` family only;
+- `r0-t2-r036-1-alias-skipped` skips a driver alias.
 
-The table has 20 `tailRec` uses, 1 compiled loop (`sameSpine`'s
-`$tco`) and 43 cycles. Each row states its own argument. The
+## The table: 65 rows
+
+The table has 21 driver uses (one of them the specialization
+`Search.tailRecM` that purs generates), 1 compiled loop
+(`sameSpine`'s `$tco`) and 43 cycles. Each row states its own argument. The
 arguments fall into these kinds:
 
 - Spine loops (`stagesOf`, `spine`, `markedStages`, `arrowCount`,
@@ -100,8 +144,14 @@ arguments fall into these kinds:
   callers: `substitute`, `Parts.spineThrough identity` and
   `Traverse`). Outside the closure, Subst.resolve passes a
   substitution walk, which ends if the substitution is acyclic.
-- Structural recursion and Eq or Ord instances. Each call is on strict
-  subterms of finite values. Spines go through a loop.
+- Structural recursion. Each call is on strict subterms of finite
+  values.
+- Eq and Ord instances, each with its own mechanism. `eqTy` and
+  `ordTy` are hand-written and take arrow spines by Compare's loops.
+  `eqRTExpr` is Atom's `sameSpine`, whose self tail call purs compiles
+  to a loop. The derived `eqPTy`, `eqMTy` and `eqCXGround` recurse on
+  arrows too, one frame per arrow, so they are as deep as the spine.
+  The derived `eqTypeName` has no arrow constructor.
 - One-pass substitutions (`substitute`, `Merge.substitute`,
   `Candidate.under`, `Effects.Package.under`, `Bound`, `Traverse`). An
   image is never substituted again.
@@ -116,9 +166,11 @@ arguments fall into these kinds:
     end. The read-back reads the store through Least, not through this
     loop.
   - `Mgu.mgu`: termination follows Martelli and Montanari (JACM 1982),
-    extended by Rémy's row rule. The measure is the pair (unbound
-    flexible variables, total equation size). R5's two-tail case binds
-    two variables and makes one fresh.
+    extended by Rémy's row rule, over a triangular θ (an equation is
+    read through θ when it is taken). The measure is the pair (unbound
+    flexible variables, total equation size), taken on equations read
+    under θ. R5's two-tail case binds two variables and makes one
+    fresh.
 - `Least.find` and `Least.reaching`, which the next section covers.
 
 ## The two invariant-based loops and their copies
@@ -136,8 +188,13 @@ also compares each copy's terms and clash count with production's
 `leastOfGraph` on every graph, wherever both end. The graphs are
 20,000 seeded graphs of the mark oracle's random family, meta chains
 of up to 40, and planted clashes. All agree, and none runs out of
-fuel. Must-fail cases: a copy that ignores edges disagrees, and a
-cyclic parent link runs out of fuel.
+fuel. Two cases show the budgets are reached, not just respected: an
+edge chain of 30 listed against the propagation order takes at least
+31 passes of `reaching` (within its budget), and an equality chain of
+30 makes `find` take at least 29 steps. The planted clash graphs are
+checked to clash in the copy and in production. Must-fail cases: a
+copy that ignores edges disagrees, and a cyclic parent link runs out
+of fuel.
 
 Correction to the proposal. Its budget for `reaching`,
 roots × constants + 1, was too small. A pass can add a root's entry
@@ -149,7 +206,8 @@ row and the test state the corrected bound.
 ## Stack depth
 
 The read-back's non-tail recursion (Convert, EffectMatch, Images,
-Bound, Traverse) goes as deep as a type nests outside arrow spines.
+Bound, Traverse, MarkLabels and the derived Eq instances) goes as deep
+as a type nests, spines included where the table says so.
 test/r0-t2-readback-depth.serial.test.mjs runs two programs through
 `recheck`, the type read-back and `readEffects`:
 
@@ -160,7 +218,9 @@ test/r0-t2-readback-depth.serial.test.mjs runs two programs through
   images carry 1,000 arrows.
 
 Both read a package without a RangeError, and both assert the depth
-they reach so the test is not vacuous. test/r0-type-traverse.test.mjs
+they reach so the test is not vacuous. Bound's depth is not exercised:
+`boundTy` returns at once when θ binds no hole, and neither program
+binds one. test/r0-type-traverse.test.mjs
 also runs `traverseTy` on a 100,000-arrow spine.
 
 ## Finding during T4

@@ -12,6 +12,7 @@ const row = (name, file, needle, replacement, message) =>
 const types = 'src/Features/Check/Trace/Types.purs';
 
 const scan = 'test/readback-total-scan.mjs';
+const loops = 'test/readback-total-loops.mjs';
 
 export const t2PrerequisitesRows = [
   // R036 (1): the audit scan's forbidden list without Partial.Unsafe.
@@ -19,6 +20,23 @@ export const t2PrerequisitesRows = [
     "export const forbiddenImports = ['Partial', 'Partial.Unsafe',\n",
     "export const forbiddenImports = ['Partial',\n",
     /r0-t2-r036-1-scan-blind: \["Partial\.Unsafe"\]/), tree: 'test' },
+  // R036 (1): a `$lazy_` body overwritten by its alias, never scanned.
+  { ...row('r0-t2-r036-1-lazy-overwrite', scan,
+    "        found.set(name, found.has(name) ? { type: 'Merged',\n",
+    "        found.set(name, false ? { type: 'Merged',\n",
+    /r0-t2-r036-1-lazy-overwrite: \["loop P\.f","tailRec P\.f"\]/),
+  tree: 'test' },
+  // R036 (1): the tailRec family alone taken as loop drivers.
+  { ...row('r0-t2-r036-1-drivers-narrow', loops,
+    "  && drivers.has(node.property.name ?? '');\n",
+    "  && /^tailRec(M)?\\d*$/.test(node.property.name ?? '');\n",
+    /r0-t2-r036-1-drivers-narrow: \["forever","whileJust","untilJust"\]/),
+  tree: 'test' },
+  // R036 (1): a point-free driver alias skipped, not scanned.
+  { ...row('r0-t2-r036-1-alias-skipped', loops,
+    '    if (isConstructor(decl, init)) continue;\n',
+    '    if (aliases.has(decl) || isConstructor(decl, init)) continue;\n',
+    /r0-t2-r036-1-alias-skipped: \["x"\]/), tree: 'test' },
   // R036 (1): the loop table compared for ReadBack's modules only.
   { ...row('r0-t2-r036-1-loop-unlisted', scan,
     '  const derived = entries;\n',

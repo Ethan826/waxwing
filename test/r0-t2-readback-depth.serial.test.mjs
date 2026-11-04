@@ -5,9 +5,11 @@ import { packageCases } from './r0-t2-package-cases.mjs';
 
 // R036 (1), T5 (dossier §18.161 (3);
 // docs/plans/2026-11-04-readback-termination-audit.md): the read-back's
-// non-tail recursion (Convert, EffectMatch, Images, Bound, Traverse) is
-// as deep as a type's nesting outside arrow spines, and its spine loops
-// take arrows without recursion. A 1,000-deep data nesting (the shape of
+// non-tail recursion (Convert, EffectMatch, Images, Traverse and others)
+// is as deep as a type's nesting, and its spine loops take arrows
+// without recursion. Bound's depth is not exercised here: `boundTy`
+// returns at once when θ binds no hole, and neither program binds one.
+// A 1,000-deep data nesting (the shape of
 // test/poly-depth-timing.serial.test.mjs: `deep` adds 27 levels per call,
 // 37 calls) and a 1,000-stage spine, each through `recheck`, the type
 // read-back and `readEffects`, end with a package or a stated fault, never

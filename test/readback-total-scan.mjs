@@ -9,18 +9,31 @@
 // effects, laziness; the test adds scripts/forgery.mjs's forging
 // modules, as a cross-check of that scan), src FFI, and from each
 // module's compiled JS (parsed with acorn, never matched as text):
-// every `tailRec`-family use, every JS loop statement, and every
-// reference cycle among declarations (Tarjan, "Depth-first
-// search and linear graph algorithms", SIAM J. Comput. 1(2), 1972),
-// top-level and local. PureScript's module graph is acyclic, so a cycle
-// through src code is a reference cycle inside one module.
+// every use of a Control.Monad.Rec.Class loop driver (tailRec, tailRecM,
+// forever, whileJust, untilJust, loop2, loop3 and their forms), every JS
+// loop statement, and every reference cycle among declarations (Tarjan,
+// "Depth-first search and linear graph algorithms", SIAM J. Comput.
+// 1(2), 1972), top-level and local, a `$lazy_` body merged with its
+// name. PureScript's module graph is acyclic, so named recursion through
+// src code is a reference cycle inside one module.
 //
-// Limits (reasoned): local bindings are matched by name within their
-// top-level declaration, so two locals of one name merge and a
-// parameter named like a local or a top-level declaration adds an edge
-// (both over-approximate: a spurious row, never a missed cycle).
-// Library code (its loops, FFI and partiality) is outside the scan and
-// trusted as the package set is; so is the runtime (stack depth, memory).
+// Limits (reasoned). The scan sees named recursion and drivers only; it
+// can miss recursion that needs no name: self-application through a
+// recursive type holding a function of itself (an untyped fixpoint), and
+// a library loop driven by a src callback (`unfoldr`, `iterate` and the
+// like). Neither occurs in the closure today: no `newtype` or `data`
+// declaration in it holds a function type, and `unfoldr`, `unfoldrM`,
+// `iterate`, `fix`, `replicateM` and `until` are not used (grep over the
+// closure's sources, 2026-11-04, recorded in the audit doc). Local
+// bindings are matched by name within their top-level declaration, so
+// two locals of one name merge, a parameter named like a local or a
+// top-level declaration adds an edge, and a local function declaration
+// referring to its own name is a self-edge (all over-approximate: a
+// spurious row, never a missed cycle). A driver alias's callers are
+// listed as uses too (over-approximate). The scan reads output/, so it
+// audits the last build. Library code (its loops, FFI and partiality) is
+// outside the scan and trusted as the package set is; so is the runtime
+// (stack depth, memory).
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'acorn';
@@ -116,11 +129,22 @@ const references = node => {
 };
 
 // A compiled module's top-level declarations (name → init) and import
-// namespaces (alias → module name).
-const declarations = program => new Map(program.body.flatMap(statement =>
-  (statement.type === 'VariableDeclaration' ? statement.declarations
-    .filter(each => each.init !== null)
-    .map(each => [lazyName(each.id.name), each.init]) : [])));
+// namespaces (alias → module name). A recursive point-free definition
+// compiles to two declarations, `var $lazy_f = $runtime_lazy(…,
+// function () { BODY })` and `var f = $lazy_f(n)`: both are kept under
+// `f`, merged into one node, so BODY is scanned as `f`'s.
+const declarations = program => {
+  const found = new Map();
+  for (const statement of program.body)
+    if (statement.type === 'VariableDeclaration')
+      for (const each of statement.declarations.filter(one =>
+        one.init !== null)) {
+        const name = lazyName(each.id.name);
+        found.set(name, found.has(name) ? { type: 'Merged',
+          parts: [found.get(name), each.init] } : each.init);
+      }
+  return found;
+};
 const namespaces = program => new Map(program.body.filter(statement =>
   statement.type === 'ImportDeclaration').flatMap(statement =>
   statement.specifiers.filter(each => each.type

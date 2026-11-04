@@ -44,11 +44,13 @@ class OutOfFuel extends Error {}
 // roots × (constants + 1) + 1.
 const copied = (size, edges, equalities) => {
   const parent = new Map();
+  let steps = 0;
   const find = node => {
     let at = node;
     for (let fuel = size; parent.has(at); fuel -= 1) {
       if (fuel <= 0) throw new OutOfFuel(`find ${node}`);
       at = parent.get(at);
+      steps = Math.max(steps, size - fuel + 1);
     }
     return at;
   };
@@ -69,8 +71,10 @@ const copied = (size, edges, equalities) => {
   const text = map => JSON.stringify([...map].sort().map(([key, set]) =>
     [key, [...set].sort()]));
   const budget = roots.size * (constants.length + 1) + 1;
+  let passes = 0;
   for (let pass = budget; ; pass -= 1) {
     if (pass <= 0) throw new OutOfFuel('reaching');
+    passes += 1;
     const next = new Map([...reach].map(([key, set]) => [key, new Set(set)]));
     for (const [lower, upper] of edges) next.set(find(upper), new Set([
       ...(next.get(find(upper)) ?? []), ...(next.get(find(lower)) ?? [])]));
@@ -88,7 +92,7 @@ const copied = (size, edges, equalities) => {
   };
   const terms = used.filter(node => !isConstant(node)).sort((x, y) => x - y)
     .map(node => [node, termOf(find(node))]);
-  return { terms: JSON.stringify(terms), clashes };
+  return { terms: JSON.stringify(terms), clashes, passes, steps, budget };
 };
 
 const termText = term => (term.constructor.name === 'TermJ'
@@ -136,10 +140,43 @@ const chains = least => {
 };
 // Classes holding two constants (a store cannot hold one; a planted
 // graph can): the clash count must agree too.
+const clashPairs = [[0, 1], [2, 3], [0, 2], [1, 3]];
+const clashGraph = ([x, y]) => [A + 2, [[A, A + 1], [x, A + 1]],
+  [[A, x], [A, y], [A + 1, y]]];
 const clashes = least => {
-  for (const [x, y] of [[0, 1], [2, 3], [0, 2], [1, 3]])
-    least(A + 2, [[A, A + 1], [x, A + 1]], [[A, x], [A, y], [A + 1, y]]);
+  for (const pair of clashPairs) least(...clashGraph(pair));
 };
+// An edge chain listed against the propagation order (last link first,
+// the constant's edge last): each pass carries the constant one link,
+// so `reaching` takes length + 1 passes.
+const edgeChain = length => {
+  const metas = Array.from({ length }, (_, i) => A + i);
+  const links = metas.slice(1).map((meta, i) => [metas[i], meta]).reverse();
+  return [A + length, [...links, [1, metas[0]]], []];
+};
+
+test('a reverse-ordered edge chain needs length + 1 passes, and a long '
+  + 'equality chain a long find, within their budgets', () => {
+  const length = 30;
+  const reached = copied(...edgeChain(length));
+  assert.ok(reached.passes >= length + 1 && reached.passes <= reached.budget,
+    JSON.stringify(reached));
+  const metas = Array.from({ length }, (_, i) => A + i);
+  const found = copied(A + length, [[1, metas[0]]], metas.slice(1).map(
+    (meta, i) => [metas[i], meta]));
+  assert.ok(found.steps >= length - 1, JSON.stringify(found));
+  const [size, edges, equalities] = edgeChain(length);
+  const shipped = production(edges, equalities);
+  assert.equal(reached.terms, shipped.terms);
+});
+
+test('the planted clash graphs clash, in the copy and in production', () => {
+  for (const pair of clashPairs) {
+    const [size, edges, equalities] = clashGraph(pair);
+    assert.ok(copied(size, edges, equalities).clashes > 0, `${pair}`);
+    assert.ok(production(edges, equalities).clashes > 0, `${pair}`);
+  }
+});
 
 test('find and reaching end within their budgets, agreeing with production',
   () => {

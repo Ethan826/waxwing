@@ -9,7 +9,6 @@ import { internals, parsed } from './readback-total-scan.mjs';
 
 const { walk, references, declarations, namespaces, locals } = internals;
 const recModule = 'Control.Monad.Rec.Class';
-const recNames = /^tailRec(M)?\d*$/;
 const loopTypes = new Set(['WhileStatement', 'DoWhileStatement',
   'ForStatement', 'ForInStatement', 'ForOfStatement']);
 
@@ -52,17 +51,33 @@ export const components = edges => {
 export const cycles = edges => components(edges).filter(component =>
   component.length > 1 || edges.get(component[0])?.has(component[0]));
 
-const isRec = (node, spaces) => node.type === 'MemberExpression'
+// Control.Monad.Rec.Class's loop drivers, from its compiled JS: every
+// exported value but the `Step` constructors and the instances (object
+// literals), so tailRec, tailRecM, forever, whileJust, untilJust, loop2
+// and loop3 and their numbered forms, and any the package adds later.
+export const recDrivers = js => {
+  const program = parsed(js);
+  const decls = declarations(program);
+  const exported = program.body.filter(statement => statement.type
+    === 'ExportNamedDeclaration').flatMap(statement => statement.specifiers
+    .map(each => each.local.name));
+  return new Set(exported.filter(name => decls.has(name)
+    && decls.get(name).type !== 'ObjectExpression'
+    && !isConstructor(name, decls.get(name))));
+};
+
+const isRec = (node, spaces, drivers) => node.type === 'MemberExpression'
   && node.object.type === 'Identifier'
   && spaces.get(node.object.name) === recModule
-  && recNames.test(node.property.name ?? '');
+  && drivers.has(node.property.name ?? '');
 
-// Uses of the `tailRec` family under `node`: a member of the class
-// module, or a top-level alias of one (`var tailRecM = …(monadRec…)`).
-const recUses = (node, spaces, aliases) => {
+// Uses of a loop driver under `node`: a member of the class module, or a
+// top-level alias of one (`var tailRecM = …(monadRec…)`,
+// `var x = tailRec(step)`).
+const recUses = (node, spaces, drivers, aliases) => {
   let count = 0;
   walk(node, at => {
-    if (isRec(at, spaces)) count += 1;
+    if (isRec(at, spaces, drivers)) count += 1;
   });
   for (const name of references(node)) if (aliases.has(name)) count += 1;
   return count;
@@ -90,18 +105,23 @@ const isConstructor = (name, init) => init.type === 'CallExpression'
 const restricted = (names, found) => new Set([...found].filter(name =>
   names.has(name)));
 
-// The entries of one module's compiled JS.
-export const scanModule = (name, js) => {
+// The entries of one module's compiled JS. An alias of a driver (a
+// declaration that is not a function and uses one) is scanned like any
+// declaration, so a point-free `x = tailRec step` is listed even when
+// only another module calls it; its uses here are listed too.
+export const scanModule = (name, js, drivers) => {
   const program = parsed(js);
   const spaces = namespaces(program);
   const decls = declarations(program);
   const aliases = new Set([...decls].filter(([, init]) => !isFunction(init)
-    && recUses(init, spaces, new Set()) > 0).map(([alias]) => alias));
+    && recUses(init, spaces, drivers, new Set()) > 0).map(([alias]) =>
+    alias));
   const entries = [];
   const edges = new Map();
   for (const [decl, init] of decls) {
-    if (aliases.has(decl) || isConstructor(decl, init)) continue;
-    const uses = recUses(init, spaces, aliases);
+    if (isConstructor(decl, init)) continue;
+    const uses = recUses(init, spaces, drivers, new Set([...aliases]
+      .filter(alias => alias !== decl)));
     if (uses > 0) entries.push({ key: `${name}.${decl}`, kind: 'tailRec',
       count: uses });
     const loops = loopCount(init);
