@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pinCommand, pinnedRt8, rt8File, rt8Table } from './r0-rt8-run.mjs';
-import { boundHoleClass, holeContractClass } from './r0-rt8-account.mjs';
+import { boundHoleClass, checkDeclined, checkDeclinedRefused,
+  holeContractClass } from './r0-rt8-account.mjs';
 import { r022Probes } from './r0-r022-probes.mjs';
 
 // Task 4.3, RT8 (T-R0b §9 item 8) and acceptance criteria 2 and 4, over
@@ -37,7 +38,9 @@ export const rt8Checks = rows => {
     /^\(a\) blocked: Unresolved Unsupported /, /^\(a\) RequirementOpen$/,
     /^\(b\) declined by g0Guard(, today refuses)?$/,
     /^ambiguous several-tail read-back \(Heuristic\)$/,
-    /^today's own internal failure \(SearchBroke\)$/];
+    /^today's own internal failure \(SearchBroke\)$/,
+    // T6 (§18.161 (4)): a check's decline, as Decide reads it.
+    checkDeclined, checkDeclinedRefused];
 
   test('RT8: every class is an expected one or a defect', () => {
     for (const name of Object.keys(table.classes))

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { pinCommand, pinnedWindow, windowFile, windowTable }
   from './r0-shadow-run.mjs';
 import { summaryOf } from './r0-shadow-summary.mjs';
-import { windowClasses } from './r0-shadow-classes.mjs';
+import { classEntry, defectClasses } from './r0-shadow-classes.mjs';
 import { defectProbes, defects, falseContradictions, knownValid }
   from './r0-shadow-known.mjs';
 import { pinnedCensus } from './r0-census-run.mjs';
@@ -32,11 +32,12 @@ export const windowChecks = programs => {
   test('every row has a known class, its label, and no source', () => {
     assert.ok(rows.length > 1000);
     for (const row of rows) {
-      const known = windowClasses[row.class];
+      const known = classEntry(row.class);
       assert.ok(known !== undefined, row.class);
       assert.deepEqual(table.summary.classes[row.class].target, known.target);
       assert.equal(row.section, known.section, row.at);
-      assert.equal(row.section === null, row.class === 'defect', row.at);
+      assert.equal(row.section === null, defectClasses.includes(row.class),
+        row.at);
       assert.equal(row.source, undefined, row.at);
       assert.match(row.hash, /^[0-9a-f]{64}$/);
     }

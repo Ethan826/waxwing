@@ -5,12 +5,18 @@
 // census's erased-row detector (test-only, C-erased) and `g0Guard`'s
 // reason. Every assignment is an explicit case; anything else throws,
 // so no failure becomes a semantic claim. An inability to solve is
-// never read as a refutation.
-import { boundHoleClass } from './r0-rt8-account.mjs';
+// never read as a refutation. T6 (dossier §18.161 (4)): an RT8 defect
+// is kept as a row of its own defect class, reported, never thrown at
+// load and never relabelled as a harmless class; a check's decline
+// (RT8's, read as Decide reads it) has its own class.
+import { boundHoleClass, checkDeclined, checkDeclinedRefused }
+  from './r0-rt8-account.mjs';
 import { defects, falseContradictions, knownValid }
   from './r0-shadow-known.mjs';
+import { rt8DefectClass } from './r0-shadow-table.mjs';
 
-export { windowClasses } from './r0-shadow-table.mjs';
+export { classEntry, defectClasses, t6Classes, windowClasses }
+  from './r0-shadow-table.mjs';
 
 // Today's code for each static code the corpus reaches (Task 2.3).
 const staticCodes = { 'StaticRule StaticArity': 'E_ARITY' };
@@ -43,6 +49,8 @@ const compiles = facts => {
   if (rt8 === 'ambiguous several-tail read-back (Heuristic)') return rt8;
   if (rt8 === '(a) blocked: Unresolved Unsupported RequirementAtoms')
     return 'BQ pending G-ValidR: compiles today';
+  if (checkDeclined.test(rt8))
+    return 'the check declines the candidate: compiles today';
   // A trailing `EffectsUnchecked [UnframedInstall]` (§18.124, §18.126)
   // keeps the class: the row was already blocked by its markers.
   const outside = '^\\(a\\) blocked: Unresolved Unsupported Outside \\w+'
@@ -77,6 +85,8 @@ const refused = facts => {
     return noCandidate(facts);
   if (rt8 === '(b) declined by g0Guard, today refuses')
     return declined(facts, true);
+  if (checkDeclinedRefused.test(rt8))
+    return 'today refuses, the check declines the candidate';
   return fail(facts, 'no window class where today refuses');
 };
 
@@ -85,7 +95,7 @@ const refused = facts => {
 // with today's code.
 export const windowClassOf = facts => {
   if (facts.at in defects) return 'defect';
-  if (facts.rt8.startsWith('DEFECT')) fail(facts, 'an RT8 defect');
+  if (facts.rt8.startsWith('DEFECT')) return rt8DefectClass;
   return facts.today === null ? compiles(facts) : refused(facts);
 };
 

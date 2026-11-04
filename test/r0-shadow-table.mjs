@@ -75,3 +75,29 @@ export const windowClasses = {
     + ' defect of today\'s checkFunction)', 'its separately authorized fix',
   'its BACKLOG entry')
 };
+
+// T6 (dossier §18.161 (4)): classes only the minting path reaches (a
+// validator refusal reaching Decide) or a defect reaches, so the
+// committed path, where none occurs, lists none of them: the summary
+// lists one only when a row has it (test/r0-shadow-summary.mjs), and
+// window.json does not move. Labels are the implementer's reading:
+// a decline the check makes is a strategy limitation (R-b2: (b)).
+export const rt8DefectClass = 'defect found by RT8 (reported, unlabelled)';
+const declines = 'reading (§18.161 (4): a check decline is an intended'
+  + ' decline; the author\'s ruling R-b2: a strategy limitation stays (b))';
+export const t6Classes = {
+  'the check declines the candidate: compiles today': entry(b, declines,
+    'candidates the check declines (a record defect or a limitation,'
+      + ' A2 spec §6)', 'Solved', 'a check that certifies them (the RT8'
+      + ' class names the refusal)'),
+  'today refuses, the check declines the candidate': entry(b, declines,
+    refusedFocus, undetermined, classify),
+  [rt8DefectClass]: entry(null, 'none (defect rows are not labelled)',
+    'none (a defect of the shadow run; its RT8 class names it)',
+    'its separately authorized fix', 'its BACKLOG entry')
+};
+
+// The classes whose rows carry no §3.2 label.
+export const defectClasses = ['defect', rt8DefectClass];
+
+export const classEntry = name => windowClasses[name] ?? t6Classes[name];

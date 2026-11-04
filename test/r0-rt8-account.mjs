@@ -7,7 +7,15 @@
 // `NoCandidate` is agreement, and no class reads a decline or an
 // Unresolved as a contradiction. A `RequirementUnjudged` refusal is a
 // defect of the strategy (guard and check disagree), counted, not hidden.
+// T6 (dossier §18.161 (4)): a refused candidate is read as Decide reads
+// it (Features.Check.Decide.Reading's `reading`, which names every
+// `CheckRefusal` constructor with no wildcard; A2 spec §6), so an
+// intended decline (`RequirementOpen`, `RecordDefect`, `NotCertifiable`)
+// is a decline under either claim, and a defect stays a defect.
 import { describe } from './r0-decide-support.mjs';
+import { load } from './r0-generate-support.mjs';
+
+const { reading } = await load('Features.Check.Decide.Reading');
 
 // Review I-1: a Solved whose candidate bound a hole (ReadBack step 4).
 export const boundHoleClass =
@@ -23,6 +31,15 @@ const named = value => value.constructor.name;
 const onlineAttempt = decision => decision.attempts[0];
 
 const refusal = attempt => named(attempt.value2);
+
+// A check's decline, by its refusal and R0's verdict where today
+// accepts; by its refusal alone where today refuses (T6).
+export const checkDeclined = /^declined by the check \(\w+\): /;
+export const checkDeclinedRefused =
+  /^declined by the check \(\w+\), today refuses$/;
+const declinedBy = attempt => `declined by the check (${refusal(attempt)})`;
+const verdictOf = decision => describe({ constructor: { name: 'Right' },
+  value0: decision }).verdict;
 
 // A Solved's compilation (Task 4.4): `null` when witnessed. The online
 // adapter binds every flexible variable, so `Uncovered` is its defect,
@@ -49,24 +66,39 @@ export const witnessFor = result => {
     variable: named(reason) === 'NonConstructive' ? null : reason.value0 };
 };
 
+// A `CheckFailed` where today accepts. The backstop first: a defect
+// whatever the claim (review I-2). Then Decide's reading: a decline is
+// expected (a `RequirementOpen` keeps its §3.2(a) label); a refused
+// Heuristic candidate is the ambiguous several-tail read-back; a refused
+// ClaimsComplete candidate, or any other reading, is a defect.
+const checkFailed = (decision, attempt) => {
+  if (refusal(attempt) === 'RequirementUnjudged')
+    return 'DEFECT: candidate refused, RequirementUnjudged';
+  const read = named(reading(attempt));
+  switch (read) {
+  case 'Declines': return refusal(attempt) === 'RequirementOpen'
+    ? '(a) RequirementOpen'
+    : `${declinedBy(attempt)}: ${verdictOf(decision)}`;
+  case 'RefusedHeuristic':
+    return 'ambiguous several-tail read-back (Heuristic)';
+  case 'RefusedComplete':
+    return `DEFECT: candidate refused, ${refusal(attempt)}`;
+  }
+  // `RanOut`, `Searching`, `RefuterRanOut`, `NotAStrategy`: never a
+  // refused candidate's reading, so a defect, not a class.
+  return `DEFECT: a refused candidate read as ${read}`;
+};
+
 const accepted = (decision, attempt, holes) => {
-  const verdict = describe({ constructor: { name: 'Right' },
-    value0: decision }).verdict;
   switch (named(attempt)) {
-  case 'Accepted':
+  case 'Accepted': {
+    const verdict = verdictOf(decision);
     if (verdict !== 'Solved') return `(a) blocked: ${verdict}`;
     return unwitnessed(attempt.value2)
       ?? (holes.length > 0 ? boundHoleClass : 'agree: Solved');
+  }
   case 'Declined': return '(b) declined by g0Guard';
-  case 'CheckFailed':
-    // The backstop first: a defect whatever the claim (review I-2).
-    if (refusal(attempt) === 'RequirementUnjudged')
-      return 'DEFECT: candidate refused, RequirementUnjudged';
-    if (named(attempt.value1) === 'Heuristic')
-      return 'ambiguous several-tail read-back (Heuristic)';
-    if (refusal(attempt) === 'RequirementOpen')
-      return '(a) RequirementOpen';
-    return `DEFECT: candidate refused, ${refusal(attempt)}`;
+  case 'CheckFailed': return checkFailed(decision, attempt);
   case 'Searched':
     return `DEFECT: no candidate where today accepts,`
       + ` ${named(attempt.value1)}`;
@@ -82,6 +114,10 @@ const rejected = attempt => {
       : `agree: no candidate (${end})`;
   }
   case 'Declined': return '(b) declined by g0Guard, today refuses';
+  // T6: Decide's decline is expected here too; any other refusal is not.
+  case 'CheckFailed': return named(reading(attempt)) === 'Declines'
+    ? `${declinedBy(attempt)}, today refuses`
+    : 'DEFECT: CheckFailed where today refuses';
   }
   return `DEFECT: ${named(attempt)} where today refuses`;
 };

@@ -13,6 +13,7 @@ import { t2HonestProbes } from './regression-r0-t2-honest.mjs';
 import { t2DiffProbes } from './regression-r0-t2-diff.mjs';
 import { t2CompatProbes } from './regression-r0-t2-compat.mjs';
 import { t2ActivationProbes } from './regression-r0-t2-activation.mjs';
+import { t6Probes } from './regression-r0-t6.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
@@ -26,5 +27,6 @@ export const r0T2Probes = {
   ...t2HonestProbes,
   ...t2DiffProbes,
   ...t2CompatProbes,
-  ...t2ActivationProbes
+  ...t2ActivationProbes,
+  ...t6Probes
 };

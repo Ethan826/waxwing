@@ -7,7 +7,9 @@
 // Solved; `only`, compiling programs whose rows are all of this class.
 // `stops` keeps the three scenarios of the author's ruling R-a apart.
 import { falseContradictions, knownValid } from './r0-shadow-known.mjs';
-import { windowClasses } from './r0-shadow-classes.mjs';
+import { classEntry, t6Classes, windowClasses }
+  from './r0-shadow-classes.mjs';
+import { rt8DefectClass } from './r0-shadow-table.mjs';
 import { outsideKinds } from './r0-census-classify.mjs';
 
 const rowsOf = program => program.results
@@ -16,13 +18,21 @@ const countWhere = (programs, test) => programs.filter(test).length;
 const has = test => program => rowsOf(program).some(test);
 const compiling = programs => programs.filter(program => program.compiles);
 
+// The plan's classes always; T6's only where a row has one, so a
+// decline or a defect the committed path never reaches moves no pin.
+const listed = programs => {
+  const present = new Set(programs.flatMap(rowsOf).map(row => row.class));
+  return [...Object.keys(windowClasses),
+    ...Object.keys(t6Classes).filter(name => present.has(name))];
+};
+
 const classTable = programs => Object.fromEntries(
-  Object.keys(windowClasses).map(name => {
+  listed(programs).map(name => {
     const ofClass = row => row.class === name;
     const only = program => rowsOf(program).length > 0
       && rowsOf(program).every(ofClass);
     const stops = row => ofClass(row) && row.r0.verdict !== 'Solved';
-    return [name, { ...windowClasses[name],
+    return [name, { ...classEntry(name),
       declarations: programs.flatMap(rowsOf).filter(ofClass).length,
       programs: countWhere(programs, has(ofClass)),
       compilingProgramsInClass: countWhere(compiling(programs),
@@ -95,6 +105,10 @@ export const summaryOf = programs => ({
     (row.at in falseContradictions || row.at in knownValid)
     && row.blockers.length === 0 && !row.programCompiles)
     .map(row => row.at),
-  defects: programs.flatMap(rowsOf).filter(row => row.class === 'defect')
-    .map(row => `${row.at}: ${row.defect.id}`)
+  // Today's known defects by their ids, then (T6) each RT8 defect by
+  // its RT8 class, so the window reports it rather than aborting.
+  defects: [...programs.flatMap(rowsOf).filter(row => row.class === 'defect')
+    .map(row => `${row.at}: ${row.defect.id}`),
+  ...programs.flatMap(rowsOf).filter(row => row.class === rt8DefectClass)
+    .map(row => `${row.at}: ${row.rt8}`)]
 });

@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { windowClassOf, windowClasses } from './r0-shadow-classes.mjs';
+import { t6Classes, windowClassOf, windowClasses }
+  from './r0-shadow-classes.mjs';
 import { boundHoleClass } from './r0-rt8-account.mjs';
+import { rt8DefectClass } from './r0-shadow-table.mjs';
 
 // Task 4.5: the window classifier with each input injected directly
 // (common context: every classifier tested with every case injected).
@@ -72,21 +74,33 @@ const cases = [
   'known-valid program; current solver cannot decide'],
   ['defect', facts('today\'s own internal failure (SearchBroke)', { at:
     'test/fixtures/r0/audit/fx010-record-payload.pinned.json#k',
-  today: refused }), 'defect']
+  today: refused }), 'defect'],
+  // T6 (§18.161 (4)): an RT8 defect is reported as its own class; a
+  // check's decline has its own class either way.
+  ['an RT8 defect', facts('DEFECT: candidate refused, Unsatisfied'),
+    rt8DefectClass],
+  ['check decline', facts('declined by the check (NotCertifiable):'
+    + ' Unresolved Unsupported EffectLimit ForcedTail'),
+  'the check declines the candidate: compiles today'],
+  ['refused, check decline', facts('declined by the check (RecordDefect),'
+    + ' today refuses', { today: refused }),
+  'today refuses, the check declines the candidate']
 ];
 
 test('each window class is assigned on its injected facts', () => {
   for (const [name, input, expected] of cases)
     assert.equal(windowClassOf(input), expected, name);
   const assigned = new Set(cases.map(found => found[2]));
-  for (const name of Object.keys(windowClasses))
+  for (const name of [...Object.keys(windowClasses),
+    ...Object.keys(t6Classes)])
     assert.ok(assigned.has(name), `no case for ${name}`);
 });
 
 // No catch-all: an input no case names throws rather than becoming a
 // class.
 const unknown = [
-  ['an RT8 defect', facts('DEFECT: candidate refused, Unsatisfied')],
+  ['a check decline with no verdict', facts('declined by the check'
+    + ' (NotCertifiable)')],
   ['SearchBroke outside the defect list', facts('today\'s own internal'
     + ' failure (SearchBroke)', { today: refused })],
   ['an unknown compiling class', facts('(a) blocked: Unresolved Limit')],
@@ -114,7 +128,8 @@ test('anything else throws', () => {
 // target by default; R-b2: strategy limitations stay (b); every label
 // says where it comes from.
 test('no class of today\'s refusals targets Contradiction', () => {
-  for (const [name, found] of Object.entries(windowClasses)) {
+  for (const [name, found] of Object.entries({ ...windowClasses,
+    ...t6Classes })) {
     assert.doesNotMatch(found.target, /^Contradiction/, name);
     assert.equal(found.sectionReading,
       found.sectionSource.startsWith('reading'), name);
