@@ -49,7 +49,9 @@ const guardOf = (row, inputs) => (!row.class.includes('declined by g0Guard')
   ? [] : requirementsOf(problem(right(generate(inputs.tables)(
     inputs.signatures)(row.decl), `generation of ${row.at}`))).reasons);
 
-const factsOf = (row, inputs) => {
+// One declaration's facts, which its window class is read from; also
+// test/r0-t2-gap-verdicts-run.mjs's.
+export const factsOf = (row, inputs) => {
   const described = describe(row.decision);
   if (described.fault !== undefined) throw new Error(`${row.at} faulted`);
   return { at: row.at, rt8: row.class, today: todayOf(row.today),
