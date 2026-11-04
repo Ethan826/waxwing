@@ -33,6 +33,29 @@ export const lossOf = verdict => (verdict.certify === 'accepted'
 
 const pinnedOf = entry => entry.fault ?? entry.refusal;
 
+// The constructors of `CheckRefusal` (src/Domain/Verdict/Search.purs),
+// the only refusals `certify` can give, as the honest report renders
+// them (`Name …`; `NotGeneric` bare). Copied by hand: a constructor
+// added there and observed here makes the file unmet until it is
+// listed (fails closed).
+const refusalKinds = ['RequirementOpen', 'Unsatisfied', 'Undefined',
+  'NotEntailed', 'RequirementFails', 'RequirementUnjudged', 'NotGeneric',
+  'RecordDefect', 'Malformed', 'NotCertifiable', 'ObligationFailed'];
+
+// A `certify` verdict the honest report can produce: `accepted`, or
+// a refusal by its whole constructor name.
+export const isCertifyVerdict = text => text === 'accepted'
+  || refusalKinds.some(kind => text === kind
+    || String(text).startsWith(`${kind} `));
+
+// The `certify` verdict the pin fixes for an entry, or null where it
+// fixes none: a RequirementUnjudged entry was pinned with certify's
+// own refusal, and a ForcedTail entry only where certify accepts
+// (test/r0-t2-honest-gate.mjs `admission`). A read fault's is not
+// pinned; only the serial test checks it against the checker.
+const pinnedCertify = entry => ({ refusals: entry.pinned,
+  forcedTail: 'accepted' })[entry.list] ?? null;
+
 // The pin's gap entries per denominator, in the pin's order.
 export const gapEntriesOf = pin => Object.fromEntries(
   Object.entries(pin.denominators).map(([name, d]) => [name,
@@ -65,14 +88,32 @@ const apart = (name, pinned, recorded) => [
   ...recorded.filter((key, index) => recorded.indexOf(key) !== index)
     .map(key => `${name}: verdict file repeats ${key}`)];
 
-// One recorded entry's own problems: a field not text, or a loss that
-// is not the one its `certify` verdict gives.
-const entryProblems = (name, entry) => [
-  ...textFields.filter(field => typeof entry?.[field] !== 'string')
-    .map(field => `${name}: ${entry?.at} has no ${field} verdict`),
-  ...(entry?.loss === lossOf(entry ?? {}) ? []
-    : [`${name}: ${entry?.at} loss ${entry?.loss}, but certify `
-      + `${entry?.certify}`])];
+// The pin's own `certify` verdict for a recorded entry, read from the
+// pin (not the entry's `pinned`), or null.
+const pinCertifyOf = (entries, entry) => {
+  const found = entries.find(pinned => pinned.at === entry?.at
+    && pinned.list === entry?.list);
+  return found === undefined ? null : pinnedCertify(found);
+};
+
+// One recorded entry's own problems: a field not text, a `certify`
+// verdict `certify` cannot give or other than the pin fixes, or a loss
+// that is not the one its `certify` verdict gives.
+const entryProblems = (name, entries, entry) => {
+  const fixed = pinCertifyOf(entries, entry);
+  return [
+    ...textFields.filter(field => typeof entry?.[field] !== 'string')
+      .map(field => `${name}: ${entry?.at} has no ${field} verdict`),
+    ...(isCertifyVerdict(entry?.certify) ? []
+      : [`${name}: ${entry?.at} certify ${entry?.certify} is no `
+        + 'verdict certify gives']),
+    ...(fixed === null || entry?.certify === fixed ? []
+      : [`${name}: ${entry?.at} certify ${entry?.certify}, but the pin `
+        + `fixes ${fixed}`]),
+    ...(entry?.loss === lossOf(entry ?? {}) ? []
+      : [`${name}: ${entry?.at} loss ${entry?.loss}, but certify `
+        + `${entry?.certify}`])];
+};
 
 // Every way `file` fails to back `pin`'s gap lists; [] holds. Absent
 // or misshapen, it backs nothing.
@@ -93,7 +134,7 @@ export const verdictProblems = (file, pin) => {
     }
     problems.push(...apart(name, entries.map(keyOf),
       recorded.map(keyOf)),
-    ...recorded.flatMap(entry => entryProblems(name, entry)));
+    ...recorded.flatMap(entry => entryProblems(name, entries, entry)));
   }
   return problems;
 };

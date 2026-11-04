@@ -81,5 +81,16 @@ export const t2ActivationRows = [
   helper('r0-t2-activation-loss-one-denominator', losses,
     '  const losses = lossNames(entries.flat());\n',
     '  const losses = lossNames(entries[0]);\n',
-    /r0-t2-activation-gate: .*"effectPinLoss"/)
+    /r0-t2-activation-gate: .*"effectPinLoss"/),
+  // certify's verdict not checked against the pin: a ForcedTail
+  // relabelled refused reads as an existing refusal.
+  helper('r0-t2-activation-certify-unpinned', verdicts,
+    '    ...(fixed === null || entry?.certify === fixed ? []\n',
+    '    ...(true ? []\n',
+    /r0-t2-activation-gate: .*"forcedRelabelled"/),
+  // Any text read as a certify refusal: a typo is an existing refusal.
+  helper('r0-t2-activation-certify-unrecognised', verdicts,
+    '    ...(isCertifyVerdict(entry?.certify) ? []\n',
+    '    ...(true ? []\n',
+    /r0-t2-activation-gate: .*"certifyUnrecognised"/)
 ];

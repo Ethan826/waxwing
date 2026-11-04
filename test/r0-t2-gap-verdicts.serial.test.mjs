@@ -4,8 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './r0-corpus.mjs';
 import { observedVerdicts } from './r0-t2-gap-verdicts-run.mjs';
-import { honestPinFile, lossOf, verdictFileOf, verdictProblems,
-  verdictsFile } from './r0-t2-gap-verdicts.mjs';
+import { honestPinFile, isCertifyVerdict, lossOf, verdictFileOf,
+  verdictProblems, verdictsFile } from './r0-t2-gap-verdicts.mjs';
 
 // Dossier §18.159 criterion 2, corpus-observed: today's verdicts on
 // every declaration of the honest pin's gap lists, both denominators,
@@ -43,12 +43,14 @@ test('the committed verdict file is today\'s, both ways', () => {
   assert.deepEqual(verdictProblems(recorded, pin), []);
 });
 
-// The observation itself: each loss is what `certify` gives, and every
-// list's entries carry a verdict from each source.
-test('every loss is certify\'s verdict, on both denominators', () => {
-  for (const entries of Object.values(found.denominators))
+// The committed file itself, apart from the recomputation: each loss
+// is what its recorded `certify` gives, every `certify` is a verdict
+// certify can give, and each entry carries a verdict from each source.
+test('every recorded loss is its certify verdict, both denominators', () => {
+  for (const entries of Object.values(json(verdictsFile).denominators))
     for (const entry of entries) {
       assert.equal(entry.loss, lossOf(entry), entry.at);
+      assert.ok(isCertifyVerdict(entry.certify), entry.at);
       assert.ok(entry.decide && entry.checker && entry.shadow, entry.at);
     }
 });

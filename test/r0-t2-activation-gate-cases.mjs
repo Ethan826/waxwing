@@ -93,10 +93,21 @@ const changes = {
   // the verdict file is the evidence for it.
   refusalUnruled: [[], evidence => {
     status(evidence).losses.refusals = null; }],
-  noLossNoRuling: [[], evidence => {
-    for (const list of ['faults', 'forcedTail'])
-      verdicts(evidence, list).forEach(refused);
-    delete status(evidence).losses; }],
+  // Read faults today's `certify` refuses: no loss, no ruling needed.
+  faultsRefusedUnruled: [[], evidence => {
+    verdicts(evidence, 'faults').forEach(refused);
+    status(evidence).losses.faults = null; }],
+  // A ForcedTail relabelled refused, certify and loss agreeing: the pin
+  // admitted each ForcedTail only where certify accepts.
+  forcedRelabelled: [[2], evidence => {
+    verdicts(evidence, 'forcedTail').forEach(refused);
+    status(evidence).losses.forcedTail = null; }],
+  // A certify verdict certify cannot give is not a refusal.
+  certifyUnrecognised: [[2], evidence => {
+    verdicts(evidence, 'faults').forEach(entry => {
+      entry.certify = 'acceptd';
+      entry.loss = 'no'; });
+    status(evidence).losses.faults = null; }],
   verdictsMissing: [[2], evidence => {
     evidence.verdicts = null;
     status(evidence).losses.refusals = null; }],
@@ -109,7 +120,9 @@ const changes = {
     status(evidence).losses.forcedTail = null; }],
   refusalMarkedLoss: [[2], evidence => {
     verdicts(evidence, 'refusals')[0].loss = 'yes'; }],
-  // A refusal today's `certify` accepts is a loss, ruled or not.
+  // A RequirementUnjudged recorded as accepted: the pin fixes certify's
+  // refusal for it, so the file no longer backs the pin (before the
+  // cross-check it failed as a loss without a ruling).
   refusalLossUnruled: [[2], evidence => {
     verdicts(evidence, 'refusals').forEach(entry => {
       entry.certify = 'accepted';
