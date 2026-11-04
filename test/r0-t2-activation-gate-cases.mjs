@@ -165,6 +165,24 @@ const changes = {
     status(evidence).landed['R034 (2)'] = 'r0-a2-defect-block'; }],
   rowUnknown: [[4], evidence => {
     evidence.rows.delete('r0-a2-r034-2-merge'); }],
+  // §18.161 (5): R036 (1)-(3) and T6, each missing, then a wrong tag
+  // (`r036-10` is not `r036-1`), a shared row and an unregistered one.
+  landedR036x1Null: [[4], evidence => {
+    status(evidence).landed['R036 (1)'] = null; }],
+  landedR036x2Absent: [[4], evidence => {
+    delete status(evidence).landed['R036 (2)']; }],
+  landedR036x3Null: [[4], evidence => {
+    status(evidence).landed['R036 (3)'] = null; }],
+  landedT6Null: [[4], evidence => { status(evidence).landed.T6 = null; }],
+  landedWrongTag: [[4], evidence => {
+    status(evidence).landed['R036 (1)'] = 'r0-t2-r036-10-x'; }],
+  // A row carrying both tags, recorded for both items (not the first
+  // two, so a check of the R034 pair alone misses it).
+  landedSharedLater: [[4], evidence => {
+    status(evidence).landed['R036 (2)'] = 'r0-t2-r036-2-r036-3';
+    status(evidence).landed['R036 (3)'] = 'r0-t2-r036-2-r036-3'; }],
+  t6Unregistered: [[4], evidence => {
+    status(evidence).landed.T6 = 'r0-t6-unregistered'; }],
   comparisonNotRun: [[5], evidence => {
     status(evidence).comparison = null; }],
   comparisonFile: [[5], evidence => { delete evidence.files['cmp.json']; }],

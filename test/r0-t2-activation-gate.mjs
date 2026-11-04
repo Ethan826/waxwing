@@ -17,11 +17,13 @@ import { citesWhole, missing, result, ruling, standing, statementsSeven,
   statusKey } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
 
-// Each R034 item with the tag its regression row's name must carry, so
-// an unrelated row, or one row for both, does not count (BACKLOG itself
-// is not read).
+// Each activation prerequisite with the tag its regression row's name
+// must carry, so an unrelated row, or one row for several items, does
+// not count (BACKLOG itself is not read). Dossier §18.161 (5) added
+// R036 (1)-(3) and T6 to R034 (2) and (10).
 export const landedItems = [['R034 (2)', 'r034-2'],
-  ['R034 (10)', 'r034-10']];
+  ['R034 (10)', 'r034-10'], ['R036 (1)', 'r036-1'],
+  ['R036 (2)', 'r036-2'], ['R036 (3)', 'r036-3'], ['T6', 't6']];
 export const comparisonKeys = ['census', 'window', 'rt8', 'shadow'];
 export const perfParts = ['readBack', 'validator'];
 export const perfMetrics = ['compileTime', 'peakMemory'];
@@ -50,19 +52,29 @@ const landedLine = (evidence, [item, tag], row) => {
     : [false, `${item}: row ${row} not in the regression registry`];
 };
 
-// 4. BACKLOG R034 (2) and (10) landed: each names its own regression
-// row, which the registry holds (a fix lands with its restored-defect
-// row).
+const notLicence = 'met: the evidence exists; not permission to activate'
+  + ' (§18.161 (5))';
+
+// Each row recorded for more than one item, with its items.
+const sharedLines = rows => [...new Set(rows.filter(row =>
+  typeof row === 'string' && rows.indexOf(row) !== rows.lastIndexOf(row)))]
+  .map(row => [false, `one row for several items: ${row} (${landedItems
+    .filter((item, index) => rows[index] === row).map(([name]) => name)
+    .join(', ')})`]);
+
+// 4. The activation prerequisites landed (BACKLOG R034 (2), (10),
+// R036 (1)-(3), T6): each names its own regression row, which the
+// registry holds (a fix lands with its restored-defect row). Met means
+// the evidence exists, not permission to activate (§18.161 (5)).
 const landed = evidence => {
   const items = statusKey(evidence, 'landed');
   if (!isObject(items)) return missing('landed');
   const rows = landedItems.map(([item]) => items[item]);
   const lines = [...landedItems.map((item, index) =>
-    landedLine(evidence, item, rows[index])),
-  ...(typeof rows[0] === 'string' && rows[0] === rows[1]
-    ? [[false, `one row for both items: ${rows[0]}`]] : [])];
-  return result(lines.filter(([met]) => !met).map(([, line]) => line),
-    lines.filter(([met]) => met).map(([, line]) => line));
+    landedLine(evidence, item, rows[index])), ...sharedLines(rows)];
+  const problems = lines.filter(([met]) => !met).map(([, line]) => line);
+  return result(problems, [...lines.filter(([met]) => met)
+    .map(([, line]) => line), ...(problems.length > 0 ? [] : [notLicence])]);
 };
 
 // 5. The scratch-build comparison with the validator minting: a
@@ -149,7 +161,8 @@ export const criteria = [
   { id: 2, title: 'A1: each gap list\'s loss on replacement ruled',
     measure: acceptance },
   { id: 3, title: 'the author\'s C6 decision', measure: c6 },
-  { id: 4, title: 'BACKLOG R034 (2) and (10) landed', measure: landed },
+  { id: 4, title: 'BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed',
+    measure: landed },
   { id: 5, title: 'scratch-build comparison with the validator minting',
     measure: comparison },
   { id: 6, title: 'performance qualified, read-back and validator apart',

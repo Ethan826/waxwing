@@ -59,7 +59,7 @@ to §18.159; every other value is null:
 | `repin` | the dossier section of a later re-pin ruling, if the pin departs from §18.157 | 1 |
 | `losses` | per gap list (`faults`, `refusals`, `forcedTail`), the section ruling its loss on replacement; read only for a list holding a loss | 2 |
 | `c6` | the section recording the C6 decision | 3 |
-| `landed` | per item, `"R034 (2)"` and `"R034 (10)"`, the name of its restored-defect regression row | 4 |
+| `landed` | per item, `"R034 (2)"`, `"R034 (10)"`, `"R036 (1)"`, `"R036 (2)"`, `"R036 (3)"` and `"T6"`, the name of its restored-defect regression row | 4 |
 | `comparison` | the path of the comparison file | 5 |
 | `performance.ruling` | the section approving the budget | 6 |
 | `performance.budget` | the approved figures, per part and metric | 6 |
@@ -256,16 +256,36 @@ reads met. That ruling retains the expected shadow divergence and
 does not authorize live acceptance widening; the gate reads only the
 citation.
 
-### 4. BACKLOG R034 (2) and (10) landed
+### 4. BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
+
+Dossier §18.161 (5) extended this criterion from R034 (2) and (10) to
+R036 (1), (2) and (3) and T6 (the RT8 and window tooling fixes,
+§18.161 (4)).
 
 Check: `landed` names a regression row for each item, and the
 registry holds that row. Under the project's rule, a fix lands with
-its restored-defect row. The two rows must differ, and each row's
-name must carry its item's tag as a hyphen-separated part: `r034-2`
-or `r034-10`. That rule keeps an unrelated row from counting. Rows
-for these items must follow it.
+its restored-defect row. No row may be recorded for two items, and
+each row's name must carry its item's tag as a hyphen-separated part:
+`r034-2`, `r034-10`, `r036-1`, `r036-2`, `r036-3` or `t6`. That rule
+keeps an unrelated row from counting, and `r036-10` does not carry
+`r036-1`. Rows for these items must follow it.
 
-Measured: not met; neither item has a row. BACKLOG R034's next action
+Met means the evidence exists: each item has its own tagged,
+registered row. It is not permission to activate, and the met state
+says so (§18.161 (5)).
+
+Must-fail cases (test/r0-t2-activation-gate-cases.mjs): each item
+missing (null or absent), a row with the wrong tag (an R034 row for
+R034 (2), `r036-10` for R036 (1)), a row shared by two items (the
+R034 pair, and R036 (2) with R036 (3)), and a row the registry lacks.
+Restored-defect rows (scripts/regression-r0-t2-activation.mjs):
+`r0-t2-activation-items-two` reads the R034 items alone,
+`r0-t2-activation-shared-pair` checks only the first two items for a
+shared row, and `r0-t2-activation-tag-prefix` reads a tag as a prefix.
+
+Measured: not met; no item has a row. The status file holds the six
+keys, each null, until the controller records the rows at
+integration. BACKLOG R034's next action
 (read by hand, not by the gate) still says "add (10)'s check" and
 "land (2) before Task 16", which the A2 plan's Task 16 guards require.
 Record check 6 (5f87a35, rows `r0-a2-duplicates-*`) rejects repeated
@@ -364,11 +384,11 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 1 met: Task 13's pin approved; no unexpected refusal
 2 NOT MET: A1: each gap list's loss on replacement ruled
 3 met: the author's C6 decision
-4 NOT MET: BACKLOG R034 (2) and (10) landed
-5 NOT MET: scratch-build comparison with the validator minting
+4 NOT MET: BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
+5 met: scratch-build comparison with the validator minting
 6 NOT MET: performance qualified, read-back and validator apart
 7 met: routing after activation; U4 and U6 standing
-gate: not met (2, 4, 5, 6)
+gate: not met (2, 4, 6)
 ```
 
 Criterion 2's lines on the working tree at the head of branch

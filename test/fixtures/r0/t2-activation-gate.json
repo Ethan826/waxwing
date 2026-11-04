@@ -9,7 +9,11 @@
   "c6": "§18.159",
   "landed": {
     "R034 (2)": null,
-    "R034 (10)": null
+    "R034 (10)": null,
+    "R036 (1)": null,
+    "R036 (2)": null,
+    "R036 (3)": null,
+    "T6": null
   },
   "comparison": "test/fixtures/r0/t2-minting-comparison.json",
   "performance": {

@@ -128,6 +128,22 @@ test('the report names a figure-less re-pin and a bad measurement', () => {
   assert.match(measured(undefined), /lacks a compileTime measurement/);
 });
 
+// §18.161 (5): criterion 4 names each shared row with its items, and
+// its met state says that met is not permission to activate.
+test('criterion 4 names a shared row; met is not a licence', () => {
+  const fourth = evidence => evaluate(evidence).find(found =>
+    found.id === 4).state.join('\n');
+  const shared = met();
+  shared.status.landed['R036 (2)'] = 'r0-t2-r036-2-r036-3';
+  shared.status.landed['R036 (3)'] = 'r0-t2-r036-2-r036-3';
+  assert.ok(fourth(shared).includes('one row for several items:'
+    + ' r0-t2-r036-2-r036-3 (R036 (2), R036 (3))'));
+  assert.doesNotMatch(fourth(shared), /not permission/);
+  assert.match(fourth(met()), /T6: landed, row r0-t6-rt8-declines/);
+  assert.ok(fourth(met()).includes('met: the evidence exists; not'
+    + ' permission to activate (§18.161 (5))'));
+});
+
 test('a section is found by its whole number only', () => {
   const dossier = '### 18.15 a\nx\n### 18.157 b\ny\n## c\nz\n';
   assert.equal(section(dossier, '§18.157'), '### 18.157 b\ny');

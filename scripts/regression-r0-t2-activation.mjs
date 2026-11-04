@@ -90,6 +90,23 @@ export const t2ActivationRows = [
     '    ...(fixed === null || entry?.certify === fixed ? []\n',
     '    ...(true ? []\n',
     /r0-t2-activation-gate: .*"forcedRelabelled"/),
+  // §18.161 (5): criterion 4 reading R034 (2) and (10) alone, so
+  // R036 (1)-(3) and T6 count as landed with no row.
+  helper('r0-t2-activation-items-two', gate,
+    "  ['R034 (10)', 'r034-10'], ['R036 (1)', 'r036-1'],\n"
+      + "  ['R036 (2)', 'r036-2'], ['R036 (3)', 'r036-3'], ['T6', 't6']];\n",
+    "  ['R034 (10)', 'r034-10']];\n",
+    /r0-t2-activation-gate: .*"landedR036x1Null".*"landedT6Null"/),
+  // A shared row caught only between the first two items, as before.
+  helper('r0-t2-activation-shared-pair', gate,
+    '    landedLine(evidence, item, rows[index])), ...sharedLines(rows)];\n',
+    '    landedLine(evidence, item, rows[index])),\n'
+      + '  ...sharedLines(rows.slice(0, 2))];\n',
+    /r0-t2-activation-gate: .*"landedSharedLater"/),
+  // A tag read as a prefix: `r036-10` counts for R036 (1).
+  helper('r0-t2-activation-tag-prefix', gate,
+    "new RegExp(`(^|-)${tag}(-|$)`)", "new RegExp(`(^|-)${tag}`)",
+    /r0-t2-activation-gate: .*"landedWrongTag"/),
   // Any text read as a certify refusal: a typo is an existing refusal.
   helper('r0-t2-activation-certify-unrecognised', verdicts,
     '    ...(isCertifyVerdict(entry?.certify) ? []\n',
