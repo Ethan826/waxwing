@@ -153,13 +153,34 @@ test('a ratio that moves with load downgrades the verdict', () => {
   assert.equal(moving.verdict, 'undetermined');
   assert.match(moving.downgrade.join(), /\|tau\| 1\.000 over 0\.45/);
   assert.equal(tauScreen, 0.45);
-  const reasons = downgradesOf({ q1: 1.1, q3: 1.3 },
-    { tau: 0.1, fit: { slope: 0.1, intercept: 1 } });
-  assert.equal(reasons.length, 2);
-  assert.match(reasons[0], /fitted ratio 1\.452 at load 4\.52 \(before\)/);
-  assert.deepEqual(downgradesOf({ q1: 1.1, q3: 1.3 },
-    { tau: -0.4, fit: { slope: 0, intercept: 1.2 } }), []);
 });
+
+test('the fit screen: in range only, and only where it flips the verdict',
+  () => {
+    const rising = { tau: 0.1, fit: { slope: 0.1, intercept: 1 } };
+    const out = downgradesOf('addedNotNecessary', 1500, 1200,
+      { ...rising, load: { min: 1.5, max: 3 } });
+    assert.deepEqual(out.reasons, []);
+    assert.deepEqual([out.fittedAt.before.place, out.fittedAt.after
+      .extrapolated], ['above', true]);
+    const within = { ...rising, load: { min: 4, max: 7 } };
+    const flipped = downgradesOf('addedNotNecessary', 1500, 1200, within);
+    assert.equal(flipped.reasons.length, 2);
+    assert.match(flipped.reasons[0],
+      /fitted ratio 1\.452 at load 4\.52 \(before\) gives T \/ fitted 1033/);
+    const flat = load => ({ tau: 0, fit: { slope: 0, intercept: load },
+      load: { min: 4, max: 7 } });
+    assert.deepEqual(downgradesOf('addedNotNecessary', 1500, 1200,
+      flat(1.2)).reasons, []);
+    assert.equal(downgradesOf('addedNecessary', 1300, 1200, flat(1.0))
+      .reasons.length, 2);
+    assert.deepEqual(downgradesOf('addedNecessary', 1300, 1200, flat(1.2))
+      .reasons, []);
+    assert.deepEqual(downgradesOf('addedNecessary', 1300, 1200, within)
+      .reasons, []);
+    assert.equal(downgradesOf('addedNotNecessary', 1500, 1200,
+      { ...flat(1.2), tau: -0.5 }).reasons.length, 1);
+  });
 
 test('the existing axis, the overrun split and the supporting factors',
   () => {

@@ -174,12 +174,17 @@ last); no per-file load was recorded (minor 1).
   r carries over to them and taking T, a single sample, as given.
 - Added axis: `passed` if T ≤ B (controls). Else `addedNotNecessary`
   if T / q3 > B, `addedNecessary` if T / q1 ≤ B, else `undetermined`.
-- Downgrade (ruling I3, fixed now): `addedNotNecessary` or
+- Downgrade (rulings I3 and N1, fixed now): `addedNotNecessary` or
   `addedNecessary` becomes `undetermined` when |tau-b| of the added
   ratio against load exceeds 0.45 (about the tabled two-sided 5%
-  critical value of Kendall's tau at n = 12; a screen, not a test), or
-  when the ratio's Theil-Sen fit at 4.52 or at 6.23 lies outside
-  q1-q3. The reasons are recorded.
+  critical value of Kendall's tau at n = 12; a screen, not a test).
+  It also becomes `undetermined` when, at 4.52 or at 6.23, a load
+  lying within the verdict pairs' sampled mean loads, the ratio's
+  Theil-Sen fit there would flip it: `addedNotNecessary` when T /
+  fitted ≤ B, `addedNecessary` when T / fitted > B. At a load outside
+  that range the fitted ratio is reported as extrapolated and the
+  verdict is left alone. The reasons and the fitted ratios, with their
+  places, are recorded.
 - Existing axis (ruling I2): `existingOverBound` if L > B (the existing
   compiler, at the lowest loads sampled and in the tests' context, is
   over the bound already); else `loadOrUnreproducedNeeded` (load, or
@@ -227,8 +232,12 @@ run's load, 25 as a generous ceiling.
 ## 10. Threats to validity
 
 - Transfer. The verdict assumes failed/pre measured here holds at the
-  failed run's conditions; the downgrade screens the ratio's load
-  dependence only within the loads sampled.
+  failed run's conditions. The fit screen acts only where 4.52 or 6.23
+  lies within the loads sampled; outside it only tau-b screens, so a
+  load dependence that shows only beyond the sampled range is missed.
+  With no load dependence (a simulation of 12 pairs, ratio 1.15 ± 0.02
+  or 0.04), the tau screen downgrades about 4-5% of verdicts by itself
+  and the fit screen under 1%.
 - One failed observation. T is a single sample with unknown noise.
 - Context. Each file's process matches its test's order and brackets,
   but not the node test runner, the perf runner's other files before

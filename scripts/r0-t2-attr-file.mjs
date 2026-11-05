@@ -44,22 +44,32 @@ const perfLoads = () => ({ before: perfRun.loadBefore,
   after: perfRun.loadAfter });
 
 // Downgrades a not-passed verdict to undetermined when the ratio moves
-// with load: |tau| over the screen, or the ratio's fit at the failed
-// run's loads outside the hinges. Returns the reasons.
-export const downgradesOf = (added, againstLoad) => {
+// with load (protocol §7): |tau| over the screen; or, at a failed-run
+// load that lies within the verdict pairs' sampled loads, the ratio's
+// fit there would flip the verdict (addedNotNecessary when T / fitted
+// is within the bound, addedNecessary when it is over). At a load
+// outside the sampled range the fit is reported as extrapolated and
+// the verdict is left alone. Returns the reasons and the fitted ratios.
+export const downgradesOf = (base, observedMs, boundMs, againstLoad) => {
   const reasons = [];
   if (againstLoad.tau !== null && Math.abs(againstLoad.tau) > tauScreen)
     reasons.push(`|tau| ${Math.abs(againstLoad.tau).toFixed(3)} over `
       + `${tauScreen}`);
-  if (againstLoad.fit !== null)
-    for (const [when, load] of Object.entries(perfLoads())) {
+  const fittedAt = againstLoad.fit === null ? null : Object.fromEntries(
+    Object.entries(perfLoads()).map(([when, load]) => {
       const ratio = fitted(againstLoad.fit, load);
-      if (ratio > added.q3 || ratio < added.q1)
+      const place = placeOf(load, againstLoad.load);
+      const flips = place === 'within' && ratio > 0
+        && (base === 'addedNotNecessary' ? observedMs / ratio <= boundMs
+          : base === 'addedNecessary' && observedMs / ratio > boundMs);
+      if (flips)
         reasons.push(`fitted ratio ${ratio.toFixed(3)} at load ${load} `
-          + `(${when}) outside q1-q3 ${added.q1.toFixed(3)}-`
-          + `${added.q3.toFixed(3)}`);
-    }
-  return reasons;
+          + `(${when}) gives T / fitted ${(observedMs / ratio).toFixed(0)}`
+          + ` against the bound ${boundMs}`);
+      return [when, { load, ratio, place,
+        extrapolated: place !== 'within' }];
+    }));
+  return { reasons, fittedAt };
 };
 
 const baseVerdict = (observedMs, boundMs, preEquivalent) =>
@@ -77,8 +87,10 @@ export const attribute = (workload, summary) => {
   const preEquivalent = { median: t / added.median, low: t / added.q3,
     high: t / added.q1 };
   const base = baseVerdict(t, b, preEquivalent);
-  const downgrade = base === 'passed' ? []
-    : downgradesOf(added, summary.addedAgainstLoad);
+  const screened = base === 'passed' || base === 'undetermined'
+    ? { reasons: [], fittedAt: null }
+    : downgradesOf(base, t, b, summary.addedAgainstLoad);
+  const downgrade = screened.reasons;
   const verdict = downgrade.length === 0 ? base : 'undetermined';
   const existing = low.wallMs > b ? 'existingOverBound'
     : 'loadOrUnreproducedNeeded';
@@ -94,6 +106,7 @@ export const attribute = (workload, summary) => {
   const ratioLoad = summary.addedAgainstLoad.load;
   return { kind: 'attribution, not qualification', observedMs: t,
     boundMs: b, measuredMs: m, preEquivalent, baseVerdict: base, downgrade,
+    fittedRatio: screened.fittedAt,
     verdict, reading: readings[verdict], existing,
     existingReading: existingReadings[existing], lowLoad: low, overrun,
     supporting: { total: t / m, existing: low.wallMs / m,
