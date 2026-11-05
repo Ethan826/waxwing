@@ -26,7 +26,6 @@ export const t2PackageProbes = {
   'r0-t2-package-mark-clash': probe('clashWrong'),
   'r0-t2-package-forced': probe('forcedWrong'),
   'r0-t2-package-sorts': probe('sortsWrong'),
-  'r0-t2-package-shared': probe('sharedWrong'),
   'r0-t2-package-distinct': probe('distinctWrong'),
   'r0-t2-package-extension': probe('extensionWrong'),
   'r0-t2-package-theta-effects': probe('thetaWrong'),

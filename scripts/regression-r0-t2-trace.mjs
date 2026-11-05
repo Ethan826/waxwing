@@ -9,13 +9,17 @@ export const t2TraceRows = [
     // `finish` skips the renumbering: every meta keeps its raw number,
     // so a meta the body shares no longer reads the body's hole. Since
     // R036 (2) the renumbering arm is in Trace/Types.purs `renumbered`.
+    // The probe also runs the package's check (once the row
+    // r0-t2-package-shared, the same edit): a meta the body shares reads
+    // another number on the effect side, and the two live sources of
+    // `w`'s handler row disagree (fail-closed, `Apart`).
     name: 'r0-t2-trace-renumber',
     file: 'src/Features/Check/Trace/Types.purs',
     needle: '    Hole meta → maybe (unnumbered meta) (Right <<< Hole)\n',
     replacement: '    Hole meta → maybe (unnumbered meta) '
       + '(Right <<< const (Hole meta))\n',
     probe: 'r0-t2-trace-renumber',
-    message: /r0-t2-trace-renumber: \["Nil","length"\]/
+    message: /r0-t2-trace-renumber: \["Nil","length","shared:Apart"\]/
   },
   {
     // `recordApplied` drops the argument span: an over-applied call's

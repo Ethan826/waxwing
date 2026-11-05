@@ -44,15 +44,9 @@ export const t2PackageRows = [
     '  start = { next: Map.size numbering, seen: numbering }\n',
     '  start = { next: 0 * Map.size numbering, seen: numbering }\n',
     /r0-t2-package-sorts: \[.*"e"/),
-  // The trace keeps raw metas: a meta the body shares reads another
-  // number on the effect side, and the two live sources of `w`'s handler
-  // row disagree (fail-closed, `Apart`).
-  // (Since R036 (2) the renumbering arm is Trace/Types.purs's.)
-  row('r0-t2-package-shared', types,
-    '    Hole meta → maybe (unnumbered meta) (Right <<< Hole)\n',
-    '    Hole meta → maybe (unnumbered meta) '
-      + '(Right <<< const (Hole meta))\n',
-    /r0-t2-package-shared: \["Apart"\]/),
+  // The trace keeping raw metas (once the row r0-t2-package-shared) is
+  // restored by r0-t2-trace-renumber (scripts/regression-r0-t2-
+  // trace.mjs), whose probe also runs this package's shared-meta check.
   // The body's numbering gives every meta one number.
   row('r0-t2-package-distinct', 'src/Features/Check/Holes.purs',
     '  else { next: found.next + 1, seen: Map.insert meta found.next '

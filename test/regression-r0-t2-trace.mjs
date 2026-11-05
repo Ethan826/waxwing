@@ -15,8 +15,19 @@ const reported = (context, wrong) => {
   passed(context);
 };
 
-const renumbered = async context =>
-  reported(context, (await traceCases(loader(context))).renumberWrong());
+// The renumbering arm read by both of its checks: the trace's (a meta
+// the body shares reads the body's hole) and the package's (one live
+// meta, one number in types and effects), each prefixed `shared:`.
+// One row restores it (scripts/regression-r0-t2-trace.mjs). The package
+// checks are imported when the probe runs, as in
+// test/regression-r0-t2-package.mjs.
+const renumbered = async context => {
+  const trace = (await traceCases(loader(context))).renumberWrong();
+  const checks = await import('./r0-t2-package-checks.mjs');
+  const shared = (await checks.packageChecks(loader(context)))
+    .sharedWrong();
+  reported(context, [...trace, ...shared.map(name => `shared:${name}`)]);
+};
 
 const appliedKeys = async context =>
   reported(context, (await traceCases(loader(context))).appliedWrong());
