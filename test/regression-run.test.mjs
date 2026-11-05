@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync,
-  statSync, writeFileSync } from 'node:fs';
-import { exitCodeFor, prove, rowTree, runRegression }
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync,
+  readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { exitCodeFor, prove, regressionLock, rowTree, runRegression }
   from '../scripts/regression-run.mjs';
 import { r0AminRows } from '../scripts/regression-r0-amin.mjs';
 import { runPool } from '../scripts/regression-pool.mjs';
@@ -179,4 +181,50 @@ test('rows flagged alone run one at a time, after the pooled rows',
     assert.ok(log.every(line => !line.includes('slow')
       || line.includes('active 1') || line.startsWith('end')),
     log.join('\n'));
+  });
+
+// Two runs at once would delete each other's .build/regression. A run
+// holds a mkdir lock (scripts/regression-run.mjs `regressionLock`); a
+// second run refuses before proving or deleting anything, and the lock
+// is released after a run, a failed one included. A lock in a temp dir
+// stands in for the real one; .build/regression is the real one.
+const lockIn = () => join(mkdtempSync(join(tmpdir(), 'waxwing-lock-')),
+  'regression.lock');
+
+test('a run refuses while another holds the lock, deleting nothing',
+  async t => {
+    assert.equal(regressionLock, '.build/regression.lock');
+    const lock = lockIn();
+    let release;
+    const held = new Promise(resolve => { release = resolve; });
+    const first = captured(t, () => runRegression(rows, ['alpha'], 1,
+      { ...options(() => held), lock }));
+    await pause();
+    assert.ok(existsSync(lock));
+    const sentinel = '.build/regression/lock-sentinel';
+    mkdirSync('.build/regression', { recursive: true });
+    writeFileSync(sentinel, 'first run');
+    let proved = 0;
+    await assert.rejects(() => runRegression(rows, [], 1,
+      { ...options(async () => { proved++; }), lock }),
+    /Another regression run holds .*regression\.lock/);
+    assert.equal(proved, 0);
+    assert.equal(readFileSync(sentinel, 'utf8'), 'first run');
+    release();
+    assert.deepEqual((await first).result, []);
+    assert.ok(!existsSync(lock));
+    rmSync(join(lock, '..'), { recursive: true, force: true });
+  });
+
+test('the lock is released after a failed run, so the next proceeds',
+  async t => {
+    const lock = lockIn();
+    await assert.rejects(() => runRegression(rows, [], 0,
+      { ...options(passingProver), lock }), /jobs/);
+    assert.ok(!existsSync(lock));
+    const { result } = await captured(t, () => runRegression(rows, [], 2,
+      { ...options(passingProver), lock }));
+    assert.deepEqual(result, []);
+    assert.ok(!existsSync(lock));
+    rmSync(join(lock, '..'), { recursive: true, force: true });
   });

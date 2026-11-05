@@ -6,6 +6,21 @@ import { applyEdits, buildBaseline, cloneTreeAsync, compileTreeAsync,
 import { regressionJobs, runPool } from './regression-pool.mjs';
 const base = '.build/regression';
 const failures = '.build/regression-failed';
+// One run at a time: a run holds this directory while it uses `base` and
+// `failures`, which it deletes. mkdir is atomic, so a second run fails to
+// create it and refuses before deleting anything.
+export const regressionLock = '.build/regression.lock';
+const acquire = lock => {
+  mkdirSync(dirname(lock), { recursive: true });
+  try {
+    mkdirSync(lock);
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    throw new Error(`Another regression run holds ${lock}; wait for it `
+      + 'to finish. If no run is active (one was killed), remove the '
+      + 'directory and run again.');
+  }
+};
 // A row's probe runs through `entry` (default test/regression.mjs); the
 // perf-side rows (scripts/regression-perf.mjs) name test/perf-regression.mjs.
 const entryOf = row => row.entry ?? 'test/regression.mjs';
@@ -115,17 +130,20 @@ const requireKnown = (rows, names) => {
 // Proves the rows (all, or those named) in a bounded pool. A failing row
 // does not stop the others: every row runs, and the failing names come
 // back in row order. Rows print as they finish; the summary is
-// deterministic. The row prover and baseline builder are injected; the
-// defaults are the real ones. An unknown name throws before anything runs.
+// deterministic. The row prover, baseline builder and lock path are
+// injected; the defaults are the real ones. An unknown name, or a lock
+// another run holds, throws before anything runs or is deleted.
 export const runRegression = async (rows, names = [],
   jobs = regressionJobs(),
-  { prove: proveRow = proveAndClean, buildBase = buildBaseline } = {}) => {
+  { prove: proveRow = proveAndClean, buildBase = buildBaseline,
+    lock = regressionLock } = {}) => {
   requireKnown(rows, names);
   const proved = rows.filter(row => names.length === 0
     || names.includes(row.name));
-  rmSync(base, { recursive: true, force: true });
-  rmSync(failures, { recursive: true, force: true });
+  acquire(lock);
   try {
+    rmSync(base, { recursive: true, force: true });
+    rmSync(failures, { recursive: true, force: true });
     if (proved.length > 0) buildBase(`${base}/baseline`);
     // Rows flagged `alone` (timing-sensitive growth rows) run one at a
     // time after the pooled rows, so the pool's load is not theirs.
@@ -145,5 +163,6 @@ export const runRegression = async (rows, names = [],
     return failed;
   } finally {
     rmSync(base, { recursive: true, force: true });
+    rmSync(lock, { recursive: true, force: true });
   }
 };
