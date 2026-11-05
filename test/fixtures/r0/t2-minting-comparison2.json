@@ -1,6 +1,7 @@
 {
   "ruling": "dossier §18.159 criterion 5; §18.161 (4) (repeat after T1-T6; disposable build; nothing re-pinned)",
   "build": "9ed83f1b plus the first comparison's scratch minting change, adapted to T3/T4 (faultName covers RowUnconverted, ImageUnconverted, TraceUnfinished; Reason.uncheckedKinds places EffectsUnread; test/r0-decide-support.mjs renders EffectsUnread with its fault name); worktree removed",
+  "commit": "9ed83f1b7d562238e6b6e74fde519e83928dc9e6",
   "scratchDiff": "docs/plans/2026-11-04-minting-comparison-scratch2.diff (verbatim; never applied to a branch)",
   "census": {
     "moved": []

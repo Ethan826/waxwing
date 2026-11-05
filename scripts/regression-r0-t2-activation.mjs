@@ -111,5 +111,15 @@ export const t2ActivationRows = [
   helper('r0-t2-activation-certify-unrecognised', verdicts,
     '    ...(isCertifyVerdict(entry?.certify) ? []\n',
     '    ...(true ? []\n',
-    /r0-t2-activation-gate: .*"certifyUnrecognised"/)
+    /r0-t2-activation-gate: .*"certifyUnrecognised"/),
+  // A record stale against src read as fresh: src changed since the
+  // recorded commit and criteria 5 and 6 still met.
+  helper('r0-t2-activation-src-unchecked', evidence,
+    '  return at === head ? []\n', '  return true ? []\n',
+    /r0-t2-activation-gate: .*"comparisonStale","bothStale".*"perfStale"/),
+  // A record without a full commit sha read as fresh.
+  helper('r0-t2-activation-commit-unrequired', evidence,
+    '    return [`${path}: no commit (a full sha) recorded`];\n',
+    '    return [];\n',
+    /r0-t2-activation-gate: .*"comparisonNoCommit","comparisonShortCommit"/)
 ];

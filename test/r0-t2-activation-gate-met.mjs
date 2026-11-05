@@ -46,6 +46,9 @@ const denominator = (candidates, floor, faults) => ({ candidates, floor,
   forcedTail: forcedTail.map(at =>
     ({ at, refusal: 'NotCertifiable ForcedTail {}' })) });
 
+// The commit both records name; `src` gives it HEAD's src tree.
+export const recordCommit = 'c0ffee0000000000000000000000000000000000';
+
 const budget = () => ({ compileTime: 2, peakMemory: 2 });
 
 const within = () => ({ compileTime: { measured: 1 },
@@ -84,10 +87,12 @@ const withPin = pin => ({
     'r0-a2-defect-block', 'r0-r034-2-r034-10', 'r0-t2-r036-1-scan',
     'r0-t2-r036-2-fallback', 'r0-t2-r036-3-conversion',
     'r0-t6-rt8-declines', 'r0-t2-r036-2-r036-3', 'r0-t2-r036-10-x']),
-  files: { 'cmp.json': { build: 'abc', census: { moved: [] },
-    window: { moved: [] }, rt8: { moved: [] }, shadow: { moved: [] } },
-  'perf.json': { conditions: 'quiet machine', readBack: within(),
-    validator: within() } }
+  src: { head: 'tree1', at: { [recordCommit]: 'tree1' } },
+  files: { 'cmp.json': { build: 'abc', commit: recordCommit,
+    census: { moved: [] }, window: { moved: [] }, rt8: { moved: [] },
+    shadow: { moved: [] } },
+  'perf.json': { commit: recordCommit, conditions: 'quiet machine',
+    readBack: within(), validator: within() } }
 });
 
 export const met = () => withPin(pinOf());

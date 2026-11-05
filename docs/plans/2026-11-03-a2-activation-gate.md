@@ -27,8 +27,9 @@ approves a direction, not activation.
 
 `node scripts/r0-t2-activation-gate.mjs` prints each criterion's
 state and exits 1 while any criterion is unmet, 0 only when all seven
-are met. It reads files in the working tree and nothing else. It runs
-neither the corpus nor the compiler and writes nothing. It reads:
+are met. It reads files in the working tree and, through `git
+rev-parse`, src tree ids, nothing else. It runs neither the corpus nor
+the compiler and writes nothing. It reads:
 
 - the gate-status file, test/fixtures/r0/t2-activation-gate.json;
 - Task 13's honest pin, test/fixtures/r0/t2-honest.json, against the
@@ -40,7 +41,9 @@ neither the corpus nor the compiler and writes nothing. It reads:
 - the statements, docs/plans/r0-amin-statements.md (§7, and U4's and
   U6's rows in the §0e table only);
 - the regression registry's row names (scripts/regression-r0.mjs);
-- the files the gate-status file cites (sections 5 and 6 below).
+- the files the gate-status file cites (sections 5 and 6 below);
+- the src tree of HEAD and of each cited file's `commit`
+  (`git rev-parse <commit>:src`, criteria 5 and 6).
 
 BACKLOG.md is not read. Criterion 4 reads regression rows instead.
 
@@ -81,8 +84,8 @@ A cited ruling counts as recorded only if all three hold:
   for 6, `routing` for 7, and for criterion 2 `read fault`,
   `RequirementUnjudged` or `ForcedTail` according to the list.
 
-Checks: `node --test test/r0-t2-activation-gate.test.mjs` (10 tests).
-A synthetic body of evidence meets all seven criteria. Each of 60
+Checks: `node --test test/r0-t2-activation-gate.test.mjs` (13 tests).
+A synthetic body of evidence meets all seven criteria. Each of 75
 must-fail cases changes one thing and must leave unmet exactly the
 criteria it names, with every other criterion still met. Three further
 cases must hold: a lowered pin with a later re-pin ruling that names
@@ -98,8 +101,12 @@ routing and the losses, leaves criteria 2, 3, 6 and 7 unmet. On the
 committed tree, criterion 2 reads the three `RequirementUnjudged` as
 existing refusals on both denominators and the read faults and
 ForcedTail as losses; without the verdict file it reads none as an
-existing refusal. The last test runs the script on the working tree
-and checks that its exit status agrees with the criteria it names.
+existing refusal. A test runs the script on the working tree and
+checks that its exit status agrees with the criteria it names. Another
+checks that the "Today's report" block below equals the script's
+unindented lines on the working tree. A third reads both committed
+records as fresh against src and, on the synthetic evidence, names a
+stale record and one without a `commit`.
 
 The regression rows in scripts/regression-r0-t2-activation.mjs (probe
 `r0-t2-activation-gate`, test/regression-r0-t2-activation.mjs) each
@@ -121,7 +128,9 @@ restore one defect in the gate's helpers:
 - losses read from the first denominator only;
 - `certify`'s recorded verdict not checked against the pin, so a
   ForcedTail relabelled refused reads as an existing refusal;
-- any text read as a `certify` refusal, so a typo reads as one.
+- any text read as a `certify` refusal, so a typo reads as one;
+- a record whose src changed since its `commit` read as fresh;
+- a record without a full `commit` sha read as fresh.
 
 ## Criteria
 
@@ -283,27 +292,36 @@ Restored-defect rows (scripts/regression-r0-t2-activation.mjs):
 `r0-t2-activation-shared-pair` checks only the first two items for a
 shared row, and `r0-t2-activation-tag-prefix` reads a tag as a prefix.
 
-Measured: not met; no item has a row. The status file holds the six
-keys, each null, until the controller records the rows at
-integration. BACKLOG R034's next action
-(read by hand, not by the gate) still says "add (10)'s check" and
-"land (2) before Task 16", which the A2 plan's Task 16 guards require.
-Record check 6 (5f87a35, rows `r0-a2-duplicates-*`) rejects repeated
-declaration-list entries (§18.155 (2)). That is a different invariant
-from (10)'s duplicated owner, and the gate does not count it.
+Measured on 2026-11-04 (3cad78cd): met. Each item names its own
+tagged row, and the registry holds it: R034 (2)
+`r0-a2-r034-2-unmerged`, R034 (10) `r0-a2-r034-10-owner-twice`,
+R036 (1) `r0-t2-r036-1-scan-blind`, R036 (2) `r0-t2-r036-2-meta-raw`,
+R036 (3) `r0-t2-r036-3-row-coarse` and T6 `r0-t6-rt8-declines-defect`.
+The met state adds "met: the evidence exists; not permission to
+activate (§18.161 (5))". Record check 6 (5f87a35, rows
+`r0-a2-duplicates-*`) rejects repeated declaration-list entries
+(§18.155 (2)). That is a different invariant from (10)'s duplicated
+owner, and the gate does not count it.
 
 ### 5. Scratch-build comparison with the validator minting
 
-Check: `comparison` names a JSON file holding `build` (the commit
-compared) and, for `census`, `window`, `rt8` and `shadow`, a `moved`
-list with every moved row. That is the comparison the A2 plan's Task
-16 Step 1 describes, made with r0-results-diff on the dumps. The gate
-checks that the comparison was recorded. Whether the moves are
+Check: `comparison` names a JSON file holding `build` (the build
+compared, as text), `commit` (the full sha it was built from) and, for
+`census`, `window`, `rt8` and `shadow`, a `moved` list with every
+moved row. The src tree at `commit` must equal HEAD's; otherwise the
+record is unmet ("stale: src changed since <commit>"), and a record
+without `commit` is unmet too. That is the comparison the A2 plan's
+Task 16 Step 1 describes, made with r0-results-diff on the dumps. The
+gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
-Measured: not met; not run. Minting is held (§18.157), so no such
-build exists. Evidence it needs: the comparison file above, from a
-run the author authorizes.
+Measured on 2026-11-04 (3cad78cd): met. The status cites
+test/fixtures/r0/t2-minting-comparison2.json, the repeat after T1-T6
+(§18.161 (4)): built at 9ed83f1b with the first comparison's scratch
+minting change adapted to T3/T4, in a disposable worktree since
+removed. Census 0 moved, window 16, rt8 15, shadow 16. Its `commit`
+is 9ed83f1b7d562238e6b6e74fde519e83928dc9e6, and src is unchanged
+since. Whether the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
 
@@ -313,22 +331,29 @@ Check:
   and approves a budget.
 - `performance.budget` holds the approved figures, a number for each
   part and metric.
-- `performance.measurement` names a JSON file with `conditions` and
-  two parts, `readBack` (trace collection and read-back) and
-  `validator`. Each part has `compileTime` and `peakMemory`, each with
-  a `measured` number that is finite and not negative.
+- `performance.measurement` names a JSON file with `conditions`,
+  `commit` (as for criterion 5: its src tree must equal HEAD's, and a
+  file without it is unmet) and two parts, `readBack` (trace
+  collection and read-back) and `validator`. Each part has
+  `compileTime` and `peakMemory`, each with a `measured` number that
+  is finite and not negative.
 - Each measured value is at most the status file's budget. Any budget
   written in the measurement file is ignored.
 
 BACKLOG R035's acceptance asks for "an approved budget met by a
 recorded measurement before activation", memory included.
 
-Measured: not met. There is no budget ruling, no budget figures and
-no measurement. The only figures are §18.156's noisy reports
-(collection +22% compile and +35% recheck CPU, read-back about +80%
-CPU on the shadow test). §18.157 says they establish neither a
-regression size nor acceptable performance. R034 (11) makes no
-performance claim for the validator.
+Measured on 2026-11-04 (3cad78cd): not met. There is no budget
+ruling and there are no budget figures, so the report lists the
+missing ruling, the missing figures and each of the four budgets the
+status lacks. A measurement is recorded:
+test/fixtures/r0/t2-performance-2.json, measured at fc93a92b, with
+its conditions and both parts. Its `commit` is
+fc93a92bbb77767e1a48e119eb7070cb9f92c89b, and src is unchanged since.
+Without a budget its figures meet nothing. The attribution of the
+failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
+read by the gate. R034 (11) makes no performance claim for the
+validator.
 
 ### 7. Routing after activation; U4 and U6 standing
 
@@ -370,29 +395,37 @@ fixtures and mutants never run".
 - The comparison and measurement files are read as recorded. Whether
   every moved row is listed depends on r0-results-diff, and units and
   conditions are the measurer's.
+- A record whose `commit` has HEAD's src tree can still be stale in
+  every other input: the test helpers and scripts that ran it, the
+  corpus, dependencies, the compiler toolchain and the machine. The
+  check also compares committed trees, so uncommitted changes to src
+  are not seen, and a `commit` that names the wrong run is taken at
+  its word.
 - U4's and U6's standing is printed, not judged.
 
 ## Today's report
 
-The script's headings and verdict on the working tree (exit 1). Its
-measured lines are longer than this file's 80-column limit, so they
-are left out here; the Measured paragraphs above paraphrase them, and
-the script prints them in full.
+The script's unindented lines on the working tree (exit 1), checked
+by test/r0-t2-activation-gate.test.mjs. Its measured lines are longer
+than this file's 80-column limit, so they are left out here; the
+Measured paragraphs above paraphrase them, and the script prints them
+in full.
 
 ```text
 A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 1 met: Task 13's pin approved; no unexpected refusal
 2 NOT MET: A1: each gap list's loss on replacement ruled
 3 met: the author's C6 decision
-4 NOT MET: BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
+4 met: BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
 5 met: scratch-build comparison with the validator minting
 6 NOT MET: performance qualified, read-back and validator apart
 7 met: routing after activation; U4 and U6 standing
-gate: not met (2, 4, 6)
+gate: not met (2, 6)
 ```
 
-Criterion 2's lines on the working tree at the head of branch
-ap/verdicts, each wrapped here and with the loss names left out:
+Criterion 2's lines on the working tree, the same at 3cad78cd as at
+the head of branch ap/verdicts, each wrapped here and with the loss
+names left out:
 
 ```text
 loss on replacement, RequirementUnjudged (corpus loader: losses 0,

@@ -2,7 +2,8 @@
 // (test/r0-t2-activation-gate.mjs; docs/plans/2026-11-03-a2-activation-
 // gate.md), as files in the working tree: a dossier section by its
 // citation, statements §7 and the §0e table, a ruling the gate-status
-// file cites, and a key of that file. Each returns null or an unmet
+// file cites, a key of that file, and a recorded run's freshness
+// against src. Each returns null or an unmet
 // result for evidence that is absent or of the wrong shape, never a met
 // one.
 export const statusFile = 'test/fixtures/r0/t2-activation-gate.json';
@@ -106,3 +107,22 @@ export const statusKey = (evidence, key) => (evidence.status === null
   : evidence.status[key]);
 
 export const missing = key => result([`gate status lacks "${key}"`], []);
+
+// A recorded run's freshness against src: the record's `commit` (a
+// full sha) and `evidence.src`, the src tree ids the report script reads
+// with `git rev-parse` (`head`, HEAD's; `at`, each commit's, null when
+// git cannot resolve it). Equal src trees say only that src has not
+// changed since the run; any other input may have.
+export const fullSha = /^[0-9a-f]{40}$/;
+
+export const staleness = (evidence, path, file) => {
+  const commit = file.commit;
+  if (typeof commit !== 'string' || !fullSha.test(commit))
+    return [`${path}: no commit (a full sha) recorded`];
+  const head = evidence.src?.head ?? null;
+  const at = evidence.src?.at?.[commit] ?? null;
+  if (head === null || at === null)
+    return [`${path}: src tree at ${commit} or HEAD unread`];
+  return at === head ? []
+    : [`${path}: stale: src changed since ${commit}`];
+};

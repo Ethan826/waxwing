@@ -9,6 +9,7 @@
 import { evaluate, unmet } from './r0-t2-activation-gate.mjs';
 import { met, statements, verdictsOf }
   from './r0-t2-activation-gate-met.mjs';
+import { freshChanges } from './r0-t2-activation-gate-fresh.mjs';
 
 const loader = evidence => evidence.pin.denominators['corpus loader'];
 
@@ -219,7 +220,8 @@ const changes = {
   u4OutsideTable: [[7], evidence => {
     evidence.statements = statements
       .replace('| U4 | §11 | unresolved | no | yes |\n', '')
-      .replace('## 7a. Trace', '## 7a. Trace\n| U4 | §11 | x | no | y |'); }]
+      .replace('## 7a. Trace', '## 7a. Trace\n| U4 | §11 | x | no | y |'); }],
+  ...freshChanges
 };
 
 export const expected = Object.fromEntries(Object.entries(changes)

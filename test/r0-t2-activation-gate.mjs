@@ -6,15 +6,17 @@
 // (`pin`), the gap-verdict file (`verdicts`, test/fixtures/r0/
 // t2-gap-verdicts.json), the dossier's and the statements' text, the
 // regression registry's row names (`rows`, a Set) and the files the
-// status cites (`files`, path to parsed JSON or null). Nothing here decides: a
+// status cites (`files`, path to parsed JSON or null) and the src trees
+// (`src`: `head`, HEAD's; `at`, each cited record's `commit`'s; see
+// `staleness`). Nothing here decides: a
 // criterion that needs the author is met only when the status cites a
 // dossier section after §18.157 that exists and names the matter.
 // Absent or misshapen evidence is unmet, never assumed met; a measure
 // that throws is unmet with its message.
 // scripts/r0-t2-activation-gate.mjs gathers the evidence and prints
 // `reportText`; it runs neither corpus nor compiler.
-import { citesWhole, missing, result, ruling, standing, statementsSeven,
-  statusKey } from './r0-t2-activation-evidence.mjs';
+import { citesWhole, missing, result, ruling, staleness, standing,
+  statementsSeven, statusKey } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
 
 // Each activation prerequisite with the tag its regression row's name
@@ -52,7 +54,7 @@ const landedLine = (evidence, [item, tag], row) => {
     : [false, `${item}: row ${row} not in the regression registry`];
 };
 
-const notLicence = 'met: the evidence exists; not permission to activate'
+const notLicense = 'met: the evidence exists; not permission to activate'
   + ' (§18.161 (5))';
 
 // Each row recorded for more than one item, with its items.
@@ -74,11 +76,12 @@ const landed = evidence => {
     landedLine(evidence, item, rows[index])), ...sharedLines(rows)];
   const problems = lines.filter(([met]) => !met).map(([, line]) => line);
   return result(problems, [...lines.filter(([met]) => met)
-    .map(([, line]) => line), ...(problems.length > 0 ? [] : [notLicence])]);
+    .map(([, line]) => line), ...(problems.length > 0 ? [] : [notLicense])]);
 };
 
 // 5. The scratch-build comparison with the validator minting: a
-// committed file naming its build, every moved row per comparison.
+// committed file naming its build and its commit, whose src tree is
+// HEAD's, and every moved row per comparison.
 const comparison = evidence => {
   const path = statusKey(evidence, 'comparison');
   if (path === undefined) return missing('comparison');
@@ -87,11 +90,13 @@ const comparison = evidence => {
   if (file === null) return result([`${path} missing`], []);
   const problems = [
     ...(typeof file.build === 'string' ? [] : [`${path}: no build`]),
+    ...staleness(evidence, path, file),
     ...comparisonKeys.filter(key => !Array.isArray(file[key]?.moved))
       .map(key => `${path}: no ${key} moved list`)];
   return result(problems, problems.length > 0 ? [] : [`run at `
     + `${file.build}: ${comparisonKeys.map(key =>
-      `${key} ${file[key].moved.length} moved`).join(', ')} (${path})`]);
+      `${key} ${file[key].moved.length} moved`).join(', ')} (${path})`,
+  `src unchanged since ${file.commit}`]);
 };
 
 // One part's measurements, each within the status file's budget for
@@ -116,7 +121,8 @@ const partProblems = (perf, path, file, part) =>
 
 // 6. Performance qualification (BACKLOG R035): a budget ruled after
 // §18.157 with its figures in the status, and a recorded measurement
-// within them, read-back and validator apart.
+// within them, read-back and validator apart, whose commit's src tree
+// is HEAD's.
 const performance = evidence => {
   const perf = statusKey(evidence, 'performance');
   if (!isObject(perf)) return missing('performance');
@@ -129,10 +135,12 @@ const performance = evidence => {
     ...(file === null ? ['not measured (no measurement recorded)']
       : [...(typeof file.conditions === 'string' ? []
         : [`${path}: no conditions`]),
+      ...staleness(evidence, path, file),
       ...perfParts.flatMap(part =>
         partProblems(perf, path, file, part))])];
   return result(problems, problems.length > 0 ? []
-    : [`budget ${budget.line}; measured within it (${path})`]);
+    : [`budget ${budget.line}; measured within it (${path})`,
+      `src unchanged since ${file.commit}`]);
 };
 
 // 7. Statements §7's routing after activation (a ruling §7 cites), and

@@ -8,7 +8,7 @@ import { criteria, evaluate, reportText }
 import { readFileSync } from 'node:fs';
 import { dossierFile, section, statementsFile, statusFile }
   from './r0-t2-activation-evidence.mjs';
-import { met } from './r0-t2-activation-gate-met.mjs';
+import { met, recordCommit } from './r0-t2-activation-gate-met.mjs';
 import { acceptance, pinApproved, pinFile }
   from './r0-t2-activation-pin.mjs';
 import { verdictsFile } from './r0-t2-gap-verdicts.mjs';
@@ -130,7 +130,7 @@ test('the report names a figure-less re-pin and a bad measurement', () => {
 
 // §18.161 (5): criterion 4 names each shared row with its items, and
 // its met state says that met is not permission to activate.
-test('criterion 4 names a shared row; met is not a licence', () => {
+test('criterion 4 names a shared row; met is not a license', () => {
   const fourth = evidence => evaluate(evidence).find(found =>
     found.id === 4).state.join('\n');
   const shared = met();
@@ -164,4 +164,45 @@ test('the report script on the committed tree agrees with its exit', () => {
   assert.equal(run.status, notMet.length === 0 ? 0 : 1);
   assert.ok(lines.includes(notMet.length === 0 ? 'gate: met'
     : `gate: not met (${notMet.join(', ')})`));
+});
+
+const reportRun = () => spawnSync('node',
+  ['scripts/r0-t2-activation-gate.mjs'], { encoding: 'utf8' });
+
+// Criteria 5 and 6 read each record's `commit` against HEAD's src tree.
+// On the committed tree both records are fresh (src unchanged since
+// 9ed83f1b and fc93a92b). Must-fail: src changed since the commit names
+// it stale; without the field the record is unmet.
+test('criteria 5 and 6 see a record stale against src', () => {
+  const run = reportRun();
+  assert.ok(run.stdout.includes('    src unchanged since '
+    + '9ed83f1b7d562238e6b6e74fde519e83928dc9e6\n'), run.stdout);
+  assert.doesNotMatch(run.stdout, /stale: |no commit|or HEAD unread/);
+  const stateOf = (change, id) => {
+    const evidence = met();
+    change(evidence);
+    return evaluate(evidence).find(found => found.id === id);
+  };
+  const stale = stateOf(evidence => {
+    evidence.src.at[recordCommit] = 'tree0'; }, 5);
+  assert.equal(stale.met, false);
+  assert.ok(stale.state.includes(`cmp.json: stale: src changed since `
+    + recordCommit));
+  const bare = stateOf(evidence => {
+    delete evidence.files['perf.json'].commit; }, 6);
+  assert.equal(bare.met, false);
+  assert.ok(bare.state.includes('perf.json: no commit (a full sha) '
+    + 'recorded'));
+});
+
+// The gate spec's "Today's report" block lists the script's headings
+// and verdict on the working tree: every line not indented, in order.
+test("the spec's report block is the script's headings", () => {
+  const spec = readFileSync('docs/plans/2026-11-03-a2-activation-gate.md',
+    'utf8');
+  const today = spec.slice(spec.indexOf("\n## Today's report\n"));
+  const block = /```text\n([\s\S]*?)\n```/.exec(today)[1].split('\n');
+  const heads = reportRun().stdout.trimEnd().split('\n')
+    .filter(line => !line.startsWith(' '));
+  assert.deepEqual(block, heads);
 });

@@ -72,6 +72,7 @@ export const measurementFile = (header, samples, list = comparisons,
       ['comparisons', own]]);
   };
   return { protocol: 'docs/plans/2026-11-04-performance-protocol.md',
+    commit: header.commit,
     conditions: conditionsText(header, samples), header,
     schedule: { warmups, pairs: count, order: 'counterbalanced: even '
       + 'rounds without first, odd rounds with first' },

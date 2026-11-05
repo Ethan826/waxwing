@@ -146,6 +146,7 @@ const keysOf = value => value === null || typeof value !== 'object' ? []
 const gateSix = file => {
   const evidence = met();
   evidence.files['perf.json'] = JSON.parse(JSON.stringify(file));
+  evidence.src.at[file.commit] = evidence.src.head;
   return evaluate(evidence).find(found => found.id === 6);
 };
 

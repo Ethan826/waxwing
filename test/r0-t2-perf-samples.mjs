@@ -25,6 +25,7 @@ export const samplesOf = (factor, count = pairs) => schedule(comparisons,
     maxRssMiB: rss, maxRssAfterPrepareMiB: rss - 5, counts: { n: 1 } }) };
 });
 export const header = { start: 'conditions [r0-t2-perf] commit abc',
+  commit: 'abc0000000000000000000000000000000000000',
   end: 'conditions [r0-t2-perf] commit abc' };
 export const changed = (samples, name, change) => samples.map(sample =>
   sample.comparison === name && !sample.warmup ? change(sample) : sample);
