@@ -1,0 +1,5272 @@
+{
+ "protocol": "docs/plans/2026-11-04-perf-attribution-protocol.md",
+ "ruling": "dossier §18.161: attribute without an idle computer, retries for green or bound changes",
+ "kind": "attribution, not qualification",
+ "header": {
+  "start": "conditions [r0-t2-attr] commit d98f53d2 time 2026-11-05T00:39:26.377Z load1 3.57 power AC Power",
+  "end": "conditions [r0-t2-attr] commit d98f53d2 time 2026-11-05T00:51:09.489Z load1 3.79 power AC Power",
+  "commit": "d98f53d26eef4dd5cbee02a41c32a2de343f7245",
+  "node": "v26.6.0",
+  "purs": "0.15.16",
+  "platform": "darwin",
+  "cores": 10,
+  "cpu": "Apple M2 Pro",
+  "fileTimeoutMs": 600000,
+  "workerEnv": {
+   "NODE_OPTIONS": null,
+   "UV_THREADPOOL_SIZE": null,
+   "names": [
+    "AI_AGENT",
+    "ASDF_DIR",
+    "BUN_INSTALL",
+    "CLAUDECODE",
+    "CLAUDE_CODE_CHILD_SESSION",
+    "CLAUDE_CODE_ENTRYPOINT",
+    "CLAUDE_CODE_EXECPATH",
+    "CLAUDE_CODE_MESSAGING_SOCKET",
+    "CLAUDE_CODE_MESSAGING_TOKEN",
+    "CLAUDE_CODE_SESSION_ATTENDED",
+    "CLAUDE_CODE_SESSION_ID",
+    "CLAUDE_EFFORT",
+    "CLAUDE_PID",
+    "COLORFGBG",
+    "COLORTERM",
+    "COMMAND_MODE",
+    "COREPACK_ENABLE_AUTO_PIN",
+    "FPATH",
+    "GIT_EDITOR",
+    "GOPATH",
+    "HOME",
+    "HOMEBREW_CELLAR",
+    "HOMEBREW_PREFIX",
+    "HOMEBREW_REPOSITORY",
+    "INFOPATH",
+    "ITERM_PROFILE",
+    "ITERM_SESSION_ID",
+    "JAVA_HOME",
+    "LANG",
+    "LC_TERMINAL",
+    "LC_TERMINAL_VERSION",
+    "LESS",
+    "LOGNAME",
+    "LSCOLORS",
+    "LS_COLORS",
+    "NVM_BIN",
+    "NVM_CD_FLAGS",
+    "NVM_DIR",
+    "NVM_INC",
+    "NoDefaultCurrentDirectoryInExePath",
+    "OLDPWD",
+    "OSLogRateLimit",
+    "PAGER",
+    "PATH",
+    "PWD",
+    "SHELL",
+    "SHLVL",
+    "SQLITE_EXEMPT_PATH_FROM_VNODE_GUARDS",
+    "SSH_AUTH_SOCK",
+    "TERM",
+    "TERMINFO_DIRS",
+    "TERM_FEATURES",
+    "TERM_PROGRAM",
+    "TERM_PROGRAM_VERSION",
+    "TERM_SESSION_ID",
+    "TMPDIR",
+    "USER",
+    "XPC_FLAGS",
+    "XPC_SERVICE_NAME",
+    "ZSH",
+    "_",
+    "__CFBundleIdentifier",
+    "__CF_USER_TEXT_ENCODING"
+   ]
+  },
+  "evidence": "/Users/ethan/Desktop/waxwing/.claude/worktrees/r0-t2-d1/.build/evidence/r0-t2-attr-2026-11-05T00-39-26-298Z",
+  "builds": {
+   "pre": {
+    "commit": "823f6283635ccf8c2b37c1c04858e7e4a1d3ae1f",
+    "srcTree": "eac3dfb773be5bb11c8bf525d9bf08626c695fa4",
+    "digest": "3e8c1384a1ea37ebe47a009d2a08515bd928b8590f2cdaed94041a9a77dd2ea9"
+   },
+   "failed": {
+    "commit": "354ce6e18d12ec3ddb06a6f5991750f3c9bd62cd",
+    "srcTree": "6c4ba726cdcdd50c1492cbdbfd57f5f9ca8b0511",
+    "digest": "d41a0ece410910bd0e25033e87b3d53239db805a31db053ad4ddf1512f767388"
+   },
+   "head": {
+    "commit": "d98f53d26eef4dd5cbee02a41c32a2de343f7245",
+    "srcTree": "b61a95785ea71c95ef8a9b2449d253585a775dde",
+    "digest": "02c0114c019af9527e776af8b9944e0ded8d1f70120c838e43107652e7eb30e0"
+   },
+   "uncollected": {
+    "commit": "d98f53d26eef4dd5cbee02a41c32a2de343f7245",
+    "srcTree": "b61a95785ea71c95ef8a9b2449d253585a775dde",
+    "digest": "960fd4d0436a0081c5ad00d3e43ab7d9ec64169ff633cd333c96a2330aa5029a"
+   }
+  },
+  "lock": "/private/tmp/claude-501/-Users-ethan-Desktop-waxwing/b74197eb-d097-415d-a686-bd9280832849/scratchpad/verify.lock",
+  "traces": {
+   "head": [
+    40287,
+    815,
+    160,
+    220,
+    51,
+    208,
+    40287,
+    815,
+    160,
+    220,
+    51,
+    208
+   ],
+   "uncollected": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "digests": {
+   "pre": {
+    "scale mixed": "0ac47d806f9e300927ecd4c0337f9ddf15a7266d8e146371a7f38e1914fc99b8",
+    "scale chain": "904ecdd2b84e40cd1b04414548ef8eceffd1f850bac24c8b96f4c58e03ce6cc6",
+    "scale curried": "f15b47afc1031101c81b22d0e01bbabceff32965e73e33297c5747a733d66ec3",
+    "scale generic": "f159e6d6ef6b3acf71fece0f1d97e464506821dd931cb7a7ea3af7e7221a6584"
+   },
+   "failed": {
+    "scale mixed": "0ac47d806f9e300927ecd4c0337f9ddf15a7266d8e146371a7f38e1914fc99b8",
+    "scale chain": "904ecdd2b84e40cd1b04414548ef8eceffd1f850bac24c8b96f4c58e03ce6cc6",
+    "scale curried": "f15b47afc1031101c81b22d0e01bbabceff32965e73e33297c5747a733d66ec3",
+    "scale generic": "f159e6d6ef6b3acf71fece0f1d97e464506821dd931cb7a7ea3af7e7221a6584"
+   },
+   "head": {
+    "scale mixed": "0ac47d806f9e300927ecd4c0337f9ddf15a7266d8e146371a7f38e1914fc99b8",
+    "scale chain": "904ecdd2b84e40cd1b04414548ef8eceffd1f850bac24c8b96f4c58e03ce6cc6",
+    "scale curried": "f15b47afc1031101c81b22d0e01bbabceff32965e73e33297c5747a733d66ec3",
+    "scale generic": "f159e6d6ef6b3acf71fece0f1d97e464506821dd931cb7a7ea3af7e7221a6584"
+   },
+   "uncollected": {
+    "scale mixed": "0ac47d806f9e300927ecd4c0337f9ddf15a7266d8e146371a7f38e1914fc99b8",
+    "scale chain": "904ecdd2b84e40cd1b04414548ef8eceffd1f850bac24c8b96f4c58e03ce6cc6",
+    "scale curried": "f15b47afc1031101c81b22d0e01bbabceff32965e73e33297c5747a733d66ec3",
+    "scale generic": "f159e6d6ef6b3acf71fece0f1d97e464506821dd931cb7a7ea3af7e7221a6584"
+   }
+  },
+  "driverMaxRssMiB": 379
+ },
+ "perfRun": {
+  "commit": "354ce6e",
+  "loadBefore": 4.52,
+  "loadAfter": 6.23
+ },
+ "schedule": {
+  "warmups": 1,
+  "rounds": 12,
+  "arms": [
+   "pre",
+   "failed",
+   "head",
+   "uncollected"
+  ],
+  "minPairs": 9,
+  "order": "Williams square of the four arms, each row three times"
+ },
+ "usable": true,
+ "workloads": [
+  {
+   "name": "linear value",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 981.767229,
+      "q1": 960.6461459999999,
+      "q3": 1012.7225834999999,
+      "min": 948.532958,
+      "max": 1055.877
+     },
+     "failed": {
+      "n": 12,
+      "median": 1241.5237084999999,
+      "q1": 1223.1112085,
+      "q3": 1255.5422705,
+      "min": 1187.925958,
+      "max": 1262.24425
+     },
+     "head": {
+      "n": 12,
+      "median": 1233.6140624999998,
+      "q1": 1191.235,
+      "q3": 1249.1539585,
+      "min": 1161.646125,
+      "max": 1280.0232079999998
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 966.4992914999999,
+      "q1": 962.415271,
+      "q3": 988.5675415,
+      "min": 952.476875,
+      "max": 1001.7275
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2421473250428514,
+      "q1": 1.2259275803210972,
+      "q3": 1.2798337499107322,
+      "min": 1.1909666874077187,
+      "max": 1.3307331488633418
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2365906619866376,
+      "q1": 1.2083442571626448,
+      "q3": 1.2664876181019777,
+      "min": 1.1561960840430738,
+      "max": 1.333278575464002
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9943308905866663,
+      "q1": 0.9599391738977898,
+      "q3": 1.0070316764500151,
+      "min": 0.9258051355749887,
+      "max": 1.0775277696221532
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2623405519472382,
+      "q1": 1.228526334653464,
+      "q3": 1.2856276794551829,
+      "min": 1.1749031945415436,
+      "max": 1.3438890135784136
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9887549143271976,
+      "q1": 0.9683133708922145,
+      "q3": 1.0101077444926003,
+      "min": 0.9206345767546789,
+      "max": 1.0426011127226213
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1926.429,
+      "q1": 1911.2975,
+      "q3": 1972.1025,
+      "min": 1898.7980000000002,
+      "max": 2036.6129999999998
+     },
+     "failed": {
+      "n": 12,
+      "median": 2358.7170000000006,
+      "q1": 2346.8985000000002,
+      "q3": 2382.5789999999997,
+      "min": 2292.466,
+      "max": 2414.223
+     },
+     "head": {
+      "n": 12,
+      "median": 2347.7785000000003,
+      "q1": 2305.5474999999997,
+      "q3": 2380.0935,
+      "min": 2243.418,
+      "max": 2394.9700000000003
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1908.451,
+      "q1": 1885.0639999999999,
+      "q3": 1923.6695,
+      "min": 1869.1200000000001,
+      "max": 1960.4060000000002
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2162818167287988,
+      "q1": 1.1877289223439915,
+      "q3": 1.2345360067448605,
+      "min": 1.174152185921757,
+      "max": 1.271448042393135
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2052558807074885,
+      "q1": 1.185392948729517,
+      "q3": 1.2217735303423054,
+      "min": 1.1597673453203603,
+      "max": 1.2397606404564339
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9943240325884242,
+      "q1": 0.9726204716080915,
+      "q3": 1.0053013432822682,
+      "min": 0.9496989300491296,
+      "max": 1.0245851690824372
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2368754526874226,
+      "q1": 1.2069678504728896,
+      "q3": 1.2507337713450353,
+      "min": 1.165201909058471,
+      "max": 1.2650531744363553
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9856398503218332,
+      "q1": 0.9714919988161894,
+      "q3": 0.9968125762428821,
+      "min": 0.925059400092212,
+      "max": 1.0265179501330794
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 912.9595,
+      "q1": 907.1825,
+      "q3": 936.629,
+      "min": 904.639,
+      "max": 945.2470000000001
+     },
+     "failed": {
+      "n": 12,
+      "median": 1164.9370000000001,
+      "q1": 1159.0785,
+      "q3": 1175.7005,
+      "min": 1128.8220000000001,
+      "max": 1194.255
+     },
+     "head": {
+      "n": 12,
+      "median": 1155.9520000000002,
+      "q1": 1132.02,
+      "q3": 1172.214,
+      "min": 1113.124,
+      "max": 1183.114
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 912.928,
+      "q1": 907.7165,
+      "q3": 920.061,
+      "min": 893.934,
+      "max": 936.698
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2705164272031804,
+      "q1": 1.2453965956289317,
+      "q3": 1.2806331787018717,
+      "min": 1.2368914942173719,
+      "max": 1.3166319957312216
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2524706671284798,
+      "q1": 1.2357720811799666,
+      "q3": 1.2655364443245878,
+      "min": 1.2043384729914646,
+      "max": 1.3024116917137736
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9872597114042729,
+      "q1": 0.9699491808416396,
+      "q3": 1.0009535182640523,
+      "min": 0.9426935227410984,
+      "max": 1.04604534638765
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2636936853961664,
+      "q1": 1.2383769006251533,
+      "q3": 1.2858825336864754,
+      "min": 1.2055123422917526,
+      "max": 1.3209017667971015
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9982437292579742,
+      "q1": 0.9804099144641192,
+      "q3": 1.0058952183990886,
+      "min": 0.9568629906684895,
+      "max": 1.011618902626291
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 65.44916649999993,
+     "q1": 54.644312999999954,
+     "q3": 76.75514599999997,
+     "min": 43.35595799999999,
+     "max": 113.69299999999998
+    },
+    "failed": {
+     "n": 12,
+     "median": 70.83983349999994,
+     "q1": 61.42052049999995,
+     "q3": 78.17466649999983,
+     "min": 55.10183299999994,
+     "max": 89.84529099999986
+    },
+    "head": {
+     "n": 12,
+     "median": 73.45729199999982,
+     "q1": 58.79633299999989,
+     "q3": 82.85883299999989,
+     "min": 42.06874999999991,
+     "max": 99.22420799999986
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 56.770917,
+     "q1": 51.89745849999997,
+     "q3": 67.97360399999997,
+     "min": 46.86233299999992,
+     "max": 83.90249999999992
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 6.797107505175721,
+      "intercept": 953.0729132916676,
+      "n": 12
+     },
+     "relativeSlope": 0.0069233391626842755,
+     "tau": 0.18181818181818182,
+     "offCpuTau": 0.3333333333333333,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 2.3985959899749685,
+      "intercept": 1231.9413175200498,
+      "n": 12
+     },
+     "relativeSlope": 0.0019319775962014733,
+     "tau": 0.030303030303030304,
+     "offCpuTau": 0.12121212121212122,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 8.651716738351473,
+      "intercept": 1199.5695571345868,
+      "n": 12
+     },
+     "relativeSlope": 0.0070133091064300945,
+     "tau": 0.030303030303030304,
+     "offCpuTau": -0.030303030303030304,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 0.4953499999999991,
+      "intercept": 964.4287284999999,
+      "n": 12
+     },
+     "relativeSlope": 0.0005125197756029594,
+     "tau": 0.01526762041381148,
+     "offCpuTau": 0.04580286124143444,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": -0.02416159257941375,
+     "intercept": 1.3464045970230218,
+     "n": 12
+    },
+    "tau": -0.030303030303030304,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 986.2509585,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1359,
+    "boundMs": 1200,
+    "measuredMs": 400,
+    "preEquivalent": {
+     "median": 1094.0731204755582,
+     "low": 1061.8566670044368,
+     "high": 1108.5483529492406
+    },
+    "baseVerdict": "addedNecessary",
+    "downgrade": [],
+    "fittedRatio": {
+     "before": {
+      "load": 4.52,
+      "ratio": 1.2371941985640718,
+      "place": "within",
+      "extrapolated": false
+     },
+     "after": {
+      "load": 6.23,
+      "ratio": 1.1958778752532742,
+      "place": "above",
+      "extrapolated": true
+     }
+    },
+    "verdict": "addedNecessary",
+    "reading": "the pre-tranche-2 compiler is estimated within the bound under the failed run's conditions, assuming the paired ratio failed/pre measured here carries over to the failed run's conditions, and T is that run's single sample",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 986.2509585,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": {
+     "overBound": 1.1325,
+     "remainder": 0.9117276003962985,
+     "addedShare": 1.7427132996201289,
+     "remainderShare": -0.7427132996201294,
+     "note": "log shares of log(T/B); the remainder is existing + load + unreproduced; a share can fall outside [0, 1]"
+    },
+    "supporting": {
+     "total": 3.3975,
+     "existing": 2.46562739625,
+     "added": 1.2421473250428514,
+     "residual": 1.1093252797843118
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.0050342878325458,
+      "place": "within"
+     },
+     "after": {
+      "factor": 1.0169082632720674,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear over",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1437.6177284999999,
+      "q1": 1417.7859374999998,
+      "q3": 1474.493458,
+      "min": 1358.794167,
+      "max": 1946.0637909999998
+     },
+     "failed": {
+      "n": 12,
+      "median": 2058.45675,
+      "q1": 1998.7671664999998,
+      "q3": 2101.5015624999996,
+      "min": 1953.59825,
+      "max": 2157.8402499999997
+     },
+     "head": {
+      "n": 12,
+      "median": 2064.054604,
+      "q1": 2023.8877709999997,
+      "q3": 2084.920667,
+      "min": 1931.532917,
+      "max": 2100.6269159999997
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1423.9082085,
+      "q1": 1412.0625205000001,
+      "q3": 1452.2727085,
+      "min": 1388.788708,
+      "max": 1562.088
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.416321549290208,
+      "q1": 1.3926037326766116,
+      "q3": 1.4561141515023317,
+      "min": 1.0627093826853902,
+      "max": 1.5006317458176652
+     },
+     "head": {
+      "n": 12,
+      "median": 1.4102291481290576,
+      "q1": 1.3834223146623237,
+      "q3": 1.4670968822885584,
+      "min": 1.0603120219094606,
+      "max": 1.4944879925269443
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9932246956324167,
+      "q1": 0.9794292316195772,
+      "q3": 1.011303466015688,
+      "min": 0.9645234011183174,
+      "max": 1.0619886736795017
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.4297626788281512,
+      "q1": 1.3996954543497686,
+      "q3": 1.4586311427268122,
+      "min": 1.3323752675905582,
+      "max": 1.4754766919058082
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9964706530219072,
+      "q1": 0.9729259690792393,
+      "q3": 1.0221886326470417,
+      "min": 0.740377408830788,
+      "max": 1.0510426151344734
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 2574.4610000000002,
+      "q1": 2487.24,
+      "q3": 2592.8325000000004,
+      "min": 2459.0280000000002,
+      "max": 2694.786
+     },
+     "failed": {
+      "n": 12,
+      "median": 3337.741,
+      "q1": 3280.285,
+      "q3": 3360.8175,
+      "min": 3182.9210000000003,
+      "max": 3414.8269999999998
+     },
+     "head": {
+      "n": 12,
+      "median": 3417.4495,
+      "q1": 3322.996,
+      "q3": 3471.5330000000004,
+      "min": 3277.4500000000003,
+      "max": 3526.861
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 2554.8205000000003,
+      "q1": 2527.7790000000005,
+      "q3": 2605.8205,
+      "min": 2459.302,
+      "max": 2639.6349999999998
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2977969534774831,
+      "q1": 1.284394808884337,
+      "q3": 1.3310505146913276,
+      "min": 1.2239869882061134,
+      "max": 1.3648250446924557
+     },
+     "head": {
+      "n": 12,
+      "median": 1.3393719989580153,
+      "q1": 1.3037468446766414,
+      "q3": 1.3600258370063223,
+      "min": 1.2482419754295888,
+      "max": 1.3879832417691635
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0272837152264709,
+      "q1": 1.0066075459783015,
+      "q3": 1.0395186358430513,
+      "min": 0.9770969234624389,
+      "max": 1.077017305801809
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.3318153602116631,
+      "q1": 1.3223595210357444,
+      "q3": 1.3458391475798201,
+      "min": 1.2743220180062775,
+      "max": 1.3716177206113778
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0101004207514803,
+      "q1": 0.9779977322456475,
+      "q3": 1.0223021358773874,
+      "min": 0.9482271409507865,
+      "max": 1.0469226182723104
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1372.211,
+      "q1": 1356.8785,
+      "q3": 1401.9985000000001,
+      "min": 1323.698,
+      "max": 1468.776
+     },
+     "failed": {
+      "n": 12,
+      "median": 1951.1509999999998,
+      "q1": 1920.319,
+      "q3": 1979.502,
+      "min": 1878.32,
+      "max": 2057.121
+     },
+     "head": {
+      "n": 12,
+      "median": 1978.8805,
+      "q1": 1943.7655,
+      "q3": 1986.5385,
+      "min": 1877.828,
+      "max": 2006.7160000000001
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1372.8245,
+      "q1": 1356.1480000000001,
+      "q3": 1392.1525000000001,
+      "min": 1332.719,
+      "max": 1456.467
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.4242955418769025,
+      "q1": 1.3814920222762608,
+      "q3": 1.4578622787535822,
+      "min": 1.3350081973016987,
+      "max": 1.4761332728098049
+     },
+     "head": {
+      "n": 12,
+      "median": 1.4333263045555065,
+      "q1": 1.3792773480726206,
+      "q3": 1.458166885076758,
+      "min": 1.347668398721112,
+      "max": 1.4723589143617544
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0064627157168626,
+      "q1": 0.9850186958819014,
+      "q3": 1.0166351139715983,
+      "min": 0.9742266849237694,
+      "max": 1.0369052618197392
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.4315625596209385,
+      "q1": 1.4135411925152088,
+      "q3": 1.436804230436469,
+      "min": 1.349208049341317,
+      "max": 1.4641318021643335
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.004677579873817,
+      "q1": 0.9816378279799847,
+      "q3": 1.0149554125035298,
+      "min": 0.9387469566496184,
+      "max": 1.0314091743993237
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 68.62387449999983,
+     "q1": 57.19677049999984,
+     "q3": 77.0658954999999,
+     "min": 35.09616699999992,
+     "max": 477.28779099999974
+    },
+    "failed": {
+     "n": 12,
+     "median": 89.6326459999998,
+     "q1": 74.97247949999996,
+     "q3": 104.66795849999994,
+     "min": 56.748541999999816,
+     "max": 158.3740839999998
+    },
+    "head": {
+     "n": 12,
+     "median": 87.8198749999998,
+     "q1": 78.14275049999992,
+     "q3": 96.44285399999978,
+     "min": 53.70491700000002,
+     "max": 122.28891599999974
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 56.573833000000036,
+     "q1": 53.28316649999988,
+     "q3": 60.193000499999926,
+     "min": 45.531708999999864,
+     "max": 148.47199999999998
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -2.944397293491759,
+      "intercept": 1449.4100396604344,
+      "n": 12
+     },
+     "relativeSlope": -0.002048108641901573,
+     "tau": -0.030303030303030304,
+     "offCpuTau": 0.12121212121212122,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": -17.93100207078384,
+      "intercept": 2130.9876533763204,
+      "n": 12
+     },
+     "relativeSlope": -0.008710895709022714,
+     "tau": -0.09090909090909091,
+     "offCpuTau": -0.42424242424242425,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 94.87360241379311,
+      "intercept": 1660.9159261206894,
+      "n": 12
+     },
+     "relativeSlope": 0.04596467662722411,
+     "tau": 0.48484848484848486,
+     "offCpuTau": 0.36363636363636365,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 81.3065300000002,
+      "intercept": 1091.2035879999992,
+      "n": 12
+     },
+     "relativeSlope": 0.057100963049894655,
+     "tau": 0.4732962328281559,
+     "offCpuTau": 0.0763381020690574,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": -0.0413964449034421,
+     "intercept": 1.584112201453649,
+     "n": 12
+    },
+    "tau": -0.15151515151515152,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 1445.1956665,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 2331,
+    "boundMs": 1620,
+    "measuredMs": 540,
+    "preEquivalent": {
+     "median": 1645.8127048678916,
+     "low": 1600.8360317046663,
+     "high": 1673.8429930241336
+    },
+    "baseVerdict": "undetermined",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "undetermined",
+    "reading": "the estimate straddles the bound, or the ratio moves with load (see downgrade), assuming the paired ratio failed/pre measured here carries over to the failed run's conditions, and T is that run's single sample",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 1445.1956665,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": {
+     "overBound": 1.4388888888888889,
+     "remainder": 1.01593376843697,
+     "addedShare": 0.9565556218367082,
+     "remainderShare": 0.043444378163291504,
+     "note": "log shares of log(T/B); the remainder is existing + load + unreproduced; a share can fall outside [0, 1]"
+    },
+    "supporting": {
+     "total": 4.316666666666666,
+     "existing": 2.6762882712962965,
+     "added": 1.416321549290208,
+     "residual": 1.1388165236156218
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9985157596105906,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9950149995197081,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear lambda",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1087.1145204999998,
+      "q1": 1073.6268539999999,
+      "q3": 1129.1128545,
+      "min": 1047.981458,
+      "max": 1310.078167
+     },
+     "failed": {
+      "n": 12,
+      "median": 1257.548396,
+      "q1": 1240.3613329999998,
+      "q3": 1301.4022504999998,
+      "min": 1223.003583,
+      "max": 1550.000083
+     },
+     "head": {
+      "n": 12,
+      "median": 1248.2485625,
+      "q1": 1217.621208,
+      "q3": 1280.735812,
+      "min": 1162.65175,
+      "max": 1312.7935
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1102.6057084999998,
+      "q1": 1065.7873745,
+      "q3": 1130.6740209999998,
+      "min": 1043.119042,
+      "max": 1219.573292
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.1605656661796209,
+      "q1": 1.1436710662701701,
+      "q3": 1.178034221909666,
+      "min": 1.0666299829008639,
+      "max": 1.2345635463217948
+     },
+     "head": {
+      "n": 12,
+      "median": 1.139814666240054,
+      "q1": 1.1036518758282141,
+      "q3": 1.1668860348555823,
+      "min": 0.8874674651379028,
+      "max": 1.2526877169233275
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9869622777687744,
+      "q1": 0.9618013310461759,
+      "q3": 1.0308857015571795,
+      "min": 0.7500978630592757,
+      "max": 1.052428062265129
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.141300638481726,
+      "q1": 1.1018385989152288,
+      "q3": 1.1762665336960776,
+      "min": 1.014743544416681,
+      "max": 1.2124004301981526
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.000440534565277,
+      "q1": 0.9607756226789612,
+      "q3": 1.0503833302280454,
+      "min": 0.7962265674487804,
+      "max": 1.1358724599570416
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1949.196,
+      "q1": 1906.7355,
+      "q3": 2033.732,
+      "min": 1872.338,
+      "max": 2258.7
+     },
+     "failed": {
+      "n": 12,
+      "median": 2070.9345000000003,
+      "q1": 2035.6115,
+      "q3": 2139.2265,
+      "min": 1948.162,
+      "max": 2189.685
+     },
+     "head": {
+      "n": 12,
+      "median": 2086.4345000000003,
+      "q1": 2035.842,
+      "q3": 2139.0370000000003,
+      "min": 1933.9640000000002,
+      "max": 2167.538
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1957.9425,
+      "q1": 1878.815,
+      "q3": 1983.8975,
+      "min": 1835.9640000000002,
+      "max": 2043.7630000000001
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.05636355741107,
+      "q1": 1.0231236238382628,
+      "q3": 1.0794783206764875,
+      "min": 0.9394682782131315,
+      "max": 1.1542129033210269
+     },
+     "head": {
+      "n": 12,
+      "median": 1.0512517787905133,
+      "q1": 1.0168327862742776,
+      "q3": 1.0942408322170034,
+      "min": 0.9083592331872318,
+      "max": 1.1539823472044044
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0016769029941435,
+      "q1": 0.9801399175657597,
+      "q3": 1.0233995871831187,
+      "min": 0.8832156223383729,
+      "max": 1.080267965395075
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.0820989939646983,
+      "q1": 1.0405563349638403,
+      "q3": 1.0953990645898604,
+      "min": 0.9793482301014915,
+      "max": 1.1515357754237558
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9842140644890383,
+      "q1": 0.9406358229312757,
+      "q3": 1.0394524326127974,
+      "min": 0.8329189356709613,
+      "max": 1.0655272472512247
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1033.5935,
+      "q1": 1020.2765,
+      "q3": 1069.674,
+      "min": 992.188,
+      "max": 1157.577
+     },
+     "failed": {
+      "n": 12,
+      "median": 1212.0525,
+      "q1": 1195.1025,
+      "q3": 1241.1925,
+      "min": 1177.156,
+      "max": 1277.914
+     },
+     "head": {
+      "n": 12,
+      "median": 1200.74,
+      "q1": 1167.295,
+      "q3": 1220.604,
+      "min": 1129.361,
+      "max": 1254.6970000000001
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1035.196,
+      "q1": 1014.202,
+      "q3": 1055.153,
+      "min": 1004.317,
+      "max": 1119.267
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.1678592882693555,
+      "q1": 1.141607165083705,
+      "q3": 1.1934070365704867,
+      "min": 1.0874680474819385,
+      "max": 1.2417999731799796
+     },
+     "head": {
+      "n": 12,
+      "median": 1.1552219037958011,
+      "q1": 1.115005436714529,
+      "q3": 1.1725783992905505,
+      "min": 0.9756249476276742,
+      "max": 1.2645758666704294
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9955936652303127,
+      "q1": 0.9598275933580984,
+      "q3": 1.011900136452803,
+      "min": 0.894794172377797,
+      "max": 1.035889226379531
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.1712686742560812,
+      "q1": 1.1076785733508383,
+      "q3": 1.1876915287596173,
+      "min": 1.072695791084701,
+      "max": 1.2297105121045477
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9992949851582759,
+      "q1": 0.9723074348432516,
+      "q3": 1.031420740404125,
+      "min": 0.8708578349431615,
+      "max": 1.0781828427760198
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 55.52660399999996,
+     "q1": 44.97645849999992,
+     "q3": 74.2852499999999,
+     "min": 35.58358299999986,
+     "max": 152.5011669999999
+    },
+    "failed": {
+     "n": 12,
+     "median": 45.468374999999924,
+     "q1": 41.92929199999992,
+     "q3": 61.53114599999992,
+     "min": 36.61558299999979,
+     "max": 291.17208299999993
+    },
+    "head": {
+     "n": 12,
+     "median": 44.7679169999999,
+     "q1": 36.90079199999991,
+     "q3": 64.22135399999979,
+     "min": 33.29074999999989,
+     "max": 82.49033299999996
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 64.59708299999994,
+     "q1": 47.93635449999988,
+     "q3": 74.65285449999988,
+     "min": 35.034042,
+     "max": 100.30629199999998
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 15.999740791476423,
+      "intercept": 1013.362210240487,
+      "n": 12
+     },
+     "relativeSlope": 0.014717622191374662,
+     "tau": 0.09090909090909091,
+     "offCpuTau": 0.18181818181818182,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 35.90273860474633,
+      "intercept": 1110.5098477368042,
+      "n": 12
+     },
+     "relativeSlope": 0.028549786806571803,
+     "tau": 0.3939393939393939,
+     "offCpuTau": 0.15151515151515152,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 32.28111397481223,
+      "intercept": 1110.9631894564181,
+      "n": 12
+     },
+     "relativeSlope": 0.025861126497241396,
+     "tau": 0.09090909090909091,
+     "offCpuTau": 0.2727272727272727,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 29.5390101449276,
+      "intercept": 978.5766540289851,
+      "n": 12
+     },
+     "relativeSlope": 0.026790184303610114,
+     "tau": 0.10687334289668037,
+     "offCpuTau": 0.13740858372430334,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.01699721859038525,
+     "intercept": 1.083176442323996,
+     "n": 12
+    },
+    "tau": 0.15151515151515152,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 1093.6914585,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1336,
+    "boundMs": 1545,
+    "measuredMs": 515,
+    "preEquivalent": {
+     "median": 1151.1627811616022,
+     "low": 1134.0926903076395,
+     "high": 1168.1680505891156
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 1093.6914585,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 2.5941747572815532,
+     "existing": 2.123672734951456,
+     "added": 1.1605656661796209,
+     "residual": 1.052548021852913
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.0107997531165709,
+      "place": "within"
+     },
+     "after": {
+      "factor": 1.036272274260483,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear mismatch",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 354.46433349999995,
+      "q1": 337.58187449999997,
+      "q3": 373.7893755,
+      "min": 317.08216699999997,
+      "max": 732.4215409999999
+     },
+     "failed": {
+      "n": 12,
+      "median": 341.297104,
+      "q1": 327.419625,
+      "q3": 360.5959165,
+      "min": 312.610958,
+      "max": 509.390833
+     },
+     "head": {
+      "n": 12,
+      "median": 337.2424165,
+      "q1": 328.90029200000004,
+      "q3": 354.29375,
+      "min": 312.455583,
+      "max": 503.16049999999996
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 355.9592295,
+      "q1": 348.4187915,
+      "q3": 363.065375,
+      "min": 319.849333,
+      "max": 385.615375
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 0.983517058742317,
+      "q1": 0.9360072907668786,
+      "q3": 1.0282130888875152,
+      "min": 0.4511531590794651,
+      "max": 1.1109647020555509
+     },
+     "head": {
+      "n": 12,
+      "median": 0.967938133446228,
+      "q1": 0.8974038170434371,
+      "q3": 1.005409394886466,
+      "min": 0.4658488737703579,
+      "max": 1.3249872875369682
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9879079663997969,
+      "q1": 0.917549014687058,
+      "q3": 1.0559669844614503,
+      "min": 0.6579220439171115,
+      "max": 1.4531447170154086
+     },
+     "trace": {
+      "n": 12,
+      "median": 0.9507463114679282,
+      "q1": 0.9277147100617729,
+      "q3": 1.014406654374543,
+      "min": 0.8505813017019547,
+      "max": 1.4049312574626254
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0262282503315996,
+      "q1": 0.9424302061385199,
+      "q3": 1.075490094266121,
+      "min": 0.4832238870484013,
+      "max": 1.1290287258570426
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 532.288,
+      "q1": 522.3040000000001,
+      "q3": 651.9435000000001,
+      "min": 513.486,
+      "max": 932.163
+     },
+     "failed": {
+      "n": 12,
+      "median": 508.5325,
+      "q1": 488.765,
+      "q3": 564.7895,
+      "min": 465.38599999999997,
+      "max": 627.12
+     },
+     "head": {
+      "n": 12,
+      "median": 510.1255,
+      "q1": 488.6965,
+      "q3": 557.0645,
+      "min": 463.408,
+      "max": 596.023
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 555.0875,
+      "q1": 526.6205,
+      "q3": 617.0915,
+      "min": 491.227,
+      "max": 693.403
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 0.9225819024494062,
+      "q1": 0.844509875323858,
+      "q3": 1.0142845623128738,
+      "min": 0.5360350067531108,
+      "max": 1.0917412816507808
+     },
+     "head": {
+      "n": 12,
+      "median": 0.9267159860905342,
+      "q1": 0.8178034511219607,
+      "q3": 0.9589369456615902,
+      "min": 0.5733321318267298,
+      "max": 1.1401783792274889
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.014932633877835,
+      "q1": 0.8966110644009876,
+      "q3": 1.08641473905884,
+      "min": 0.7911852788217627,
+      "max": 1.200376084151381
+     },
+     "trace": {
+      "n": 12,
+      "median": 0.9141440056597429,
+      "q1": 0.8244458539703898,
+      "q3": 0.9829140456751786,
+      "min": 0.7417423762236778,
+      "max": 1.1800857851868893
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0163676817810634,
+      "q1": 0.9750699062491298,
+      "q3": 1.0922688882221332,
+      "min": 0.638626506308446,
+      "max": 1.1626352440254428
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 329.411,
+      "q1": 324.1575,
+      "q3": 356.019,
+      "min": 303.988,
+      "max": 536.03
+     },
+     "failed": {
+      "n": 12,
+      "median": 317.8225,
+      "q1": 312.892,
+      "q3": 339.428,
+      "min": 301.259,
+      "max": 389.197
+     },
+     "head": {
+      "n": 12,
+      "median": 323.141,
+      "q1": 313.8165,
+      "q3": 335.526,
+      "min": 301.45,
+      "max": 343.432
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 333.302,
+      "q1": 328.6105,
+      "q3": 348.11400000000003,
+      "min": 308.424,
+      "max": 360.788
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 0.9668610313611576,
+      "q1": 0.9500825706970477,
+      "q3": 1.0077218412736286,
+      "min": 0.587164897487081,
+      "max": 1.0639131486967097
+     },
+     "head": {
+      "n": 12,
+      "median": 0.9691489722114119,
+      "q1": 0.9127937109702122,
+      "q3": 0.9974305267140455,
+      "min": 0.6049269630431133,
+      "max": 1.11645525481269
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.007426143304506,
+      "q1": 0.9398692505752132,
+      "q3": 1.0343742329878367,
+      "min": 0.8357412826923127,
+      "max": 1.1265688327983563
+     },
+     "trace": {
+      "n": 12,
+      "median": 0.9540499493857196,
+      "q1": 0.9343052154534359,
+      "q3": 1.0049117916465473,
+      "min": 0.8689135135290351,
+      "max": 1.054613129976915
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0190123316898598,
+      "q1": 0.9785334788497855,
+      "q3": 1.0489146706984656,
+      "min": 0.6334290991175868,
+      "max": 1.1052097916022094
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 19.531729499999983,
+     "q1": 12.390166499999964,
+     "q3": 31.818666999999976,
+     "min": 10.422582999999975,
+     "max": 196.39154099999996
+    },
+    "failed": {
+     "n": 12,
+     "median": 19.02585449999998,
+     "q1": 14.527624999999972,
+     "q3": 26.180645499999997,
+     "min": 11.211416999999926,
+     "max": 120.19383299999998
+    },
+    "head": {
+     "n": 12,
+     "median": 15.805353999999994,
+     "q1": 11.823895999999962,
+     "q3": 16.801353999999975,
+     "min": 9.855582999999967,
+     "max": 171.49749999999995
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 18.821312499999948,
+     "q1": 12.918312499999985,
+     "q3": 24.429832999999974,
+     "min": 10.161874999999952,
+     "max": 31.173166999999978
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -11.6360916071074,
+      "intercept": 405.15591281683044,
+      "n": 12
+     },
+     "relativeSlope": -0.032827256531600804,
+     "tau": -0.06060606060606061,
+     "offCpuTau": -0.030303030303030304,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 15.276849297286743,
+      "intercept": 281.0571066351747,
+      "n": 12
+     },
+     "relativeSlope": 0.0447611454015934,
+     "tau": 0.12121212121212122,
+     "offCpuTau": 0.21212121212121213,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": -6.503438719452585,
+      "intercept": 364.08480729701853,
+      "n": 12
+     },
+     "relativeSlope": -0.019284165933061342,
+     "tau": -0.030303030303030304,
+     "offCpuTau": -0.030303030303030304,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 5.1332015873016195,
+      "intercept": 335.2724271031745,
+      "n": 12
+     },
+     "relativeSlope": 0.014420757103312079,
+     "tau": 0.0763381020690574,
+     "offCpuTau": 0.1679438245519263,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.06601651655189951,
+     "intercept": 0.7102663966114388,
+     "n": 12
+    },
+    "tau": 0.18181818181818182,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 364.2955005,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 335,
+    "boundMs": 525,
+    "measuredMs": 175,
+    "preEquivalent": {
+     "median": 340.6143259257596,
+     "low": 325.80795130944733,
+     "high": 357.90319509747803
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 364.2955005,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 1.9142857142857144,
+     "existing": 2.0816885742857143,
+     "added": 0.983517058742317,
+     "residual": 0.9349946004226302
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9766309202111664,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9215121251230208,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear partialFirst",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 884.938646,
+      "q1": 853.9071664999999,
+      "q3": 900.8334379999999,
+      "min": 816.027791,
+      "max": 1038.270417
+     },
+     "failed": {
+      "n": 12,
+      "median": 1191.312229,
+      "q1": 1149.148,
+      "q3": 1233.2202085,
+      "min": 1090.608833,
+      "max": 1697.1222089999999
+     },
+     "head": {
+      "n": 12,
+      "median": 1177.53525,
+      "q1": 1156.429479,
+      "q3": 1208.5409375,
+      "min": 1114.1644999999999,
+      "max": 1246.253
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 900.2883955,
+      "q1": 859.8029999999999,
+      "q3": 924.3129375,
+      "min": 810.1162919999999,
+      "max": 957.609875
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3702725815856607,
+      "q1": 1.267958161635681,
+      "q3": 1.444373526393389,
+      "min": 1.215231140043748,
+      "max": 1.6345666612593084
+     },
+     "head": {
+      "n": 12,
+      "median": 1.344311826757092,
+      "q1": 1.298119642668119,
+      "q3": 1.3897880327596948,
+      "min": 1.1791492976728046,
+      "max": 1.4605491534402075
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9673611212073796,
+      "q1": 0.9412453669203307,
+      "q3": 1.0553296266326382,
+      "min": 0.7213834257235862,
+      "max": 1.0713394289570424
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.318427593429177,
+      "q1": 1.2600855952353571,
+      "q3": 1.3771034386389611,
+      "min": 1.2239121922775096,
+      "max": 1.4723886604665395
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.011026121478323,
+      "q1": 0.9394815807107458,
+      "q3": 1.0611372333721374,
+      "min": 0.878338935664773,
+      "max": 1.1476307559366132
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1312.266,
+      "q1": 1274.5115,
+      "q3": 1428.1615000000002,
+      "min": 1225.373,
+      "max": 1568.5480000000002
+     },
+     "failed": {
+      "n": 12,
+      "median": 1873.4515000000001,
+      "q1": 1788.7179999999998,
+      "q3": 1952.0315,
+      "min": 1656.7549999999999,
+      "max": 2275.853
+     },
+     "head": {
+      "n": 12,
+      "median": 1861.7224999999999,
+      "q1": 1796.064,
+      "q3": 1890.1499999999999,
+      "min": 1645.98,
+      "max": 1962.6390000000001
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1422.3045000000002,
+      "q1": 1293.6025,
+      "q3": 1467.4585000000002,
+      "min": 1214.589,
+      "max": 1518.433
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.4458168547088281,
+      "q1": 1.2921521723132372,
+      "q3": 1.517095086100386,
+      "min": 1.161827597693468,
+      "max": 1.5754219683109294
+     },
+     "head": {
+      "n": 12,
+      "median": 1.4132152500844033,
+      "q1": 1.317856488301135,
+      "q3": 1.4628671807680425,
+      "min": 1.113722372538169,
+      "max": 1.5423464953296735
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.989579386476223,
+      "q1": 0.9340092904048087,
+      "q3": 1.0797012674547888,
+      "min": 0.7232365183515806,
+      "max": 1.1221109940818046
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.3111307003030028,
+      "q1": 1.2213003452217461,
+      "q3": 1.4852929799319112,
+      "min": 1.1235557764165098,
+      "max": 1.544252417896095
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0249326520327209,
+      "q1": 0.9595036014893839,
+      "q3": 1.090024469293239,
+      "min": 0.8909376053676213,
+      "max": 1.2199403773381656
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 830.021,
+      "q1": 801.356,
+      "q3": 856.3805,
+      "min": 772.363,
+      "max": 904.442
+     },
+     "failed": {
+      "n": 12,
+      "median": 1141.587,
+      "q1": 1092.8564999999999,
+      "q3": 1161.0045,
+      "min": 1038.788,
+      "max": 1299.287
+     },
+     "head": {
+      "n": 12,
+      "median": 1117.8960000000002,
+      "q1": 1081.6045,
+      "q3": 1133.8425000000002,
+      "min": 1053.477,
+      "max": 1195.157
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 852.5565,
+      "q1": 810.4645,
+      "q3": 878.2715000000001,
+      "min": 776.239,
+      "max": 922.436
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3914956271352723,
+      "q1": 1.2805199760989612,
+      "q3": 1.4399609039794456,
+      "min": 1.2719787449056987,
+      "max": 1.4722787564923452
+     },
+     "head": {
+      "n": 12,
+      "median": 1.360788680640455,
+      "q1": 1.2968028997408263,
+      "q3": 1.3833475053176962,
+      "min": 1.1759183190530833,
+      "max": 1.498426545370658
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9834288860462181,
+      "q1": 0.9349353202156911,
+      "q3": 1.05516745954798,
+      "min": 0.8108116220665642,
+      "max": 1.0793921878527883
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.3092844566900428,
+      "q1": 1.2214980622837914,
+      "q3": 1.3913809956860188,
+      "min": 1.192760256538123,
+      "max": 1.4613579065210587
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0286038639479957,
+      "q1": 0.9677017001420563,
+      "q3": 1.0622906312067184,
+      "min": 0.9066278458954851,
+      "max": 1.1392661571865412
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 53.128354,
+     "q1": 38.950478999999916,
+     "q3": 55.126437499999895,
+     "min": 27.670041999999853,
+     "max": 142.39441699999998
+    },
+    "failed": {
+     "n": 12,
+     "median": 60.95941700000003,
+     "q1": 53.91854149999995,
+     "q3": 68.14589599999988,
+     "min": 36.34024999999997,
+     "max": 397.83520899999985
+    },
+    "head": {
+     "n": 12,
+     "median": 58.9562709999999,
+     "q1": 48.53779199999997,
+     "q3": 69.31889599999988,
+     "min": 43.51299999999992,
+     "max": 170.79883299999983
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 45.27183299999996,
+     "q1": 37.84595799999994,
+     "q3": 51.028625499999976,
+     "min": 33.8772919999999,
+     "max": 59.72858299999996
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -12.250082998869368,
+      "intercept": 938.6487460899517,
+      "n": 12
+     },
+     "relativeSlope": -0.013842861371509555,
+     "tau": -0.15151515151515152,
+     "offCpuTau": -0.15151515151515152,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 93.01035338827825,
+      "intercept": 794.9699341675829,
+      "n": 12
+     },
+     "relativeSlope": 0.0780738677268109,
+     "tau": 0.24242424242424243,
+     "offCpuTau": 0.36363636363636365,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 39.21080412735857,
+      "intercept": 1025.2798053873817,
+      "n": 12
+     },
+     "relativeSlope": 0.03329904911751778,
+     "tau": 0.15151515151515152,
+     "offCpuTau": -0.06060606060606061,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": -3.573750000000096,
+      "intercept": 914.6906080000003,
+      "n": 12
+     },
+     "relativeSlope": -0.0039695613293063885,
+     "tau": -0.04580286124143444,
+     "offCpuTau": 0.4427609920005329,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.09929964609445184,
+     "intercept": 0.9762933786952637,
+     "n": 12
+    },
+    "tau": 0.30303030303030304,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 874.5637079999999,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1155,
+    "boundMs": 930,
+    "measuredMs": 310,
+    "preEquivalent": {
+     "median": 842.8979865184559,
+     "low": 799.6546453492839,
+     "high": 910.91333684862
+    },
+    "baseVerdict": "addedNecessary",
+    "downgrade": [],
+    "fittedRatio": {
+     "before": {
+      "load": 4.52,
+      "ratio": 1.425127779042186,
+      "place": "within",
+      "extrapolated": false
+     },
+     "after": {
+      "load": 6.23,
+      "ratio": 1.5949301738636987,
+      "place": "above",
+      "extrapolated": true
+     }
+    },
+    "verdict": "addedNecessary",
+    "reading": "the pre-tranche-2 compiler is estimated within the bound under the failed run's conditions, assuming the paired ratio failed/pre measured here carries over to the failed run's conditions, and T is that run's single sample",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 874.5637079999999,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": {
+     "overBound": 1.2419354838709677,
+     "remainder": 0.906341920987587,
+     "addedShare": 1.4538615282878666,
+     "remainderShare": -0.45386152828786663,
+     "note": "log shares of log(T/B); the remainder is existing + load + unreproduced; a share can fall outside [0, 1]"
+    },
+    "supporting": {
+     "total": 3.725806451612903,
+     "existing": 2.821173251612903,
+     "added": 1.3702725815856607,
+     "residual": 0.9637925502832048
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9900451563075144,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9665654560121346,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear partialAll",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 482.77079200000003,
+      "q1": 470.63739599999997,
+      "q3": 491.06877049999997,
+      "min": 425.0175,
+      "max": 556.126583
+     },
+     "failed": {
+      "n": 12,
+      "median": 618.675375,
+      "q1": 606.4234795,
+      "q3": 658.8356875,
+      "min": 564.286917,
+      "max": 1241.9757499999998
+     },
+     "head": {
+      "n": 12,
+      "median": 610.8211664999999,
+      "q1": 595.4972915,
+      "q3": 621.11625,
+      "min": 543.4734589999999,
+      "max": 638.2105419999999
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 509.3726455,
+      "q1": 472.35610399999996,
+      "q3": 528.4475625,
+      "min": 437.723416,
+      "max": 556.527958
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2842021437533653,
+      "q1": 1.2529776119421827,
+      "q3": 1.383812093127359,
+      "min": 1.096093005861581,
+      "max": 2.64587720024723
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2548358937735218,
+      "q1": 1.1558109238570324,
+      "q3": 1.2958027087866295,
+      "min": 1.0990286378739784,
+      "max": 1.5016100325280723
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.962305061834964,
+      "q1": 0.9020193460301311,
+      "q3": 1.0336643570565032,
+      "min": 0.4795992723690459,
+      "max": 1.0859420208744623
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.1979563594545408,
+      "q1": 1.1013678905081683,
+      "q3": 1.2780022508682518,
+      "min": 1.0905855333229235,
+      "max": 1.3945867862824135
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.057575463168157,
+      "q1": 0.9570076009463293,
+      "q3": 1.092833598772779,
+      "min": 0.8728777131662487,
+      "max": 1.2511582864235
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 845.62,
+      "q1": 829.745,
+      "q3": 910.3645,
+      "min": 730.9259999999999,
+      "max": 959.053
+     },
+     "failed": {
+      "n": 12,
+      "median": 1098.361,
+      "q1": 1044.5610000000001,
+      "q3": 1150.4054999999998,
+      "min": 991.807,
+      "max": 1522.259
+     },
+     "head": {
+      "n": 12,
+      "median": 1078.9745,
+      "q1": 1034.234,
+      "q3": 1111.827,
+      "min": 988.085,
+      "max": 1169.175
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 916.6795,
+      "q1": 862.6759999999999,
+      "q3": 969.2660000000001,
+      "min": 772.318,
+      "max": 1000.0930000000001
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2765910671586864,
+      "q1": 1.207072418585281,
+      "q3": 1.3583177279363217,
+      "min": 1.0676083594962948,
+      "max": 1.8555286442684038
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2068534873412808,
+      "q1": 1.1728356110860683,
+      "q3": 1.2965653721433985,
+      "min": 1.129629957885539,
+      "max": 1.599580532092168
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0067786759168196,
+      "q1": 0.9031716590681387,
+      "q3": 1.0516799971929083,
+      "min": 0.6603797382705571,
+      "max": 1.1250969190578408
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.1709362878685678,
+      "q1": 1.1142741340890525,
+      "q3": 1.2324054071839359,
+      "min": 1.0310477277683807,
+      "max": 1.4465608725939318
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.044531237032835,
+      "q1": 0.9638304896918202,
+      "q3": 1.1233255098964512,
+      "min": 0.9192756813509674,
+      "max": 1.3682547891305004
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 453.2835,
+      "q1": 440.7365,
+      "q3": 465.826,
+      "min": 401.633,
+      "max": 532.894
+     },
+     "failed": {
+      "n": 12,
+      "median": 589.579,
+      "q1": 573.9455,
+      "q3": 606.147,
+      "min": 544.759,
+      "max": 727.751
+     },
+     "head": {
+      "n": 12,
+      "median": 566.8679999999999,
+      "q1": 550.509,
+      "q3": 585.727,
+      "min": 524.602,
+      "max": 605.914
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 477.065,
+      "q1": 451.19550000000004,
+      "q3": 490.7545,
+      "min": 407.464,
+      "max": 499.42
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3001351396382093,
+      "q1": 1.2186051110362315,
+      "q3": 1.3565367946100846,
+      "min": 1.09846423491351,
+      "max": 1.6920546199828412
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2417109387286576,
+      "q1": 1.1812539840409297,
+      "q3": 1.3099181172553152,
+      "min": 1.0331829594628574,
+      "max": 1.4902908874519776
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.969574706109002,
+      "q1": 0.8875009154144468,
+      "q3": 1.010410590831359,
+      "min": 0.7759357252686702,
+      "max": 1.1014955924833163
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.201426673141397,
+      "q1": 1.1384336703390643,
+      "q3": 1.2460605080890996,
+      "min": 1.1105924968315393,
+      "max": 1.4228398091610546
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0500330949977914,
+      "q1": 0.9834670037190387,
+      "q3": 1.0646534439487265,
+      "min": 0.8762117794533246,
+      "max": 1.2178506248241554
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 26.137437999999975,
+     "q1": 23.1443955,
+     "q3": 32.995458499999955,
+     "min": 20.707540999999935,
+     "max": 39.30137500000001
+    },
+    "failed": {
+     "n": 12,
+     "median": 33.37631249999998,
+     "q1": 23.581103999999982,
+     "q3": 57.10543749999994,
+     "min": 18.145541999999978,
+     "max": 514.2247499999999
+    },
+    "head": {
+     "n": 12,
+     "median": 34.44879149999997,
+     "q1": 27.3448535,
+     "q3": 44.89327049999997,
+     "min": 18.87145899999996,
+     "max": 60.62204099999997
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 31.505186999999978,
+     "q1": 23.684916499999986,
+     "q3": 41.13839599999997,
+     "min": 14.296957999999961,
+     "max": 57.107957999999996
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -9.012163508771897,
+      "intercept": 519.8107840210525,
+      "n": 12
+     },
+     "relativeSlope": -0.01866758233537023,
+     "tau": -0.15151515151515152,
+     "offCpuTau": 0.12121212121212122,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 42.11550779448616,
+      "intercept": 442.8898367897245,
+      "n": 12
+     },
+     "relativeSlope": 0.06807367724064686,
+     "tau": 0.24242424242424243,
+     "offCpuTau": 0,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": -21.969764812376653,
+      "intercept": 698.4005606375908,
+      "n": 12
+     },
+     "relativeSlope": -0.035967589234445194,
+     "tau": -0.12121212121212122,
+     "offCpuTau": 0,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": -7.816339215686156,
+      "intercept": 541.0679010196073,
+      "n": 12
+     },
+     "relativeSlope": -0.01534503135325149,
+     "tau": -0.04580286124143444,
+     "offCpuTau": -0.0763381020690574,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.06384897148130145,
+     "intercept": 1.0092405621436202,
+     "n": 12
+    },
+    "tau": 0.15151515151515152,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 481.158313,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 598,
+    "boundMs": 675,
+    "measuredMs": 225,
+    "preEquivalent": {
+     "median": 465.6587772484264,
+     "low": 432.13959682094145,
+     "high": 477.26311651575946
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 481.158313,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 2.6577777777777776,
+     "existing": 2.138481391111111,
+     "added": 1.2842021437533653,
+     "residual": 0.9677870353004302
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9865451213740437,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9548101662700642,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear parenthesized",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 973.450333,
+      "q1": 943.506271,
+      "q3": 985.5939585,
+      "min": 892.991542,
+      "max": 1034.59
+     },
+     "failed": {
+      "n": 12,
+      "median": 1259.046354,
+      "q1": 1199.103604,
+      "q3": 1307.963563,
+      "min": 1106.909792,
+      "max": 1516.1432499999999
+     },
+     "head": {
+      "n": 12,
+      "median": 1191.1792915,
+      "q1": 1173.8475839999999,
+      "q3": 1259.6411665,
+      "min": 1085.034333,
+      "max": 1293.986375
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 987.094104,
+      "q1": 980.0122915,
+      "q3": 1019.250062,
+      "min": 888.293,
+      "max": 1053.3576249999999
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.313742985900062,
+      "q1": 1.2285153889323681,
+      "q3": 1.3830923823405414,
+      "min": 1.069901885771175,
+      "max": 1.6131567498896002
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2602606444575595,
+      "q1": 1.1797479880364294,
+      "q3": 1.2923348098142604,
+      "min": 1.1188629691407168,
+      "max": 1.413702779505161
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9492048639824534,
+      "q1": 0.8802184438804433,
+      "q3": 1.0438007006726013,
+      "min": 0.7853429799591827,
+      "max": 1.0776841808997555
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.212451152505601,
+      "q1": 1.16381211797929,
+      "q3": 1.2495392174827733,
+      "min": 1.1267482247541523,
+      "max": 1.3216141127273004
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.035431948382461,
+      "q1": 1.0081844627906142,
+      "q3": 1.0684637863169528,
+      "min": 0.9159877371796629,
+      "max": 1.0986573555147405
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1509.9695,
+      "q1": 1461.3355000000001,
+      "q3": 1565.6885,
+      "min": 1343.826,
+      "max": 1630.902
+     },
+     "failed": {
+      "n": 12,
+      "median": 1888.6665,
+      "q1": 1816.4250000000002,
+      "q3": 2001.3920000000003,
+      "min": 1736.531,
+      "max": 2202.4770000000003
+     },
+     "head": {
+      "n": 12,
+      "median": 1859.653,
+      "q1": 1813.6840000000002,
+      "q3": 1938.42,
+      "min": 1672.604,
+      "max": 1958.613
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1567.422,
+      "q1": 1495.152,
+      "q3": 1597.6235000000001,
+      "min": 1417.528,
+      "max": 1740.4540000000002
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3093387109645405,
+      "q1": 1.1824321377462637,
+      "q3": 1.3608898119361355,
+      "min": 1.0701237719985628,
+      "max": 1.4131205685134847
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2269594568126942,
+      "q1": 1.1673230910374002,
+      "q3": 1.3088534735182438,
+      "min": 1.1076502450791035,
+      "max": 1.3921474952858481
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9718854902091747,
+      "q1": 0.9333043584234213,
+      "q3": 1.0302992065736585,
+      "min": 0.8333299280764338,
+      "max": 1.1196966826391237
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2133892692372572,
+      "q1": 1.171686771313182,
+      "q3": 1.2436471412261891,
+      "min": 1.03792975855725,
+      "max": 1.2957731459234076
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.029157350449831,
+      "q1": 1.0157582925292998,
+      "q3": 1.0718517505863827,
+      "min": 0.9311087840319443,
+      "max": 1.108715711706724
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 926.9075,
+      "q1": 881.768,
+      "q3": 942.619,
+      "min": 864.408,
+      "max": 998.39
+     },
+     "failed": {
+      "n": 12,
+      "median": 1207.6385,
+      "q1": 1160.9279999999999,
+      "q3": 1232.2925,
+      "min": 1070.265,
+      "max": 1325.372
+     },
+     "head": {
+      "n": 12,
+      "median": 1152.9195,
+      "q1": 1121.9355,
+      "q3": 1186.4189999999999,
+      "min": 1032.096,
+      "max": 1220.998
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 954.6455000000001,
+      "q1": 949.8855,
+      "q3": 963.6155,
+      "min": 844.558,
+      "max": 1016.64
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3128175970210616,
+      "q1": 1.2435539321364342,
+      "q3": 1.384991353122448,
+      "min": 1.071990905357626,
+      "max": 1.5083705293634302
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2650797477059312,
+      "q1": 1.215614259471351,
+      "q3": 1.2832533541369435,
+      "min": 1.1029105795833052,
+      "max": 1.3597814920731877
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9467255448173537,
+      "q1": 0.9091371908542858,
+      "q3": 1.0306801020987364,
+      "min": 0.8501416960672175,
+      "max": 1.076286714038112
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.206958486181592,
+      "q1": 1.1711809902478074,
+      "q3": 1.2389870668770184,
+      "min": 1.1330579162732137,
+      "max": 1.358882286295637
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0321566421714556,
+      "q1": 1.0094213751249521,
+      "q3": 1.0604166913747701,
+      "min": 0.9025051480402183,
+      "max": 1.098940681341743
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 36.672437499999944,
+     "q1": 31.550812499999893,
+     "q3": 45.6041249999999,
+     "min": 27.628083999999944,
+     "max": 97.17041699999993
+    },
+    "failed": {
+     "n": 12,
+     "median": 47.33297899999991,
+     "q1": 38.19635449999987,
+     "q3": 81.469021,
+     "min": 32.6256249999999,
+     "max": 190.77124999999978
+    },
+    "head": {
+     "n": 12,
+     "median": 53.542020500000035,
+     "q1": 40.978291499999955,
+     "q3": 65.81281249999984,
+     "min": 27.603834000000006,
+     "max": 87.01862499999993
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 37.80039549999992,
+     "q1": 32.42814599999991,
+     "q3": 51.004479,
+     "min": 28.854458000000022,
+     "max": 111.21395799999993
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 17.677176634089967,
+      "intercept": 890.6663401082649,
+      "n": 12
+     },
+     "relativeSlope": 0.01815930000209879,
+     "tau": 0.09090909090909091,
+     "offCpuTau": 0.12121212121212122,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": -30.50926385281386,
+      "intercept": 1374.1744294177488,
+      "n": 12
+     },
+     "relativeSlope": -0.024232041779784906,
+     "tau": -0.06060606060606061,
+     "offCpuTau": 0.09090909090909091,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 82.05613545454518,
+      "intercept": 852.3388428454556,
+      "n": 12
+     },
+     "relativeSlope": 0.06888646909838021,
+     "tau": 0.30303030303030304,
+     "offCpuTau": 0.06060606060606061,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 32.23888888888972,
+      "intercept": 860.8915694444408,
+      "n": 12
+     },
+     "relativeSlope": 0.032660400622643894,
+     "tau": 0.29008478786241815,
+     "offCpuTau": 0.13740858372430334,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.01858226744552339,
+     "intercept": 1.2424550813550272,
+     "n": 12
+    },
+    "tau": 0.06060606060606061,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 947.3471669999999,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1276,
+    "boundMs": 1110,
+    "measuredMs": 370,
+    "preEquivalent": {
+     "median": 971.2706470708928,
+     "low": 922.5703331838803,
+     "high": 1038.6520278829375
+    },
+    "baseVerdict": "addedNecessary",
+    "downgrade": [],
+    "fittedRatio": {
+     "before": {
+      "load": 4.52,
+      "ratio": 1.326446930208793,
+      "place": "within",
+      "extrapolated": false
+     },
+     "after": {
+      "load": 6.23,
+      "ratio": 1.358222607540638,
+      "place": "above",
+      "extrapolated": true
+     }
+    },
+    "verdict": "addedNecessary",
+    "reading": "the pre-tranche-2 compiler is estimated within the bound under the failed run's conditions, assuming the paired ratio failed/pre measured here carries over to the failed run's conditions, and T is that run's single sample",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 947.3471669999999,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": {
+     "overBound": 1.1495495495495496,
+     "remainder": 0.8750186009647684,
+     "addedShare": 1.9579534486453112,
+     "remainderShare": -0.9579534486453106,
+     "note": "log shares of log(T/B); the remainder is existing + load + unreproduced; a share can fall outside [0, 1]"
+    },
+    "supporting": {
+     "total": 3.4486486486486485,
+     "existing": 2.5603977486486484,
+     "added": 1.313742985900062,
+     "residual": 1.0252531288467905
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.0133812964362423,
+      "place": "within"
+     },
+     "after": {
+      "factor": 1.0449426990651725,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "linear pipe",
+   "test": "test/fn-linear-timing.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 488.444396,
+      "q1": 479.82620799999995,
+      "q3": 531.5446875,
+      "min": 456.453125,
+      "max": 554.2072919999999
+     },
+     "failed": {
+      "n": 12,
+      "median": 638.8690835,
+      "q1": 600.7489165,
+      "q3": 683.493979,
+      "min": 587.815375,
+      "max": 732.90325
+     },
+     "head": {
+      "n": 12,
+      "median": 600.6842919999999,
+      "q1": 585.6871249999999,
+      "q3": 627.7632914999999,
+      "min": 561.045666,
+      "max": 675.547875
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 497.13564599999995,
+      "q1": 482.1039585,
+      "q3": 509.96025,
+      "min": 453.095375,
+      "max": 547.4293339999999
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3117847249731458,
+      "q1": 1.228164187665985,
+      "q3": 1.3594055885071166,
+      "min": 1.0687539818008838,
+      "max": 1.4100089378221814
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2228822784864688,
+      "q1": 1.156984526811354,
+      "q3": 1.2443656371410583,
+      "min": 1.1094772238989674,
+      "max": 1.3795983059596755
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9295397074207058,
+      "q1": 0.8960378456373006,
+      "q3": 0.9921293646188201,
+      "min": 0.7868582915599117,
+      "max": 1.1425863158135086
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2484042426868593,
+      "q1": 1.150980698208571,
+      "q3": 1.2712265708255277,
+      "min": 1.0704397601755116,
+      "max": 1.3559137925558686
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9813852191606132,
+      "q1": 0.952424171980637,
+      "q3": 1.0309587636038962,
+      "min": 0.8891524112244991,
+      "max": 1.1453511888213939
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 827.952,
+      "q1": 805.2429999999999,
+      "q3": 892.9095,
+      "min": 791.873,
+      "max": 934.9730000000001
+     },
+     "failed": {
+      "n": 12,
+      "median": 1067.492,
+      "q1": 988.6585,
+      "q3": 1148.2475,
+      "min": 938.801,
+      "max": 1226.455
+     },
+     "head": {
+      "n": 12,
+      "median": 1019.971,
+      "q1": 950.4304999999999,
+      "q3": 1048.9470000000001,
+      "min": 941.734,
+      "max": 1199.701
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 848.9805,
+      "q1": 794.2165,
+      "q3": 884.3815000000001,
+      "min": 783.155,
+      "max": 915.7810000000001
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.30208067274824,
+      "q1": 1.175916030554408,
+      "q3": 1.3493398137465862,
+      "min": 1.0930281815749576,
+      "max": 1.4067483676619537
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2054424472649186,
+      "q1": 1.1475833187529314,
+      "q3": 1.2859848473767164,
+      "min": 1.0399534428648098,
+      "max": 1.337399670025863
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9391269305809791,
+      "q1": 0.8694395988506164,
+      "q3": 1.0027276062781878,
+      "min": 0.8130022561810404,
+      "max": 1.223572907423839
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.1951984815714058,
+      "q1": 1.1385090857944897,
+      "q3": 1.2869928801510366,
+      "min": 1.0309648267435119,
+      "max": 1.3995725573413627
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9748321429643084,
+      "q1": 0.9387060383741423,
+      "q3": 1.0512408160596145,
+      "min": 0.8921059115933209,
+      "max": 1.1201720780491624
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 461.855,
+      "q1": 452.71349999999995,
+      "q3": 493.5385,
+      "min": 432.765,
+      "max": 533.183
+     },
+     "failed": {
+      "n": 12,
+      "median": 611.539,
+      "q1": 572.6700000000001,
+      "q3": 636.1030000000001,
+      "min": 556.0840000000001,
+      "max": 685.04
+     },
+     "head": {
+      "n": 12,
+      "median": 564.4225,
+      "q1": 549.78,
+      "q3": 591.0685000000001,
+      "min": 536.232,
+      "max": 650.898
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 459.991,
+      "q1": 452.055,
+      "q3": 484.322,
+      "min": 423.858,
+      "max": 508.90500000000003
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3225233134644152,
+      "q1": 1.2401356111475423,
+      "q3": 1.3595271193770744,
+      "min": 1.063362860406277,
+      "max": 1.451620422365092
+     },
+     "head": {
+      "n": 12,
+      "median": 1.21901163218374,
+      "q1": 1.1900827061379347,
+      "q3": 1.240389234107919,
+      "min": 1.0883812583581338,
+      "max": 1.3677469296269338
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9100485975533142,
+      "q1": 0.8893271359154307,
+      "q3": 1.0081706269528397,
+      "min": 0.7827747284830083,
+      "max": 1.148035070824228
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2463145351960443,
+      "q1": 1.1660526661915864,
+      "q3": 1.3037870453897435,
+      "min": 1.0903960464133777,
+      "max": 1.3964889184585403
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9704658202985541,
+      "q1": 0.9409335404326974,
+      "q3": 1.0021920976033196,
+      "min": 0.9188531609300363,
+      "max": 1.1248532886549858
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 27.323895999999962,
+     "q1": 22.769499999999965,
+     "q3": 35.32089599999995,
+     "min": 18.591790999999944,
+     "max": 61.40929199999994
+    },
+    "failed": {
+     "n": 12,
+     "median": 28.40168749999998,
+     "q1": 26.070937500000014,
+     "q3": 39.19208349999997,
+     "min": 24.16137500000002,
+     "max": 88.03424999999993
+    },
+    "head": {
+     "n": 12,
+     "median": 33.872229499999946,
+     "q1": 25.498582999999996,
+     "q3": 37.11066649999998,
+     "min": 20.249124999999935,
+     "max": 78.38429199999996
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 35.24427099999994,
+     "q1": 26.484395999999975,
+     "q3": 40.26699999999997,
+     "min": 25.249041999999974,
+     "max": 44.34937500000001
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 1.330403936910049,
+      "intercept": 483.0429560161451,
+      "n": 12
+     },
+     "relativeSlope": 0.0027237571928454456,
+     "tau": 0.030303030303030304,
+     "offCpuTau": 0.15151515151515152,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.87,
+      "q3": 4.475,
+      "min": 3.55,
+      "max": 5.38
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 43.24933008641803,
+      "intercept": 449.17016176469804,
+      "n": 12
+     },
+     "relativeSlope": 0.06769670219363186,
+     "tau": 0.24242424242424243,
+     "offCpuTau": 0.36363636363636365,
+     "load": {
+      "n": 12,
+      "median": 4.0649999999999995,
+      "q1": 3.915,
+      "q3": 4.300000000000001,
+      "min": 3.44,
+      "max": 5.11
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": -7.687540351506404,
+      "intercept": 632.9805967659609,
+      "n": 12
+     },
+     "relativeSlope": -0.012797971336840627,
+     "tau": -0.09090909090909091,
+     "offCpuTau": 0.12121212121212122,
+     "load": {
+      "n": 12,
+      "median": 4.09,
+      "q1": 3.935,
+      "q3": 4.265,
+      "min": 3.71,
+      "max": 4.64
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 48.9868827160494,
+      "intercept": 296.8686336543209,
+      "n": 12
+     },
+     "relativeSlope": 0.09853826236400962,
+     "tau": 0.41222575117291,
+     "offCpuTau": -0.01526762041381148,
+     "load": {
+      "n": 12,
+      "median": 4.085,
+      "q1": 3.9850000000000003,
+      "q3": 4.295,
+      "min": 3.49,
+      "max": 4.87
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.04826939994539054,
+     "intercept": 1.110353612749412,
+     "n": 12
+    },
+    "tau": 0.15151515151515152,
+    "load": {
+     "n": 12,
+     "median": 4.1075,
+     "q1": 3.9425,
+     "q3": 4.3875,
+     "min": 3.605,
+     "max": 5.245
+    }
+   },
+   "lowLoad": {
+    "wallMs": 493.68974949999995,
+    "load": 3.795,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 621,
+    "boundMs": 750,
+    "measuredMs": 250,
+    "preEquivalent": {
+     "median": 473.4008470884678,
+     "low": 456.8173069539717,
+     "high": 505.6327209639245
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 493.68974949999995,
+     "load": 3.795,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 2.484,
+     "existing": 1.9747589979999998,
+     "added": 1.3117847249731458,
+     "residual": 0.958903537227418
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.0019761503415452,
+      "place": "within"
+     },
+     "after": {
+      "factor": 1.0066371394229832,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.55-5.38); no load was induced"
+   }
+  },
+  {
+   "name": "scale mixed",
+   "test": "test/fn-scale.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1281.9079164999998,
+      "q1": 1258.5429374999999,
+      "q3": 1297.543771,
+      "min": 1222.2190409999998,
+      "max": 1313.638792
+     },
+     "failed": {
+      "n": 12,
+      "median": 1657.2609375,
+      "q1": 1628.4686875,
+      "q3": 1675.4049165000001,
+      "min": 1605.3987089999998,
+      "max": 1752.935292
+     },
+     "head": {
+      "n": 12,
+      "median": 1596.9199995,
+      "q1": 1564.6719369999998,
+      "q3": 1610.182312,
+      "min": 1540.59,
+      "max": 1643.3459579999999
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1294.1930419999999,
+      "q1": 1249.6021044999998,
+      "q3": 1305.858896,
+      "min": 1217.960292,
+      "max": 1327.331958
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.2923122072379103,
+      "q1": 1.2711947488678825,
+      "q3": 1.3275251987942396,
+      "min": 1.234157943472181,
+      "max": 1.3573584088804604
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2504003199657405,
+      "q1": 1.2222958789987963,
+      "q3": 1.2721595521138664,
+      "min": 1.200102592845259,
+      "max": 1.2803582428280025
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9629831042005442,
+      "q1": 0.9344652541416769,
+      "q3": 0.980573100477699,
+      "min": 0.9172850950849588,
+      "max": 1.0043755479312524
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2349866223978472,
+      "q1": 1.2213444917451486,
+      "q3": 1.2734073192195066,
+      "min": 1.18606222040229,
+      "max": 1.3040760751348803
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.9978757741074711,
+      "q1": 0.9932188060392446,
+      "q3": 1.0164868469491246,
+      "min": 0.9306526135230027,
+      "max": 1.0533022640185254
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 2505.0370000000003,
+      "q1": 2471.045,
+      "q3": 2524.2715,
+      "min": 2402.225,
+      "max": 2566.903
+     },
+     "failed": {
+      "n": 12,
+      "median": 3207,
+      "q1": 3171.6465,
+      "q3": 3240.4645,
+      "min": 3129.861,
+      "max": 3254.187
+     },
+     "head": {
+      "n": 12,
+      "median": 3098.947,
+      "q1": 3031.9535,
+      "q3": 3133.5525000000002,
+      "min": 2971.824,
+      "max": 3143.052
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 2507.0005,
+      "q1": 2437.6075,
+      "q3": 2530.351,
+      "min": 2392.0190000000002,
+      "max": 2565.072
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.283736156648938,
+      "q1": 1.2636311182631073,
+      "q3": 1.2969328438922667,
+      "min": 1.2496233956338356,
+      "max": 1.3532316914527158
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2372715470517957,
+      "q1": 1.2209348483742362,
+      "q3": 1.2592814528978877,
+      "min": 1.187060592806514,
+      "max": 1.272885306013366
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9621531116483619,
+      "q1": 0.9449656714697902,
+      "q3": 0.9833695299984466,
+      "min": 0.9187208496754454,
+      "max": 1.0042145641611562
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2399562878903334,
+      "q1": 1.2229560518888258,
+      "q3": 1.2585268086885706,
+      "min": 1.1585733265966802,
+      "max": 1.3033720452593451
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0051759013515857,
+      "q1": 0.9863780080047617,
+      "q3": 1.0121418537750282,
+      "min": 0.9509250381733603,
+      "max": 1.0251924996811643
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1227.274,
+      "q1": 1213.7939999999999,
+      "q3": 1234.615,
+      "min": 1184.176,
+      "max": 1246.117
+     },
+     "failed": {
+      "n": 12,
+      "median": 1593.7685000000001,
+      "q1": 1577.1785,
+      "q3": 1605.33,
+      "min": 1542.155,
+      "max": 1648.32
+     },
+     "head": {
+      "n": 12,
+      "median": 1526.9505,
+      "q1": 1505.433,
+      "q3": 1536.6705000000002,
+      "min": 1482.601,
+      "max": 1572.859
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1230.8585,
+      "q1": 1200.122,
+      "q3": 1242.9785000000002,
+      "min": 1179.088,
+      "max": 1263.122
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.3025989227653707,
+      "q1": 1.278490517097746,
+      "q3": 1.3254164299525137,
+      "min": 1.2649209995972672,
+      "max": 1.3424202718122549
+     },
+     "head": {
+      "n": 12,
+      "median": 1.245099072784138,
+      "q1": 1.2309395366557923,
+      "q3": 1.2604927409746902,
+      "min": 1.2091464782184962,
+      "max": 1.2911717962441838
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9593026008059997,
+      "q1": 0.9390459520822401,
+      "q3": 0.9699606928762975,
+      "min": 0.9252422294541892,
+      "max": 0.9932029277170134
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2457538812515023,
+      "q1": 1.2255887803304213,
+      "q3": 1.2651453308303708,
+      "min": 1.2003818243911724,
+      "max": 1.2904739145320003
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0008123525981738,
+      "q1": 0.993769128888534,
+      "q3": 1.0157454216050024,
+      "min": 0.9592434290210717,
+      "max": 1.0202807286774531
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 52.04549949999989,
+     "q1": 46.11566700000003,
+     "q3": 60.067812499999945,
+     "min": 38.0430409999999,
+     "max": 83.45679199999995
+    },
+    "failed": {
+     "n": 12,
+     "median": 62.08672949999993,
+     "q1": 54.80433299999993,
+     "q3": 69.99662499999988,
+     "min": 49.806334000000106,
+     "max": 104.61529199999995
+    },
+    "head": {
+     "n": 12,
+     "median": 67.56043749999992,
+     "q1": 61.676832999999874,
+     "q3": 70.53608299999985,
+     "min": 45.86449999999991,
+     "max": 102.8399579999998
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 50.46635449999985,
+     "q1": 43.169229499999915,
+     "q3": 64.61835399999995,
+     "min": 38.49712499999987,
+     "max": 120.2255419999999
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 48.032932692307476,
+      "intercept": 1070.1443875865393,
+      "n": 12
+     },
+     "relativeSlope": 0.037469877573930624,
+     "tau": 0.29008478786241815,
+     "offCpuTau": 0.25954954703479516,
+     "load": {
+      "n": 12,
+      "median": 4.08,
+      "q1": 4.01,
+      "q3": 4.37,
+      "min": 3.52,
+      "max": 4.8
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": -7.421517432343121,
+      "intercept": 1685.2029506327717,
+      "n": 12
+     },
+     "relativeSlope": -0.004478182804174808,
+     "tau": -0.06154574548966636,
+     "offCpuTau": -0.21541010921383227,
+     "load": {
+      "n": 12,
+      "median": 4.02,
+      "q1": 3.92,
+      "q3": 4.44,
+      "min": 3.52,
+      "max": 5.04
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 37.25506900645162,
+      "intercept": 1425.5668919974191,
+      "n": 12
+     },
+     "relativeSlope": 0.023329327090972803,
+     "tau": 0.21212121212121213,
+     "offCpuTau": 0.06060606060606061,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.885,
+      "q3": 4.485,
+      "min": 3.56,
+      "max": 5.11
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 34.68854450000009,
+      "intercept": 1141.1480673874996,
+      "n": 12
+     },
+     "relativeSlope": 0.02680322283791114,
+     "tau": 0.12121212121212122,
+     "offCpuTau": 0.18181818181818182,
+     "load": {
+      "n": 12,
+      "median": 4.0600000000000005,
+      "q1": 3.955,
+      "q3": 4.390000000000001,
+      "min": 3.52,
+      "max": 4.78
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": -0.04589207729690442,
+     "intercept": 1.4878471587558926,
+     "n": 12
+    },
+    "tau": -0.36363636363636365,
+    "load": {
+     "n": 12,
+     "median": 4.105,
+     "q1": 3.9699999999999998,
+     "q3": 4.34,
+     "min": 3.52,
+     "max": 4.92
+    }
+   },
+   "lowLoad": {
+    "wallMs": 1248.4478755,
+    "load": 3.9,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1709,
+    "boundMs": 3750,
+    "measuredMs": 1250,
+    "preEquivalent": {
+     "median": 1322.435856001613,
+     "low": 1287.3578607413592,
+     "high": 1344.4045466062726
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 1248.4478755,
+     "load": 3.9,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 1.3672,
+     "existing": 0.9987583004,
+     "added": 1.2923122072379103,
+     "residual": 1.0592639724521788
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.02368275295904,
+      "place": "within"
+     },
+     "after": {
+      "factor": 1.0890013135396182,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.52-4.8); no load was induced"
+   }
+  },
+  {
+   "name": "scale chain",
+   "test": "test/fn-scale.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 56.2461875,
+      "q1": 52.3789995,
+      "q3": 79.3408755,
+      "min": 49.633666999999996,
+      "max": 89.34866699999999
+     },
+     "failed": {
+      "n": 12,
+      "median": 87.0944165,
+      "q1": 85.21362549999999,
+      "q3": 90.074646,
+      "min": 80.764625,
+      "max": 100.794
+     },
+     "head": {
+      "n": 12,
+      "median": 86.6674585,
+      "q1": 84.859104,
+      "q3": 89.28131199999999,
+      "min": 82.881417,
+      "max": 99.710208
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 51.438417,
+      "q1": 50.7033955,
+      "q3": 52.5644995,
+      "min": 48.853874999999995,
+      "max": 67.154333
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.591616239766515,
+      "q1": 1.1662464459601276,
+      "q3": 1.6511008384395063,
+      "min": 0.9915082232893024,
+      "max": 1.7678409835516333
+     },
+     "head": {
+      "n": 12,
+      "median": 1.5535165892603566,
+      "q1": 1.1396326056234654,
+      "q3": 1.6623417319716953,
+      "min": 0.9923783817561922,
+      "max": 1.8785261006819312
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.011820750994731,
+      "q1": 0.9568673138081412,
+      "q3": 1.0539897875071649,
+      "min": 0.8222852253110304,
+      "max": 1.1526980592632847
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.6985756935840377,
+      "q1": 1.656736733780928,
+      "q3": 1.7349147747025642,
+      "min": 1.2853973249946509,
+      "max": 1.930849773713825
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.912075641482986,
+      "q1": 0.6889656971586511,
+      "q3": 0.9784224653794078,
+      "min": 0.5764756848582867,
+      "max": 1.0328708132727733
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 131.973,
+      "q1": 106.245,
+      "q3": 164.59550000000002,
+      "min": 100.467,
+      "max": 184.78699999999998
+     },
+     "failed": {
+      "n": 12,
+      "median": 172.792,
+      "q1": 170.2575,
+      "q3": 176.6855,
+      "min": 165.622,
+      "max": 194.037
+     },
+     "head": {
+      "n": 12,
+      "median": 157.5525,
+      "q1": 155.45299999999997,
+      "q3": 165.30900000000003,
+      "min": 146.742,
+      "max": 168.604
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 104.862,
+      "q1": 103.602,
+      "q3": 107.565,
+      "min": 102.519,
+      "max": 145.549
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.322655328440904,
+      "q1": 1.0927090689135197,
+      "q3": 1.5935964248490913,
+      "min": 0.9868876057298405,
+      "max": 1.738173657057915
+     },
+     "head": {
+      "n": 12,
+      "median": 1.2186931215942727,
+      "q1": 0.9644138260422804,
+      "q3": 1.4925432283281073,
+      "min": 0.8717208440262332,
+      "max": 1.6215509199149816
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9240605839870478,
+      "q1": 0.8911494381239455,
+      "q3": 0.937912030284455,
+      "min": 0.756257827115447,
+      "max": 1.004300639735052
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.5106780994001103,
+      "q1": 1.4612989570113437,
+      "q3": 1.5761608949501336,
+      "min": 1.0440057987344469,
+      "max": 1.613351891050734
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.8665931562066074,
+      "q1": 0.6663415041744043,
+      "q3": 0.9945340396171554,
+      "min": 0.5663114829506406,
+      "max": 1.0575650703896937
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 55.156000000000006,
+      "q1": 50.297,
+      "q3": 77.95500000000001,
+      "min": 48.431000000000004,
+      "max": 86.768
+     },
+     "failed": {
+      "n": 12,
+      "median": 84.5295,
+      "q1": 83.678,
+      "q3": 85.5325,
+      "min": 79.596,
+      "max": 99.483
+     },
+     "head": {
+      "n": 12,
+      "median": 84.9745,
+      "q1": 83.2935,
+      "q3": 86.82300000000001,
+      "min": 80.898,
+      "max": 98.133
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 50.0355,
+      "q1": 49.496,
+      "q3": 51.207499999999996,
+      "min": 48.217,
+      "max": 65.868
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.5768517837386262,
+      "q1": 1.1640230700572622,
+      "q3": 1.675898602121951,
+      "min": 0.9702194357366771,
+      "max": 1.7446676715326956
+     },
+     "head": {
+      "n": 12,
+      "median": 1.5489861453838327,
+      "q1": 1.1456089194465815,
+      "q3": 1.6758581586222332,
+      "min": 0.9992808298492181,
+      "max": 1.9253080233449271
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.001398634007607,
+      "q1": 0.9760600373063648,
+      "q3": 1.0513745084364605,
+      "min": 0.8240603922278178,
+      "max": 1.165696569419367
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.696999543457392,
+      "q1": 1.6576533078325821,
+      "q3": 1.7439996872771852,
+      "min": 1.2840225906358174,
+      "max": 1.949210447909425
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.906545505797641,
+      "q1": 0.7142393254180415,
+      "q3": 0.9943026876135821,
+      "min": 0.5802254287294855,
+      "max": 1.0259844134536507
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 1.4456879999999899,
+     "q1": 1.212811999999996,
+     "q3": 2.1097915,
+     "min": 0.8736669999999975,
+     "max": 6.414875000000002
+    },
+    "failed": {
+     "n": 12,
+     "median": 1.6699789999999979,
+     "q1": 1.2143964999999923,
+     "q3": 3.475187499999997,
+     "min": 1.065916999999999,
+     "max": 6.524208000000002
+    },
+    "head": {
+     "n": 12,
+     "median": 1.7478334999999916,
+     "q1": 1.3807289999999952,
+     "q3": 1.9942290000000042,
+     "min": 0.901416999999995,
+     "max": 2.5425829999999934
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 1.134458500000001,
+     "q1": 0.9852494999999983,
+     "q3": 1.395916499999995,
+     "min": 0.597332999999999,
+     "max": 1.8456669999999917
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": 49.327081249999914,
+      "intercept": -137.31540818749966,
+      "n": 12
+     },
+     "relativeSlope": 0.8769853290056311,
+     "tau": 0.5038314736557788,
+     "offCpuTau": 0.35115526951766407,
+     "load": {
+      "n": 12,
+      "median": 4.08,
+      "q1": 4.01,
+      "q3": 4.37,
+      "min": 3.52,
+      "max": 4.8
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": -1.691736941964284,
+      "intercept": 93.81907084430802,
+      "n": 12
+     },
+     "relativeSlope": -0.01942417217944487,
+     "tau": -0.06154574548966636,
+     "offCpuTau": -0.03077287274483318,
+     "load": {
+      "n": 12,
+      "median": 4.02,
+      "q1": 3.92,
+      "q3": 4.44,
+      "min": 3.52,
+      "max": 5.04
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": -2.387908807692308,
+      "intercept": 96.57447925653847,
+      "n": 12
+     },
+     "relativeSlope": -0.027552542200049726,
+     "tau": -0.3333333333333333,
+     "offCpuTau": -0.36363636363636365,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.885,
+      "q3": 4.485,
+      "min": 3.56,
+      "max": 5.11
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": -0.21507287275566456,
+      "intercept": 52.357853531030464,
+      "n": 12
+     },
+     "relativeSlope": -0.004181172075253882,
+     "tau": -0.06060606060606061,
+     "offCpuTau": -0.18181818181818182,
+     "load": {
+      "n": 12,
+      "median": 4.0600000000000005,
+      "q1": 3.955,
+      "q3": 4.390000000000001,
+      "min": 3.52,
+      "max": 4.78
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": -0.8709379495733451,
+     "intercept": 5.063441805176225,
+     "n": 12
+    },
+    "tau": -0.5151515151515151,
+    "load": {
+     "n": 12,
+     "median": 4.105,
+     "q1": 3.9699999999999998,
+     "q3": 4.34,
+     "min": 3.52,
+     "max": 4.92
+    }
+   },
+   "lowLoad": {
+    "wallMs": 51.6624165,
+    "load": 3.9,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 140,
+    "boundMs": 225,
+    "measuredMs": 75,
+    "preEquivalent": {
+     "median": 87.96090194489192,
+     "low": 84.7919138193384,
+     "high": 120.04323827520278
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 51.6624165,
+     "load": 3.9,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 1.8666666666666667,
+     "existing": 0.68883222,
+     "added": 1.591616239766515,
+     "residual": 1.7026091287249776
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 1.5554426890856115,
+      "place": "within"
+     },
+     "after": {
+      "factor": 3.0873894605959276,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.52-4.8); no load was induced"
+   }
+  },
+  {
+   "name": "scale curried",
+   "test": "test/fn-scale.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 82.91902049999999,
+      "q1": 77.51762550000001,
+      "q3": 93.45766649999999,
+      "min": 57.759667,
+      "max": 104.58812499999999
+     },
+     "failed": {
+      "n": 12,
+      "median": 96.314354,
+      "q1": 94.1077085,
+      "q3": 97.5822295,
+      "min": 89.823166,
+      "max": 105.02066699999999
+     },
+     "head": {
+      "n": 12,
+      "median": 96.5546045,
+      "q1": 95.0487495,
+      "q3": 98.38556249999999,
+      "min": 91.022916,
+      "max": 106.444875
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 63.9418955,
+      "q1": 59.069625,
+      "q3": 78.8540415,
+      "min": 58.077875,
+      "max": 107.58525
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.1456228759959757,
+      "q1": 1.0314502132423908,
+      "q3": 1.277099771304526,
+      "min": 0.9021586724114233,
+      "max": 1.669698130357988
+     },
+     "head": {
+      "n": 12,
+      "median": 1.136344950612742,
+      "q1": 1.039109208716901,
+      "q3": 1.2970694686827264,
+      "min": 0.9537794337838413,
+      "max": 1.7069761672968093
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0165216405530602,
+      "q1": 0.9981824515985813,
+      "q3": 1.0447034058566556,
+      "min": 0.8667143201442437,
+      "max": 1.098011763413192
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.4779338341525827,
+      "q1": 1.2236423794218518,
+      "q3": 1.6230826529998754,
+      "min": 0.8904229436656047,
+      "max": 1.7306678840253522
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.8590625303826249,
+      "q1": 0.6867848316530519,
+      "q3": 1.007024181292851,
+      "min": 0.5628805851524731,
+      "max": 1.3603494805466934
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 137.265,
+      "q1": 126.304,
+      "q3": 147.74,
+      "min": 102.728,
+      "max": 180.631
+     },
+     "failed": {
+      "n": 12,
+      "median": 150.782,
+      "q1": 144.602,
+      "q3": 156.8545,
+      "min": 138.536,
+      "max": 158.081
+     },
+     "head": {
+      "n": 12,
+      "median": 146.37900000000002,
+      "q1": 143.50900000000001,
+      "q3": 151.2915,
+      "min": 136.638,
+      "max": 153.22000000000003
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 114.2645,
+      "q1": 108.5985,
+      "q3": 145.683,
+      "min": 96.63700000000001,
+      "max": 183.44299999999998
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.0902386395021968,
+      "q1": 1.0249266205675096,
+      "q3": 1.1814147872778373,
+      "min": 0.7669558381451689,
+      "max": 1.482526672377541
+     },
+     "head": {
+      "n": 12,
+      "median": 1.0553060714844098,
+      "q1": 0.9770371821361232,
+      "q3": 1.116754509059863,
+      "min": 0.8380842712491212,
+      "max": 1.4571587103808115
+     },
+     "batch": {
+      "n": 12,
+      "median": 0.9789466099199488,
+      "q1": 0.9301218858023892,
+      "q3": 1.0114863124099247,
+      "min": 0.8709547879630043,
+      "max": 1.092741236934804
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.2103806842540048,
+      "q1": 1.0135422018558202,
+      "q3": 1.321879995200597,
+      "min": 0.8025490206767226,
+      "max": 1.5665221395531732
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.8863123751599407,
+      "q1": 0.7511325655753966,
+      "q3": 1.132036303201974,
+      "min": 0.5349967613532561,
+      "max": 1.4541312981855
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 81.714,
+      "q1": 75.2925,
+      "q3": 90.8175,
+      "min": 57.128,
+      "max": 102.661
+     },
+     "failed": {
+      "n": 12,
+      "median": 92.795,
+      "q1": 91.894,
+      "q3": 94.0445,
+      "min": 88.247,
+      "max": 102.883
+     },
+     "head": {
+      "n": 12,
+      "median": 93.6405,
+      "q1": 92.5445,
+      "q3": 95.85849999999999,
+      "min": 88.71000000000001,
+      "max": 104.324
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 62.5805,
+      "q1": 57.325500000000005,
+      "q3": 77.0745,
+      "min": 56.597,
+      "max": 106.012
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.1380364627658337,
+      "q1": 1.0125597623812226,
+      "q3": 1.280190833666655,
+      "min": 0.9067221242730931,
+      "max": 1.6356602716706345
+     },
+     "head": {
+      "n": 12,
+      "median": 1.1243680841640584,
+      "q1": 1.0333056390216038,
+      "q3": 1.299273345872677,
+      "min": 0.9521633367599311,
+      "max": 1.6815397003220838
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0099739901021105,
+      "q1": 0.9961617091439505,
+      "q3": 1.0450654036884306,
+      "min": 0.8622415753817444,
+      "max": 1.1277660666990974
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.4592844628789257,
+      "q1": 1.2220640878171196,
+      "q3": 1.610803914002958,
+      "min": 0.8824567030147531,
+      "max": 1.7528414563667887
+     },
+     "rest": {
+      "n": 12,
+      "median": 0.867504689958203,
+      "q1": 0.6753802543496732,
+      "q3": 1.0068511681192653,
+      "min": 0.5562092712909479,
+      "max": 1.346555104327125
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 1.8315419999999918,
+     "q1": 0.9261039999999952,
+     "q3": 2.1853339999999903,
+     "min": 0.5154579999999953,
+     "max": 4.764874999999989
+    },
+    "failed": {
+     "n": 12,
+     "median": 2.9029999999999916,
+     "q1": 1.6327494999999956,
+     "q3": 3.3173334999999966,
+     "min": 0.8697919999999897,
+     "max": 4.734916999999996
+    },
+    "head": {
+     "n": 12,
+     "median": 2.5042495000000002,
+     "q1": 2.183124999999997,
+     "q3": 2.9001044999999976,
+     "min": 1.7964999999999947,
+     "max": 4.072832999999989
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 1.6390204999999938,
+     "q1": 1.3276249999999976,
+     "q3": 1.7441249999999968,
+     "min": 0.8358330000000009,
+     "max": 2.5941660000000013
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -0.9055829787234029,
+      "intercept": 86.86283437234042,
+      "n": 12
+     },
+     "relativeSlope": -0.010921293730470478,
+     "tau": -0.01526762041381148,
+     "offCpuTau": 0.19847906537954926,
+     "load": {
+      "n": 12,
+      "median": 4.08,
+      "q1": 4.01,
+      "q3": 4.37,
+      "min": 3.52,
+      "max": 4.8
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 2.4230902898550806,
+      "intercept": 85.47925776304345,
+      "n": 12
+     },
+     "relativeSlope": 0.025158142989310614,
+     "tau": 0.27695585470349865,
+     "offCpuTau": 0.24618298195866545,
+     "load": {
+      "n": 12,
+      "median": 4.02,
+      "q1": 3.92,
+      "q3": 4.44,
+      "min": 3.52,
+      "max": 5.04
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 0.2406242559523743,
+      "intercept": 95.59571684002978,
+      "n": 12
+     },
+     "relativeSlope": 0.0024921054485016747,
+     "tau": 0.030303030303030304,
+     "offCpuTau": 0.15151515151515152,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.885,
+      "q3": 4.485,
+      "min": 3.56,
+      "max": 5.11
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": 9.928031226556639,
+      "intercept": 22.602452837209302,
+      "n": 12
+     },
+     "relativeSlope": 0.15526645165776543,
+     "tau": 0.3333333333333333,
+     "offCpuTau": 0.21212121212121213,
+     "load": {
+      "n": 12,
+      "median": 4.0600000000000005,
+      "q1": 3.955,
+      "q3": 4.390000000000001,
+      "min": 3.52,
+      "max": 4.78
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.011421425271353817,
+     "intercept": 1.099166228704744,
+     "n": 12
+    },
+    "tau": 0.030303030303030304,
+    "load": {
+     "n": 12,
+     "median": 4.105,
+     "q1": 3.9699999999999998,
+     "q3": 4.34,
+     "min": 3.52,
+     "max": 4.92
+    }
+   },
+   "lowLoad": {
+    "wallMs": 77.294271,
+    "load": 3.9,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 123,
+    "boundMs": 225,
+    "measuredMs": 75,
+    "preEquivalent": {
+     "median": 107.36517450654684,
+     "low": 96.31197402404867,
+     "high": 119.24957542385519
+    },
+    "baseVerdict": "passed",
+    "downgrade": [],
+    "fittedRatio": null,
+    "verdict": "passed",
+    "reading": "within its bound in the failed run (a control)",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 77.294271,
+     "load": 3.9,
+     "n": 4
+    },
+    "overrun": null,
+    "supporting": {
+     "total": 1.64,
+     "existing": 1.03059028,
+     "added": 1.1456228759959757,
+     "residual": 1.3890444028710336
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9932622788943357,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9746792093932293,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.52-4.8); no load was induced"
+   }
+  },
+  {
+   "name": "scale generic",
+   "test": "test/fn-scale.perf.test.mjs",
+   "usable": true,
+   "verdictPairs": 12,
+   "minPairs": 9,
+   "failures": [],
+   "outputProblems": [],
+   "wallMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1270.1074165,
+      "q1": 1224.9294165000001,
+      "q3": 1286.015563,
+      "min": 1172.506833,
+      "max": 1380.091667
+     },
+     "failed": {
+      "n": 12,
+      "median": 1819.5305210000001,
+      "q1": 1782.5937915,
+      "q3": 1846.4165835,
+      "min": 1703.606,
+      "max": 1893.346458
+     },
+     "head": {
+      "n": 12,
+      "median": 1879.1210205,
+      "q1": 1835.503792,
+      "q3": 1940.9203125,
+      "min": 1740.1907919999999,
+      "max": 1975.9741669999999
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1334.070021,
+      "q1": 1280.887292,
+      "q3": 1398.8491249999997,
+      "min": 1224.4356249999998,
+      "max": 1441.484041
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.4420844770985473,
+      "q1": 1.3727483968034675,
+      "q3": 1.4811281992951075,
+      "min": 1.3185982210557035,
+      "max": 1.6147850099565264
+     },
+     "head": {
+      "n": 12,
+      "median": 1.4656944998374617,
+      "q1": 1.4368089393035186,
+      "q3": 1.551338636248187,
+      "min": 1.3526238685561516,
+      "max": 1.6044302020711552
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.0417896155081192,
+      "q1": 0.9965997284724551,
+      "q3": 1.0647013599534287,
+      "min": 0.9843377360127662,
+      "max": 1.085827517197036
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.3980513766111198,
+      "q1": 1.34333326454942,
+      "q3": 1.4924467310137002,
+      "min": 1.3135709367177102,
+      "max": 1.512892045263711
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0404696926048387,
+      "q1": 1.0186472692687811,
+      "q3": 1.0859630784099052,
+      "min": 0.9640010274201003,
+      "max": 1.1934025334588392
+     }
+    }
+   },
+   "cpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 2032.3885,
+      "q1": 1976.968,
+      "q3": 2080.0555,
+      "min": 1896.584,
+      "max": 2174.928
+     },
+     "failed": {
+      "n": 12,
+      "median": 2686.991,
+      "q1": 2630.5434999999998,
+      "q3": 2717.1890000000003,
+      "min": 2563.8250000000003,
+      "max": 2814.9030000000002
+     },
+     "head": {
+      "n": 12,
+      "median": 2885.6940000000004,
+      "q1": 2828.833,
+      "q3": 2968.4535,
+      "min": 2601.398,
+      "max": 3014.4390000000003
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 2123.242,
+      "q1": 2055.4849999999997,
+      "q3": 2254.7025,
+      "min": 1946.626,
+      "max": 2348.793
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.319703901908295,
+      "q1": 1.2813018522191015,
+      "q3": 1.3563703055500778,
+      "min": 1.2402217088052903,
+      "max": 1.4841963234952948
+     },
+     "head": {
+      "n": 12,
+      "median": 1.4263334124048361,
+      "q1": 1.3868624162039902,
+      "q3": 1.4512835002383881,
+      "min": 1.248490258610553,
+      "max": 1.5230076811783713
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.078403946604451,
+      "q1": 1.0410830625404537,
+      "q3": 1.1012668286497145,
+      "min": 0.9868530766061697,
+      "max": 1.1533207279783786
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.322979815799055,
+      "q1": 1.287495431353923,
+      "q3": 1.4319112012486155,
+      "min": 1.2267215544324255,
+      "max": 1.480960389925954
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.039681343538206,
+      "q1": 1.0007551139352735,
+      "q3": 1.1052635078329573,
+      "min": 0.9550410273562635,
+      "max": 1.1701733221412813
+     }
+    }
+   },
+   "threadCpuMs": {
+    "arms": {
+     "pre": {
+      "n": 12,
+      "median": 1229.3505,
+      "q1": 1180.9634999999998,
+      "q3": 1243.0990000000002,
+      "min": 1135.476,
+      "max": 1309.215
+     },
+     "failed": {
+      "n": 12,
+      "median": 1720.2465000000002,
+      "q1": 1688.176,
+      "q3": 1736.0835000000002,
+      "min": 1632.671,
+      "max": 1795.308
+     },
+     "head": {
+      "n": 12,
+      "median": 1774.975,
+      "q1": 1754.0860000000002,
+      "q3": 1820.1955,
+      "min": 1647.678,
+      "max": 1875.578
+     },
+     "uncollected": {
+      "n": 12,
+      "median": 1277.2795,
+      "q1": 1237.083,
+      "q3": 1331.9805000000001,
+      "min": 1172.1290000000001,
+      "max": 1388.991
+     }
+    },
+    "ratios": {
+     "added": {
+      "n": 12,
+      "median": 1.4001683484652911,
+      "q1": 1.3598105337952138,
+      "q3": 1.4407647868047937,
+      "min": 1.3277735131357342,
+      "max": 1.5811060735761917
+     },
+     "head": {
+      "n": 12,
+      "median": 1.449938389065301,
+      "q1": 1.4344921969033526,
+      "q3": 1.5145300663435046,
+      "min": 1.3250027341563682,
+      "max": 1.5782535253937553
+     },
+     "batch": {
+      "n": 12,
+      "median": 1.040913844067883,
+      "q1": 1.018658727429206,
+      "q3": 1.0653745135552146,
+      "min": 0.9827642664360378,
+      "max": 1.0817567622125865
+     },
+     "trace": {
+      "n": 12,
+      "median": 1.3837544909134825,
+      "q1": 1.3371223419648137,
+      "q3": 1.4748786544718318,
+      "min": 1.2766756588055646,
+      "max": 1.5157538120804108
+     },
+     "rest": {
+      "n": 12,
+      "median": 1.0475152097684726,
+      "q1": 1.0138776972168562,
+      "q3": 1.0719608503008562,
+      "min": 0.9598001346091944,
+      "max": 1.1831769231582172
+     }
+    }
+   },
+   "offCpuMs": {
+    "pre": {
+     "n": 12,
+     "median": 42.81943799999988,
+     "q1": 40.637833,
+     "q3": 52.56585449999989,
+     "min": 33.52012500000001,
+     "max": 112.68966699999987
+    },
+    "failed": {
+     "n": 12,
+     "median": 97.50812450000001,
+     "q1": 93.0695209999999,
+     "q3": 109.43212499999993,
+     "min": 70.93499999999995,
+     "max": 151.46620799999982
+    },
+    "head": {
+     "n": 12,
+     "median": 94.42910399999982,
+     "q1": 89.88664599999993,
+     "q3": 109.01856249999992,
+     "min": 70.04041599999982,
+     "max": 148.05954199999996
+    },
+    "uncollected": {
+     "n": 12,
+     "median": 54.06139549999989,
+     "q1": 48.54702099999986,
+     "q3": 59.60431249999988,
+     "min": 35.97041699999977,
+     "max": 77.93362499999989
+    }
+   },
+   "sensitivity": {
+    "pre": {
+     "fit": {
+      "slope": -30.893333999999896,
+      "intercept": 1390.9003524399996,
+      "n": 12
+     },
+     "relativeSlope": -0.02432340257104537,
+     "tau": -0.13740858372430334,
+     "offCpuTau": 0.01526762041381148,
+     "load": {
+      "n": 12,
+      "median": 4.08,
+      "q1": 4.01,
+      "q3": 4.37,
+      "min": 3.52,
+      "max": 4.8
+     }
+    },
+    "failed": {
+     "fit": {
+      "slope": 19.878258669732624,
+      "intercept": 1736.8441710194597,
+      "n": 12
+     },
+     "relativeSlope": 0.010924938296065341,
+     "tau": 0.12309149097933272,
+     "offCpuTau": 0.03077287274483318,
+     "load": {
+      "n": 12,
+      "median": 4.02,
+      "q1": 3.92,
+      "q3": 4.44,
+      "min": 3.52,
+      "max": 5.04
+     }
+    },
+    "head": {
+     "fit": {
+      "slope": 49.98591493506511,
+      "intercept": 1663.39140489935,
+      "n": 12
+     },
+     "relativeSlope": 0.02660068957227926,
+     "tau": 0.15151515151515152,
+     "offCpuTau": 0.09090909090909091,
+     "load": {
+      "n": 12,
+      "median": 4.115,
+      "q1": 3.885,
+      "q3": 4.485,
+      "min": 3.56,
+      "max": 5.11
+     }
+    },
+    "uncollected": {
+     "fit": {
+      "slope": -58.183771111111355,
+      "intercept": 1578.7598969555565,
+      "n": 12
+     },
+     "relativeSlope": -0.0436137310600066,
+     "tau": -0.12121212121212122,
+     "offCpuTau": 0.030303030303030304,
+     "load": {
+      "n": 12,
+      "median": 4.0600000000000005,
+      "q1": 3.955,
+      "q3": 4.390000000000001,
+      "min": 3.52,
+      "max": 4.78
+     }
+    }
+   },
+   "addedAgainstLoad": {
+    "fit": {
+     "slope": 0.07983299368233301,
+     "intercept": 1.1209440465958902,
+     "n": 12
+    },
+    "tau": 0.21212121212121213,
+    "load": {
+     "n": 12,
+     "median": 4.105,
+     "q1": 3.9699999999999998,
+     "q3": 4.34,
+     "min": 3.52,
+     "max": 4.92
+    }
+   },
+   "lowLoad": {
+    "wallMs": 1270.1074165,
+    "load": 3.9,
+    "n": 4
+   },
+   "attribution": {
+    "kind": "attribution, not qualification",
+    "observedMs": 1900,
+    "boundMs": 1650,
+    "measuredMs": 550,
+    "preEquivalent": {
+     "median": 1317.537238749544,
+     "low": 1282.805904920479,
+     "high": 1384.0846614166671
+    },
+    "baseVerdict": "addedNecessary",
+    "downgrade": [],
+    "fittedRatio": {
+     "before": {
+      "load": 4.52,
+      "ratio": 1.4817891780400354,
+      "place": "within",
+      "extrapolated": false
+     },
+     "after": {
+      "load": 6.23,
+      "ratio": 1.618303597236825,
+      "place": "above",
+      "extrapolated": true
+     }
+    },
+    "verdict": "addedNecessary",
+    "reading": "the pre-tranche-2 compiler is estimated within the bound under the failed run's conditions, assuming the paired ratio failed/pre measured here carries over to the failed run's conditions, and T is that run's single sample",
+    "existing": "loadOrUnreproducedNeeded",
+    "existingReading": "the pre-tranche-2 compiler, at the lowest loads sampled, is within the bound: load, or something this measurement does not reproduce, is needed to exceed it",
+    "lowLoad": {
+     "wallMs": 1270.1074165,
+     "load": 3.9,
+     "n": 4
+    },
+    "overrun": {
+     "overBound": 1.1515151515151516,
+     "remainder": 0.7985074174239661,
+     "addedShare": 2.594933781227962,
+     "remainderShare": -1.594933781227962,
+     "note": "log shares of log(T/B); the remainder is existing + load + unreproduced; a share can fall outside [0, 1]"
+    },
+    "supporting": {
+     "total": 3.4545454545454546,
+     "existing": 2.309286211818182,
+     "added": 1.4420844770985473,
+     "residual": 1.0373431582505401
+    },
+    "loadPredicted": {
+     "before": {
+      "factor": 0.9849231576070222,
+      "place": "within"
+     },
+     "after": {
+      "factor": 0.9433402535876799,
+      "place": "above"
+     }
+    },
+    "ratioPlaces": {
+     "before": "within",
+     "after": "above"
+    },
+    "loadNote": "correlational, conditional on the loads sampled (3.52-4.8); no load was induced"
+   }
+  }
+ ]
+}
