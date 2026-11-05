@@ -7,7 +7,7 @@
 // so no failure becomes a semantic claim. An inability to solve is
 // never read as a refutation. T6 (dossier §18.161 (4)): an RT8 defect
 // is kept as a row of its own defect class, reported, never thrown at
-// load and never relabelled as a harmless class; a check's decline
+// load and never relabeled as a harmless class; a check's decline
 // (RT8's, read as Decide reads it) has its own class.
 import { boundHoleClass, checkDeclined, checkDeclinedRefused }
   from './r0-rt8-account.mjs';

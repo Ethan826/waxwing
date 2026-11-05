@@ -15,7 +15,7 @@ const refusals = 'test/r0-rt8-refusals.mjs';
 
 export const t6Rows = [
   // The defect the minting comparison found: a ClaimsComplete decline
-  // (`NotCertifiable`) labelled DEFECT.
+  // (`NotCertifiable`) labeled DEFECT.
   helper('r0-t6-rt8-declines-defect', refusals,
     "  case 'Declines': {\n",
     "  case 'Declines': if (named(attempt.value1) !== 'Heuristic')\n"
@@ -28,7 +28,7 @@ export const t6Rows = [
     "  if (named(attempt.value1) === 'Heuristic') return ambiguousClass;\n"
       + '  switch (named(read)) {\n',
     /r0-t6-tooling: .*"NotCertifiable Heuristic: ambiguous/),
-  // A decline where today refuses labelled DEFECT.
+  // A decline where today refuses labeled DEFECT.
   helper('r0-t6-rt8-refused-decline-defect', refusals,
     "  if (named(read) !== 'Declines' || refusal(attempt) === "
       + "'RequirementUnjudged')\n",
@@ -63,7 +63,7 @@ export const t6Rows = [
     "  if (facts.rt8.startsWith('DEFECT')) return rt8DefectClass;\n",
     "  if (facts.rt8.startsWith('DEFECT')) fail(facts, 'an RT8 defect');\n",
     /r0-t6-tooling: .*"RT8 defect, compiles: threw/),
-  // An RT8 defect relabelled as agreement (no row).
+  // An RT8 defect relabeled as agreement (no row).
   helper('r0-t6-window-defect-harmless', classes,
     'import { compilingDecline, refusedDecline, rt8DefectClass }\n',
     'const rt8DefectClass = null;\n'

@@ -190,7 +190,7 @@ last); no per-file load was recorded (minor 1).
   over the bound already); else `loadOrUnreproducedNeeded` (load, or
   something not reproduced here, is needed to exceed it).
 - Overrun split (ruling I4), when T > B: T / B = r × T / (r · B);
-  added's share log r / log(T / B) and the remainder's, labelled
+  added's share log r / log(T / B) and the remainder's, labeled
   "existing + load + unreproduced", summing to 1. A share can fall
   outside [0, 1] (r < 1, or r > T / B).
 - Supporting data: T / M = (L / M) × r × T / (r · L).
@@ -265,8 +265,20 @@ run's load, 25 as a generous ceiling.
 - Linear workloads compare outcome codes only; scale workloads the Go
   text. Twelve rounds on one machine; no interval is claimed.
 
-## 11. What remains unrun
+## 11. Runs
 
-The measurement, the four builds, `npm run perf` and verify have not
-run. test/r0-t2-attr.test.mjs and test/r0-t2-attr-run.test.mjs have run
+The measurement ran once, at d98f53d2, under this protocol: the four
+arms and their builds, one warm-up and 12 measured rounds in the
+Williams order, no failed sample, load1 3.57 at the start and 3.79 at
+the end. The record is test/fixtures/r0/t2-perf-attribution.json
+(committed at 3cad78cd); the raw samples are in
+.build/evidence/r0-t2-attr-2026-11-05T00-39-26-298Z in the r0-t2-d1
+worktree and are not committed. Per the record, added compiler cost is
+necessary (`addedNecessary`) for four of the five failed bounds
+(value, partialFirst, parenthesized, generic), and over is
+undetermined. The record is an attribution, not a qualification
+(§18.161).
+
+`npm run perf` and verify have not run under this protocol.
+test/r0-t2-attr.test.mjs and test/r0-t2-attr-run.test.mjs have run
 alone (`node --test`).
