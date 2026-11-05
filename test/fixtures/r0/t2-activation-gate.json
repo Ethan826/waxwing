@@ -19,7 +19,7 @@
   "performance": {
     "ruling": null,
     "budget": null,
-    "measurement": "test/fixtures/r0/t2-performance.json"
+    "measurement": "test/fixtures/r0/t2-performance-2.json"
   },
   "routing": "§18.159"
 }
