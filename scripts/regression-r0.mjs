@@ -162,12 +162,12 @@ export const r0Rows = [
   {
     // Task 4.3, criterion 5: holes left unbound, so `pr` at an open
     // flexible variable meets G0's backstop. Step 4 (the hole defaults)
-    // moved from the read-back into G0's `certify` (BACKLOG R026), so the
-    // defect is restored there.
+    // moved from the read-back into G0's `certify` (BACKLOG R026), and since
+    // the minting switch (§18.172) it is the package's `settle` before G0.
     name: 'r0-hole-unbound',
     file: 'src/Features/Check/Strategy/Substitution.purs',
-    needle: '  (checkSubstitution problem (map settled unsettled))\n',
-    replacement: '  (checkSubstitution problem (map identity unsettled))\n',
+    needle: '  validity ← checkSubstitution problem (erase (settle package))\n',
+    replacement: '  validity ← checkSubstitution problem (erase package)\n',
     probe: 'r0-hole-unbound',
     message: /a hole was left unbound: CheckFailed \w+ RequirementUnjudged/
   },
@@ -228,7 +228,8 @@ export const r0Rows = [
   },
   {
     // R022: the read-back blind to a variable's sort, so a row slot's
-    // bare hole is the type `hole n` and G0 refuses σ as not generic.
+    // bare hole is the type `hole n`: G0 refused σ as not generic; since
+    // the minting switch (§18.172) the package's read faults on it first.
     name: 'r0-readback-sort-blind',
     file: 'src/Features/Check/Strategy/ReadBack/Type.purs',
     needle: '  SortRow, TVar (Hole index) → Record [] [ holeVar index ]\n',
@@ -236,7 +237,7 @@ export const r0Rows = [
       + ' readType (TVar (Hole index))\n',
     probe: 'r0-readback-sort-blind',
     message:
-      /r022-disjoint: the read-back σ was refused: CheckFailed NotGeneric/
+      /r022-disjoint: the read-back σ was refused: CheckFailed PackageUnread/
   },
   ...r0WitnessRows,
   ...r0CxRows,
