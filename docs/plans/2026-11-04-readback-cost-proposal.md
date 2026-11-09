@@ -2,6 +2,8 @@
 
 Status: proposal, 2026-11-04 (dossier §18.161, prerequisites Lane E).
 Nothing is implemented; no pin, Online decision or compile output moves.
+Superseded in part by docs/plans/2026-11-08-readback-walk-investigation.md:
+its predictions cover the read-back alone, not the validated path.
 Base fdd52a3. It answers the paired measurement
 (test/fixtures/r0/t2-performance.json, protocol
 docs/plans/2026-11-04-performance-protocol.md): onlineReadBack ×14.1

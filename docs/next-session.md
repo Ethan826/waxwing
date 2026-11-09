@@ -1,4 +1,4 @@
-# RESUME HERE (2026-11-03, America/New_York)
+# RESUME HERE (2026-11-08, America/New_York)
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -8,29 +8,35 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-No milestone has moved since 2026-10-25. Stage B is accepted
-(§18.159); milestone 1 waits on the activation gate, not met (2, 4, 6).
+No milestone has moved since 2026-10-25. The prerequisites are
+implemented and reviewed, and their routine verify passed at 96ba184f
+(§18.162). The gate reads not met (2, 6).
 
 ## What is running now
 
-Nothing. The activation packet is returned (dossier §18.160;
-docs/plans/2026-11-04-activation-packet.md).
+Nothing. The return packet is written:
+docs/plans/2026-11-08-return-packet.md.
 
-**Waiting on the author** (packet section 4):
-1. Criterion 2: loss rulings for the read-fault and ForcedTail lists,
-   or keep them unresolved.
-2. Criterion 6: budgets (proposed, none approved), the memory figure
-   they bind, and whether the online read-back's ×14 CPU must fall
-   first (R035).
-3. The prerequisites proposal
-   (docs/plans/2026-11-04-activation-prerequisites-proposal.md), its
-   Q1-Q9; T2 needs a second validator-freeze exception.
-4. Whether the two over-bound `npm run perf` files need attribution.
+**Waiting on the author** (packet section 7):
+1. Criterion 2: replacement-loss rulings. Held, unresolved (§18.161).
+2. Criterion 6: budgets. Held; none approved. Whether to land index-first
+   lookup and then run the performance protocol
+   (docs/plans/2026-11-08-readback-walk-investigation.md). Validation is
+   the next cost to examine.
+3. R037 (2), (3): the recommended blockers.
+4. R038 (2): the two window classes.
 Held: the minting switch, F14's retirement, live replacement, push.
 
-Integrated state: r0-t2-d1 (packet commit). Ledgers (git-ignored):
-.superpowers/sdd/2026-11-04-activation-packet/progress.md and
-.superpowers/sdd/2026-11-01-tranche-2-read-back-plan/progress.md.
+Integrated state: r0-t2-d1. Ledgers (git-ignored):
+.superpowers/sdd/2026-11-04-prerequisites/progress.md and
+.superpowers/sdd/2026-11-04-activation-packet/progress.md.
+
+**Running verify on this shared machine** (author, 2026-11-08): never
+ask the author to close applications. Run
+`WAXWING_VERIFY_TEST_CONCURRENCY=2 WAXWING_REGRESSION_JOBS=1 node
+scripts/verify.mjs`, once under the lock, with no competing Waxwing
+builds. If memory pressure interrupts it, keep the evidence and
+investigate; do not retry unchanged.
 
 ## Where the work is
 
@@ -56,6 +62,10 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
+- Prerequisites routine verify **passed** at 96ba184f (§18.162): parallel
+  3475/3475, serial 238/238, regression proofs 472/472, growth ratio
+  2.284 against 3.0. Incomplete, not a pass: f93ac49f, killed under
+  memory pressure. Earlier: passed at dd66543 (§18.160).
 - Tranche 2 routine verify **passed** at 7e0492b (§18.158): parallel
   3385/3385, serial 230/230, regression proofs 437/437, growth ratio
   2.140 against 3.0. Failed run kept: cb54ed5 (3380/3385; moved
@@ -67,10 +77,9 @@ validator-side (A2) or unrecorded (settling's deferred rows).
   3013/3013, serial 204/204, regression proofs 264/264, growth ratio
   2.278 against 3.0. Failed runs kept: aaa9c9b and 5540ce0 (§18.137).
   Earlier: passed at dac50f3 (§18.134).
-- Performance qualification (`npm run perf`, 26 files plus the
-  duplicate-scan-timing proof) has **not been run**; its absolute
-  budgets failed on the pre-batch tree under this machine's shared load
-  (§18.130).
+- Performance qualification (`npm run perf`) last ran at 354ce6e:
+  24 of 26 files passed (§18.160); the two failures stay failed
+  evidence, attributed in test/fixtures/r0/t2-perf-attribution.json.
 - The failed acceptance runs stand as records: 0fef9e4 (two stale pins,
   §18.127) and dde534a (one timing bound, §18.129).
 - The verification contract (§18.131-18.133) governs: routine `npm run
@@ -108,7 +117,6 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 - Self-hosting: target set (§18.138: the stable R0 replacement once
   accepted; the shipped compiler is the compatibility reference and
   bootstrap seed); the analysis's other six questions remain.
-- Whether and when to run performance qualification.
 - Follow-up: remove dead `Record.shape` (needs a Record re-pin).
 
 ## How work runs here

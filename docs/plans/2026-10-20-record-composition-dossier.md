@@ -8377,3 +8377,33 @@ the ruling and does not approve live widening.
 Return one packet with the fixes, reviews, verify, the updated scratch
 comparison, the numbering findings and the performance proposal. Held:
 the minting switch, F14's retirement, live replacement, pushing.
+
+### 18.162 Prerequisites verified; return packet; walk investigation (2026-11-08)
+
+The routine verify at f93ac49f was killed under memory pressure on
+2026-11-05 and is incomplete evidence. The author authorized another
+attempt with less resource demand on the shared machine, scheduling
+changes only. WAXWING_VERIFY_TEST_CONCURRENCY was added at 96ba184f
+(validated before the build; every file, workload, assertion, threshold
+and regression row kept; the routine file list equal to the commit
+before it, 379 files; seven tests added to an existing file; four mutants
+caught in an isolated copy).
+
+Routine verify at 96ba184f passed, run once under the lock, 2 test files
+at a time and regression jobs 1: parallel 3475/3475, serial 238/238,
+regression proofs 472/472, growth ratio 2.284 against 3.0. Free memory
+stayed at 28% or above. Performance qualification was not run. The log
+and memory samples are in .build/evidence/2026-11-08-verify/.
+
+The prerequisites are implemented and reviewed, and that verify is their
+acceptance run. The gate still reads not met (2, 6).
+
+The author's direction on performance: investigate the repeated
+`Walk.nodeAt` lookups before selecting laziness, since deferring a
+computation and making it cheaper are different fixes, and compare on
+the path that will require validation. Findings:
+docs/plans/2026-11-08-readback-walk-investigation.md. Return packet, with
+R037 and R038's decisions: docs/plans/2026-11-08-return-packet.md.
+
+Held: replacement losses, performance budgets, the minting switch, F14's
+retirement, live replacement, pushing.
