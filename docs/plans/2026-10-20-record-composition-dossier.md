@@ -8618,3 +8618,42 @@ Checking the separate unsettled field again would add another agreement
 requirement; the essential protection is that validation and compilation
 consume the same evidence. Live replacement, F14's retirement, milestone
 changes and pushing stay held.
+
+### 18.173 The shadow minting switch landed (2026-11-09)
+
+The switch is integrated under §18.170 and §18.172. Shadow certification
+mints through `certifyPackage`; a read fault declines as `EffectsUnread`.
+The live compiler does not reach this path.
+
+Evidence:
+- Routine verify at c8545b7c passed, at concurrency 2 and regression jobs
+  1: parallel 3484/3484, serial 242/242, regression proofs 507/507,
+  growth ratio 2.066 against 3.0. Failed runs are kept in
+  .build/evidence/2026-11-09-verify6/: 77536d51 (the window's stop count),
+  f079ee74 (two rows restoring defects in the unused `certify`).
+- Re-pinned only the accepted 16 movements, named in e084815d. The
+  comparison at 16de79af equals the pre-switch one line for line
+  (test/fixtures/r0/t2-minting-comparison4.json).
+- Protocol at 16de79af (test/fixtures/r0/t2-performance-4.json), within
+  the approved budgets: read-back CPU ×2.32, peak RSS ×0.97; validator
+  CPU ×2.21, peak RSS ×1.00. Absolute: recheck alone 4.3 s, with read-back
+  10.1 s; `certify` 6.0 s, `validate` 13.3 s.
+- One independent review of the switch. Its fixes (a per-fault naming
+  test through the real strategy with a restored row, the reason's end
+  anchor, stale statements) had no further independent review.
+- Each forged-witness test traced and re-aimed at the package, its intent
+  kept, with a restored-defect row each.
+
+Open for the author, not decided here:
+1. `Substitution.certify` remains a G0-only minter. Plan Task 16's guard
+   says it is removed in the same change; nothing calls it from src, and a
+   structure rule keeps Online off it. This may belong to F14's
+   retirement, which stays held.
+2. Solved verdicts still carry `Pending certifySound`, which names
+   `certify`'s statement, not the package path's. A new statement
+   reference would move every Solved verdict's assurance, a movement
+   beyond the accepted 16.
+
+The gate: criteria 1-7 not met (2); shadow minting met; live replacement
+not met (2). Live replacement, F14's retirement, milestone changes and
+pushing stay held.

@@ -18,20 +18,14 @@ shadow minting not met (S1, S2).
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (§18.171): how the minting switch may land.
-The switch is on branch `r0-minting-switch` (not integrated; worktree
-.claude/worktrees/minting-switch). Its 21 failing tests:
-- 4 in test/r0-forged-witness.test.mjs: a forged substitution is no longer
-  read under minting, so the check does not refuse it. Needs a ruling.
-- rt8.json, window.json, two window reconciliations, t2-gap-verdicts.json:
-  the expected 16 movements; pins, not re-pinned.
-- r0-elab-corpus (5), r0-a2-properties A3: counts 2,030 to 2,028 Solved.
-- FX032, unframed-install reason text, online read-fault test: the
-  premise was substitution-only Online.
-- T6 constructor table, no-Certified text scan, the gate's report block:
-  mechanical.
-Live replacement stays unresolved (criterion 2); R037 (2) blocks it,
-Entry first. F14's retirement and push stay held.
+**Waiting on the author** (§18.173): the shadow minting switch landed.
+1. `Substitution.certify` remains a G0-only minter (plan Task 16's guard);
+   possibly part of F14's retirement, held.
+2. Solved verdicts carry `Pending certifySound`, naming `certify`'s
+   statement; a new reference would move every Solved verdict.
+Live replacement stays unresolved (criterion 2): it needs measured
+user-visible losses and R037 (2), Entry first. F14's retirement, milestone
+changes and push stay held.
 
 Integrated state: r0-t2-d1. Ledger (git-ignored):
 .superpowers/sdd/2026-11-04-prerequisites/progress.md.
@@ -67,8 +61,8 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Latest routine verify **passed** at 9f4069e3 (§18.169); same src as
-  2d68a85d. Earlier passed at bdc38a6f (§18.167).
+- Latest routine verify **passed** at c8545b7c (§18.173), the switch.
+  Earlier passed at 9f4069e3 (§18.169).
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
