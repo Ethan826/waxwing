@@ -17,12 +17,15 @@ and verified at 2d68a85d (§18.164). The gate reads not met (2, 6).
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (packet section 6):
-1. Whether to authorize the monomorphic path comparison, and whether it
-   needs a validator-freeze exception
-   (docs/plans/2026-11-09-validator-path-cost-proposal.md).
-2. Criterion 6: numerical budgets. Held.
+**Waiting on the author:**
+1. Path comparison (§18.166): option A is withdrawn; no implementation
+   the rules allow helps. Keep the derived order (recommended), or grant
+   a structural exception.
+2. Criterion 6: the budgets recommended in
+   docs/plans/2026-11-09-budget-recommendation.md. Held.
 3. Criterion 2: replacement-loss rulings. Held (§18.161).
+Before approving the minting switch, exercise RT8's real
+constructor-to-classification path (§18.165).
 Held: the minting switch, F14's retirement, live replacement, push.
 R037 (2) blocks live replacement; R037 (5): separate shared needles before
 relying on those rows as activation evidence.
@@ -61,6 +64,8 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
+- Latest routine verify **passed** at bdc38a6f (§18.167); same src as
+  2d68a85d.
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row

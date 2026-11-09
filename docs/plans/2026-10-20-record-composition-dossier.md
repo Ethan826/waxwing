@@ -8516,3 +8516,16 @@ all pure rows pass the agreement tests over the stated grammar):
 Source is restored to the derived instance, equal to 2d68a85d's src, so
 that verify and the 2c5b9e30 records stay current. Tests and evidence:
 .build/evidence/2026-11-09-path-order/. Decision for the author.
+
+### 18.167 Review gap closed; budget recommendation (2026-11-09)
+
+The independent review of the preceding batch's two Important fixes found
+I1 closed as raised with a weaker caller pin than stated, and I2 not
+closed for one class. Fixed: the caller scan reads compiled imports, the
+trace's public surface is pinned, rows plant a real second reader and
+restore the raw accessor, and the refused read-fault class has its
+separating row. Those fixes have not had a further independent review.
+
+Routine verify at bdc38a6f passed; src equals 2d68a85d's and the 2c5b9e30
+records'. Recommendation: docs/plans/2026-11-09-budget-recommendation.md.
+Held as in §18.165.
