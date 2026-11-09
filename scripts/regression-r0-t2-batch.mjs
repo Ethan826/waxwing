@@ -5,47 +5,6 @@
 const walk = 'src/Features/Check/Strategy/ReadBack/Walk.purs';
 const trace = 'src/Features/Check/Trace.purs';
 const table = 'test/r0-shadow-table.mjs';
-const origin = 'src/Domain/Recorded/Origin.purs';
-
-// §18.165: each restores an order the derived instance does not give.
-const orderRow = (name, edits) => ({ name, probe: 'r0-path-order',
-  edits: edits.map(([needle, replacement]) =>
-    ({ file: origin, needle, replacement })),
-  message: /r0-path-order: \["agreement: / });
-const compareLine = '  compare (Path left) (Path right) = case compare '
-  + 'left.root right.root of\n';
-const stepCompare = '    Just one, Just other → case compare one other of\n';
-const loopHead = 'compareSteps ∷ Array Step → Array Step → Ordering\n';
-const prefixLine = '    _, _ → compare (Array.length left) '
-  + '(Array.length right)\n';
-
-export const pathOrderRows = [
-  orderRow('r0-path-order-root-ignored', [[compareLine,
-    '  compare (Path left) (Path right) = case compare '
-      + '(const unit left) (const unit right) of\n']]),
-  orderRow('r0-path-order-root-reversed', [[compareLine,
-    '  compare (Path left) (Path right) = case compare '
-      + 'right.root left.root of\n']]),
-  orderRow('r0-path-order-kinds-swapped', [[
-    'data Step = Named String | Index Int\n',
-    'data Step = Index Int | Named String\n']]),
-  orderRow('r0-path-order-longer-first', [[prefixLine,
-    '    _, _ → compare (Array.length right) (Array.length left)\n']]),
-  orderRow('r0-path-order-prefix-equal', [[prefixLine, '    _, _ → EQ\n']]),
-  orderRow('r0-path-order-step-skipped', [[
-    '      EQ → go (at + 1)\n', '      EQ → go (at + 2)\n']]),
-  orderRow('r0-path-order-index-magnitude', [[stepCompare,
-    '    Just one, Just other → case compare (sized one) (sized other) of\n'],
-  [loopHead, 'sized ∷ Step → Step\n'
-    + 'sized (Index found) | found < 0 = Index (negate found)\n'
-    + 'sized step = step\n\n' + loopHead]]),
-  orderRow('r0-path-order-empty-name-last', [[stepCompare,
-    '    Just one, Just other → case reordered one other of\n'],
-  [loopHead, 'reordered ∷ Step → Step → Ordering\n'
-    + 'reordered (Named "") (Named found) | found /= "" = GT\n'
-    + 'reordered (Named found) (Named "") | found /= "" = LT\n'
-    + 'reordered one other = compare one other\n\n' + loopHead]])
-];
 
 export const t2BatchRows = [
   {

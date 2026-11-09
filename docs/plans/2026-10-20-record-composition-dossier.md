@@ -8491,3 +8491,28 @@ profiling shows a new largest component. Estimate, a planning figure and
 not a cap: one Opus review, 150-250K tokens. Held: replacement losses,
 numerical budgets, the minting switch, F14's retirement, live replacement,
 pushing.
+
+### 18.166 Option A not achievable under the project's rules (2026-11-09)
+
+§18.165's option A was implemented and withdrawn. The proposal's 7.1 s came
+from a compiled-output patch that also skipped identical step objects and
+read arrays directly. The author ruled out identity shortcuts, and Domain
+modules may not use Partial, Unsafe or foreign imports; that is a correction
+to §18.163's proposal.
+
+Validator loop CPU, three rotated runs (median seconds; shared machine;
+all pure rows pass the agreement tests over the stated grammar):
+
+| Implementation | CPU (s) | Allowed? |
+|---|---|---|
+| derived `Ord` (today) | 14.6 | yes |
+| `case` on two `Array.index` results, derived `Step` order | 13.7 | no: fails the structural `maybe`/`either` rule |
+| same, hand-written `Step` order (compiled patch) | 9.6 | no: same rule |
+| direct array reads, no identity check (compiled patch) | 8.4 | no: needs `unsafeIndex` or a foreign import |
+| `zipWith` then fold | 17.2 | yes, slower |
+| nested `maybe` | 21.6 | yes, slower |
+| `fromMaybe` with a sentinel, top level | 24.4 | yes, slower |
+
+Source is restored to the derived instance, equal to 2d68a85d's src, so
+that verify and the 2c5b9e30 records stay current. Tests and evidence:
+.build/evidence/2026-11-09-path-order/. Decision for the author.

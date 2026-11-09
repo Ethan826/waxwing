@@ -15,8 +15,6 @@ module Domain.Recorded.Origin
   ) where
 
 import Prelude
-import Data.Array as Array
-import Data.Maybe (Maybe(..))
 import Domain.Resolved (FunctionId)
 import Domain.Syntax (Span)
 
@@ -67,25 +65,8 @@ derive instance ordPathRoot ∷ Ord PathRoot
 derive instance eqStep ∷ Eq Step
 derive instance ordStep ∷ Ord Step
 derive instance eqPath ∷ Eq Path
-instance ordPath ∷ Ord Path where
-  compare (Path left) (Path right) = case compare left.root right.root of
-    EQ → compareSteps left.steps right.steps
-    order → order
-
+derive instance ordPath ∷ Ord Path
 derive instance eqOriginKind ∷ Eq OriginKind
 derive instance eqRuleId ∷ Eq RuleId
 derive instance eqSpecRow ∷ Eq SpecRow
 derive instance eqRowGroup ∷ Eq RowGroup
-
--- The order `Ord (Array Step)` gives, first difference and then the shorter
--- path first, as one loop: maps keyed by paths compare them millions of
--- times over long shared prefixes (dossier §18.165). Its agreement with the
--- derived order is test/r0-path-order.test.mjs's.
-compareSteps ∷ Array Step → Array Step → Ordering
-compareSteps left right = go 0
-  where
-  go at = case Array.index left at, Array.index right at of
-    Just one, Just other → case compare one other of
-      EQ → go (at + 1)
-      order → order
-    _, _ → compare (Array.length left) (Array.length right)

@@ -1,5 +1,10 @@
 # Validator cost: path comparison (2026-11-09)
 
+**Correction (2026-11-09, dossier §18.166).** The "monomorphic loop" arm
+below (7.1 s) also skipped identical step objects, an identity shortcut
+at step level, and read arrays directly. It is not the loop a pure
+implementation can be. See §18.166 for what is achievable.
+
 Status: proposal (dossier §18.163). Profiling and this proposal are
 authorized. No validator optimization or freeze exception is authorized,
 and nothing here is implemented. These are attribution samples, not the
