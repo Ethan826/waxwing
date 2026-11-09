@@ -10,14 +10,16 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25. The activation prerequisites
 are accepted (§18.163). The index-first batch is implemented, reviewed
-and verified at 2d68a85d (§18.164). Criteria 1-7 read not met (2); shadow minting not met (S1, S2).
+and verified at 2d68a85d (§18.164). Criteria 1-7 read not met (2);
+shadow minting not met (S1, S2).
 
 ## What is running now
 
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (docs/plans/2026-11-09-shadow-minting-decision-packet.md):
+**Waiting on the author**
+(docs/plans/2026-11-09-shadow-minting-decision-packet.md):
 1. Accept the read-fault and ForcedTail lists within shadow certification
    only (gate S1).
 2. If so, authorize the switch's implementation with the real
