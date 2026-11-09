@@ -22,6 +22,7 @@ import { certifyFrom } from './r0-certify-support.mjs';
 const Map = await load('Data.Map.Internal');
 const { unfoldableArray } = await load('Data.Unfoldable');
 const Elaborating = await load('Domain.Elaborating');
+const Effects = await load('Features.Check.Strategy.Effects.Package');
 const { holes } = await load('Features.Check.Holes');
 const rows = await elabRows();
 const { agreementFindings, sortOf } = await certifyFrom(load);
@@ -38,13 +39,16 @@ const fresh = variable => 'fresh' in variable;
 // ten C001 corpus additions the author authorized (dossier §18.73): +50
 // generated, +41 judged and compared exactly, +92 images, +9 beyond
 // Solved, by-site, excluded and hole-bearing counts unchanged.
+// The minting switch (dossier §18.170, §18.172): the two `statsEvidence`
+// declarations leave Solved for beyond it: -2 judged and compared exactly,
+// -40 images, +2 beyond.
 const pinned = {
   generated: 3061,
-  judged: 2030,
-  images: 14867,
-  solved: { compared: 2030, exact: 1985, bySite: 45, sites: 153,
+  judged: 2028,
+  images: 14827,
+  solved: { compared: 2028, exact: 1983, bySite: 45, sites: 153,
     excluded: 159 },
-  beyond: { compared: 790, exact: 790, bySite: 0, sites: 0, excluded: 0 },
+  beyond: { compared: 792, exact: 792, bySite: 0, sites: 0, excluded: 0 },
   holed: 118
 };
 const isHole = variable => fresh(variable)
@@ -134,11 +138,12 @@ test('T8 (corpus half): hole-bearing declarations project equal', t => {
 
 // BACKLOG R030, C2 corpus-wide (docs/plans/r0-certify-argument.md): at
 // every Solved verdict, the witness read with lowering's hole defaults
-// is the σ the check judged, and a variable σ₀ leaves out is `Free`
+// is the σ the check judged (the package's erasure, §18.172), and a
+// variable σ₀ leaves out is `Free`
 // above σ₀'s holes. Counts are reported, not pinned (R028 pins T1/T2).
 test('C2: every Solved witness, defaulted, is the judged σ', t => {
   const findings = judged.flatMap(row => agreementFindings(row.problem,
-    row.certificate.unsettled, row.compilation.value0)
+    Effects.erase(row.certificate.effects.value0), row.compilation.value0)
     .map(found => `${row.at}: ${found}`));
   const free = judged.flatMap(row => pairs(row.compilation.value0.bindings)
     .filter(([, binding]) => named(binding) === 'Free')

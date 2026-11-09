@@ -14,10 +14,8 @@
 //   `ObligationFailed`) are defects;
 // - a decline is expected by its kind, read from Decide's decline
 //   reason: a limitation (`EffectLimit`, `EffectsUnchecked`, from
-//   `NotCertifiable`) or a read fault (`EffectsUnread`, the form the
-//   minting comparison's scratch change gives a read fault,
-//   docs/plans/2026-11-04-minting-comparison-scratch.diff; absent from
-//   the committed `Unsupport`). Any other decline reason is a defect.
+//   `NotCertifiable`) or a read fault (`EffectsUnread`, §18.170). Any
+//   other decline reason is a defect.
 import { describe } from './r0-decide-support.mjs';
 import { load } from './r0-generate-support.mjs';
 

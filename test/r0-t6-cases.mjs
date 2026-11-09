@@ -43,7 +43,8 @@ const refusals = {
   Malformed: () => new Search.Malformed(null),
   NotCertifiable: () => new Search.NotCertifiable(Search.ForcedTail.value,
     at),
-  ObligationFailed: () => new Search.ObligationFailed(at)
+  ObligationFailed: () => new Search.ObligationFailed(at),
+  PackageUnread: () => new Search.PackageUnread('Unread')
 };
 
 const open = '(a) RequirementOpen';
@@ -81,7 +82,10 @@ export const refusalClasses = {
   Malformed: validator('Malformed'),
   NotCertifiable: [accepts('NotCertifiable'), accepts('NotCertifiable'),
     refusesDeclined('NotCertifiable')],
-  ObligationFailed: validator('ObligationFailed')
+  ObligationFailed: validator('ObligationFailed'),
+  PackageUnread: [accepts('PackageUnread', 'a read fault'),
+    accepts('PackageUnread', 'a read fault'),
+    refusesDeclined('PackageUnread', 'a read fault')]
 };
 
 const today = { accepts: new Right({}), refuses: new Left({}) };
@@ -194,11 +198,7 @@ const summaryCases = () => {
 // §18.163 (4): the two ruled labels, apart from the classes nearest them.
 // A read-fault decline and a RequirementOpen are limits or open questions;
 // the same outcome from a validator or generation refusal stays a defect.
-// Rendering evidence only, in this file: 'a read fault is not a defect'
-// and the window's 'decline, minting reading'. The committed `Unsupport` has no
-// `EffectsUnread`, so RT8's read-fault branch is unrun until the real
-// constructor lands (R038 (3)). The pairs below separate each ruled class
-// from its nearest neighbor in the table.
+// The real constructor's path is test/r0-t2-effects-unread.serial.test.mjs.
 const ruled = name => t6Classes[name];
 const sectionOf = name => `section ${ruled(name).section}`;
 const readFaultCompiles = compilingDecline('a read fault');

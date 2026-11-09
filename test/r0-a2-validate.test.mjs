@@ -142,8 +142,8 @@ test('no Certified: the Effects modules construct none', () => {
   // `validate` returns the validation result alone.
   const source = readFileSync(
     'src/Features/Check/Strategy/Substitution.purs', 'utf8');
-  const body = source.slice(source.indexOf('\nvalidate problem'),
-    source.indexOf('\ncheckSubstitution\n'));
+  const body = source.slice(source.indexOf('\nvalidate = '),
+    source.indexOf('\n-- `validate`\'s own composition'));
   assert.ok(body.length > 0);
   assert.doesNotMatch(body, /Certified/);
 });

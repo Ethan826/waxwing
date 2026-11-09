@@ -20,7 +20,8 @@ const text = value => JSON.stringify(shape(value));
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Each fixture's whole `decide` result as plain data (verdict, Solution's
 // validity, assurance and compilation, attempts, search faults), pinned
-// from a plain-purs build of 8ad30c1, before Task 12.
+// from a plain-purs build of 8ad30c1, before Task 12; `unframed`, `c7` and
+// `q7` re-pinned at the minting switch (§18.172).
 export const pinnedDecisions = () => JSON.parse(readFileSync(join(root,
   'test/fixtures/r0/t2-online-decisions.json'), 'utf8')).decisions;
 const named = value => value.constructor.name;
@@ -28,7 +29,8 @@ const named = value => value.constructor.name;
 // Each fixture's declaration, the package's outcome (`Right` or the
 // fault), and its `decide` result as test/r0-decide-support.mjs names
 // it, observed before Task 12 (8ad30c1, by the Task 12 implementer):
-// a read fault must leave these verdicts as they were.
+// `lone` and `held` are unchanged. Since the minting switch a read fault
+// declines (§18.170), so `unframed`, `c7` and `q7` are as accepted there.
 export const fixtures = [
   ['lone', packageSources.lone, 'main', 'Right',
     { verdict: 'Solved', attempts: ['Accepted', 'Shadow Left'],
@@ -38,13 +40,17 @@ export const fixtures = [
       searchFaults: [] }],
   ['unframed', packageSources.unframed, 'main', 'Declined',
     { verdict: 'Unresolved Unsupported Outside FailFamily, Outside'
-      + ' HandlerType, EffectsUnchecked [UnframedInstall]',
-    attempts: ['Accepted', 'Shadow Left'], searchFaults: [] }],
+      + ' HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread'
+      + ' Declined',
+    attempts: ['CheckFailed ClaimsComplete PackageUnread', 'Shadow Left'],
+    searchFaults: [] }],
   ['c7', imageSources.c7, 'statsEvidence', 'UnreadImage',
-    { verdict: 'Solved', attempts: ['Accepted', 'Shadow Left'],
+    { verdict: 'Unresolved Unsupported EffectsUnread UnreadImage',
+      attempts: ['CheckFailed ClaimsComplete PackageUnread', 'Shadow Left'],
       searchFaults: [] }],
   ['q7', imageSources.q7, 'statsEvidence', 'UnreadImage',
-    { verdict: 'Solved', attempts: ['Accepted', 'Shadow Left'],
+    { verdict: 'Unresolved Unsupported EffectsUnread UnreadImage',
+      attempts: ['CheckFailed ClaimsComplete PackageUnread', 'Shadow Left'],
       searchFaults: [] }]
 ].map(([name, source, decl, outcome, decision]) =>
   ({ name, source, decl, outcome, decision }));

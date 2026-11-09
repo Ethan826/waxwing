@@ -13,6 +13,45 @@ const shadowRow = (name, needle, replacement, message) => ({ name, tree: 'test',
   edits: [{ file: shadowGate, needle, replacement }],
   probe: 'r0-t2-shadow-gate', message });
 
+const substitution = 'src/Features/Check/Strategy/Substitution.purs';
+const onlineFile = 'src/Features/Check/Strategy/Online.purs';
+
+// §18.172: each forged-witness case against its restored defect; §18.170:
+// the real constructor against RT8's decline kinds.
+export const switchRows = [
+  // G0 and the obligations each refuse this forgery, so both go.
+  { name: 'r0-forged-bool-no-g0', edits: [{ file: substitution,
+    needle: '  validity ← checkSubstitution problem '
+      + '(erase (settle package))\n',
+    replacement: '  validity ← Right Valid\n' }, { file: substitution,
+    needle: '  judgeObligations problem completed\n', replacement: '' }],
+    probe: 'r0-forged-bool', message: /r0-forged-bool: Solved/ },
+  { name: 'r0-forged-function-no-requirement', file: substitution,
+    needle: '        traverse_ (requirementUnder problem candidate) '
+      + 'view.bq\n',
+    replacement: '', probe: 'r0-forged-function',
+    message: /r0-forged-function: Solved/ },
+  { name: 'r0-forged-valid-old-field', edits: [{ file: onlineFile,
+    needle: '  either unread (certifyPackage problem) certificate.effects\n',
+    replacement: '  certify problem certificate.unsettled\n' },
+  { file: onlineFile,
+    needle: '  ( certifyPackage\n',
+    replacement: '  ( certify\n  , certifyPackage\n' }],
+  probe: 'r0-forged-valid', message: /r0-forged-valid: witness Free/ },
+  { name: 'r0-forged-hole-no-contract', file: substitution,
+    needle: '  either NoWitness (const (Witnessed witness))\n'
+      + '    (coverage (flexDomain problem) problem witness)\n',
+    replacement: '  Witnessed witness\n', probe: 'r0-forged-hole',
+    message: /r0-forged-hole: compilation Witnessed/ },
+  { name: 'r0-effects-unread-real-kinds', tree: 'test', edits: [{ file:
+    'test/r0-rt8-refusals.mjs',
+  needle: "  EffectsUnchecked: 'a limitation', EffectsUnread: "
+    + "'a read fault' };\n",
+  replacement: "  EffectsUnchecked: 'a limitation' };\n" }],
+  probe: 'r0-effects-unread-real',
+  message: /r0-effects-unread-real: .*RT8 where today accepts: DEFECT/ }
+];
+
 export const t2BatchRows = [
   {
     // Every sibling rebuilt before the one indexed: the width cost.

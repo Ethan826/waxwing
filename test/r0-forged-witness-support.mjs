@@ -1,5 +1,6 @@
 // BACKLOG R026's probe (whole-stack review, 2026-10-24): the online
-// search's certificate, its pre-default bindings optionally forged,
+// search's certificate, its effect package's type bindings optionally
+// forged (the evidence `certifyPackage` validates, dossier §18.172),
 // decided through the shadow assembly with only that search
 // (`onlineWith`: the production check) and elaborated. Before the fix
 // the check judged one field of the certificate and the witness was
@@ -33,15 +34,26 @@ export const forgedFrom = async load => {
   const Map = await load('Data.Map.Internal');
   const Set = await load('Data.Set');
   const { holeVar } = await load('Domain.Recorded.Hole');
-  const bool = Atom.Base.create(Atom.BoolBase.value);
-  const int = Atom.Base.create(Atom.IntBase.value);
-  const intToInt = new Atom.Arrow(int, int);
-  // Every pre-default binding replaced by `image`; other fields kept.
+  const Package = await load('Domain.Verdict.EffectPackage');
+  const { unfoldableArray } = await load('Data.Unfoldable');
+  const { Right } = await load('Data.Either');
+  const { Nothing } = await load('Data.Maybe');
+  const bool = new Package.PBase(Atom.BoolBase.value);
+  const int = new Package.PBase(Atom.IntBase.value);
+  const pure = { labels: [], tail: Nothing.value };
+  const intToInt = new Package.PArrow(int, pure, int);
+  // Every package type binding replaced by `image`; other fields kept.
   const everyTo = image => certificate => ({ ...certificate,
-    unsettled: Map.functorMap.map(() => image)(certificate.unsettled) });
+    effects: new Right({ ...certificate.effects.value0,
+      types: Map.functorMap.map(() => image)(
+        certificate.effects.value0.types) }) });
   const toBool = everyTo(bool);
   const toFunction = everyTo(intToInt);
-  const toHole = everyTo(Atom.TVar.create(holeVar(0)));
+  const toHole = everyTo(new Package.PVar(holeVar(0)));
+  // The separate pre-default field forged and the package left honest.
+  const unsettledToBool = certificate => ({ ...certificate,
+    unsettled: Map.functorMap.map(() => Atom.Base.create(
+      Atom.BoolBase.value))(certificate.unsettled) });
   const offering = (search, forge) => given => asked => {
     const found = search(given)(asked);
     return named(found) === 'Candidate'
@@ -72,5 +84,8 @@ export const forgedFrom = async load => {
       elaborated: Elaborate.elaborate(Set.empty)(elaborating)(
         judged.value0) };
   };
-  return { outcomeOf, toBool, toFunction, toHole, named };
+  const bindings = compilation => Map.toUnfoldable(unfoldableArray)(
+    compilation.value0.bindings).map(pair => pair.value1);
+  return { outcomeOf, toBool, toFunction, toHole, unsettledToBool, named,
+    bindings };
 };

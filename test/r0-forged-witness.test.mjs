@@ -1,6 +1,7 @@
 // BACKLOG R026: the online strategy's check must judge exactly what the
-// witness is built from. The forged-`id2` probe (bindings forged to
-// `Bool`) must be refused by the check, not Solved; legitimate witnesses,
+// witness is built from: since the minting switch (dossier §18.172), the
+// effect package. The forged-`id2` probe (type bindings forged to `Bool`)
+// must be refused by the check, not Solved; legitimate witnesses,
 // a defaulted hole's included, are still Solved and elaborate, and the
 // hole stays a `Free` binding the hole contract judges.
 import test from 'node:test';
@@ -9,7 +10,7 @@ import { load } from './r0-generate-support.mjs';
 import { forgedFrom, id2Source, unusedShow }
   from './r0-forged-witness-support.mjs';
 
-const { outcomeOf, toBool, toFunction, toHole, named } =
+const { outcomeOf, toBool, toFunction, toHole, unsettledToBool, named } =
   await forgedFrom(load);
 const tyName = ty => named(ty);
 const Map = await load('Data.Map.Internal');
@@ -17,6 +18,11 @@ const { unfoldableArray } = await load('Data.Unfoldable');
 // Each binding's kind, `Inline` or `Free`, in variable order.
 const kinds = compilation => Map.toUnfoldable(unfoldableArray)(
   compilation.value0.bindings).map(pair => named(pair.value1));
+// Each `Inline` binding's image, as the witness carries it.
+const images = compilation => Map.toUnfoldable(unfoldableArray)(
+  compilation.value0.bindings).map(pair => pair.value1)
+  .filter(binding => named(binding) === 'Inline')
+  .map(binding => `${named(binding.value0)} ${named(binding.value0.value0)}`);
 
 test('id2 forged to Bool is refused by the check, not Solved', () => {
   const found = outcomeOf(id2Source, 'id2', toBool);
@@ -51,7 +57,18 @@ test('a hole forged to a valid type is witnessed as checked', () => {
   const found = outcomeOf(unusedShow, 'f', toBool);
   assert.equal(found.verdict, 'Solved');
   assert.deepEqual(kinds(found.compilation), ['Inline']);
+  assert.deepEqual(images(found.compilation), ['Base BoolBase']);
   assert.equal(named(found.elaborated), 'Elaborated');
+});
+
+// Only the package is evidence: the field the old check read, forged
+// alone, changes nothing about the verdict or the witness.
+test('the separate pre-default field is not evidence', () => {
+  const forged = outcomeOf(id2Source, 'id2', unsettledToBool);
+  const honest = outcomeOf(id2Source, 'id2');
+  assert.equal(forged.verdict, 'Solved');
+  assert.deepEqual(images(forged.compilation), images(honest.compilation));
+  assert.equal(tyName(forged.elaborated.value0.result), 'TInt');
 });
 
 test('a hole forged to a function type is refused by the check', () => {

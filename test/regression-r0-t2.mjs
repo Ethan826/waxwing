@@ -16,6 +16,7 @@ import { t2ActivationProbes } from './regression-r0-t2-activation.mjs';
 import { t6Probes } from './regression-r0-t6.mjs';
 import { t2PrerequisitesProbes } from './regression-r0-t2-prerequisites.mjs';
 import { t2BatchProbes } from './regression-r0-t2-batch.mjs';
+import { forgedProbes, realUnreadProbes } from './regression-r0-forged.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
@@ -32,5 +33,7 @@ export const r0T2Probes = {
   ...t2ActivationProbes,
   ...t6Probes,
   ...t2PrerequisitesProbes,
-  ...t2BatchProbes
+  ...t2BatchProbes,
+  ...forgedProbes,
+  ...realUnreadProbes
 };

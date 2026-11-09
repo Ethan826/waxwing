@@ -20,7 +20,7 @@
     "faults": "§18.170",
     "forcedTail": "§18.170"
   },
-  "realReadFaultRow": null,
+  "realReadFaultRow": "r0-effects-unread-real-kinds",
   "performance": {
     "ruling": "§18.168",
     "budget": {

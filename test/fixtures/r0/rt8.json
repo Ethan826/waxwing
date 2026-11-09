@@ -9,16 +9,13 @@
   "(a) blocked: Unresolved Unsupported Outside EffectArgument": 2,
   "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside DataApplication": 2,
   "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside Deferred, Outside HandlerType": 1,
-  "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]": 2,
   "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred": 15,
   "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside HandlerType": 7,
   "(a) blocked: Unresolved Unsupported Outside FailFamily": 25,
-  "(a) blocked: Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]": 3,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily": 1,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument": 7,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication": 2,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside Deferred": 11,
-  "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]": 4,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication": 7,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside Deferred, Outside FailFamily": 2,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument": 7,
@@ -26,13 +23,18 @@
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside Deferred": 1,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside EffectArgument": 1,
   "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily": 1,
-  "(a) blocked: Unresolved Unsupported Outside HandlerType": 94,
+  "(a) blocked: Unresolved Unsupported Outside HandlerType": 90,
   "(b) declined by g0Guard, today refuses": 1,
   "(b) declined by g0Guard": 3,
   "Solved with a bound hole (pending the author's ambiguity ruling)": 6,
-  "agree: Solved": 2030,
+  "agree: Solved": 2028,
   "agree: no candidate (Exhausted)": 233,
   "agree: no candidate (OutOfBudget)": 1,
+  "declined by the check, a limitation (NotCertifiable): Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail": 4,
+  "declined by the check, a read fault (PackageUnread): Unresolved Unsupported EffectsUnread UnreadImage": 2,
+  "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined": 2,
+  "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined": 3,
+  "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined": 4,
   "today's own internal failure (SearchBroke)": 3
  },
  "defects": [],
@@ -160,7 +162,7 @@
   "inline:r022-lacks#g: Solved with a bound hole (pending the author's ambiguity ruling)"
  ],
  "witnesses": {
-  "Witnessed": 2826
+  "Witnessed": 2811
  },
  "noWitness": []
 }

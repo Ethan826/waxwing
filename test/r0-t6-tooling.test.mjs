@@ -39,7 +39,7 @@ test('T6: the table names each CheckRefusal constructor once', () => {
 // either claim and either of today's results; every other refusal of a
 // ClaimsComplete candidate is a defect.
 test('T6: declines and defects split as RT8 reads them', () => {
-  const declining = ['NotCertifiable', 'RequirementOpen'];
+  const declining = ['NotCertifiable', 'PackageUnread', 'RequirementOpen'];
   for (const [refusal, classes] of Object.entries(refusalClasses)) {
     const decline = declining.includes(refusal);
     assert.equal(isDefect(classes[0]), !decline, refusal);

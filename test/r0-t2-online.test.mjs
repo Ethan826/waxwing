@@ -23,7 +23,8 @@ test('the fixtures cover a package and both read-fault routes', () => {
 test('the pinned decisions cover every fixture with whole Solutions', () => {
   const pinned = pinnedDecisions();
   assert.deepEqual(Object.keys(pinned), fixtures.map(item => item.name));
-  for (const name of ['lone', 'held', 'c7', 'q7']) {
+  // c7 and q7 decline since the minting switch (§18.170).
+  for (const name of ['lone', 'held']) {
     const [solution] = pinned[name].Right[0].verdict.Solved;
     assert.deepEqual(Object.keys(solution), ['strategy', 'validity',
       'assurance', 'compilation'], name);
@@ -41,7 +42,7 @@ test('a read fault keeps the candidate, its σ, claim and holes', () => {
   assert.deepEqual(checks.keptWrong(), []);
 });
 
-test('G0 decides as before; no read fault reads as effect validation',
+test('each fixture decides as pinned; a read fault declines',
   () => {
     assert.deepEqual(checks.verdictWrong(), []);
   });

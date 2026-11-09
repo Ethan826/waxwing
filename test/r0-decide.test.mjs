@@ -201,14 +201,15 @@ test('FX032: an accepting strategy is suppressed, never Solved', () => {
     { verdict: unchecked, attempts: ['Accepted'], searchFaults: [] });
 });
 
-test('FX032: the production online strategy accepts and is suppressed',
+test('FX032: the production online strategy declines and is suppressed',
   async () => {
     const online = await onlineFrom(load);
     const program = online.programOf(sources.fx032);
     const found = describe(online.decisionOf(program, 'g'));
-    assert.deepEqual(found.attempts, ['Accepted', 'Shadow Left']);
+    assert.deepEqual(found.attempts,
+      ['CheckFailed ClaimsComplete PackageUnread', 'Shadow Left']);
     assert.equal(found.verdict, 'Unresolved Unsupported EffectsUnchecked'
-      + ' [OperationWithRow 1 0]');
+      + ' [OperationWithRow 1 0], EffectsUnread Declined');
   });
 
 test('no Unsupported obligation: the verdict is what it was', () => {

@@ -21,9 +21,9 @@
 --
 -- The certificate also carries the honest effect package, or the read
 -- fault that stopped it (tranche 2 Task 12; design §C.6; dossier
--- §18.155 (4), (5)): untrusted search, carried as data. Nothing here
--- reads it, validates it or completes it: G0's `certify` judges
--- `unsettled` alone, under F14, and a read fault keeps the candidate.
+-- §18.155 (4), (5)): untrusted search, carried as data. `certified`
+-- validates that package and builds the witness from it (§18.170); a read
+-- fault declines, and `unsettled` is not evidence (§18.172).
 module Features.Check.Strategy.Online
   ( Certificate
   , OnlineContext

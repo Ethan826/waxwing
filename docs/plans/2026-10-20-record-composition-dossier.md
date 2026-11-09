@@ -8594,3 +8594,27 @@ re-pinned. Four of those tests forge a substitution and expect the check to
 refuse it; under minting the forged substitution is not read, so the
 candidate reads Solved. Those need the author's ruling before any test
 changes. The classification is in the RESUME section.
+
+### 18.172 The switch re-aimed and allowed to re-pin (2026-11-09)
+
+The author chose to re-pin and re-aim. Each of the four forged-witness
+tests is traced individually with its intent kept: the valid Bool
+replacement still compiles, the hole-contract case still prevents
+compilation, and they are not all refusal tests. They forge the package
+`certifyPackage` consumes, and the path through Online, Decide and
+elaboration is checked to use exactly the evidence validated. Each
+regression test is shown detecting its restored defect in an isolated
+copy.
+
+This narrowly relaxes "nothing re-pinned": only the accepted 16 declaration
+movements are re-pinned, named in the commit. Counts, old-premise
+expectations and mechanical checks are updated with a reason for each. Any
+additional movement needs a separate decision. Independent review, a
+complete verify and the performance protocol come before integration.
+
+Package certification still runs substitution validation on the package's
+settled erasure before judging obligations and constructing `Certified`.
+Checking the separate unsettled field again would add another agreement
+requirement; the essential protection is that validation and compilation
+consume the same evidence. Live replacement, F14's retirement, milestone
+changes and pushing stay held.
