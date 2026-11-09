@@ -11,7 +11,17 @@ export const shadowToken = 'shadow certification';
 export const realRowTag = 'effects-unread-real';
 
 export const liveToken = 'live replacement';
-export const constructorLine = /^\s*\|\s*EffectsUnread\b/m;
+const constructorLine = /^\s*[=|]\s*EffectsUnread(?![\w'])/m;
+
+// The `Unsupport` declaration alone, block comments removed.
+export const hasConstructor = source => {
+  const code = String(source ?? '').replace(/\{-[\s\S]*?-\}/g, '');
+  const start = code.search(/^data Unsupport\b/m);
+  if (start < 0) return false;
+  const rest = code.slice(start + 1);
+  const end = rest.search(/\n\S/);
+  return constructorLine.test(end < 0 ? rest : rest.slice(0, end));
+};
 
 const citations = (evidence, key) => {
   const found = statusKey(evidence, key);
@@ -24,14 +34,23 @@ const citations = (evidence, key) => {
 const sameCitation = (evidence, cite) => normalCite(cite) !== null
   && citations(evidence, 'losses').includes(normalCite(cite));
 
+// A section's text in one case and spacing: the dossier wraps at 80 columns.
+const normalized = text => text.toLowerCase().replace(/\s+/g, ' ');
+const mentions = (evidence, cite, token) =>
+  normalized(section(evidence.dossier, cite) ?? '')
+    .includes(token.toLowerCase());
+
 const listLine = (evidence, shadow, [list, matter]) => {
-  const scoped = ruling(evidence.dossier, shadow[list], shadowToken);
-  const named = ruling(evidence.dossier, shadow[list], matter);
-  if (!scoped.met) return [false, `${matter}: ${scoped.line}`];
-  if (!named.met) return [false, `${matter}: ${named.line}`];
-  return sameCitation(evidence, shadow[list])
-    ? [false, `${matter}: ${shadow[list]} is also cited for live replacement`]
-    : [true, `${matter}: ${scoped.line}; shadow only`];
+  const cite = shadow[list];
+  const found = ruling(evidence.dossier, cite, '');
+  if (!found.met) return [false, `${matter}: ${found.line}`];
+  if (!mentions(evidence, cite, shadowToken))
+    return [false, `${matter}: ${cite} does not mention ${shadowToken}`];
+  if (!mentions(evidence, cite, matter))
+    return [false, `${matter}: ${cite} does not mention ${matter}`];
+  return sameCitation(evidence, cite)
+    ? [false, `${matter}: ${cite} is also cited for live replacement`]
+    : [true, `${matter}: ${found.line}; shadow only`];
 };
 
 // S1. Each loss list accepted within shadow certification only.
@@ -55,7 +74,7 @@ const realReadFault = evidence => {
     return result([`row ${row} does not carry the tag ${realRowTag}`], []);
   if (!evidence.rows.has(row))
     return result([`row ${row} not in the regression registry`], []);
-  return constructorLine.test(evidence.unsupport ?? '')
+  return hasConstructor(evidence.unsupport)
     ? result([], [`row ${row}`])
     : result(['the Unsupport type has no EffectsUnread constructor'], []);
 };
@@ -79,10 +98,8 @@ export const evaluateShadow = evidence => shadowCriteria.map(criterion =>
   ({ id: criterion.id, title: criterion.title,
     ...measured(criterion, evidence) }));
 
-const liveScoped = (evidence, cite) => {
-  const text = section(evidence.dossier, cite) ?? '';
-  return text.includes(liveToken) && !text.includes(shadowToken);
-};
+const liveScoped = (evidence, cite) => mentions(evidence, cite, liveToken)
+  && !mentions(evidence, cite, shadowToken);
 
 // Each live ruling is scoped to live replacement and is no shadow citation.
 // Tokens read that a section names its matter, not what it decides.

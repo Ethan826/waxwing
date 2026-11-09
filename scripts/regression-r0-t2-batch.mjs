@@ -133,7 +133,7 @@ export const t2BatchRows = [
   message: /read fault: the loss stays unresolved: false/ },
   // §18.168: one citation standing for both decisions.
   shadowRow('r0-t2-shadow-one-citation',
-    '  return sameCitation(evidence, shadow[list])\n', '  return false\n',
+    '  return sameCitation(evidence, cite)\n', '  return false\n',
     /one citation for shadow and live: live 2; shadow/),
   // §18.168: a section that never says shadow certification.
   shadowRow('r0-t2-shadow-token-ignored',
@@ -147,11 +147,23 @@ export const t2BatchRows = [
   shadowRow('r0-t2-shadow-registry',
     '  if (!evidence.rows.has(row))\n', '  if (false)\n',
     /real row not registered/),
-  shadowRow('r0-t2-shadow-constructor', '  return constructorLine.test('
-    + "evidence.unsupport ?? '')\n", '  return true\n',
-  /a registered real row with no constructor/),
-  shadowRow('r0-t2-shadow-list-unnamed', '  if (!named.met) return [false, '
-    + '`${matter}: ${named.line}`];\n', '',
+  shadowRow('r0-t2-shadow-constructor',
+    '  return hasConstructor(evidence.unsupport)\n', '  return true\n',
+    /a registered real row with no constructor/),
+  shadowRow('r0-t2-shadow-other-type',
+    '  if (start < 0) return false;\n',
+    '  return constructorLine.test(code);\n',
+    /the constructor on another type/),
+  shadowRow('r0-t2-shadow-block-comment',
+    "  const code = String(source ?? '').replace(/\\{-[\\s\\S]*?-\\}/g, '');\n",
+    "  const code = String(source ?? '');\n",
+    /the constructor in a block comment/),
+  shadowRow('r0-t2-shadow-wrapped',
+    "const normalized = text => text.toLowerCase().replace(/\\s+/g, ' ');\n",
+    'const normalized = text => text;\n',
+    /a wrapped shadow-only section cited for live/),
+  shadowRow('r0-t2-shadow-list-unnamed', '  if (!mentions(evidence, cite, '
+    + 'matter))\n', '  if (false)\n',
   /the list unnamed/),
   shadowRow('r0-t2-shadow-live-unscoped',
     '  const problems = [...shared, ...unscoped];\n',

@@ -32,6 +32,12 @@ const stateOf = change => {
 };
 
 const none = () => undefined;
+const otherType = 'data Planned\n  = Later\n  | EffectsUnread String';
+const wrappedLive = (evidence, token) => {
+  evidence.dossier += `\n### 18.410 Losses\nEach read fault loss within ${
+    token}. Not live replacement.\n`;
+  evidence.status.losses.faults = '§18.410';
+};
 // [name, change, live criteria unmet, shadow criteria unmet]
 const table = [
   ['all met', none, [], []],
@@ -57,9 +63,27 @@ const table = [
     evidence.rows.add('r0-other'); }, [], ['S2']],
   ['real row not registered', evidence => {
     evidence.rows.delete('r0-effects-unread-real-rt8'); }, [], ['S2']],
-  ['another spelling of the live section', evidence => {
-    evidence.dossier = evidence.dossier.replace('### 18.400', '### 18.303a');
-    evidence.status.shadowLosses.faults = '§18.0303'; }, [], ['S1']],
+  ['another spelling of a section', evidence => {
+    evidence.status.shadowLosses.faults = '§18.0400'; }, [], ['S1']],
+  ['the live section as shadow, without the token', evidence => {
+    evidence.status.shadowLosses.faults = '§18.303'; }, [2], ['S1']],
+  ['a wrapped shadow-only section cited for live', evidence => {
+    wrappedLive(evidence, 'shadow\ncertification'); }, [2], []],
+  ['a capitalized shadow-only section cited for live', evidence => {
+    wrappedLive(evidence, 'Shadow certification'); }, [2], []],
+  ['a wrapped honest shadow ruling', evidence => {
+    evidence.dossier += '\n### 18.403 Shadow\nread fault ForcedTail '
+      + 'shadow\ncertification.\n';
+    evidence.status.shadowLosses.faults = '§18.403'; }, [], []],
+  ['the constructor on another type', evidence => {
+    evidence.unsupport = `data Unsupport\n  = Other\n\n${otherType}`; },
+  [], ['S2']],
+  ['the constructor in a block comment', evidence => {
+    evidence.unsupport = 'data Unsupport\n  = Other\n  {-\n  | '
+      + 'EffectsUnread String\n  -}\n'; }, [], ['S2']],
+  ['a primed constructor', evidence => {
+    evidence.unsupport = "data Unsupport\n  = Other\n  | EffectsUnread' A";
+  }, [], ['S2']],
   ['a section swapped across the lists', evidence => {
     evidence.dossier += `\n${twoWay(410)}\n${twoWay(411)}\n`;
     evidence.status.losses.faults = '§18.410';

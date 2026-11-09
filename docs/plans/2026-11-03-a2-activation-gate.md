@@ -424,8 +424,8 @@ Each citation is compared in one spelling across every list, so a section
 cited for live on one list cannot stand for shadow on another. A live
 citation must name `live replacement` and not `shadow certification`. These
 are name checks: as elsewhere in this gate, they read that a section names
-its matter, not what it decides. S2 also requires `EffectsUnread` in the
-`Unsupport` type.
+its matter, not what it decides, ignoring case and line wrapping. S2 also
+requires `EffectsUnread` among the constructors of `Unsupport`.
 
 Shadow minting needs every criterion but 2, plus S1 and S2. Live
 replacement needs them all. The script exits 0 only when all are met, and
