@@ -34,9 +34,10 @@ test('each read fault carries its own name to the verdict', async () => {
   const { outcomeOf } = await forgedFrom(load);
   const Fault = await load('Features.Check.Strategy.ReadBack.Fault');
   const { Left, Right } = await load('Data.Either');
+  const { Tuple } = await load('Data.Tuple');
   const Trace = await load('Features.Check.Trace');
   const made = name => (name === 'MarkClash' ? Fault.MarkClash.value
-    : name === 'Clash' ? new Fault.Clash(Trace.AppliedKey.value)
+    : name === 'Clash' ? new Fault.Clash(new Trace.UseKey(new Tuple(1, 2)))
       : new Fault[name](null, null));
   for (const name of faultNames) {
     const forge = certificate => ({ ...certificate,
