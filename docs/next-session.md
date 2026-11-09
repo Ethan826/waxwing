@@ -10,25 +10,22 @@ underneath; position as gates and dependencies, never percentages.
    new path can be enabled safely.
 No milestone has moved since 2026-10-25. The activation prerequisites
 are accepted (§18.163). The index-first batch is implemented, reviewed
-and verified at 2d68a85d (§18.164). The gate reads not met (2, 6).
+and verified at 2d68a85d (§18.164). Criteria 1-7 read not met (2); shadow minting not met (S1, S2).
 
 ## What is running now
 
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author:**
-1. Path comparison (§18.166): option A is withdrawn; no implementation
-   the rules allow helps. Keep the derived order (recommended), or grant
-   a structural exception.
-2. Criterion 6: the budgets recommended in
-   docs/plans/2026-11-09-budget-recommendation.md. Held.
-3. Criterion 2: replacement-loss rulings. Held (§18.161).
-Before approving the minting switch, exercise RT8's real
-constructor-to-classification path (§18.165).
+**Waiting on the author** (docs/plans/2026-11-09-shadow-minting-decision-packet.md):
+1. Accept the read-fault and ForcedTail lists within shadow certification
+   only (gate S1).
+2. If so, authorize the switch's implementation with the real
+   `EffectsUnread` constructor-to-RT8/window test (gate S2).
+Live replacement stays unresolved (criterion 2); R037 (2) blocks it,
+Entry first. Budgets are approved for the measured corpus (§18.168); the
+failed `npm run perf` files stay failed.
 Held: the minting switch, F14's retirement, live replacement, push.
-R037 (2) blocks live replacement; R037 (5): separate shared needles before
-relying on those rows as activation evidence.
 
 Integrated state: r0-t2-d1. Ledger (git-ignored):
 .superpowers/sdd/2026-11-04-prerequisites/progress.md.
@@ -64,8 +61,8 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Latest routine verify **passed** at bdc38a6f (§18.167); same src as
-  2d68a85d.
+- See dossier §18.168 for the latest routine verify; earlier passed at
+  bdc38a6f (§18.167).
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
