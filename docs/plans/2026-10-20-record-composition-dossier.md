@@ -8459,3 +8459,35 @@ could no longer find its search text. Packet:
 docs/plans/2026-11-09-return-packet.md. Protocol at 2c5b9e30: online
 read-back ×2.32 CPU, ×1.06 peak RSS. The comparison moves the same 16
 declarations. The gate reads not met (2, 6). Held as in §18.163.
+
+### 18.165 Option A authorized as a narrow freeze exception (2026-11-09)
+
+The author authorized the monomorphic path comparison and ruled it a
+narrow validator-freeze exception: changing a dependency's ordering can
+change map behavior throughout the validator, wherever the module sits.
+Scope: the comparison's implementation, its exact result preserved. `Eq`,
+constructors, exports and path identities stay. No interning, identity
+shortcut, memoization or validator-rule change.
+
+Required: agreement with an independent reference retaining today's
+derived ordering (PathRoot order, every `Named`/`Index` pairing, prefixes,
+empty paths, negative and boundary indices, string edge cases); consistency
+with `Eq`, antisymmetry and transitivity; long shared prefixes and deep
+paths; restored-defect rows for the distinguishing cases; identical
+validator results, diagnostic selection and protected pins across the
+corpus (equal counts are insufficient); independent review of the
+implementation and substantive fixes; the complete routine verify at
+concurrency 2 and regression jobs 1; then the performance protocol on the
+final source, absolute costs beside ratios.
+
+The same review inspects the preceding batch's two Important fixes and
+their detection evidence. RT8's read-fault fixtures remain rendering
+evidence only; the real constructor-to-classification path must be
+exercised before the minting switch is approved.
+
+Return with a concrete performance-budget recommendation for the intended
+activation path, without starting another optimization cycle because
+profiling shows a new largest component. Estimate, a planning figure and
+not a cap: one Opus review, 150-250K tokens. Held: replacement losses,
+numerical budgets, the minting switch, F14's retirement, live replacement,
+pushing.
