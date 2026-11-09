@@ -319,7 +319,8 @@ Measured on 2026-11-09: met. The status cites
 test/fixtures/r0/t2-minting-comparison4.json, the repeat on the real
 `EffectsUnread` (§18.170, §18.172), at 16de79af. Census 0 moved, window
 16, rt8 15, shadow 16. Its `commit` is
-16de79afd149266133f8c1d8ba9f8b1f3698a872, and src is unchanged since. Whether the moves are acceptable is the author's to rule.
+16de79afd149266133f8c1d8ba9f8b1f3698a872, and src is unchanged since. Whether
+the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
 
