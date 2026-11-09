@@ -449,10 +449,10 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 6 met: performance qualified, read-back and validator apart
 7 met: routing after activation; U4 and U6 standing
 criteria 1-7: not met (2)
-S1 NOT MET: each loss accepted within shadow certification only
+S1 met: each loss accepted within shadow certification only
 S2 NOT MET: the real EffectsUnread reaches RT8 and the window
-shadow minting: not met (S1, S2)
-live replacement: not met (2, S1, S2)
+shadow minting: not met (S2)
+live replacement: not met (2, S2)
 ```
 
 Criterion 2's lines on the working tree, the same at 3cad78cd as at

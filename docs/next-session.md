@@ -18,16 +18,20 @@ shadow minting not met (S1, S2).
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author**
-(docs/plans/2026-11-09-shadow-minting-decision-packet.md):
-1. Accept the read-fault and ForcedTail lists within shadow certification
-   only (gate S1).
-2. If so, authorize the switch's implementation with the real
-   `EffectsUnread` constructor-to-RT8/window test (gate S2).
+**Waiting on the author** (§18.171): how the minting switch may land.
+The switch is on branch `r0-minting-switch` (not integrated; worktree
+.claude/worktrees/minting-switch). Its 21 failing tests:
+- 4 in test/r0-forged-witness.test.mjs: a forged substitution is no longer
+  read under minting, so the check does not refuse it. Needs a ruling.
+- rt8.json, window.json, two window reconciliations, t2-gap-verdicts.json:
+  the expected 16 movements; pins, not re-pinned.
+- r0-elab-corpus (5), r0-a2-properties A3: counts 2,030 to 2,028 Solved.
+- FX032, unframed-install reason text, online read-fault test: the
+  premise was substitution-only Online.
+- T6 constructor table, no-Certified text scan, the gate's report block:
+  mechanical.
 Live replacement stays unresolved (criterion 2); R037 (2) blocks it,
-Entry first. Budgets are approved for the measured corpus (§18.168); the
-failed `npm run perf` files stay failed.
-Held: the minting switch, F14's retirement, live replacement, push.
+Entry first. F14's retirement and push stay held.
 
 Integrated state: r0-t2-d1. Ledger (git-ignored):
 .superpowers/sdd/2026-11-04-prerequisites/progress.md.

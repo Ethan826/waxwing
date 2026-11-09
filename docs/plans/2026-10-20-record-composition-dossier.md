@@ -8567,7 +8567,7 @@ docs/plans/2026-11-09-shadow-minting-decision-packet.md.
 
 ### 18.170 Shadow losses accepted; the minting switch authorized (2026-11-09)
 
-The author accepted the enumerated read-fault and ForcedTail losses within
+The author accepted each enumerated read fault and ForcedTail loss within
 shadow certification only, as listed in section 2 of
 docs/plans/2026-11-09-shadow-minting-decision-packet.md, and authorized the
 minting switch's implementation with all five tests and comparison
@@ -8578,3 +8578,19 @@ The import isolation supports this limited scope. This section rules
 nothing on the live checker: replacing it still needs measured
 user-visible losses and the resolution of R037 (2). F14's retirement and
 pushing stay held.
+
+### 18.171 The minting switch stopped before landing (2026-11-09)
+
+The switch was implemented on the branch `r0-minting-switch`, which is not
+integrated. The packet's five requirements ran: each read fault reaches
+RT8 and the window through the real `EffectsUnread`, a real corpus
+declaration reaches them through the real Online and Decide, and the
+comparison repeated on the real constructor equals the 2c5b9e30 comparison
+line for line. The independent review closed the gate's two open findings.
+
+It stopped because a complete verify cannot pass as authorized: the switch
+fails 21 tests on purpose or by premise, and the packet said nothing is
+re-pinned. Four of those tests forge a substitution and expect the check to
+refuse it; under minting the forged substitution is not read, so the
+candidate reads Solved. Those need the author's ruling before any test
+changes. The classification is in the RESUME section.

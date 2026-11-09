@@ -159,8 +159,7 @@ export const t2BatchRows = [
     "  const code = String(source ?? '');\n",
     /the constructor in a block comment/),
   shadowRow('r0-t2-shadow-wrapped',
-    "const normalized = text => text.toLowerCase().replace(/\\s+/g, ' ');\n",
-    'const normalized = text => text;\n',
+    "  .replace(/\\s+/g, ' ');\n", '  ;\n',
     /a wrapped shadow-only section cited for live/),
   shadowRow('r0-t2-shadow-list-unnamed', '  if (!mentions(evidence, cite, '
     + 'matter))\n', '  if (false)\n',

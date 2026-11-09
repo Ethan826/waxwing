@@ -81,6 +81,18 @@ const table = [
   ['the constructor in a block comment', evidence => {
     evidence.unsupport = 'data Unsupport\n  = Other\n  {-\n  | '
       + 'EffectsUnread String\n  -}\n'; }, [], ['S2']],
+  ['a primed type before the real one', evidence => {
+    evidence.unsupport = "data Unsupport'\n  = EffectsUnread A\n\n"
+      + 'data Unsupport\n  = Other'; }, [], ['S2']],
+  ['no Unsupport type at all', evidence => {
+    evidence.unsupport = otherType; }, [], ['S2']],
+  ['a commented constructor line', evidence => {
+    evidence.unsupport = 'data Unsupport\n  = Other\n  -- | EffectsUnread A';
+  }, [], ['S2']],
+  ['a shadow-only section in a block quote', evidence => {
+    evidence.dossier += '\n### 18.410 Losses\n> Each read fault within '
+      + 'shadow\n> certification. Not live replacement.\n';
+    evidence.status.losses.faults = '§18.410'; }, [2], []],
   ['a primed constructor', evidence => {
     evidence.unsupport = "data Unsupport\n  = Other\n  | EffectsUnread' A";
   }, [], ['S2']],

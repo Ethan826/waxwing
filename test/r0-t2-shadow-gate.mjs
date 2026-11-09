@@ -16,7 +16,7 @@ const constructorLine = /^\s*[=|]\s*EffectsUnread(?![\w'])/m;
 // The `Unsupport` declaration alone, block comments removed.
 export const hasConstructor = source => {
   const code = String(source ?? '').replace(/\{-[\s\S]*?-\}/g, '');
-  const start = code.search(/^data Unsupport\b/m);
+  const start = code.search(/^data Unsupport(?![\w'])/m);
   if (start < 0) return false;
   const rest = code.slice(start + 1);
   const end = rest.search(/\n\S/);
@@ -35,7 +35,8 @@ const sameCitation = (evidence, cite) => normalCite(cite) !== null
   && citations(evidence, 'losses').includes(normalCite(cite));
 
 // A section's text in one case and spacing: the dossier wraps at 80 columns.
-const normalized = text => text.toLowerCase().replace(/\s+/g, ' ');
+const normalized = text => text.toLowerCase().replace(/^>\s?/gm, '')
+  .replace(/\s+/g, ' ');
 const mentions = (evidence, cite, token) =>
   normalized(section(evidence.dossier, cite) ?? '')
     .includes(token.toLowerCase());
