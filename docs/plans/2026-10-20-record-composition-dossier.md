@@ -8564,3 +8564,17 @@ and the gate were fixed; the last narrow review's fixes (token case and
 wrapping, the constructor's scope) have restored-defect rows and no further
 independent review. Packet:
 docs/plans/2026-11-09-shadow-minting-decision-packet.md.
+
+### 18.170 Shadow losses accepted; the minting switch authorized (2026-11-09)
+
+The author accepted the enumerated read-fault and ForcedTail losses within
+shadow certification only, as listed in section 2 of
+docs/plans/2026-11-09-shadow-minting-decision-packet.md, and authorized the
+minting switch's implementation with all five tests and comparison
+requirements of that packet's section 4, an independent review of the
+latest gate changes and a complete `npm run verify`.
+
+The import isolation supports this limited scope. This section rules
+nothing on the live checker: replacing it still needs measured
+user-visible losses and the resolution of R037 (2). F14's retirement and
+pushing stay held.

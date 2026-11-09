@@ -17,8 +17,8 @@
   },
   "comparison": "test/fixtures/r0/t2-minting-comparison3.json",
   "shadowLosses": {
-    "faults": null,
-    "forcedTail": null
+    "faults": "§18.170",
+    "forcedTail": "§18.170"
   },
   "realReadFaultRow": null,
   "performance": {
