@@ -72,9 +72,9 @@ import Features.Check.Strategy.ReadBack.Type (holesIn)
 -- provisional reading pending the author's ambiguity ruling, so its
 -- effect stays visible (RT8 counts a Solved resting on one apart).
 -- `unsettled`: σ before step 4, its holes still `holeVar n`. Step 4
--- itself is the trusted check's (Strategy.Substitution `certify`,
--- BACKLOG R026), which settles σ to judge it and binds the witness to
--- the unsettled σ, so a default stays a hole the hole contract judges.
+-- itself is the trusted substitution check's (Strategy.Substitution
+-- `certify`, BACKLOG R026). The online strategy certifies the effect
+-- package instead (§18.170), whose settling keeps a default a hole.
 -- `holeBindings`: step 2's θ restricted to holes, by hole number (tranche
 -- 2 read-back design §C.7), so the effect read-back reads every hole θ
 -- binds as σ does; empty when step 2 binds no hole (corpus-observed: θ

@@ -77,7 +77,7 @@ export const forgedFrom = async load => {
     if (named(result) !== 'Right') throw new Error('decide faulted');
     const { decision, judged } = result.value0;
     const found = { verdict: named(decision.verdict),
-      attempts: decision.attempts.map(named) };
+      attempts: decision.attempts.map(named), decision: result };
     if (named(judged) !== 'Just') return found;
     return { ...found,
       compilation: Judged.judgedSolution(judged.value0).compilation,

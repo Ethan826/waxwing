@@ -12,13 +12,13 @@
 -- genericSubstitutionSound`, argued as the standard check of a proposed
 -- unifier, not proved.
 --
--- `certify` is the online strategy's check (BACKLOG R026): given σ
+-- `certify` is the substitution-only check (BACKLOG R026), no longer the
+-- online strategy's since the minting switch (§18.170): given σ
 -- before the hole defaults, it checks σ with each hole at its default
 -- (ReadBack.Type `settled`, the defaults lowering and the hole contract
 -- use) and builds the witness from the same σ, so a hole stays `Free`
--- for the contract to judge. The `Certified` it mints is the only
--- acceptance a strategy can offer, so the witness is always built from
--- what this check judged. `checkSubstitution`, which yields a bare
+-- for the contract to judge, the witness always built from what this
+-- check judged. `checkSubstitution`, which yields a bare
 -- `Valid`, is no longer exported (BACKLOG R030): `certify` is the only
 -- entry besides `validate` (below), and a substitution without holes
 -- settles to itself.
@@ -33,8 +33,7 @@
 -- (`judgeObligations`), then the witness of the completed package and
 -- `coverage`. It lives here because only this module mints `Valid`.
 -- Its success is a validation result, never a `Certified` value: it
--- constructs none, and `certify` is unchanged until the minting switch
--- (plan Task 16), which will wrap it.
+-- constructs none. `certifyPackage` is the same composition and mints.
 module Features.Check.Strategy.Substitution
   ( ValidationResult
   , certify

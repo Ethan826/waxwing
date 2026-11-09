@@ -3,7 +3,8 @@
 // `Elaborating` (`generate`), the `Judged` `decide` pairs with a Solved
 // verdict (`judgedDecision`), `elaborate`'s result, the online
 // certificate, whose checked declaration is today's IR, which T2
-// compares `build`'s with, and `build` under the certificate's witness.
+// compares `build`'s with, and `build` under the witness (the verdict's
+// for Solved; beyond Solved, one built from the certificate's `unsettled`).
 // The `Checking` is the shadow run's (`shadowChecking`) with its online
 // search observed, so the certificate is the one the verdict rests on,
 // and with no shadow refuter, whose records never change a verdict

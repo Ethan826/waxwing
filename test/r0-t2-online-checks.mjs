@@ -90,7 +90,7 @@ export const onlineChecks = async load => {
       || text(found.value1) !== text(made.claim);
   }).map(fixture => fixture.name);
 
-  // G0 decides as before, the whole result equal to the pre-Task 12
+  // Each decides as pinned, the whole result equal to the recorded
   // build's; no verdict reads `effects`, so a read fault is never shown
   // as effect validation, nor a package as one.
   const verdictWrong = () => {

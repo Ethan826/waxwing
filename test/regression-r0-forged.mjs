@@ -40,6 +40,20 @@ export const forgedProbes = {
 };
 
 export const realUnreadProbes = {
+  'r0-effects-unread-names': async context => {
+    const load = loader(context);
+    const { outcomeOf } = await forgedFrom(load);
+    const { describe } = await import('./r0-decide-support.mjs');
+    const Fault = await load('Features.Check.Strategy.ReadBack.Fault');
+    const { Left, Right } = await load('Data.Either');
+    const forge = certificate => ({ ...certificate,
+      effects: new Left(new Fault.Apart(null)) });
+    const { decision } = outcomeOf(id2Source, 'id2', forge).decision.value0;
+    const { verdict } = describe(new Right(decision));
+    if (!verdict.endsWith('EffectsUnread Apart'))
+      fail(`${context.probe}: Apart read as ${verdict}`);
+    passed(context);
+  },
   'r0-effects-unread-real': async context => {
     const { wrongUnreadCases } = await import(
       './r0-t2-effects-unread-cases.mjs');

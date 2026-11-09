@@ -18,6 +18,8 @@
 export const verdictsFile = 'test/fixtures/r0/t2-gap-verdicts.json';
 export const honestPinFile = 'test/fixtures/r0/t2-honest.json';
 export const gapKeys = ['faults', 'refusals', 'forcedTail'];
+// Today's verdicts were observed with the substitution-only check; the
+// shadow path mints through `certifyPackage` since §18.170.
 export const minter = 'Features.Check.Strategy.Substitution.certify, '
   + 'substitution-only, minting under F14';
 const textFields = ['origin', 'decide', 'reason', 'checker', 'certify',

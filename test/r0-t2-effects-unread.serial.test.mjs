@@ -26,6 +26,29 @@ test('Decide reads PackageUnread as a real EffectsUnread decline', () => {
   }
 });
 
+// Online's own name for each fault, through the real strategy: the
+// certificate's package replaced by that fault.
+test('each read fault carries its own name to the verdict', async () => {
+  const { forgedFrom, id2Source } =
+    await import('./r0-forged-witness-support.mjs');
+  const { outcomeOf } = await forgedFrom(load);
+  const Fault = await load('Features.Check.Strategy.ReadBack.Fault');
+  const { Left, Right } = await load('Data.Either');
+  const Trace = await load('Features.Check.Trace');
+  const made = name => (name === 'MarkClash' ? Fault.MarkClash.value
+    : name === 'Clash' ? new Fault.Clash(Trace.AppliedKey.value)
+      : new Fault[name](null, null));
+  for (const name of faultNames) {
+    const forge = certificate => ({ ...certificate,
+      effects: new Left(made(name)) });
+    const { decision } = outcomeOf(id2Source, 'id2', forge).decision.value0;
+    const { verdict } = describe(new Right(decision));
+    assert.match(verdict, name === 'Clash'
+      ? /^Unresolved Unsupported EffectsUnread Clash /
+      : new RegExp(`^Unresolved Unsupported EffectsUnread ${name}$`), name);
+  }
+});
+
 // A real declaration, the real Online and the real Decide.
 test('a real read fault, through the whole shadow path', () => {
   const origin = 'docs/plans/2026-10-21-c001-explicit/baseline/'

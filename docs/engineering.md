@@ -227,9 +227,10 @@ adding a bypass allowlist.
   its soundness rests on all of these (test/structure-trusted.test.mjs
   pins this list and the header marker in each module):
   - `Features.Check.Strategy.Substitution`: mints `Valid` and
-    `Certified`; G0's check, and `certify`, the online strategy's;
-    `validate`, A2's runner, returns a `Valid` without a `Certified`
-    (dossier §18.145 (b)).
+    `Certified`; G0's check; `certify`, substitution-only; `validate`,
+    A2's runner, returns a `Valid` without a `Certified` (dossier §18.145
+    (b)); and `certifyPackage`, its composition minting, the online
+    strategy's check since §18.170.
   - `Features.Check.Strategy.Candidate`: `generic` and `under` define the
     candidate every judgement is taken under.
   - `Features.Check.Strategy.Atoms`: judges each `B` atom against `D`; an
@@ -261,12 +262,10 @@ adding a bypass allowlist.
     compilation from the check's `Certified` alone; a spec has no
     separate witness adapter (BACKLOG R026).
   - `Features.Check.Strategy.Online`: `certified` hands the certificate's
-    pre-default sigma to `certify`, which settles and judges it and
-    builds the witness from the same sigma; no other certificate field
-    reaches the verdict or the witness. Its `effects` field (tranche 2
-    Task 12) carries the honest effect package or its read fault as
-    untrusted data: nothing reads it for the verdict, a read fault
-    keeps the candidate, and Online takes only `certify` and
+    effect package to `certifyPackage`, which validates it and builds the
+    witness from the completed package; no other certificate field
+    reaches the verdict or the witness. A read fault declines as
+    `EffectsUnread`, and Online takes only `certifyPackage` and
     `certifySound` from Substitution (scripts/structure-online.mjs).
   - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
     builds the witness here, so a wrong binding is a wrong compilation.

@@ -79,6 +79,7 @@ test('its decision is EffectsUnchecked, never Solved', () => {
   // Every `with` also carries Outside HandlerType (E21), so match the
   // restriction itself rather than the whole reason.
   assert.match(decision('f').verdict,
-    /^Unresolved Unsupported .*EffectsUnchecked \[UnframedInstall\]/);
+    new RegExp('^Unresolved Unsupported .*EffectsUnchecked '
+      + '\\[UnframedInstall\\], EffectsUnread Declined$'));
   assert.doesNotMatch(decision('framed').verdict, /UnframedInstall/);
 });

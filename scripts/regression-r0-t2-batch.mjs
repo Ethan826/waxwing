@@ -43,6 +43,11 @@ export const switchRows = [
       + '    (coverage (flexDomain problem) problem witness)\n',
     replacement: '  Witnessed witness\n', probe: 'r0-forged-hole',
     message: /r0-forged-hole: compilation Witnessed/ },
+  { name: 'r0-effects-unread-real-names', file: onlineFile,
+    needle: '  Fault.Apart _ → "Apart"\n',
+    replacement: '  Fault.Apart _ → "ImageApart"\n',
+    probe: 'r0-effects-unread-names',
+    message: /r0-effects-unread-names: Apart/ },
   { name: 'r0-effects-unread-real-kinds', tree: 'test', edits: [{ file:
     'test/r0-rt8-refusals.mjs',
   needle: "  EffectsUnchecked: 'a limitation', EffectsUnread: "

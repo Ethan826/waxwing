@@ -76,14 +76,14 @@ type OnlineContext =
   , legacyText ∷ Diagnostic → String
   }
 
--- σ before ReadBack's step 4 (its holes still `holeVar n`), which the
--- check settles and judges and the witness binds (`certify`; BACKLOG
--- R026: the certificate carries no separately settled σ); the checked
+-- σ before ReadBack's step 4 (its holes still `holeVar n`), not evidence
+-- since the minting switch (§18.172) and kept for read-back agreement;
+-- the checked
 -- declaration today's solver built, the baseline Task 7.1 compares
 -- `build`'s IR against; and the holes step 4 binds (provisional,
 -- pending the author's ambiguity ruling), reported for RT8 only; and
--- the effect package or its read fault, which no verdict reads (Task 16
--- held; statements §7's interim amendment).
+-- the effect package or its read fault, which `certified` validates and
+-- builds the witness from (§18.170).
 type Certificate =
   { unsettled ∷ Substitution
   , checked ∷ Checked.FunctionDecl
