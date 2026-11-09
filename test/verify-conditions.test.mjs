@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { commitOf, commandTimeoutMs, conditionsLine, hostFacts, loadOf,
   makeRunner, powerOf, untrackedOf } from '../scripts/verify-conditions.mjs';
+import { concurrencyVariable, memoryFreeOf, parallelTestArgs, scheduleLine,
+  testConcurrency } from '../scripts/verify-schedule.mjs';
 
 const fixedTime = new Date('2026-10-29T12:00:00.000Z');
 const ok = stdout => ({ status: 0, stdout });
@@ -135,4 +138,60 @@ test('a timed-out command is reported as such by injection', () => {
   assert.match(powerOf(host({ run })), /^unavailable \(timed out\)$/);
   const failed = makeRunner(() => ({ error: new Error('spawn git ENOENT') }));
   assert.deepEqual(failed('git', []), { error: 'spawn git ENOENT' });
+});
+
+const scheduled = (env, overrides = {}) => scheduleLine('parallel', env,
+  host({ run: () => ok('System-wide memory free percentage: 46%\n'),
+    ...overrides }));
+
+test('the test concurrency is read strictly from its variable', () => {
+  assert.equal(concurrencyVariable, 'WAXWING_VERIFY_TEST_CONCURRENCY');
+  assert.equal(testConcurrency({}), undefined);
+  assert.equal(testConcurrency({ [concurrencyVariable]: '' }), undefined);
+  assert.equal(testConcurrency({ [concurrencyVariable]: '2' }), 2);
+  for (const bad of ['0', '-1', '1.5', '2.0', '0x2', ' 2', '2 ', '1e1', 'x'])
+    assert.throws(() => testConcurrency({ [concurrencyVariable]: bad }),
+      /WAXWING_VERIFY_TEST_CONCURRENCY must be a positive integer/, bad);
+});
+
+test('the concurrency changes the schedule, never the files', () => {
+  const files = ['test/a.test.mjs', 'test/b.test.mjs'];
+  assert.deepEqual(parallelTestArgs(files, undefined), ['--test', ...files]);
+  assert.deepEqual(parallelTestArgs(files, 2),
+    ['--test', '--test-concurrency=2', ...files]);
+});
+
+test('verify schedules its parallel phase through the setting', () => {
+  const source = readFileSync('scripts/verify.mjs', 'utf8');
+  assert.ok(source.includes('parallelTestArgs(tests, concurrency)'));
+  assert.ok(!source.includes("['--test', ...tests]"));
+  assert.ok(source.indexOf('testConcurrency()')
+    < source.indexOf("run('purs-tidy'"), 'validated before any work');
+  for (const phase of ['parallel', 'serial', 'regression'])
+    assert.ok(source.includes(`scheduleLine('${phase}'`), phase);
+});
+
+test('the schedule line records concurrency and memory', () => {
+  assert.equal(scheduled({ [concurrencyVariable]: '2',
+    WAXWING_REGRESSION_JOBS: '1' }), 'schedule [parallel] test-files 2'
+    + ' regression-jobs 1 memory-free 46%');
+  assert.match(scheduled({ WAXWING_REGRESSION_JOBS: '3' }),
+    / test-files node-default regression-jobs 3 /);
+});
+
+test('memory is unavailable rather than guessed', () => {
+  assert.equal(memoryFreeOf(host({ run: () => ({ error: 'timed out' }) })),
+    'unavailable (timed out)');
+  assert.equal(memoryFreeOf(host({ run: () => ok('garbage') })),
+    'unavailable (memory_pressure output not recognized)');
+  assert.equal(memoryFreeOf(host({ run: () => ({ status: 1, stdout:
+    'System-wide memory free percentage: 46%' }) })),
+    'unavailable (memory_pressure output not recognized)');
+  assert.equal(memoryFreeOf(host({ platform: 'linux' })),
+    'unavailable (no memory reader for linux)');
+});
+
+test('the real host gives a schedule line', () => {
+  assert.match(scheduleLine('serial', {}, hostFacts),
+    /^schedule \[serial\] test-files node-default regression-jobs \d+ /);
 });

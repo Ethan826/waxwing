@@ -5,6 +5,10 @@ import { spawnSync } from 'node:child_process';
 import { checkStructure } from './structure.mjs';
 import { conditionsLine } from './verify-conditions.mjs';
 import { splitTestNames } from './perf.mjs';
+import { parallelTestArgs, scheduleLine, testConcurrency }
+  from './verify-schedule.mjs';
+// Read first, so a malformed setting stops before the long build.
+const concurrency = testConcurrency();
 mkdirSync('.build', { recursive: true });
 const run = (command, args) => {
   const result = spawnSync(command, args, { stdio: 'inherit' });
@@ -50,12 +54,15 @@ const tests = testFiles.filter(name => !name.endsWith(serialSuffix));
 const serialTests = testFiles.filter(name => name.endsWith(serialSuffix));
 assert.ok(tests.length > 0, 'no test files found');
 console.log(conditionsLine('parallel'));
-run('node', ['--test', ...tests]);
+console.log(scheduleLine('parallel'));
+run('node', parallelTestArgs(tests, concurrency));
 if (serialTests.length > 0) {
   console.log(conditionsLine('serial'));
+  console.log(scheduleLine('serial'));
   run('node', ['--test', '--test-concurrency=1', ...serialTests]);
 }
 console.log(conditionsLine('regression'));
+console.log(scheduleLine('regression'));
 run('node', ['scripts/regression.mjs']);
 console.log('Verified compiler, gates, executable programs, rejection ' +
   'diagnostics, properties, and regression proofs.');

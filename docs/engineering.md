@@ -56,7 +56,12 @@ adding a bypass allowlist.
   time, 1-minute load, power source, and untracked non-ignored files when
   there are any; `unavailable (reason)` for any value the host cannot give)
   before each test phase (scripts/verify-conditions.mjs); `npm run perf`
-  prints the same line first;
+  prints the same line first. Beside it verify prints one schedule line
+  (scripts/verify-schedule.mjs): test files at once, regression jobs and
+  free memory. WAXWING_VERIFY_TEST_CONCURRENCY=<n> bounds the parallel
+  phase's test files (unset keeps Node's default); it is validated before
+  the build and changes scheduling only, never which files run. On this
+  shared machine run verify with it at 2 and WAXWING_REGRESSION_JOBS=1;
 - trace gate (scripts/structure-trace.mjs, in checkStructure; tranche 2
   Task 7, dossier §18.155 (4)): inference never reads the live-value
   trace. Decided on each src module's CST (tools/style/src/Style/Trace.purs,
