@@ -1,4 +1,4 @@
-# RESUME HERE (2026-11-08, America/New_York)
+# RESUME HERE (2026-11-09, America/New_York)
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -8,28 +8,27 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-No milestone has moved since 2026-10-25. The prerequisites are
-implemented and reviewed, and their routine verify passed at 96ba184f
-(§18.162). The gate reads not met (2, 6).
+No milestone has moved since 2026-10-25. The activation prerequisites
+are accepted (§18.163). The index-first batch is implemented, reviewed
+and verified at 2d68a85d (§18.164). The gate reads not met (2, 6).
 
 ## What is running now
 
 Nothing. The return packet is written:
-docs/plans/2026-11-08-return-packet.md.
+docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (packet section 7):
-1. Criterion 2: replacement-loss rulings. Held, unresolved (§18.161).
-2. Criterion 6: budgets. Held; none approved. Whether to land index-first
-   lookup and then run the performance protocol
-   (docs/plans/2026-11-08-readback-walk-investigation.md). Validation is
-   the next cost to examine.
-3. R037 (2), (3): the recommended blockers.
-4. R038 (2): the two window classes.
+**Waiting on the author** (packet section 6):
+1. Whether to authorize the monomorphic path comparison, and whether it
+   needs a validator-freeze exception
+   (docs/plans/2026-11-09-validator-path-cost-proposal.md).
+2. Criterion 6: numerical budgets. Held.
+3. Criterion 2: replacement-loss rulings. Held (§18.161).
 Held: the minting switch, F14's retirement, live replacement, push.
+R037 (2) blocks live replacement; R037 (5): separate shared needles before
+relying on those rows as activation evidence.
 
-Integrated state: r0-t2-d1. Ledgers (git-ignored):
-.superpowers/sdd/2026-11-04-prerequisites/progress.md and
-.superpowers/sdd/2026-11-04-activation-packet/progress.md.
+Integrated state: r0-t2-d1. Ledger (git-ignored):
+.superpowers/sdd/2026-11-04-prerequisites/progress.md.
 
 **Running verify on this shared machine** (author, 2026-11-08): never
 ask the author to close applications. Run
@@ -62,6 +61,10 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
+- Index-first batch routine verify **passed** at 2d68a85d (§18.164):
+  parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
+  ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
+  could no longer find its search text).
 - Prerequisites routine verify **passed** at 96ba184f (§18.162): parallel
   3475/3475, serial 238/238, regression proofs 472/472, growth ratio
   2.284 against 3.0. Incomplete, not a pass: f93ac49f, killed under

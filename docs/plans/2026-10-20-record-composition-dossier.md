@@ -8448,3 +8448,14 @@ Return: the complete verify, updated compatibility comparison, protocol
 measurements and validator-cost proposal. Estimates are planning figures,
 not caps. Held: replacement losses, numerical budgets, the minting
 switch, F14's retirement, live replacement, pushing.
+
+### 18.164 The index-first batch returned (2026-11-09)
+
+§18.163's batch is implemented, reviewed and verified: routine verify at
+2d68a85d passed (parallel 3481/3481, serial 238/238, regression proofs
+478/478, growth ratio 2.302 against 3.0; performance qualification not
+run). The failed run at 808ebfe5 stands as a record: one regression row
+could no longer find its search text. Packet:
+docs/plans/2026-11-09-return-packet.md. Protocol at 2c5b9e30: online
+read-back ×2.32 CPU, ×1.06 peak RSS. The comparison moves the same 16
+declarations. The gate reads not met (2, 6). Held as in §18.163.
