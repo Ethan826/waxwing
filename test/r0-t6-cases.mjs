@@ -194,10 +194,11 @@ const summaryCases = () => {
 // §18.163 (4): the two ruled labels, apart from the classes nearest them.
 // A read-fault decline and a RequirementOpen are limits or open questions;
 // the same outcome from a validator or generation refusal stays a defect.
-// The two `isDefect` rows on rendered text pin the rendering only: the
-// committed `Unsupport` has no `EffectsUnread`, so RT8's read-fault branch
-// is unrun until the real constructor lands (R038 (3)). The pairs below
-// separate each ruled class from its nearest neighbor in the table.
+// Rendering evidence only: 'a read fault is not a defect' and the window's
+// 'decline, minting reading'. The committed `Unsupport` has no
+// `EffectsUnread`, so RT8's read-fault branch is unrun until the real
+// constructor lands (R038 (3)). The pairs below separate each ruled class
+// from its nearest neighbor in the table.
 const ruled = name => t6Classes[name];
 const sectionOf = name => `section ${ruled(name).section}`;
 const readFaultCompiles = compilingDecline('a read fault');
@@ -216,14 +217,19 @@ const ruledCases = () => [
   ['open requirement: pending G-ValidR', ruled(openRefuses).dependency,
     'G-ValidR'],
   ['a read fault is not a defect', isDefect(unread), false],
-  ['an open requirement is not a defect', isDefect(refusesDeclined(
-    'RequirementOpen', 'an open requirement')), false],
-  ['Malformed where today refuses stays a defect', isDefect(
-    refusalClasses.Malformed[2]), true],
-  ['ObligationFailed where today accepts stays a defect', isDefect(
-    refusalClasses.ObligationFailed[0]), true],
-  ['RecordDefect where today refuses stays a defect', isDefect(
-    refusalClasses.RecordDefect[2]), true],
+  ['an open requirement is not a defect', isDefect(accountFor(today.refuses,
+    checkFailed(Verdict.ClaimsComplete.value, 'RequirementOpen'))), false],
+  ['Malformed where today refuses stays a defect', isDefect(accountFor(
+    today.refuses, checkFailed(Verdict.ClaimsComplete.value, 'Malformed'))),
+  true],
+  ['ObligationFailed where today accepts stays a defect', isDefect(accountFor(
+    today.accepts, checkFailed(Verdict.ClaimsComplete.value,
+      'ObligationFailed'))), true],
+  ['RecordDefect where today refuses stays a defect', isDefect(accountFor(
+    today.refuses, checkFailed(Verdict.ClaimsComplete.value, 'RecordDefect'))),
+  true],
+  ['read fault, refuses: ruled, not a reading', ruled(refusedDecline(
+    'a read fault')).sectionReading, false],
   ['read fault apart from a limitation: target', ruled(readFaultCompiles)
     .target === ruled(compilingDecline('a limitation')).target, false],
   ['read fault apart from a limitation: ruled', ruled(compilingDecline(

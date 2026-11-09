@@ -30,33 +30,69 @@ export const wrongUnnumberedCases = async load =>
     .filter(([, found, expected]) => found !== expected)
     .map(([name, found]) => `${name}: ${found}`);
 
-// Each operation's permitted modules (dossier §18.163 (2)); `sources` maps
-// a path under src/ to its text. The defining module may use them all.
-export const home = 'Domain/Checked/Unnumbered.purs';
+// Each operation's permitted modules (dossier §18.163 (2)), read from the
+// compiled output, where every use is `Domain_Checked_Unnumbered.<name>`
+// and a re-export is an `export … from` of the module: source text would
+// miss a re-export (§18.165's review). `compiled` maps a module name to
+// its JavaScript.
+export const home = 'Domain.Checked.Unnumbered';
 export const permitted = {
-  rawForRenumbering: ['Features/Check/Trace.purs'],
-  unnumberedMentionsTypeVariable: ['Features/Specialize/Seeds.purs'],
-  mappedUnnumbered: ['Features/Check/Strip.purs'],
-  unnumbered: ['Features/Check/Function.purs',
-    'Features/Check/Generate/Body.purs']
+  rawForRenumbering: ['Features.Check.Trace'],
+  unnumberedMentionsTypeVariable: ['Features.Specialize.Seeds'],
+  mappedUnnumbered: ['Features.Check.Strip'],
+  unnumbered: ['Features.Check.Function', 'Features.Check.Generate.Body']
 };
-// Every use needs the import, so a module without it cannot use one; the
-// word in a comment or a local name of another module is not a use.
-const importing = 'import Domain.Checked.Unnumbered';
-const code = text => text.split('\n')
-  .map(line => line.replace(/--.*$/, '')).join('\n');
-const mentions = (text, name) => code(text).includes(importing)
-  && new RegExp(`\\b${name}\\b`).test(code(text));
-export const strayUses = sources => Object.entries(sources).flatMap(
-  ([path, text]) => Object.entries(permitted)
-    .filter(([name, allowed]) => path !== home && !allowed.includes(path)
-      && mentions(text, name))
-    .map(([name]) => `${path}: ${name}`));
+const useOf = name => `Domain_Checked_Unnumbered.${name}`;
+const reexport = /export \{[^}]*\} from "\.\.\/Domain\.Checked\.Unnumbered\//;
+export const strayUses = compiled => Object.entries(compiled)
+  .filter(([module]) => module !== home).flatMap(([module, text]) => [
+    ...(reexport.test(text) ? [`${module}: re-export`] : []),
+    ...Object.entries(permitted)
+      .filter(([name, allowed]) => !allowed.includes(module)
+        && new RegExp(`${useOf(name)}\\b`).test(text))
+      .map(([name]) => `${module}: ${name}`)]);
 
-// The scan's own must-fail case: a planted second reader is reported.
-export const scanWrong = () => {
-  const found = strayUses({ 'Features/Check/Other.purs':
-    'import Domain.Checked.Unnumbered (rawForRenumbering)\n'
-      + 'x = rawForRenumbering row\n' });
-  return found.length === 1 ? [] : ['a planted reader goes unreported'];
+// Each permitted module still uses its operation: no stale slot.
+export const staleSlots = compiled => Object.entries(permitted).flatMap(
+  ([name, allowed]) => allowed.filter(module =>
+    !(compiled[module] ?? '').includes(useOf(name)))
+    .map(module => `${module}: ${name} unused`));
+
+const planted = {
+  use: `x = ${useOf('rawForRenumbering')}(row);`,
+  mapped: `x = ${useOf('mappedUnnumbered')}(f)(row);`,
+  reexported: 'export { rawForRenumbering } from '
+    + '"../Domain.Checked.Unnumbered/index.js";'
+};
+const harmless = {
+  comment: '// the rawForRenumbering conversion',
+  localName: 'var unnumbered = function (meta) { return meta; };'
+};
+
+// The scan's own cases: every planted form reported, nothing else.
+export const scanWrong = () => [
+  ...Object.entries(planted).filter(([, text]) =>
+    strayUses({ 'Features.Check.Other': text }).length !== 1)
+    .map(([form]) => `a planted ${form} goes unreported`),
+  ...Object.entries(harmless).filter(([, text]) =>
+    strayUses({ 'Features.Check.Other': text }).length !== 0)
+    .map(([form]) => `a harmless ${form} is reported`)];
+
+// The trace's whole public surface, so no alias of the conversion leaves it.
+export const traceExports = ['AppliedKey', 'ClauseKey', 'DeferKey',
+  'InstallKey', 'PipedKey', 'RowSlot', 'TypeSlot', 'Unnumbered', 'UseKey',
+  'emptyTrace', 'emptyTraced', 'extended', 'finish', 'recordApplied',
+  'recordClause', 'recordDeferral', 'recordInstallation', 'recordPiped',
+  'recordUse', 'renumbered', 'traverseTraced'];
+
+// The opaque module's exports, and that the trace re-exposes nothing.
+export const exportsWrong = async load => {
+  const shown = async name => Object.keys(await load(name)).sort();
+  const expected = Object.keys(permitted).sort();
+  const own = await shown(home);
+  const trace = await shown('Features.Check.Trace');
+  return [...(String(own) === String(expected) ? []
+    : [`exports: ${own}`]),
+  ...trace.filter(name => !traceExports.includes(name))
+    .map(name => `trace exposes: ${name}`)];
 };
