@@ -4,7 +4,8 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 import { wrongWalkCases, wrongWidthCases } from './r0-t2-walk-cases.mjs';
-import { wrongUnnumberedCases } from './r0-t2-unnumbered-cases.mjs';
+import { scanWrong, wrongUnnumberedCases }
+  from './r0-t2-unnumbered-cases.mjs';
 
 const loader = context => name => import(pathToFileURL(
   resolve(dirname(context.compilerPath), '..', name, 'index.js')));
@@ -18,5 +19,6 @@ const probe = wrongOf => async context => {
 export const t2BatchProbes = {
   'r0-t2-walk-width': probe(wrongWidthCases),
   'r0-t2-walk-paths': probe(wrongWalkCases),
-  'r0-t2-unnumbered': probe(wrongUnnumberedCases)
+  'r0-t2-unnumbered': probe(wrongUnnumberedCases),
+  'r0-t2-unnumbered-scan': probe(scanWrong)
 };

@@ -11,5 +11,5 @@ test('nodeAt: paths, boundaries and the over-applied alias', async () => {
 
 test('nodeAt reads one sibling, whatever the width', async () => {
   assert.deepEqual(await wrongWidthCases(load), []);
-  assert.equal(widthCases(await walkCases(load)).length, 5);
+  assert.equal(widthCases(await walkCases(load)).length, 14);
 });

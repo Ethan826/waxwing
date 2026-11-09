@@ -39,6 +39,13 @@ export const t2BatchRows = [
     probe: 'r0-t2-unnumbered',
     message: /r0-t2-unnumbered: \["collision: raw 0 reads hole 1: 0"/
   },
+  // The caller scan blind: it reports nothing.
+  { name: 'r0-t2-unnumbered-scan-blind', tree: 'test', edits: [{ file:
+    'test/r0-t2-unnumbered-cases.mjs',
+  needle: "      && mentions(text, name))\n",
+  replacement: "      && false)\n" }],
+  probe: 'r0-t2-unnumbered-scan',
+  message: /r0-t2-unnumbered-scan: \["a planted reader goes unreported"\]/ },
   // §18.163 (4): each ruled class's label flipped.
   { name: 'r0-t2-class-read-fault-label', tree: 'test', edits: [{ file: table,
     needle: "  [compilingDecline('a read fault')]: entry(b, readFault,",

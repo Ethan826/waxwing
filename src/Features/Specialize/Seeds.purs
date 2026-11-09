@@ -9,7 +9,7 @@ import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
 import Domain.Resolved (CtorId(..), CtorInfo, FunctionId(..), TypeInfo)
 import Domain.Type (Ty, TypeId(..))
-import Domain.Checked.Unnumbered (unnumberedArguments)
+import Domain.Checked.Unnumbered (unnumberedMentionsTypeVariable)
 import Domain.Type.Parts (mentionsTypeVariable)
 import Features.Specialize.Intern (noArrows)
 import Features.Specialize.Layouts (noLayouts)
@@ -78,10 +78,12 @@ ranks flags = Array.zipWith ranked flags (Array.scanl counted 0 flags)
 -- §4). Type variables do wherever they occur, also only inside a label of
 -- the function's own row (`with State(a)`): those are key arguments too.
 monomorphic ∷ Checked.FunctionDecl → Boolean
-monomorphic function = not (Array.any mentionsTypeVariable signature)
+monomorphic function = not
+  ( Array.any mentionsTypeVariable signature
+      || unnumberedMentionsTypeVariable function.row
+  )
   where
   signature = Array.snoc function.parameters function.result
-    <> unnumberedArguments function.row
 
 ownedBy ∷ Env → CtorInfo → Boolean
 ownedBy env ctor = isJust (join (Array.index env.monoTypes (owner ctor.owner)))

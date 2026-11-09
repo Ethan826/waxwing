@@ -29,3 +29,34 @@ export const wrongUnnumberedCases = async load =>
   (await unnumberedCases(load))
     .filter(([, found, expected]) => found !== expected)
     .map(([name, found]) => `${name}: ${found}`);
+
+// Each operation's permitted modules (dossier §18.163 (2)); `sources` maps
+// a path under src/ to its text. The defining module may use them all.
+export const home = 'Domain/Checked/Unnumbered.purs';
+export const permitted = {
+  rawForRenumbering: ['Features/Check/Trace.purs'],
+  unnumberedMentionsTypeVariable: ['Features/Specialize/Seeds.purs'],
+  mappedUnnumbered: ['Features/Check/Strip.purs'],
+  unnumbered: ['Features/Check/Function.purs',
+    'Features/Check/Generate/Body.purs']
+};
+// Every use needs the import, so a module without it cannot use one; the
+// word in a comment or a local name of another module is not a use.
+const importing = 'import Domain.Checked.Unnumbered';
+const code = text => text.split('\n')
+  .map(line => line.replace(/--.*$/, '')).join('\n');
+const mentions = (text, name) => code(text).includes(importing)
+  && new RegExp(`\\b${name}\\b`).test(code(text));
+export const strayUses = sources => Object.entries(sources).flatMap(
+  ([path, text]) => Object.entries(permitted)
+    .filter(([name, allowed]) => path !== home && !allowed.includes(path)
+      && mentions(text, name))
+    .map(([name]) => `${path}: ${name}`));
+
+// The scan's own must-fail case: a planted second reader is reported.
+export const scanWrong = () => {
+  const found = strayUses({ 'Features/Check/Other.purs':
+    'import Domain.Checked.Unnumbered (rawForRenumbering)\n'
+      + 'x = rawForRenumbering row\n' });
+  return found.length === 1 ? [] : ['a planted reader goes unreported'];
+};

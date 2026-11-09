@@ -194,6 +194,10 @@ const summaryCases = () => {
 // §18.163 (4): the two ruled labels, apart from the classes nearest them.
 // A read-fault decline and a RequirementOpen are limits or open questions;
 // the same outcome from a validator or generation refusal stays a defect.
+// The two `isDefect` rows on rendered text pin the rendering only: the
+// committed `Unsupport` has no `EffectsUnread`, so RT8's read-fault branch
+// is unrun until the real constructor lands (R038 (3)). The pairs below
+// separate each ruled class from its nearest neighbor in the table.
 const ruled = name => t6Classes[name];
 const sectionOf = name => `section ${ruled(name).section}`;
 const readFaultCompiles = compilingDecline('a read fault');
@@ -219,7 +223,14 @@ const ruledCases = () => [
   ['ObligationFailed where today accepts stays a defect', isDefect(
     refusalClasses.ObligationFailed[0]), true],
   ['RecordDefect where today refuses stays a defect', isDefect(
-    refusalClasses.RecordDefect[2]), true]];
+    refusalClasses.RecordDefect[2]), true],
+  ['read fault apart from a limitation: target', ruled(readFaultCompiles)
+    .target === ruled(compilingDecline('a limitation')).target, false],
+  ['read fault apart from a limitation: ruled', ruled(compilingDecline(
+    'a limitation')).sectionReading, true],
+  ['open requirement apart from a limitation: section',
+    ruled(openRefuses).section === ruled(refusedDecline('a limitation'))
+      .section, false]];
 
 export const t6Cases = () => [...rt8Cases(), ...moreRt8Cases(),
   ...windowCases(), ...ruledCases(),

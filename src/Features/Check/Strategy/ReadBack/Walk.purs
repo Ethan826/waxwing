@@ -27,9 +27,9 @@ data Node = AtExpr Checked.Expr | AtPattern Checked.Pattern
 
 -- One child under its label, or an array of them under one label, read
 -- by index: each item with the steps after its index. Only the item an
--- index names is wrapped, so a walk costs its depth and each node's fixed
--- child list, not the width of the arrays on it. The over-applied alias
--- still copies its arguments (`overApplied`).
+-- index names is wrapped, so no sibling is read: an array's width costs
+-- nothing. Each level still builds the node's fixed child list and copies
+-- the rest of the path, so a walk's cost grows with the square of its depth.
 data Child
   = One (Array Step) Node
   | Many (Array Step) (Int → Maybe (Tuple (Array Step) Node))
@@ -141,9 +141,8 @@ recordChildren = case _ of
 -- perform likewise (Check/Operation.purs checks it as a named call).
 overApplied ∷ Checked.Expr → Array Checked.Expr → Array Child
 overApplied (Checked.Expr callee) more = case callee.node of
-  Checked.Call _ _ supplied → expressions "Call" "args" (supplied <> more)
-  Checked.Perform _ _ _ supplied → expressions "Perform" "args"
-    (supplied <> more)
+  Checked.Call _ _ supplied → aliased "Call" supplied more
+  Checked.Perform _ _ _ supplied → aliased "Perform" supplied more
   _ → []
 
 blockItem ∷ Checked.Item → Tuple (Array Step) Node
@@ -192,6 +191,16 @@ eachPart constructor field part wrap values =
   [ Many [ Named constructor, Named field ]
       (reading (Tuple [ Named part ] <<< wrap) values)
   ]
+
+-- The alias `constructor/args`: the supplied arguments, then the rest.
+aliased ∷ String → Array Checked.Expr → Array Checked.Expr → Array Child
+aliased constructor supplied more =
+  [ Many [ Named constructor, Named "args" ] indexed ]
+  where
+  indexed index
+    | index < length supplied = argument supplied index
+    | otherwise = argument more (index - length supplied)
+  argument = reading (Tuple [] <<< AtExpr)
 
 -- The one item an index names, wrapped only then.
 reading ∷ ∀ a b. (a → b) → Array a → Int → Maybe b

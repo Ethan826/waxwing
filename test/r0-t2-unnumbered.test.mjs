@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { load } from './r0-generate-support.mjs';
 import { rowsCases } from './r0-t2-rows-cases.mjs';
-import { wrongUnnumberedCases } from './r0-t2-unnumbered-cases.mjs';
+import { home, permitted, scanWrong, strayUses, wrongUnnumberedCases }
+  from './r0-t2-unnumbered-cases.mjs';
 
 const conversion = 'rawForRenumbering';
 
@@ -13,18 +14,20 @@ test('the unnumbered row converts by the trace numbering', async () => {
 
 test('the opaque type exports no constructor', async () => {
   const module = await load('Domain.Checked.Unnumbered');
-  assert.deepEqual(Object.keys(module).sort(), ['mappedUnnumbered',
-    conversion, 'unnumbered', 'unnumberedArguments'].sort());
+  assert.deepEqual(Object.keys(module).sort(),
+    Object.keys(permitted).sort());
 });
 
-test('only the trace takes the raw row out', () => {
-  const users = readdirSync('src', { recursive: true })
+test('each operation is used only where permitted', () => {
+  const sources = Object.fromEntries(readdirSync('src', { recursive: true })
     .filter(name => name.endsWith('.purs'))
-    .filter(name => readFileSync(`src/${name}`, 'utf8')
-      .includes(conversion))
-    .sort();
-  assert.deepEqual(users, ['Domain/Checked/Unnumbered.purs',
-    'Features/Check/Trace.purs']);
+    .map(name => [name, readFileSync(`src/${name}`, 'utf8')]));
+  assert.ok(home in sources);
+  assert.deepEqual(strayUses(sources), []);
+  assert.deepEqual(scanWrong(), []);
+  // `finish` is the raw row's one use: the import and that call.
+  assert.equal(sources['Features/Check/Trace.purs']
+    .split(conversion).length - 1, 2);
 });
 
 test('corpus collision: raw meta 0 is not the body hole 0', async () => {

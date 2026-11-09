@@ -61,28 +61,62 @@ export const walkCases = async load => {
 const width = 2000;
 
 // A body holding one wide array, read at its middle: index reads counted.
-const counted = (values, make, steps) => {
+const counted = (values, make, steps, expected = 1) => {
   let reads = 0;
   const spy = new Proxy(values, { get: (target, key, receiver) => {
     if (typeof key === 'string' && /^[0-9]+$/.test(key)) reads += 1;
     return Reflect.get(target, key, receiver);
   } });
-  return { body: make(spy), steps, reads: () => reads };
+  return { body: make(spy), steps, expected, reads: () => reads };
 };
 
-// Every helper that holds an array: `each`, `eachPart`, Block's and
-// RecordExtension's own. One lookup reads one sibling.
+// Every construction that holds an array. One lookup reads one sibling;
+// a `pattern` arm is tried before a `body` arm, so that lookup reads two.
 export const widthCases = ({ read, leaf, expr, Checked, named, index }) => {
   const middle = index(width / 2);
   const leaves = Array.from({ length: width }, (_, at) => leaf(at));
   const fields = leaves.map(value => ({ value }));
   const given = fields.map(field => new Checked.Given(field));
   const items = leaves.map(value => new Checked.Discard(value));
+  const bodies = leaves.map(body => ({ body }));
+  const arms = leaves.map(body => ({ body,
+    pattern: new Checked.Pattern({ ty: null, span: null,
+      shape: new Checked.Bind(null) }) }));
+  const parts = leaves.map(() => new Checked.Pattern({ ty: null, span: null,
+    shape: new Checked.Bind(null) }));
+  const fieldParts = parts.map(found => ({ pattern: found }));
+  const patternExpr = shape => expr(new Checked.Match(leaf(0), [{ body:
+    leaf(0), pattern: new Checked.Pattern({ ty: null, span: null, shape })
+  }]));
+  const inPattern = [named('Match'), named('arms'), index(0),
+    named('pattern')];
+  const args = (name, make) => counted(leaves, make,
+    [named(name), named('args'), middle]);
   const shapes = {
     Interpolate: counted(leaves, spy => expr(new Checked.Interpolate(spy)),
       [named('Interpolate'), named('parts'), middle]),
-    Call: counted(leaves, spy => expr(new Checked.Call(null, null, spy)),
-      [named('Call'), named('args'), middle]),
+    Call: args('Call', spy => expr(new Checked.Call(null, null, spy))),
+    Construct: args('Construct',
+      spy => expr(new Checked.Construct(null, null, spy))),
+    Perform: args('Perform',
+      spy => expr(new Checked.Perform(null, 0, null, spy))),
+    'over-applied alias': args('Call', spy => expr(new Checked.Apply(
+      expr(new Checked.Call(null, null, spy)), [leaf(0)]))),
+    'Match body': counted(arms, spy => expr(new Checked.Match(leaf(0), spy)),
+      [named('Match'), named('arms'), middle, named('body')], 2),
+    Handler: counted(bodies, spy => expr(new Checked.Handler(null, null, spy)),
+      [named('Handler'), named('clauses'), middle, named('body')]),
+    Handle: counted(bodies, spy => expr(new Checked.Handle(leaf(0), spy)),
+      [named('Handle'), named('clauses'), middle, named('body')]),
+    RecordUpdate: counted(fields, spy => expr(
+      new Checked.RecordUpdate(leaf(0), spy)), [named('RecordUpdate'),
+      named('fields'), middle, named('value')]),
+    'Ctor pattern': counted(parts, spy => patternExpr(
+      new Checked.Ctor(null, spy)), [...inPattern, named('Ctor'),
+      named('args'), middle]),
+    'Record pattern': counted(fieldParts, spy => patternExpr(
+      new Checked.Record(spy, null)), [...inPattern, named('Record'),
+      named('fields'), middle, named('pattern')]),
     RecordLiteral: counted(fields, spy => expr(
       new Checked.RecordLiteral(spy)), [named('RecordLiteral'),
       named('fields'), middle, named('value')]),
@@ -95,7 +129,7 @@ export const widthCases = ({ read, leaf, expr, Checked, named, index }) => {
   };
   return Object.entries(shapes).map(([name, shape]) => {
     const result = read(shape.body, shape.steps);
-    return [name, result.constructor.name, shape.reads()];
+    return [name, result.constructor.name, shape.reads(), shape.expected];
   });
 };
 
@@ -106,5 +140,6 @@ export const wrongWalkCases = async load => {
     .map(([name]) => name);
 };
 export const wrongWidthCases = async load => widthCases(await walkCases(load))
-  .filter(([, shown, reads]) => shown !== 'Just' || reads !== 1)
+  .filter(([, shown, reads, expected]) => shown !== 'Just'
+    || reads !== expected)
   .map(([name, shown, reads]) => `${name} ${shown} ${reads}`);

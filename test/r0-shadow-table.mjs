@@ -80,10 +80,11 @@ export const windowClasses = {
 // reaches (a validator refusal reaching Decide) or a defect reaches, so
 // the committed path, where none occurs, lists none of them: the summary
 // lists one only when a row has it (test/r0-shadow-summary.mjs), and
-// window.json does not move. One class per decline kind. Labels are the
-// implementer's reading: a limitation is a strategy limitation (R-b2:
-// (b)); a read fault is a replacement loss, unresolved (§18.161 (1)). A
-// record defect is never a decline: RT8 reads it as a generation defect.
+// window.json does not move. One class per decline kind. A
+// limitation's label is the implementer's reading (R-b2: (b)). The
+// read-fault and open-requirement labels are the author's ruling
+// (§18.163 (4)), which approves the classification and no loss. A record
+// defect is never a decline: RT8 reads it as a generation defect.
 export const rt8DefectClass = 'defect found by RT8 (reported, unlabelled)';
 export const compilingDecline = kind =>
   `the check declines the candidate (${kind}): compiles today`;
