@@ -1,5 +1,8 @@
 # Validator cost: path comparison (2026-11-09)
 
+**WITHDRAWN (dossier §18.168). Option A was not achieved, and its freeze
+exception closed unused.**
+
 **Correction (2026-11-09, dossier §18.166).** The "monomorphic loop" arm
 below (7.1 s) also skipped identical step objects, an identity shortcut
 at step level, and read arrays directly. It is not the loop a pure

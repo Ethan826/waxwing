@@ -1,10 +1,13 @@
-# Performance-budget recommendation (2026-11-09, dossier §18.167)
+# Performance budgets (2026-11-09, dossier §18.167, §18.168)
 
-Status: a recommendation. No budget is approved, and criterion 6 stays
-unmet until the author rules. The figures are from
+Status: **approved** by the author (§18.168) under the recorded protocol.
+These approve the measured corpus costs for this stage. They are not
+universal latency or memory guarantees. The two CPU ratios have different
+baselines and must not be multiplied. The earlier failed perf qualification
+stays failed. The figures are from
 test/fixtures/r0/t2-performance-3.json, the recorded protocol at 2c5b9e30,
-whose src tree is the current one. It assumes the derived path ordering
-stays (dossier §18.166).
+whose src tree is the current one, under the derived path ordering
+(dossier §18.166, §18.168).
 
 ## The intended activation path
 
@@ -28,12 +31,12 @@ The costliest single declaration, the 10,000-part interpolation, measured
 about 0.3 s of effect read-back and 1.2 to 1.6 s of validation in the
 attribution samples.
 
-## Recommended budgets
+## Approved budgets
 
 The gate's four ratios, with whole-process peak RSS, the measure the
 author chose as primary:
 
-| Budget | Measured median | Third quartile | Recommended ceiling |
+| Budget | Measured median | Third quartile | Approved ceiling |
 |---|---|---|---|
 | read-back, compile time | ×2.32 | ×2.36 | **×2.75** |
 | read-back, peak memory | ×1.06 | ×1.08 | **×1.15** |
@@ -47,22 +50,20 @@ bound the trace (×1.14 and ×1.45 CPU).
 it is acceptable, so the case rests on the absolute cost: a few
 milliseconds per declaration is small beside what a compile already does,
 and this cost is paid only for declarations that pass through the check.
-The ceilings add about 15% over the third quartile. That is about the
-movement between two protocol runs on this shared machine (the trace's
-recheck ratio moved from ×1.33 to ×1.45 with its code unchanged), so
-ordinary load does not fail them while a real regression does. The
+The ceilings add about 15% over the third quartile. That accommodates the
+movement observed between two protocol runs on this shared machine (the
+trace's recheck ratio moved from ×1.33 to ×1.45 with its code unchanged).
+It cannot guarantee that ordinary load never causes a failure. The
 read-back's former ×13.7 would fail by a wide margin.
 
-**What a ratio cannot catch.** A ceiling on the corpus median misses a
-cost that grows faster than a program does, which is how the walk's
-quadratic width stayed hidden. I recommend keeping the `wrapping` count
-check of the 2026-11-04 proposal (§5, step 3) as a timing-free growth
-check beside the budgets.
+**What a ratio cannot catch.** Corpus ratios can miss localized or
+size-dependent regressions, which is how the walk's quadratic width stayed
+hidden. The timing-free `wrapping` count (the 2026-11-04 proposal, §5,
+step 3) stays beside the budgets. It covers that specific wrapping
+mechanism and not every possible growth defect.
 
-## Open
+## Earlier failures stay failed
 
-The validator would be about a third faster with a `case` on `Maybe` in
-one function, at the price of a structural-gate exception (dossier
-§18.166). I recommend against it: the saving is about 5 s over the
-corpus, under 2 ms a declaration. If it is taken, the validator's row
-must be measured again.
+`npm run perf` failed two files at 354ce6e (§18.160; attributed in
+test/fixtures/r0/t2-perf-attribution.json). These budgets are a different
+measure and do not turn those failures into passes.

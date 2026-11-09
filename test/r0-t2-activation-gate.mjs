@@ -18,6 +18,7 @@
 import { citesWhole, missing, result, ruling, staleness, standing,
   statementsSeven, statusKey } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
+import { separatedLive } from './r0-t2-shadow-gate.mjs';
 
 // Each activation prerequisite with the tag its regression row's name
 // must carry, so an unrelated row, or one row for several items, does
@@ -167,7 +168,7 @@ export const criteria = [
   { id: 1, title: 'Task 13\'s pin approved; no unexpected refusal',
     measure: pinApproved },
   { id: 2, title: 'A1: each gap list\'s loss on replacement ruled',
-    measure: acceptance },
+    measure: evidence => separatedLive(acceptance, evidence) },
   { id: 3, title: 'the author\'s C6 decision', measure: c6 },
   { id: 4, title: 'BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed',
     measure: landed },

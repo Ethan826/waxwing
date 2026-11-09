@@ -194,8 +194,8 @@ const summaryCases = () => {
 // §18.163 (4): the two ruled labels, apart from the classes nearest them.
 // A read-fault decline and a RequirementOpen are limits or open questions;
 // the same outcome from a validator or generation refusal stays a defect.
-// Rendering evidence only: 'a read fault is not a defect' and the window's
-// 'decline, minting reading'. The committed `Unsupport` has no
+// Rendering evidence only, in this file: 'a read fault is not a defect'
+// and the window's 'decline, minting reading'. The committed `Unsupport` has no
 // `EffectsUnread`, so RT8's read-fault branch is unrun until the real
 // constructor lands (R038 (3)). The pairs below separate each ruled class
 // from its nearest neighbor in the table.
@@ -230,6 +230,8 @@ const ruledCases = () => [
   true],
   ['read fault, refuses: ruled, not a reading', ruled(refusedDecline(
     'a read fault')).sectionReading, false],
+  ['limitation, refuses: a reading', ruled(refusedDecline('a limitation'))
+    .sectionReading, true],
   ['read fault apart from a limitation: target', ruled(readFaultCompiles)
     .target === ruled(compilingDecline('a limitation')).target, false],
   ['read fault apart from a limitation: ruled', ruled(compilingDecline(

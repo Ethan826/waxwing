@@ -43,26 +43,31 @@ export const permitted = {
   unnumbered: ['Features.Check.Function', 'Features.Check.Generate.Body']
 };
 const useOf = name => `Domain_Checked_Unnumbered.${name}`;
-const reexport = /export \{[^}]*\} from "\.\.\/Domain\.Checked\.Unnumbered\//;
+const uses = (text, name) => new RegExp(`${useOf(name)}\\b`).test(text);
+const reexport = new RegExp('export\\s*(\\{[^}]*\\}|\\*(\\s+as\\s+\\w+)?)'
+  + '\\s*from\\s*"\\.\\./Domain\\.Checked\\.Unnumbered/');
 export const strayUses = compiled => Object.entries(compiled)
   .filter(([module]) => module !== home).flatMap(([module, text]) => [
     ...(reexport.test(text) ? [`${module}: re-export`] : []),
     ...Object.entries(permitted)
       .filter(([name, allowed]) => !allowed.includes(module)
-        && new RegExp(`${useOf(name)}\\b`).test(text))
+        && uses(text, name))
       .map(([name]) => `${module}: ${name}`)]);
 
 // Each permitted module still uses its operation: no stale slot.
 export const staleSlots = compiled => Object.entries(permitted).flatMap(
   ([name, allowed]) => allowed.filter(module =>
-    !(compiled[module] ?? '').includes(useOf(name)))
+    !uses(compiled[module] ?? '', name))
     .map(module => `${module}: ${name} unused`));
 
 const planted = {
   use: `x = ${useOf('rawForRenumbering')}(row);`,
   mapped: `x = ${useOf('mappedUnnumbered')}(f)(row);`,
   reexported: 'export { rawForRenumbering } from '
-    + '"../Domain.Checked.Unnumbered/index.js";'
+    + '"../Domain.Checked.Unnumbered/index.js";',
+  reexportedBlock: 'export {\n    rawForRenumbering\n} from '
+    + '"../Domain.Checked.Unnumbered/index.js";',
+  reexportedAll: 'export * from "../Domain.Checked.Unnumbered/index.js";'
 };
 const harmless = {
   comment: '// the rawForRenumbering conversion',
@@ -76,7 +81,25 @@ export const scanWrong = () => [
     .map(([form]) => `a planted ${form} goes unreported`),
   ...Object.entries(harmless).filter(([, text]) =>
     strayUses({ 'Features.Check.Other': text }).length !== 0)
-    .map(([form]) => `a harmless ${form} is reported`)];
+    .map(([form]) => `a harmless ${form} is reported`),
+  ...(staleSlots({ 'Features.Check.Function':
+    useOf('unnumberedMentionsTypeVariable') }).some(line =>
+    line === 'Features.Check.Function: unnumbered unused') ? []
+    : ['a stale slot goes unreported'])];
+
+// The raw row's one use lies inside `finish`: a second call in the trace,
+// exported or not, fails.
+const conversion = useOf('rawForRenumbering');
+export const notOnlyFinish = compiled => {
+  const trace = compiled['Features.Check.Trace'] ?? '';
+  const start = trace.indexOf('var finish = function');
+  const rest = trace.slice(start + 1);
+  const end = rest.search(/\n(var |export )/);
+  const body = start < 0 ? '' : rest.slice(0, end);
+  const count = text => text.split(conversion).length - 1;
+  return count(trace) === 1 && count(body) === 1 ? []
+    : [`the raw row has more than finish: ${count(trace)} uses`];
+};
 
 // The trace's whole public surface, so no alias of the conversion leaves it.
 export const traceExports = ['AppliedKey', 'ClauseKey', 'DeferKey',

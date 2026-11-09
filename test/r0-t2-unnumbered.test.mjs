@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { load } from './r0-generate-support.mjs';
 import { rowsCases } from './r0-t2-rows-cases.mjs';
-import { exportsWrong, home, scanWrong, staleSlots, strayUses,
+import { exportsWrong, home, notOnlyFinish, scanWrong, staleSlots, strayUses,
   wrongUnnumberedCases } from './r0-t2-unnumbered-cases.mjs';
 
 test('the unnumbered row converts by the trace numbering', async () => {
@@ -21,6 +21,7 @@ test('each operation is used only where permitted', () => {
   assert.ok(home in compiled);
   assert.deepEqual(strayUses(compiled), []);
   assert.deepEqual(staleSlots(compiled), []);
+  assert.deepEqual(notOnlyFinish(compiled), []);
   assert.deepEqual(scanWrong(), []);
 });
 

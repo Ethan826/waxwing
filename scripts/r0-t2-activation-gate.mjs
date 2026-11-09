@@ -8,7 +8,9 @@
 // `commit`. It runs neither the corpus nor the compiler, and it changes
 // nothing. Exit 1
 // while any criterion is unmet, an absent or unreadable file included;
-// exit 0 only when all seven are met. A met gate activates nothing:
+// exit 0 only when the seven and the shadow criteria (S1, S2) are all met.
+// Shadow minting and live replacement report apart (§18.168). A met gate
+// activates nothing:
 // activation is A2's Task 16, held.
 //   node scripts/r0-t2-activation-gate.mjs
 import { execFileSync } from 'node:child_process';
@@ -18,8 +20,10 @@ import { dossierFile, fullSha, statementsFile, statusFile }
   from '../test/r0-t2-activation-evidence.mjs';
 import { pinFile } from '../test/r0-t2-activation-pin.mjs';
 import { verdictsFile } from '../test/r0-t2-gap-verdicts.mjs';
-import { evaluate, reportText, unmet }
+import { evaluate, reportText }
   from '../test/r0-t2-activation-gate.mjs';
+import { allMet, evaluateShadow, shadowReport }
+  from '../test/r0-t2-shadow-gate.mjs';
 
 const text = path => (existsSync(path) ? readFileSync(path, 'utf8') : null);
 
@@ -49,7 +53,7 @@ const cited = [status?.comparison, status?.performance?.measurement]
 const files = Object.fromEntries(cited.map(path => [path, json(path)]));
 const commits = Object.values(files).map(file => file?.commit)
   .filter(commit => typeof commit === 'string' && fullSha.test(commit));
-const results = evaluate({
+const evidence = {
   status, pin: json(pinFile), verdicts: json(verdictsFile),
   dossier: text(dossierFile),
   statements: text(statementsFile),
@@ -57,6 +61,9 @@ const results = evaluate({
   files,
   src: { head: srcTree('HEAD'), at: Object.fromEntries(commits
     .map(commit => [commit, srcTree(commit)])) }
-});
+};
+const results = evaluate(evidence);
+const shadow = evaluateShadow(evidence);
 console.log(reportText(results));
-process.exitCode = unmet(results).length === 0 ? 0 : 1;
+console.log(shadowReport(results, shadow));
+process.exitCode = allMet(results, shadow) ? 0 : 1;

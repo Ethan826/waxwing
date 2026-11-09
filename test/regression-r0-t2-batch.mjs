@@ -5,8 +5,10 @@ import { pathToFileURL } from 'node:url';
 import { fail, passed } from './regression-r0-amin-support.mjs';
 import { wrongWalkCases, wrongWidthCases } from './r0-t2-walk-cases.mjs';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { exportsWrong, scanWrong, strayUses, wrongUnnumberedCases }
-  from './r0-t2-unnumbered-cases.mjs';
+import { exportsWrong, notOnlyFinish, scanWrong, staleSlots, strayUses,
+  wrongUnnumberedCases } from './r0-t2-unnumbered-cases.mjs';
+import { verdictsWrong, wrongShadowCases }
+  from './r0-t2-shadow-gate-cases.mjs';
 
 const loader = context => name => import(pathToFileURL(
   resolve(dirname(context.compilerPath), '..', name, 'index.js')));
@@ -20,12 +22,16 @@ const probe = wrongOf => async context => {
 // The caller scan over the compiled output of the row's own clone.
 const cloneUses = context => {
   const output = resolve(dirname(context.compilerPath), '..');
-  return strayUses(Object.fromEntries(readdirSync(output)
+  const compiled = Object.fromEntries(readdirSync(output)
     .filter(name => existsSync(`${output}/${name}/index.js`))
-    .map(name => [name, readFileSync(`${output}/${name}/index.js`, 'utf8')])));
+    .map(name => [name, readFileSync(`${output}/${name}/index.js`, 'utf8')]));
+  return [...strayUses(compiled), ...staleSlots(compiled),
+    ...notOnlyFinish(compiled)];
 };
 
 export const t2BatchProbes = {
+  'r0-t2-shadow-gate': probe(async () => [...wrongShadowCases(),
+    ...verdictsWrong()]),
   'r0-t2-unnumbered-gate': async context => {
     const wrong = [...cloneUses(context),
       ...await exportsWrong(loader(context))];

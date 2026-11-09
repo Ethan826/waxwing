@@ -8529,3 +8529,27 @@ separating row. Those fixes have not had a further independent review.
 Routine verify at bdc38a6f passed; src equals 2d68a85d's and the 2c5b9e30
 records'. Recommendation: docs/plans/2026-11-09-budget-recommendation.md.
 Held as in §18.165.
+
+### 18.168 Budgets approved; option A withdrawn; shadow and live apart (2026-11-09)
+
+Option A is withdrawn and its validator-freeze exception closed unused.
+The derived path ordering stays. The corrected experiments do not support
+the original claim (§18.166), and no further path-order optimization is
+authorized.
+
+R035 budgets approved under the recorded protocol: read-back CPU ratio
+2.75; read-back whole-process peak RSS ratio 1.15; validator CPU ratio
+versus `certify` 2.60; validator whole-process peak RSS ratio 1.15. These
+approve the measured corpus costs for this stage and are not universal
+latency or memory guarantees. The absolute figures, per-declaration
+outliers and the timing-free wrapping count stay beside them. The two CPU
+ratios have different baselines and are not multiplied. The unchanged-source
+protocol results support criterion 6, given the source identity check. The
+earlier failed perf qualification stays visible: budget approval does not
+turn those failures into passes.
+
+The gate reports shadow minting and live replacement separately, so that
+one citation cannot stand for both. Enabling stricter shadow certification
+does not approve losing working programs in the live compiler. A real
+`EffectsUnread` constructor-to-RT8/window test must run with the switch.
+Held: the minting switch, F14's retirement, live replacement, pushing.

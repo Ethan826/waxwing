@@ -8,6 +8,11 @@ const table = 'test/r0-shadow-table.mjs';
 const places = 'src/Features/Check/Strategy/ReadBack/EffectPlaces.purs';
 const unnumbered = 'src/Domain/Checked/Unnumbered.purs';
 
+const shadowGate = 'test/r0-t2-shadow-gate.mjs';
+const shadowRow = (name, needle, replacement, message) => ({ name, tree: 'test',
+  edits: [{ file: shadowGate, needle, replacement }],
+  probe: 'r0-t2-shadow-gate', message });
+
 export const t2BatchRows = [
   {
     // Every sibling rebuilt before the one indexed: the width cost.
@@ -58,6 +63,33 @@ export const t2BatchRows = [
     replacement: 'import Domain.Checked.Internal (Open)\n'
       + 'import Domain.Checked.Unnumbered (rawForRenumbering)\n' }],
   probe: 'r0-t2-unnumbered-gate', message: /ReadBack\.EffectPlaces: rawFor/ },
+  // The trace re-exports the module: the caller gate fails.
+  { name: 'r0-t2-unnumbered-reexport', edits: [{ file: trace,
+    needle: '  ( module Features.Check.Trace.Types\n',
+    replacement: '  ( module Features.Check.Trace.Types\n'
+      + '  , module Domain.Checked.Unnumbered\n' }],
+  probe: 'r0-t2-unnumbered-gate', message: /Trace: re-export/ },
+  // An exported alias of the conversion in the trace.
+  { name: 'r0-t2-unnumbered-alias', edits: [{ file: trace,
+    needle: '  , finish\n', replacement: '  , finish\n  , exposed\n' },
+  { file: trace, needle: 'spanKey ∷ Span → SpanKey\n',
+    replacement: 'exposed ∷ UnnumberedRow Open → TyRow Open\n'
+      + 'exposed = rawForRenumbering\n\nspanKey ∷ Span → SpanKey\n' }],
+  probe: 'r0-t2-unnumbered-gate', message: /trace exposes: exposed/ },
+  // A second, private call inside the trace.
+  { name: 'r0-t2-unnumbered-second-call', edits: [{ file: trace,
+    needle: 'spanKey ∷ Span → SpanKey\n',
+    replacement: 'hidden ∷ UnnumberedRow Open → TyRow Open\n'
+      + 'hidden = rawForRenumbering\n\nspanKey ∷ Span → SpanKey\n' }],
+  probe: 'r0-t2-unnumbered-gate', message: /more than finish: 2 uses/ },
+  // The stale-slot check blind: it reports nothing.
+  { name: 'r0-t2-unnumbered-stale-blind', tree: 'test', edits: [{ file:
+    'test/r0-t2-unnumbered-cases.mjs',
+  needle: 'export const staleSlots = compiled => Object.entries(permitted)'
+    + '.flatMap(\n',
+  replacement: 'export const staleSlots = compiled => Object.entries({})'
+    + '.flatMap(\n' }], probe: 'r0-t2-unnumbered-scan',
+  message: /a stale slot goes unreported/ },
   // The raw-arguments accessor restored: the exports pin fails.
   { name: 'r0-t2-unnumbered-accessor', edits: [{ file: unnumbered,
     needle: '  , unnumberedMentionsTypeVariable\n',
@@ -75,6 +107,23 @@ export const t2BatchRows = [
     replacement: "  [refusedDecline('a read fault')]: entry(b, limitation, "
       + 'refusedFocus,' }], probe: 'r0-t6-tooling',
   message: /read fault, refuses: ruled, not a reading: true/ },
+  // §18.163 (4): a limitation presented as the author's ruling.
+  { name: 'r0-t2-class-limitation-ruled', tree: 'test', edits: [{ file: table,
+    needle: "  [refusedDecline('a limitation')]: entry(b, limitation, ",
+    replacement: "  [refusedDecline('a limitation')]: entry(b, readFault, " }],
+  probe: 'r0-t6-tooling',
+  message: /limitation, refuses: a reading: false/ },
+  { name: 'r0-t2-class-compiling-reading', tree: 'test', edits: [{ file: table,
+    needle: "  [compilingDecline('a read fault')]: entry(b, readFault, ",
+    replacement: "  [compilingDecline('a read fault')]: "
+      + 'entry(b, limitation, ' }],
+  probe: 'r0-t6-tooling',
+  message: /read fault: ruled, not a reading: true/ },
+  { name: 'r0-t2-class-open-reading', tree: 'test', edits: [{ file: table,
+    needle: "entry(a, 'the author\\'s'\n    + ' ruling §18.163 (4): pending",
+    replacement: "entry(a, 'reading'\n    + ' §18.163 (4): pending" }],
+  probe: 'r0-t6-tooling',
+  message: /open requirement: ruled, not a reading: true/ },
   // §18.163 (4): a read-fault decline's loss read as resolved.
   { name: 'r0-t2-class-read-fault-target', tree: 'test', edits: [{
     file: table,
@@ -82,6 +131,23 @@ export const t2BatchRows = [
     replacement: "    + ' whose effect package was not read', 'Solved', " }],
   probe: 'r0-t6-tooling',
   message: /read fault: the loss stays unresolved: false/ },
+  // §18.168: one citation standing for both decisions.
+  shadowRow('r0-t2-shadow-one-citation',
+    "  return sameCitation(evidence, list)\n", '  return false\n',
+    /one citation for shadow and live: live 2; shadow/),
+  // §18.168: a section that never says shadow certification.
+  shadowRow('r0-t2-shadow-token-ignored',
+    "export const shadowToken = 'shadow certification';\n",
+    "export const shadowToken = '###';\n",
+    /a section not naming shadow certification/),
+  // §18.168: the real row's tag unchecked.
+  shadowRow('r0-t2-shadow-real-tag',
+    '  if (!row.includes(realRowTag))\n', '  if (false)\n',
+    /real row untagged/),
+  // §18.168: a live-only gap blocking the shadow verdict.
+  shadowRow('r0-t2-shadow-live-blocks',
+    "ids(results).filter(id => id !== 2)", 'ids(results)',
+    /a live-only gap blocks shadow/),
   // §18.163 (4): each ruled class's label flipped.
   { name: 'r0-t2-class-read-fault-label', tree: 'test', edits: [{ file: table,
     needle: "  [compilingDecline('a read fault')]: entry(b, readFault,",

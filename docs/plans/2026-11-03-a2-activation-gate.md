@@ -350,7 +350,8 @@ status lacks. A measurement is recorded:
 test/fixtures/r0/t2-performance-3.json, measured at 2c5b9e30, with
 its conditions and both parts. Its `commit` is
 2c5b9e30e8c2c3a359d04c64a9948b2cecc18652, and src is unchanged since.
-Without a budget its figures meet nothing. The attribution of the
+The budgets are approved (§18.168) and its figures are within them; the
+source identity check passes. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
 read by the gate. R034 (11) makes no performance claim for the
 validator.
@@ -403,6 +404,25 @@ fixtures and mutants never run".
   its word.
 - U4's and U6's standing is printed, not judged.
 
+## Shadow minting and live replacement (dossier §18.168)
+
+Enabling stricter shadow certification does not approve losing working
+programs in the live compiler, so the two decisions report apart, in
+test/r0-t2-shadow-gate.mjs.
+
+- **S1**: the read-fault and ForcedTail lists are each accepted within
+  shadow certification. The status's `shadowLosses` cites a section naming
+  `shadow certification` and the list. A citation also used for that
+  list's live loss (`losses`) is unmet for both S1 and criterion 2.
+- **S2**: the real `EffectsUnread` constructor reaches RT8 and the window.
+  `realReadFaultRow` names a registered regression row carrying the tag
+  `effects-unread-real`. The switch's own change adds it, so it is unmet
+  before the switch.
+
+Shadow minting needs every criterion but 2, plus S1 and S2. Live
+replacement needs them all. The script exits 0 only when all are met, and
+a met gate still activates nothing.
+
 ## Today's report
 
 The script's unindented lines on the working tree (exit 1), checked
@@ -418,9 +438,13 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 3 met: the author's C6 decision
 4 met: BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
 5 met: scratch-build comparison with the validator minting
-6 NOT MET: performance qualified, read-back and validator apart
+6 met: performance qualified, read-back and validator apart
 7 met: routing after activation; U4 and U6 standing
-gate: not met (2, 6)
+gate: not met (2)
+S1 NOT MET: each loss accepted within shadow certification only
+S2 NOT MET: the real EffectsUnread reaches RT8 and the window
+shadow minting: not met (S1, S2)
+live replacement: not met (2, S1, S2)
 ```
 
 Criterion 2's lines on the working tree, the same at 3cad78cd as at
