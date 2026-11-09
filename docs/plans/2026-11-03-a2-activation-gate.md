@@ -315,12 +315,12 @@ Task 16 Step 1 describes, made with r0-results-diff on the dumps. The
 gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
-Measured on 2026-11-04 (3cad78cd): met. The status cites
-test/fixtures/r0/t2-minting-comparison2.json, the repeat after T1-T6
-(§18.161 (4)): built at 9ed83f1b with the first comparison's scratch
-minting change adapted to T3/T4, in a disposable worktree since
+Measured on 2026-11-09: met. The status cites
+test/fixtures/r0/t2-minting-comparison3.json, the repeat after
+index-first lookup and the unnumbered row (§18.163): built at 2c5b9e30
+with the scratch minting change, in a disposable worktree since
 removed. Census 0 moved, window 16, rt8 15, shadow 16. Its `commit`
-is 9ed83f1b7d562238e6b6e74fde519e83928dc9e6, and src is unchanged
+is 2c5b9e30e8c2c3a359d04c64a9948b2cecc18652, and src is unchanged
 since. Whether the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
@@ -347,9 +347,9 @@ Measured on 2026-11-04 (3cad78cd): not met. There is no budget
 ruling and there are no budget figures, so the report lists the
 missing ruling, the missing figures and each of the four budgets the
 status lacks. A measurement is recorded:
-test/fixtures/r0/t2-performance-2.json, measured at fc93a92b, with
+test/fixtures/r0/t2-performance-3.json, measured at 2c5b9e30, with
 its conditions and both parts. Its `commit` is
-fc93a92bbb77767e1a48e119eb7070cb9f92c89b, and src is unchanged since.
+2c5b9e30e8c2c3a359d04c64a9948b2cecc18652, and src is unchanged since.
 Without a budget its figures meet nothing. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
 read by the gate. R034 (11) makes no performance claim for the
