@@ -8553,3 +8553,14 @@ one citation cannot stand for both. Enabling stricter shadow certification
 does not approve losing working programs in the live compiler. A real
 `EffectsUnread` constructor-to-RT8/window test must run with the switch.
 Held: the minting switch, F14's retirement, live replacement, pushing.
+
+### 18.169 Shadow-minting packet returned (2026-11-09)
+
+Routine verify at 9f4069e3 passed; src equals 2d68a85d's, so the 2c5b9e30
+records stay current. Failed or stopped runs kept: 312ddd88 (one regression
+row followed a moved helper) and d3c8cd4b (stopped by the controller when a
+review superseded it). The findings on the caller scan, the separating rows
+and the gate were fixed; the last narrow review's fixes (token case and
+wrapping, the constructor's scope) have restored-defect rows and no further
+independent review. Packet:
+docs/plans/2026-11-09-shadow-minting-decision-packet.md.

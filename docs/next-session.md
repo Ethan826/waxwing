@@ -63,8 +63,8 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- See dossier §18.168 for the latest routine verify; earlier passed at
-  bdc38a6f (§18.167).
+- Latest routine verify **passed** at 9f4069e3 (§18.169); same src as
+  2d68a85d. Earlier passed at bdc38a6f (§18.167).
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
