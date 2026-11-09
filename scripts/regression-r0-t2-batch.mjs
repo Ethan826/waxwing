@@ -133,7 +133,7 @@ export const t2BatchRows = [
   message: /read fault: the loss stays unresolved: false/ },
   // §18.168: one citation standing for both decisions.
   shadowRow('r0-t2-shadow-one-citation',
-    "  return sameCitation(evidence, list)\n", '  return false\n',
+    '  return sameCitation(evidence, shadow[list])\n', '  return false\n',
     /one citation for shadow and live: live 2; shadow/),
   // §18.168: a section that never says shadow certification.
   shadowRow('r0-t2-shadow-token-ignored',
@@ -142,8 +142,23 @@ export const t2BatchRows = [
     /a section not naming shadow certification/),
   // §18.168: the real row's tag unchecked.
   shadowRow('r0-t2-shadow-real-tag',
-    '  if (!row.includes(realRowTag))\n', '  if (false)\n',
+    '  if (!tagged(row, realRowTag))\n', '  if (false)\n',
     /real row untagged/),
+  shadowRow('r0-t2-shadow-registry',
+    '  if (!evidence.rows.has(row))\n', '  if (false)\n',
+    /real row not registered/),
+  shadowRow('r0-t2-shadow-constructor', '  return constructorLine.test('
+    + "evidence.unsupport ?? '')\n", '  return true\n',
+  /a registered real row with no constructor/),
+  shadowRow('r0-t2-shadow-list-unnamed', '  if (!named.met) return [false, '
+    + '`${matter}: ${named.line}`];\n', '',
+  /the list unnamed/),
+  shadowRow('r0-t2-shadow-live-unscoped',
+    '  const problems = [...shared, ...unscoped];\n',
+    '  const problems = shared;\n', /a live section lacking its scope/),
+  shadowRow('r0-t2-shadow-all-met',
+    '  ids(results).length === 0 && ids(shadow).length === 0;\n',
+    '  ids(results).length === 0;\n', /an unmet S2 reads all met/),
   // §18.168: a live-only gap blocking the shadow verdict.
   shadowRow('r0-t2-shadow-live-blocks',
     "ids(results).filter(id => id !== 2)", 'ids(results)',

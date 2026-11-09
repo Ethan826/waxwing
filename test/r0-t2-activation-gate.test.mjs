@@ -43,7 +43,8 @@ test('absent evidence is unmet, never assumed met', () => {
   const nothing = evaluate({ status: null, pin: null, dossier: null,
     statements: null, rows: new Set(), files: {} });
   assert.deepEqual(nothing.filter(found => found.met), []);
-  assert.match(reportText(nothing), /gate: not met \(1, 2, 3, 4, 5, 6, 7\)/);
+  assert.match(reportText(nothing),
+    /criteria 1-7: not met \(1, 2, 3, 4, 5, 6, 7\)/);
 });
 
 test('sections up to §18.157 on the real dossier rule nothing', () => {
@@ -161,9 +162,9 @@ test('the report script on the committed tree agrees with its exit', () => {
   assert.equal(heads.length, 7);
   const notMet = heads.filter(line => line.includes(' NOT MET: '))
     .map(line => line[0]);
-  assert.equal(run.status, notMet.length === 0 ? 0 : 1);
-  assert.ok(lines.includes(notMet.length === 0 ? 'gate: met'
-    : `gate: not met (${notMet.join(', ')})`));
+  assert.equal(run.status, lines.includes('live replacement: met') ? 0 : 1);
+  assert.ok(lines.includes(notMet.length === 0 ? 'criteria 1-7: met'
+    : `criteria 1-7: not met (${notMet.join(', ')})`));
 });
 
 const reportRun = () => spawnSync('node',

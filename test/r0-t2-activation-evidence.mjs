@@ -18,9 +18,18 @@ export const lastRuled = [18, 157];
 
 // A citation `§18.157` as its number pair, or null.
 const numberOf = cite => {
-  const found = /^§(\d+)\.(\d+)$/.exec(String(cite));
+  if (typeof cite !== 'string') return null;
+  const found = /^§([1-9]\d*)\.([1-9]\d*)$/.exec(cite);
   return found === null ? null : [Number(found[1]), Number(found[2])];
 };
+
+// A citation in one spelling, or null: two spellings of one section compare
+// equal only through this.
+export const normalCite = cite => numberOf(cite)?.join('.') ?? null;
+
+// `row` carries `tag` as whole hyphen-separated parts.
+export const tagged = (row, tag) =>
+  new RegExp(`(^|-)${tag}(-|$)`).test(row);
 
 // The citation's section comes after §18.157, compared as integer
 // pairs: §18.158 is later, §18.16 is not.

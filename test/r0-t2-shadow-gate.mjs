@@ -2,7 +2,7 @@
 // §18.168): enabling stricter shadow certification does not approve losing
 // working programs in the live compiler, so one citation cannot stand for
 // both. Pure, over the activation gate's evidence.
-import { missing, result, ruling, statusKey }
+import { missing, normalCite, result, ruling, section, statusKey, tagged }
   from './r0-t2-activation-evidence.mjs';
 
 export const shadowLists = [['faults', 'read fault'],
@@ -10,19 +10,26 @@ export const shadowLists = [['faults', 'read fault'],
 export const shadowToken = 'shadow certification';
 export const realRowTag = 'effects-unread-real';
 
-// A list's two citations are one citation.
-const sameCitation = (evidence, list) => {
-  const live = statusKey(evidence, 'losses')?.[list];
-  const shadow = statusKey(evidence, 'shadowLosses')?.[list];
-  return typeof shadow === 'string' && live === shadow;
+export const liveToken = 'live replacement';
+export const constructorLine = /^\s*\|\s*EffectsUnread\b/m;
+
+const citations = (evidence, key) => {
+  const found = statusKey(evidence, key);
+  return found === null || typeof found !== 'object' ? []
+    : Object.values(found).map(normalCite).filter(cite => cite !== null);
 };
+
+// A shadow citation that any list's live ruling also cites, whatever the
+// spelling or the list.
+const sameCitation = (evidence, cite) => normalCite(cite) !== null
+  && citations(evidence, 'losses').includes(normalCite(cite));
 
 const listLine = (evidence, shadow, [list, matter]) => {
   const scoped = ruling(evidence.dossier, shadow[list], shadowToken);
   const named = ruling(evidence.dossier, shadow[list], matter);
   if (!scoped.met) return [false, `${matter}: ${scoped.line}`];
   if (!named.met) return [false, `${matter}: ${named.line}`];
-  return sameCitation(evidence, list)
+  return sameCitation(evidence, shadow[list])
     ? [false, `${matter}: ${shadow[list]} is also cited for live replacement`]
     : [true, `${matter}: ${scoped.line}; shadow only`];
 };
@@ -44,10 +51,13 @@ const realReadFault = evidence => {
   if (row === undefined) return missing('realReadFaultRow');
   if (typeof row !== 'string')
     return result(['not run: must run with the minting switch'], []);
-  if (!row.includes(realRowTag))
+  if (!tagged(row, realRowTag))
     return result([`row ${row} does not carry the tag ${realRowTag}`], []);
-  return evidence.rows.has(row) ? result([], [`row ${row}`])
-    : result([`row ${row} not in the regression registry`], []);
+  if (!evidence.rows.has(row))
+    return result([`row ${row} not in the regression registry`], []);
+  return constructorLine.test(evidence.unsupport ?? '')
+    ? result([], [`row ${row}`])
+    : result(['the Unsupport type has no EffectsUnread constructor'], []);
 };
 
 export const shadowCriteria = [
@@ -69,12 +79,25 @@ export const evaluateShadow = evidence => shadowCriteria.map(criterion =>
   ({ id: criterion.id, title: criterion.title,
     ...measured(criterion, evidence) }));
 
-// A list's live ruling is unmet when it is the shadow's own citation.
+const liveScoped = (evidence, cite) => {
+  const text = section(evidence.dossier, cite) ?? '';
+  return text.includes(liveToken) && !text.includes(shadowToken);
+};
+
+// Each live ruling is scoped to live replacement and is no shadow citation.
+// Tokens read that a section names its matter, not what it decides.
 export const separatedLive = (acceptance, evidence) => {
   const found = acceptance(evidence);
-  const shared = shadowLists.filter(([list]) => sameCitation(evidence, list))
-    .map(([, matter]) => `${matter}: one citation for shadow and live`);
-  return shared.length === 0 ? found : result(shared, found.state);
+  const losses = statusKey(evidence, 'losses');
+  const cites = losses === null || typeof losses !== 'object' ? []
+    : Object.values(losses).filter(cite => normalCite(cite) !== null);
+  const shared = citations(evidence, 'shadowLosses')
+    .filter(cite => citations(evidence, 'losses').includes(cite))
+    .map(cite => `§${cite}: one citation for shadow and live`);
+  const unscoped = cites.filter(cite => !liveScoped(evidence, cite))
+    .map(cite => `${cite}: not scoped to live replacement alone`);
+  const problems = [...shared, ...unscoped];
+  return problems.length === 0 ? found : result(problems, found.state);
 };
 
 const ids = results => results.filter(found => !found.met)

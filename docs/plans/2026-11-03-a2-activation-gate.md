@@ -413,11 +413,19 @@ test/r0-t2-shadow-gate.mjs.
 - **S1**: the read-fault and ForcedTail lists are each accepted within
   shadow certification. The status's `shadowLosses` cites a section naming
   `shadow certification` and the list. A citation also used for that
-  list's live loss (`losses`) is unmet for both S1 and criterion 2.
+  list's or another's live loss (`losses`) is unmet for both S1 and
+  criterion 2.
 - **S2**: the real `EffectsUnread` constructor reaches RT8 and the window.
   `realReadFaultRow` names a registered regression row carrying the tag
-  `effects-unread-real`. The switch's own change adds it, so it is unmet
-  before the switch.
+  `effects-unread-real`, and the constructor exists in `Unsupport`. The
+  switch's own change adds both.
+
+Each citation is compared in one spelling across every list, so a section
+cited for live on one list cannot stand for shadow on another. A live
+citation must name `live replacement` and not `shadow certification`. These
+are name checks: as elsewhere in this gate, they read that a section names
+its matter, not what it decides. S2 also requires `EffectsUnread` in the
+`Unsupport` type.
 
 Shadow minting needs every criterion but 2, plus S1 and S2. Live
 replacement needs them all. The script exits 0 only when all are met, and
@@ -440,7 +448,7 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 5 met: scratch-build comparison with the validator minting
 6 met: performance qualified, read-back and validator apart
 7 met: routing after activation; U4 and U6 standing
-gate: not met (2)
+criteria 1-7: not met (2)
 S1 NOT MET: each loss accepted within shadow certification only
 S2 NOT MET: the real EffectsUnread reaches RT8 and the window
 shadow minting: not met (S1, S2)

@@ -58,6 +58,7 @@ const evidence = {
   dossier: text(dossierFile),
   statements: text(statementsFile),
   rows: new Set(r0Rows.map(row => row.name)),
+  unsupport: text('src/Domain/Verdict.purs'),
   files,
   src: { head: srcTree('HEAD'), at: Object.fromEntries(commits
     .map(commit => [commit, srcTree(commit)])) }

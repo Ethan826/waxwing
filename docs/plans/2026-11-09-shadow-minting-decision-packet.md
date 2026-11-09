@@ -7,7 +7,7 @@ it apart from the question of replacing the live checker.
 The gate reports them separately:
 
 ```text
-gate: not met (2)
+criteria 1-7: not met (2)
 S1 NOT MET: each loss accepted within shadow certification only
 S2 NOT MET: the real EffectsUnread reaches RT8 and the window
 shadow minting: not met (S1, S2)
@@ -39,7 +39,8 @@ minting these stop certifying in shadow:
 
 | List | Declarations (effect pin) | Effect |
 |---|---|---|
-| Read faults, 12 | c7 and q7 `statsEvidence`; `expected-handler` `k`; fx008 `r2`, `r9`; f3, late1, late2, one3, two3, rigid `main`; inline fx032 `g` (a known defect) | the read-back cannot read the package; §3.2(b) |
+| Read faults, 12 | c7 and q7 `statsEvidence`; `expected-handler` `k`; fx008
+`r2`, `r9`; f3, late1, late2, one3, two3, rigid `main`; inline fx032 `g` (a known defect) | the read-back cannot read the package; §3.2(b) |
 | ForcedTail, 4 | effect-namespaces and services `main`; fx-services `fake`; fx008 `aroundBoth` | a checker limitation |
 
 The corpus loader's read-fault list is 11, without fx032 `g`. The two
@@ -53,8 +54,9 @@ gaps are what a later replacement decision needs.
 
 **To record:** a dossier section naming `shadow certification`, the read
 fault list and ForcedTail, cited in `shadowLosses`. It must be a different
-section from any cited for `losses`; the gate refuses one citation for
-both.
+section from any cited for `losses`, on any list, which must each name
+`live replacement` and not `shadow certification`. The gate refuses one
+citation for both.
 
 ## 3. Consequences of replacing the live checker: unresolved
 
@@ -74,8 +76,8 @@ Nothing here is decided by section 2.
 
 The committed `Unsupport` has no `EffectsUnread`, so today's read-fault
 fixtures are rendering evidence only. The switch's own change must add
-the constructor and a regression row tagged `effects-unread-real`, cited
-in `realReadFaultRow`. It must show:
+the constructor to `Unsupport` and a regression row tagged
+`effects-unread-real`, cited in `realReadFaultRow`; the gate checks both. It must show:
 
 1. Each `ReadFault` constructor, carried by the real `EffectsUnread`
    through `Decide.reading`, reaches RT8's accounting and the window.

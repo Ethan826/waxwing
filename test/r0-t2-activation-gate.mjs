@@ -16,7 +16,7 @@
 // scripts/r0-t2-activation-gate.mjs gathers the evidence and prints
 // `reportText`; it runs neither corpus nor compiler.
 import { citesWhole, missing, result, ruling, staleness, standing,
-  statementsSeven, statusKey } from './r0-t2-activation-evidence.mjs';
+  statementsSeven, statusKey, tagged } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
 import { separatedLive } from './r0-t2-shadow-gate.mjs';
 
@@ -42,8 +42,6 @@ const ruled = (evidence, key, token) => {
 
 // 3. The author's C6 decision (A2 spec §12 C6: open until replacement).
 const c6 = evidence => ruled(evidence, 'c6', 'C6');
-
-const tagged = (row, tag) => new RegExp(`(^|-)${tag}(-|$)`).test(row);
 
 // One item's row: recorded, tagged for the item, in the registry.
 const landedLine = (evidence, [item, tag], row) => {
@@ -200,5 +198,5 @@ export const reportText = results => [
   ...results.flatMap(found => [
     `${found.id} ${found.met ? 'met' : 'NOT MET'}: ${found.title}`,
     ...found.state.map(line => `    ${line}`)]),
-  unmet(results).length === 0 ? 'gate: met'
-    : `gate: not met (${unmet(results).join(', ')})`].join('\n');
+  unmet(results).length === 0 ? 'criteria 1-7: met'
+    : `criteria 1-7: not met (${unmet(results).join(', ')})`].join('\n');
