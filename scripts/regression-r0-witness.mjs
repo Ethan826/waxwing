@@ -5,6 +5,8 @@
 // and, for the hint row, test/regression-r0-online.mjs.
 const file = 'src/Features/Check/Strategy/HoleContract.purs';
 
+const substitutionFile = 'src/Features/Check/Strategy/Substitution.purs';
+
 export const r0WitnessRows = [
   {
     // The equation arm judged at the defaults: route's `u`, whose
@@ -60,33 +62,41 @@ export const r0WitnessRows = [
     message: /no legacy text: untrusted search hint/
   },
   {
-    // BACKLOG R026: the check judges a σ read back again from today's
-    // checked declaration while the witness binds the certificate's own
-    // pre-default σ, as before the fix, so forged bindings that the check
-    // never sees reach `build`.
+    // BACKLOG R026, restored on the package path (dossier §18.172): the
+    // check judges the certificate's pre-default σ while the witness binds
+    // the package, so a forged package the check never sees reaches `build`.
     name: 'r0-certified-split',
     edits: [
-      { file: 'src/Features/Check/Strategy/Substitution.purs',
-        needle: 'certify ∷ RecordedProblem → Substitution → Either',
-        replacement: 'certify ∷ RecordedProblem → Substitution'
-          + ' → Substitution → Either' },
-      { file: 'src/Features/Check/Strategy/Substitution.purs',
-        needle: 'certify problem unsettled = map witnessed\n'
-          + '  (checkSubstitution problem (map settled unsettled))\n',
-        replacement: 'certify problem judged unsettled = map witnessed\n'
-          + '  (checkSubstitution problem (map settled judged))\n' },
+      { file: substitutionFile,
+        needle: 'validate = validatedBy resultOf\n',
+        replacement: 'validate problem package = validatedBy resultOf problem'
+          + ' (erase (settle package)) package\n' },
+      { file: substitutionFile,
+        needle: '  ∷ RecordedProblem → EffectPackage → '
+          + 'Either CheckRefusal Certified\n'
+          + 'certifyPackage = validatedBy minted\n',
+        replacement: '  ∷ RecordedProblem → Substitution → EffectPackage → '
+          + 'Either CheckRefusal Certified\n'
+          + 'certifyPackage problem judged package = validatedBy minted '
+          + 'problem (map settled judged) package\n' },
+      { file: substitutionFile,
+        needle: '  → RecordedProblem\n  → EffectPackage\n'
+          + '  → Either CheckRefusal r\n'
+          + 'validatedBy finish problem package = do\n',
+        replacement: '  → RecordedProblem\n  → Substitution\n'
+          + '  → EffectPackage\n  → Either CheckRefusal r\n'
+          + 'validatedBy finish problem judged package = do\n' },
+      { file: substitutionFile,
+        needle: '  validity ← checkSubstitution problem '
+          + '(erase (settle package))\n',
+        replacement: '  validity ← checkSubstitution problem judged\n' },
+      { file: substitutionFile,
+        needle: '  judgeObligations problem completed\n', replacement: '' },
       { file: 'src/Features/Check/Strategy/Online.purs',
-        needle: 'import Data.Either (Either, either)\n',
-        replacement: 'import Data.Either (Either(..), either)\n' },
-      { file: 'src/Features/Check/Strategy/Online.purs',
-        needle: 'certified problem certificate = certify problem'
-          + ' certificate.unsettled\n',
-        replacement: 'certified problem certificate =\n'
-          + '  case readBack problem certificate.checked of\n'
-          + '    Left _ → certify problem certificate.unsettled'
-          + ' certificate.unsettled\n'
-          + '    Right made → certify problem made.unsettled'
-          + ' certificate.unsettled\n' }
+        needle: '  either unread (certifyPackage problem) '
+          + 'certificate.effects\n',
+        replacement: '  either unread (certifyPackage problem '
+          + 'certificate.unsettled)\n    certificate.effects\n' }
     ],
     probe: 'r0-certified-split',
     message: /id2 forged to Bool was Solved/

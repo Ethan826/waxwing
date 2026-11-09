@@ -3,20 +3,10 @@
 // probes in test/regression-r0-t2-online.mjs. Each restores one defect in
 // a whole, compiling form.
 const online = 'src/Features/Check/Strategy/Online.purs';
-const either = { file: online,
-  needle: 'import Data.Either (Either, either)\n',
-  replacement: 'import Data.Either (Either(..), either)\n' };
-
-const search = { file: online,
-  needle: 'import Domain.Verdict.Search (Budget, CheckRefusal, '
-    + 'SearchHint(..))\n',
-  replacement: 'import Domain.Verdict.Search (Budget, CheckRefusal(..), '
-    + 'SearchHint(..))\n' };
-
 export const t2OnlineRows = [
   // The read dropped: the certificate's `effects` is always a fault.
   { name: 'r0-t2-online-dropped',
-    edits: [either, { file: online,
+    edits: [{ file: online,
       needle: 'import Features.Check.Strategy.ReadBack.Fault (ReadFault)\n',
       replacement: 'import Features.Check.Strategy.ReadBack.Fault '
         + '(ReadFault(..))\n' },
@@ -27,7 +17,7 @@ export const t2OnlineRows = [
   // A read fault routed as the search's own failure: the candidate is
   // dropped (`NoCandidate`), against §C.6's one routing.
   { name: 'r0-t2-online-fault-refuses',
-    edits: [either, { file: online,
+    edits: [{ file: online,
       needle: '    (readBack problem found.function)\n',
       replacement: '    (readBack problem found.function >>= faulted found)\n'
         + '  faulted found made = either (const (Left "effects"))\n'
@@ -53,17 +43,16 @@ export const t2OnlineRows = [
     needle: '  , certifySound\n  )\n',
     replacement: '  , certifySound\n  , validate\n  )\n',
     probe: 'r0-t2-online-substitution',
-    message: /Online must import exactly certify, certifySound/ },
-  // The check reads `effects`: a read fault refuses the candidate, so
-  // G0's verdict moves for the fault fixtures.
+    message: /Online must import exactly certifyPackage, certifySound/ },
+  // A read fault falls back to substitution-only `certify` rather than
+  // declining (§18.170): the fault fixtures move back to accepted.
   { name: 'r0-t2-online-certified-reads',
-    edits: [either, search, { file: online,
-      needle: 'certified problem certificate = certify problem '
-        + 'certificate.unsettled\n',
-      replacement: 'certified problem certificate = either '
-        + '(const (Left NotGeneric))\n'
-        + '  (const (certify problem certificate.unsettled))\n'
-        + '  certificate.effects\n' }],
+    edits: [{ file: online,
+      needle: '  either unread (certifyPackage problem) certificate.effects\n',
+      replacement: '  either (const (certify problem certificate.unsettled))\n'
+        + '    (certifyPackage problem) certificate.effects\n' },
+    { file: online, needle: '  ( certifyPackage\n',
+      replacement: '  ( certify\n  , certifyPackage\n' }],
     probe: 'r0-t2-online-verdict',
     message: /r0-t2-online-verdict: \["unframed","c7","q7"\]/ }
 ];

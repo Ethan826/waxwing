@@ -1,7 +1,7 @@
 // Tranche 2 Task 12 review I1 (design §C.6; dossier §18.155 (5)): the
-// online strategy takes exactly `certify` and `certifySound` from
-// Strategy.Substitution, never its `validate` (A2's validator), so the
-// certificate's `effects` field reaches no validation there. Read from
+// online strategy takes exactly `certifyPackage` and `certifySound` from
+// Strategy.Substitution, never the bare `validate` (A2's non-minting
+// runner) or the substitution-only `certify` (§18.170). Read from
 // each src module's syntax tree with Style.Trace's `facts` (the trace
 // gate's reader), never its text.
 //
@@ -17,7 +17,7 @@
 // read. A file that does not parse is the trace gate's finding.
 export const onlineModule = 'Features.Check.Strategy.Online';
 export const substitutionModule = 'Features.Check.Strategy.Substitution';
-export const substitutionNames = ['certify', 'certifySound'];
+export const substitutionNames = ['certifyPackage', 'certifySound'];
 
 // `sources`: src file path to text; `facts`: Style.Trace's reader.
 export const onlineImportFindings = (sources, facts) => {
