@@ -38,6 +38,7 @@
 module Features.Check.Strategy.Substitution
   ( ValidationResult
   , certify
+  , certifyPackage
   , certifySound
   , genericSubstitutionSound
   , validate
@@ -92,19 +93,40 @@ certify problem unsettled = map witnessed
 -- Owed (Task 15): G0 accepts erase P_c whenever it accepts this input.
 validate
   ∷ RecordedProblem → EffectPackage → Either CheckRefusal ValidationResult
-validate problem package = do
+validate = validatedBy resultOf
+  where
+  resultOf validity completed compilation =
+    { validity, completed, compilation }
+
+-- `validate`'s own composition, ending in a `Certified` in place of a
+-- result (§18.159 criterion 5; plan Task 16; §18.170).
+certifyPackage
+  ∷ RecordedProblem → EffectPackage → Either CheckRefusal Certified
+certifyPackage = validatedBy minted
+  where
+  minted validity _ compilation = Certified validity compilation
+
+validatedBy
+  ∷ ∀ r
+  . (Valid → Completed → Compilation → r)
+  → RecordedProblem
+  → EffectPackage
+  → Either CheckRefusal r
+validatedBy finish problem package = do
   prerequisites problem package
   validity ← checkSubstitution problem (erase (settle package))
-  validated problem validity (complete problem package)
+  validated finish problem validity (complete problem package)
 
 validated
-  ∷ RecordedProblem
+  ∷ ∀ r
+  . (Valid → Completed → Compilation → r)
+  → RecordedProblem
   → Valid
   → Completed
-  → Either CheckRefusal ValidationResult
-validated problem validity completed = do
+  → Either CheckRefusal r
+validated finish problem validity completed = do
   judgeObligations problem completed
-  Right { validity, completed, compilation: compiledFrom problem completed }
+  Right (finish validity completed (compiledFrom problem completed))
 
 -- As `substitutionWitness`: offered only if `coverage` accepts it.
 compiledFrom ∷ RecordedProblem → Completed → Compilation

@@ -124,6 +124,7 @@ uncheckedKinds = case _ of
   ClassF _ → Nothing
   RecordDefective _ → Nothing
   EffectLimit _ → Nothing
+  EffectsUnread _ → Nothing
 
 -- A refused `ClaimsComplete` candidate, or an untrusted search's own
 -- broken invariant (G-Q13): neither stops the run.

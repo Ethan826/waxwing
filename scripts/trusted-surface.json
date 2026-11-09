@@ -122,6 +122,7 @@
    "EffectsUnchecked",
    "RecordDefective",
    "EffectLimit",
+   "EffectsUnread",
    "Solved",
    "Contradiction",
    "Unresolved",
@@ -1410,12 +1411,14 @@
   "source": [
    "ValidationResult",
    "certify",
+   "certifyPackage",
    "certifySound",
    "genericSubstitutionSound",
    "validate"
   ],
   "compiled": [
    "certify",
+   "certifyPackage",
    "certifySound",
    "genericSubstitutionSound",
    "validate"

@@ -152,6 +152,9 @@ data Unsupport
   -- an effect limitation.
   | RecordDefective Provenance
   | EffectLimit Limitation
+  -- A strategy's decline for want of an effect package, its read fault's
+  -- name kept (dossier §18.159 criterion 7, §18.170).
+  | EffectsUnread String
 
 type LimitAt = { limit ∷ LimitReached, site ∷ Site }
 

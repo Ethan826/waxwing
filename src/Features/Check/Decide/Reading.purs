@@ -156,6 +156,7 @@ refusedWith claim = case _ of
   Malformed _ → claimed claim
   NotCertifiable limitation _ → Declines (limited limitation)
   ObligationFailed _ → claimed claim
+  PackageUnread fault → Declines (EffectsUnread fault)
 
 -- A recorded unsupported kind is rule 1's `EffectsUnchecked`; the
 -- candidate-dependent limitations are `EffectLimit`.

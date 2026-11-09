@@ -35,7 +35,7 @@ module Features.Check.Strategy.Online
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either, either)
+import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Checked.Internal as Checked
 import Domain.Elaborating as Elaborating
@@ -46,7 +46,11 @@ import Domain.Syntax (Diagnostic)
 import Domain.Verdict (Assurance(..), SearchEnd(..), StrategyName(..))
 import Domain.Verdict.Certified (Certified)
 import Domain.Verdict.EffectPackage (EffectPackage)
-import Domain.Verdict.Search (Budget, CheckRefusal, SearchHint(..))
+import Domain.Verdict.Search
+  ( Budget
+  , CheckRefusal(PackageUnread)
+  , SearchHint(..)
+  )
 import Features.Check.Functional (Functional)
 import Features.Check.Generate (Inputs, generate, generationInputs)
 import Features.Check.Function (Rechecked, recheck)
@@ -57,9 +61,10 @@ import Features.Check.Strategy.Guard (g0Guard)
 import Features.Check.Strategy.Online.Ending (Ending(..), ending)
 import Features.Check.Strategy.ReadBack (ReadBack, readBack)
 import Features.Check.Strategy.ReadBack.Fault (ReadFault)
+import Features.Check.Strategy.ReadBack.Fault as Fault
 import Features.Check.Strategy.ReadBack.Package (readEffects)
 import Features.Check.Strategy.Substitution
-  ( certify
+  ( certifyPackage
   , certifySound
   )
 
@@ -177,5 +182,27 @@ declaration inputs program problem =
   same regenerated = fields (Elaborating.problem regenerated) == fields problem
   generated = generate inputs.tables inputs.signatures
 
+-- The candidate certifies only if its effect package validates; a read
+-- fault declines, its fault kept, and nothing falls back to
+-- substitution-only `certify` (§18.159 criteria 5, 7; §18.170).
 certified ∷ RecordedProblem → Certificate → Either CheckRefusal Certified
-certified problem certificate = certify problem certificate.unsettled
+certified problem certificate =
+  either unread (certifyPackage problem) certificate.effects
+  where
+  unread fault = Left (PackageUnread (faultName fault))
+
+faultName ∷ ReadFault → String
+faultName = case _ of
+  Fault.Unread _ → "Unread"
+  Fault.RowUnconverted _ _ → "RowUnconverted"
+  Fault.UnreadPosition _ → "UnreadPosition"
+  Fault.PositionApart _ → "PositionApart"
+  Fault.MarkClash → "MarkClash"
+  Fault.Clash key → "Clash " <> show key
+  Fault.Apart _ → "Apart"
+  Fault.UnreadImage _ → "UnreadImage"
+  Fault.ImageUnconverted _ _ → "ImageUnconverted"
+  Fault.ImageApart _ → "ImageApart"
+  Fault.Declined _ → "Declined"
+  Fault.TraceUnfinished _ → "TraceUnfinished"
+  Fault.ForcedRead _ → "ForcedRead"

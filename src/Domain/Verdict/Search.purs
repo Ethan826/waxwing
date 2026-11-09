@@ -70,6 +70,9 @@ data CheckRefusal
   | NotCertifiable Limitation CheckAt
   -- A recorded obligation the package fails, at its check j.
   | ObligationFailed CheckAt
+  -- No effect package was read; the read fault's constructor, kept. A
+  -- decline, never a refused candidate (§18.159 criterion 7, §18.170).
+  | PackageUnread String
 
 -- An obligation's provenance and the index of its violated check (§5).
 type CheckAt = { provenance ∷ Provenance, check ∷ Int }
