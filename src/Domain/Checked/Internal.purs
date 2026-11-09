@@ -4,7 +4,8 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe)
 import Domain.Syntax (Operator, Sort, Span)
-import Domain.Type (TyRow, rename)
+import Domain.Checked.Unnumbered (UnnumberedRow)
+import Domain.Type (rename)
 import Domain.Ids (EffectId)
 import Domain.Resolved
   ( CtorId
@@ -48,7 +49,7 @@ type FunctionDecl =
   , sorts ∷ Array Sort
   , parameters ∷ Array (Ty Open)
   , result ∷ Ty Open
-  , row ∷ TyRow Open
+  , row ∷ UnnumberedRow Open
   , body ∷ Expr
   , span ∷ Span
   }

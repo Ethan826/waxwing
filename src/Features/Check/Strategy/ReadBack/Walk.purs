@@ -25,12 +25,14 @@ import Domain.Recorded.Origin (Step(..))
 
 data Node = AtExpr Checked.Expr | AtPattern Checked.Pattern
 
--- One child under its label, or an array of them under one label, each
--- item with the steps after its index. A path's index reaches its item
--- directly, so a walk costs its depth, not the width of the nodes on it.
+-- One child under its label, or an array of them under one label, read
+-- by index: each item with the steps after its index. Only the item an
+-- index names is wrapped, so a walk costs its depth and each node's fixed
+-- child list, not the width of the arrays on it. The over-applied alias
+-- still copies its arguments (`overApplied`).
 data Child
   = One (Array Step) Node
-  | Many (Array Step) (Array (Tuple (Array Step) Node))
+  | Many (Array Step) (Int → Maybe (Tuple (Array Step) Node))
 
 nodeAt ∷ Node → Array Step → Maybe Node
 nodeAt node steps
@@ -42,11 +44,11 @@ descend steps = case _ of
   One label node → after label steps >>= nodeAt node
   Many label items → after label steps >>= item items
 
-item ∷ Array (Tuple (Array Step) Node) → Array Step → Maybe Node
+item ∷ (Int → Maybe (Tuple (Array Step) Node)) → Array Step → Maybe Node
 item items steps = maybe Nothing indexed (Array.uncons steps)
   where
   indexed found = case found.head of
-    Index index → Array.index items index >>= at found.tail
+    Index index → items index >>= at found.tail
     Named _ → Nothing
   at rest (Tuple suffix node) = after suffix rest >>= nodeAt node
 
@@ -63,9 +65,10 @@ children = case _ of
 
 patternChildren ∷ Checked.Shape → Array Child
 patternChildren = case _ of
-  Checked.Ctor _ parts → each "Ctor" "args" (map AtPattern parts)
+  Checked.Ctor _ parts → each "Ctor" "args" AtPattern parts
   Checked.Record parts _ → eachPart "Record" "fields" "pattern"
-    (map (AtPattern <<< _.pattern) parts)
+    (AtPattern <<< _.pattern)
+    parts
   Checked.Wildcard → []
   Checked.Bind _ → []
   Checked.IntLit _ → []
@@ -90,12 +93,12 @@ controlChildren node = case node of
   Checked.If condition yes no → [ child "If" "condition" condition ]
     <> [ child "If" "then" yes, child "If" "else" no ]
   Checked.Match scrutinee arms → [ child "Match" "scrutinee" scrutinee ]
-    <> eachPart "Match" "arms" "pattern" (map (AtPattern <<< _.pattern) arms)
-    <> eachPart "Match" "arms" "body" (map (AtExpr <<< _.body) arms)
+    <> eachPart "Match" "arms" "pattern" (AtPattern <<< _.pattern) arms
+    <> eachPart "Match" "arms" "body" (AtExpr <<< _.body) arms
   Checked.Lambda _ body → [ child "Lambda" "body" body ]
   Checked.Block items result →
     [ Many [ Named "Block", Named "items" ]
-        (map blockItem items)
+        (reading blockItem items)
     , child "Block" "result" result
     ]
   Checked.Print value → expressions "Print" "args" [ value ]
@@ -107,23 +110,27 @@ effectChildren ∷ Checked.Node → Array Child
 effectChildren node = case node of
   Checked.Perform _ _ _ arguments → expressions "Perform" "args" arguments
   Checked.Handler _ _ clauses → eachPart "Handler" "clauses" "body"
-    (map (AtExpr <<< _.body) clauses)
+    (AtExpr <<< _.body)
+    clauses
   Checked.With handler body → pair' "With" "handler" handler "body" body
   Checked.Handle body clauses → [ child "Handle" "body" body ]
-    <> eachPart "Handle" "clauses" "body" (map (AtExpr <<< _.body) clauses)
+    <> eachPart "Handle" "clauses" "body" (AtExpr <<< _.body) clauses
   Checked.Fail value → [ child "Fail" "payload" value ]
   _ → recordChildren node
 
 recordChildren ∷ Checked.Node → Array Child
 recordChildren = case _ of
   Checked.RecordLiteral fields → eachPart "RecordLiteral" "fields" "value"
-    (map (AtExpr <<< _.value) fields)
+    (AtExpr <<< _.value)
+    fields
   Checked.FieldAccess record _ → [ child "FieldAccess" "record" record ]
   Checked.RecordUpdate record fields → [ child "RecordUpdate" "record" record ]
     <> eachPart "RecordUpdate" "fields" "value"
-      (map (AtExpr <<< _.value) fields)
+      (AtExpr <<< _.value)
+      fields
   Checked.RecordExtension items →
-    [ Many [ Named "RecordExtension", Named "items" ] (map extensionItem items)
+    [ Many [ Named "RecordExtension", Named "items" ]
+        (reading extensionItem items)
     ]
   Checked.RecordRemoval record _ → [ child "RecordRemoval" "record" record ]
   -- Leaves, and the nodes the groups above took. A node with children
@@ -171,13 +178,21 @@ pair' constructor first left second right =
   [ child constructor first left, child constructor second right ]
 
 expressions ∷ String → String → Array Checked.Expr → Array Child
-expressions constructor field = each constructor field <<< map AtExpr
+expressions constructor field = each constructor field AtExpr
 
-each ∷ String → String → Array Node → Array Child
-each constructor field nodes =
-  [ Many [ Named constructor, Named field ] (map (Tuple []) nodes) ]
-
-eachPart ∷ String → String → String → Array Node → Array Child
-eachPart constructor field part nodes =
-  [ Many [ Named constructor, Named field ] (map (Tuple [ Named part ]) nodes)
+each ∷ ∀ a. String → String → (a → Node) → Array a → Array Child
+each constructor field wrap values =
+  [ Many [ Named constructor, Named field ]
+      (reading (Tuple [] <<< wrap) values)
   ]
+
+eachPart
+  ∷ ∀ a. String → String → String → (a → Node) → Array a → Array Child
+eachPart constructor field part wrap values =
+  [ Many [ Named constructor, Named field ]
+      (reading (Tuple [ Named part ] <<< wrap) values)
+  ]
+
+-- The one item an index names, wrapped only then.
+reading ∷ ∀ a b. (a → b) → Array a → Int → Maybe b
+reading wrap values index = map wrap (Array.index values index)

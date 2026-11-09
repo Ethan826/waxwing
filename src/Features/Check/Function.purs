@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (rigid, Open(..))
 import Domain.Checked.Internal as Checked
+import Domain.Checked.Unnumbered (unnumbered)
 import Domain.Resolved as Resolved
 import Domain.Row (Row(..), openRow)
 import Domain.Syntax (Diagnostic)
@@ -104,7 +105,7 @@ checkFunction holders env function = do
   comparable holders env settled
   printable holders env settled
   Entry.check env ended function
-  let entryRow = Entry.resolvedRow settledSubst env.current
+  let entryRow = unnumbered (Entry.resolvedRow settledSubst env.current)
   pure
     { function:
         { id: function.id

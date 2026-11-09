@@ -91,8 +91,8 @@ export const refusedDecline = kind =>
   `today refuses, the check declines the candidate (${kind})`;
 const limitation = 'reading (§18.161 (4): a check decline is an intended'
   + ' decline; the author\'s ruling R-b2: a strategy limitation stays (b))';
-const readFault = 'reading (§18.161 (4): a read fault declines; §18.161'
-  + ' (1): the read-fault losses stay unresolved)';
+const readFault = 'the author\'s ruling §18.163 (4): a checker limitation;'
+  + ' the read-fault losses stay unresolved (§18.161 (1))';
 const lossTarget = 'per the replacement-loss ruling (§18.161 (1):'
   + ' unresolved)';
 export const t6Classes = {
@@ -106,8 +106,8 @@ export const t6Classes = {
     undetermined, classify),
   [refusedDecline('a read fault')]: entry(b, readFault, refusedFocus,
     undetermined, classify),
-  [refusedDecline('an open requirement')]: entry(a, 'reading (§18.161'
-    + ' (4): a RequirementOpen refusal declines, G-A-i(f))', refusedFocus,
+  [refusedDecline('an open requirement')]: entry(a, 'the author\'s'
+    + ' ruling §18.163 (4): pending G-ValidR', refusedFocus,
   'per the G-ValidR ruling', 'G-ValidR'),
   [rt8DefectClass]: entry(null, 'none (defect rows are not labelled)',
     'none (a defect of the shadow run; its RT8 class names it)',

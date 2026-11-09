@@ -33,6 +33,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
+import Domain.Checked.Unnumbered (UnnumberedRow, rawForRenumbering)
 import Domain.Syntax (Span)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Trace.Types
@@ -104,11 +105,12 @@ recordInstallation span entry (Trace raw) = Trace raw
 finish
   ∷ { ty ∷ Ty Open → Ty Open, row ∷ TyRow Open → TyRow Open }
   → Map Int Int
-  → TyRow Open
+  → UnnumberedRow Open
   → Trace
   → Either TraceFault Traced
 finish resolve numbering row (Trace raw) = do
-  resolved ← traverseTraced (always resolve) raw { row = row }
+  resolved ← traverseTraced (always resolve)
+    raw { row = rawForRenumbering row }
   renumbered (extended numbering resolved) resolved
 
 -- The resolve pass's functions, which cannot fail, as a traversal's.

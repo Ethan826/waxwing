@@ -2,6 +2,7 @@ module Features.Check.Strip (stripProgram) where
 
 import Prelude
 import Domain.Checked.Internal as Checked
+import Domain.Checked.Unnumbered (mappedUnnumbered)
 import Domain.Type.Marks (stripMarks, stripRowMarks)
 import Features.Check.Walk (retype)
 
@@ -27,6 +28,6 @@ stripProgram (Checked.Program program) = Checked.Program
   function declared = declared
     { parameters = map stripMarks declared.parameters
     , result = stripMarks declared.result
-    , row = stripRowMarks declared.row
+    , row = mappedUnnumbered stripRowMarks declared.row
     , body = retype stripMarks declared.body
     }

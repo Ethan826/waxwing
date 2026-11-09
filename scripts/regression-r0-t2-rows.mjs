@@ -49,9 +49,14 @@ export const t2RowsRows = [
     // The body root's ambient read from the checked row, whose holes
     // `recheck` does not renumber: main's entry tail leaves the numbering.
     name: 'r0-t2-rows-entry-root',
-    file: places,
-    needle: '  AtRoot → Right (matchRow row traced.row)\n',
-    replacement: '  AtRoot → Right (matchRow row checked.row)\n',
+    edits: [{ file: places,
+      needle: '  AtRoot → Right (matchRow row traced.row)\n',
+      replacement: '  AtRoot → Right '
+        + '(matchRow row (rawForRenumbering checked.row))\n' },
+    { file: places,
+      needle: 'import Domain.Checked.Internal (Open)\n',
+      replacement: 'import Domain.Checked.Internal (Open)\n'
+        + 'import Domain.Checked.Unnumbered (rawForRenumbering)\n' }],
     probe: 'r0-t2-rows-entry-root',
     message: /r0-t2-rows-entry-root: \["services"/
   },

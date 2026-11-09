@@ -9,7 +9,8 @@ import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
 import Domain.Resolved (CtorId(..), CtorInfo, FunctionId(..), TypeInfo)
 import Domain.Type (Ty, TypeId(..))
-import Domain.Type.Parts (mentionsTypeVariable, rowArguments)
+import Domain.Checked.Unnumbered (unnumberedArguments)
+import Domain.Type.Parts (mentionsTypeVariable)
 import Features.Specialize.Intern (noArrows)
 import Features.Specialize.Layouts (noLayouts)
 import Features.Specialize.Keys (Env, State, Work, WorkKind(..))
@@ -80,7 +81,7 @@ monomorphic ∷ Checked.FunctionDecl → Boolean
 monomorphic function = not (Array.any mentionsTypeVariable signature)
   where
   signature = Array.snoc function.parameters function.result
-    <> rowArguments function.row
+    <> unnumberedArguments function.row
 
 ownedBy ∷ Env → CtorInfo → Boolean
 ownedBy env ctor = isJust (join (Array.index env.monoTypes (owner ctor.owner)))

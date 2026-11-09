@@ -31,6 +31,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
+import Domain.Checked.Unnumbered (unnumbered)
 import Domain.Recorded.Effect (ERole(..), EVar(..), MRow)
 import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
 import Domain.Resolved (FunctionDecl, VarId(..), exprSpan)
@@ -119,7 +120,7 @@ checkedOf function body =
   , sorts: function.sorts
   , parameters: map parameterType function.parameters
   , result: rigid function.result
-  , row: rowOf function
+  , row: unnumbered (rowOf function)
   , body: holes body
   , span: function.span
   }

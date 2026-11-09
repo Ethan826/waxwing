@@ -15,6 +15,7 @@ import { t2CompatProbes } from './regression-r0-t2-compat.mjs';
 import { t2ActivationProbes } from './regression-r0-t2-activation.mjs';
 import { t6Probes } from './regression-r0-t6.mjs';
 import { t2PrerequisitesProbes } from './regression-r0-t2-prerequisites.mjs';
+import { t2BatchProbes } from './regression-r0-t2-batch.mjs';
 
 export const r0T2Probes = {
   ...t2GenerationProbes,
@@ -30,5 +31,6 @@ export const r0T2Probes = {
   ...t2CompatProbes,
   ...t2ActivationProbes,
   ...t6Probes,
-  ...t2PrerequisitesProbes
+  ...t2PrerequisitesProbes,
+  ...t2BatchProbes
 };

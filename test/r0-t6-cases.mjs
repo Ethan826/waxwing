@@ -10,9 +10,10 @@
 // class where today accepts (ClaimsComplete, then Heuristic) and where
 // today refuses; the test checks the names against the compiler's own.
 import { load } from './r0-generate-support.mjs';
-import { accountFor } from './r0-rt8-account.mjs';
+import { accountFor, isDefect } from './r0-rt8-account.mjs';
 import { windowClassOf, windowClasses } from './r0-shadow-classes.mjs';
-import { rt8DefectClass, t6Classes } from './r0-shadow-table.mjs';
+import { compilingDecline, refusedDecline, rt8DefectClass, t6Classes }
+  from './r0-shadow-table.mjs';
 import { summaryOf } from './r0-shadow-summary.mjs';
 
 const Search = await load('Domain.Verdict.Search');
@@ -190,8 +191,38 @@ const summaryCases = () => {
       key in windowClasses).length, 0]];
 };
 
+// §18.163 (4): the two ruled labels, apart from the classes nearest them.
+// A read-fault decline and a RequirementOpen are limits or open questions;
+// the same outcome from a validator or generation refusal stays a defect.
+const ruled = name => t6Classes[name];
+const sectionOf = name => `section ${ruled(name).section}`;
+const readFaultCompiles = compilingDecline('a read fault');
+const openRefuses = refusedDecline('an open requirement');
+const ruledCases = () => [
+  ['read fault, compiles', sectionOf(readFaultCompiles), 'section §3.2(b)'],
+  ['read fault, refuses', sectionOf(refusedDecline('a read fault')),
+    'section §3.2(b)'],
+  ['read fault: ruled, not a reading',
+    ruled(readFaultCompiles).sectionReading, false],
+  ['read fault: the loss stays unresolved',
+    ruled(readFaultCompiles).target.includes('unresolved'), true],
+  ['open requirement, refuses', sectionOf(openRefuses), 'section §3.2(a)'],
+  ['open requirement: ruled, not a reading',
+    ruled(openRefuses).sectionReading, false],
+  ['open requirement: pending G-ValidR', ruled(openRefuses).dependency,
+    'G-ValidR'],
+  ['a read fault is not a defect', isDefect(unread), false],
+  ['an open requirement is not a defect', isDefect(refusesDeclined(
+    'RequirementOpen', 'an open requirement')), false],
+  ['Malformed where today refuses stays a defect', isDefect(
+    refusalClasses.Malformed[2]), true],
+  ['ObligationFailed where today accepts stays a defect', isDefect(
+    refusalClasses.ObligationFailed[0]), true],
+  ['RecordDefect where today refuses stays a defect', isDefect(
+    refusalClasses.RecordDefect[2]), true]];
+
 export const t6Cases = () => [...rt8Cases(), ...moreRt8Cases(),
-  ...windowCases(),
+  ...windowCases(), ...ruledCases(),
   ...summaryCases()];
 
 // The cases whose found value differs from the expected one, by name.

@@ -8407,3 +8407,44 @@ R037 and R038's decisions: docs/plans/2026-11-08-return-packet.md.
 
 Held: replacement losses, performance budgets, the minting switch, F14's
 retirement, live replacement, pushing.
+
+### 18.163 Prerequisites accepted; next batch authorized (2026-11-09)
+
+The author accepted the activation-prerequisites batch, having checked
+the saved verify log. The interrupted run stays incomplete evidence, and
+performance qualification stays outstanding. Rulings:
+
+1. Implement index-first lookup, then repeat the performance protocol.
+   Memoization and lazy packaging stay out. Required: independent
+   review, corpus agreement, tests for invalid paths and array
+   boundaries, and a restored-defect check that detects rebuilding every
+   sibling. Protected pins are preserved.
+2. R037 (3) blocks the minting switch. Authorized: a distinct opaque type
+   for the declaration's unnumbered row, converted explicitly through
+   the substitution and numbering, with the collision case and legitimate
+   sharing tested. Representation only; unexpected output or pin movement
+   is a stop.
+3. R037 (2) blocks live replacement and need not block shadow minting on
+   the evidence presented. The planted example is unrun, so its predicted
+   behavior is recorded as reasoned. Entry's fail-open fallback comes
+   first in that repair. No fallback is described as unreachable without
+   the corresponding preservation argument.
+4. R038 (2) approved. Read-fault declines are §3.2(b), a checker
+   limitation; this approves the classification, not the certification
+   loss. `RequirementOpen` where today also refuses is §3.2(a), pending
+   G-ValidR; agreement on rejection settles neither the requirement's
+   meaning nor completeness. Separating fixtures for both; genuine
+   defects stay visible as defects.
+5. Other deferrals ratified: every-obligation uniqueness and the
+   rest-only case need not block activation. Shared regression needles
+   are separated before those rows are relied on as activation evidence.
+   The package and trace stay strict for this batch.
+
+Validator cost: profiling and a proposal for reducing path-comparison
+cost are authorized, with the intended equality and ordering preserved.
+No validator optimization or further freeze exception is authorized.
+
+Return: the complete verify, updated compatibility comparison, protocol
+measurements and validator-cost proposal. Estimates are planning figures,
+not caps. Held: replacement losses, numerical budgets, the minting
+switch, F14's retirement, live replacement, pushing.
