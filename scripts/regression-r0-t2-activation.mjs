@@ -104,7 +104,7 @@ export const t2ActivationRows = [
       + '  ...sharedLines(rows.slice(0, 2))];\n',
     /r0-t2-activation-gate: .*"landedSharedLater"/),
   // A tag read as a prefix: `r036-10` counts for R036 (1).
-  helper('r0-t2-activation-tag-prefix', gate,
+  helper('r0-t2-activation-tag-prefix', 'test/r0-t2-activation-evidence.mjs',
     "new RegExp(`(^|-)${tag}(-|$)`)", "new RegExp(`(^|-)${tag}`)",
     /r0-t2-activation-gate: .*"landedWrongTag"/),
   // Any text read as a certify refusal: a typo is an existing refusal.
