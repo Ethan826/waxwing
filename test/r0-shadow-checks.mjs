@@ -93,6 +93,7 @@ export const windowChecks = programs => {
   const corpus = programs.filter(program =>
     !program.origin.startsWith('inline:'));
   const census = pinnedCensus();
+  const mintingStops = 2;
   test('the window reconciles with the census', () => {
     const found = summaryOf(corpus);
     assert.equal(found.programs.all, census.corpus.programs);
@@ -103,10 +104,14 @@ export const windowChecks = programs => {
       assert.deepEqual(found.blockers[name], {
         declarations: census.categories[name].declarations,
         compilingPrograms: census.categories[name].programs }, name);
+    // The census reads detectors, not verdicts, so it does not move at the
+    // minting switch; the two compiling `statsEvidence` programs, c7 and q7,
+    // stop under shadow decisions since then (§18.170, §18.172).
     assert.equal(found.stops.underShadowDecisions,
-      census.union.programsWithoutErasedRow);
+      census.union.programsWithoutErasedRow + mintingStops);
     assert.equal(found.stops.underShadowDecisions
-      + found.stops.additionalIfErasedRowAdopted, census.union.programs);
+      + found.stops.additionalIfErasedRowAdopted,
+    census.union.programs + mintingStops);
     // Scenario 3 has no census counterpart: the corpus's three compiling
     // bound-hole programs (C001 a1 and a2, erased/form.show-reference) add
     // to it; the pinned summary's two more are R022's inline probes.
