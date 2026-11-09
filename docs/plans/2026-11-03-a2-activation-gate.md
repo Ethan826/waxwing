@@ -316,12 +316,10 @@ gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
 Measured on 2026-11-09: met. The status cites
-test/fixtures/r0/t2-minting-comparison3.json, the repeat after
-index-first lookup and the unnumbered row (§18.163): built at 2c5b9e30
-with the scratch minting change, in a disposable worktree since
-removed. Census 0 moved, window 16, rt8 15, shadow 16. Its `commit`
-is 2c5b9e30e8c2c3a359d04c64a9948b2cecc18652, and src is unchanged
-since. Whether the moves are acceptable is the author's to rule.
+test/fixtures/r0/t2-minting-comparison4.json, the repeat on the real
+`EffectsUnread` (§18.170, §18.172), at 16de79af. Census 0 moved, window
+16, rt8 15, shadow 16. Its `commit` is
+16de79afd149266133f8c1d8ba9f8b1f3698a872, and src is unchanged since. Whether the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
 
@@ -347,9 +345,9 @@ Measured on 2026-11-04 (3cad78cd): not met. There is no budget
 ruling and there are no budget figures, so the report lists the
 missing ruling, the missing figures and each of the four budgets the
 status lacks. A measurement is recorded:
-test/fixtures/r0/t2-performance-3.json, measured at 2c5b9e30, with
+test/fixtures/r0/t2-performance-4.json, measured at 16de79af, with
 its conditions and both parts. Its `commit` is
-2c5b9e30e8c2c3a359d04c64a9948b2cecc18652, and src is unchanged since.
+16de79afd149266133f8c1d8ba9f8b1f3698a872, and src is unchanged since.
 The budgets are approved (§18.168) and its figures are within them; the
 source identity check passes. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
@@ -450,9 +448,9 @@ A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 7 met: routing after activation; U4 and U6 standing
 criteria 1-7: not met (2)
 S1 met: each loss accepted within shadow certification only
-S2 NOT MET: the real EffectsUnread reaches RT8 and the window
-shadow minting: not met (S2)
-live replacement: not met (2, S2)
+S2 met: the real EffectsUnread reaches RT8 and the window
+shadow minting: met
+live replacement: not met (2)
 ```
 
 Criterion 2's lines on the working tree, the same at 3cad78cd as at
