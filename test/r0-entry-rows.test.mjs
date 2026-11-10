@@ -1,8 +1,11 @@
 // R037 (2), dossier §18.177-§18.178: row conversion is row-level, and
 // main's boundary check pairs each label with its occurrence in one walk.
 // The old forms wrapped a row in `TFun TUnit row TUnit` and unwrapped it,
-// with an arm for a non-arrow; they are the oracle here. Rows are plain
-// JS (test/unify-support.mjs): type metas 0..2, row metas 10..12.
+// with an arm for a non-arrow. They are the oracle for the conversions and
+// `resolvedRow`; the pairing's oracle is the old zip of `resolveRow`'s
+// labels with `occurrencesAt`'s ids. Rows are plain JS
+// (test/unify-support.mjs): type metas 0 and 1, rigids 4 and 5, row metas
+// 10..12.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TFun, TUnit } from '../output/Domain.Type/index.js';
@@ -62,7 +65,7 @@ const genSubst = next => {
 const duplicates = { labels: [{ e: 0, args: [int] }, { e: 0, args: [int] },
   { e: 'console', args: [] }, { e: 0, args: [meta(0)] }], tail: meta(10) };
 
-test('flexibleRow and openedRow agree with the arrow round trip', () => {
+test('flexibleRow and checkedRow agree with the arrow round trip', () => {
   const next = generator(0x3702);
   const fixed = [duplicates, { labels: [], tail: null },
     { labels: [], tail: meta(11) }, { ...duplicates, tail: rigid(5) }];
@@ -70,7 +73,7 @@ test('flexibleRow and openedRow agree with the arrow round trip', () => {
     () => genRow(next, anyTail));
   for (const plainRow of [...fixed, ...generated]) {
     const flex = toRow(plainRow);
-    const open = scheme.openedRow(flex);
+    const open = scheme.checkedRow(flex);
     assert.deepEqual(plain(scheme.flexibleRow(open)), plain(flex));
     assert.deepEqual(plain(scheme.flexibleRow(open)),
       plain(oldFlexibleRow(open)));
@@ -80,7 +83,7 @@ test('flexibleRow and openedRow agree with the arrow round trip', () => {
 });
 
 test('repeated labels keep their order and count through conversion', () => {
-  const open = scheme.openedRow(toRow(duplicates));
+  const open = scheme.checkedRow(toRow(duplicates));
   const back = plain(scheme.flexibleRow(open));
   assert.equal(back.labels.length, 4);
   assert.deepEqual(back.labels.map(l => [l.e, l.args]),
@@ -92,7 +95,7 @@ test('resolvedRow agrees with the arrow round trip under a substitution',
     const next = generator(0x3703);
     for (let index = 0; index < cases; index += 1) {
       const subst = genSubst(next);
-      const open = scheme.openedRow(toRow(genRow(next, anyTail)));
+      const open = scheme.checkedRow(toRow(genRow(next, anyTail)));
       assert.deepEqual(
         plain(scheme.flexibleRow(entry.resolvedRow(subst)(open))),
         plain(scheme.flexibleRow(oldResolvedRow(subst, open))));
@@ -114,7 +117,7 @@ test('finalEntries pairs as the zip did, every label kept', () => {
   const next = generator(0x3704);
   for (let index = 0; index < cases; index += 1) {
     const subst = genSubst(next);
-    const open = scheme.openedRow(toRow(genRow(next, anyTail)));
+    const open = scheme.checkedRow(toRow(genRow(next, anyTail)));
     assert.deepEqual(paired(subst, open), zipped(subst, open));
   }
 });
@@ -126,7 +129,7 @@ test('tail-expanded labels keep duplicates and their occurrences', () => {
     toRow({ labels: [{ e: 0, args: [int] }, { e: 1, args: [] },
       { e: 0, args: [int] }], tail: null }));
   assert.ok(result instanceof Right);
-  const open = scheme.openedRow(
+  const open = scheme.checkedRow(
     toRow({ labels: [{ e: 0, args: [int] }], tail: meta(10) }));
   const found = paired(result.value0, open);
   assert.deepEqual(found.map(([label]) => [label.e, label.args]),
@@ -137,9 +140,33 @@ test('tail-expanded labels keep duplicates and their occurrences', () => {
   assert.deepEqual(found, zipped(result.value0, open));
 });
 
-// End to end: each rejection pinned on the pre-repair compiler too
-// (§18.178). Console first, then Log: a check that stops after one label
-// accepts it; Log through a callee's row reaches main by tail expansion.
+test('a two-hop tail chain pairs labels in binding order', () => {
+  // [E0 | 10] ~ [E0, E1 | 11], then 11 ~ [E2, E0]: two bound hops.
+  const unified = (start, left, right) => {
+    const result = rows.unifyRows(unifier.unify)(start)(toRow(left))(
+      toRow(right));
+    assert.ok(result instanceof Right);
+    return result.value0;
+  };
+  const first = unified(unifier.empty,
+    { labels: [{ e: 0, args: [] }], tail: meta(10) },
+    { labels: [{ e: 0, args: [] }, { e: 1, args: [] }], tail: meta(11) });
+  const subst = unified(first, { labels: [], tail: meta(11) },
+    { labels: [{ e: 2, args: [] }, { e: 0, args: [] }], tail: null });
+  const open = scheme.checkedRow(
+    toRow({ labels: [{ e: 0, args: [] }], tail: meta(10) }));
+  const found = paired(subst, open);
+  assert.deepEqual(found.map(([label]) => label.e), [0, 1, 2, 0]);
+  assert.deepEqual(found.map(([, id]) => id[0]),
+    ['Written', 'Extended', 'Extended', 'Extended']);
+  assert.notEqual(found[1][1][1], found[2][1][1]);
+  assert.deepEqual(found, zipped(subst, open));
+});
+
+// End to end: each diagnostic was also produced by the pre-repair compiler
+// (docs/plans/2026-11-10-r037-2-entry-fallback.md). Console first, then
+// Log: a check that stops after one label accepts it; Log through a
+// callee's row reaches main by tail expansion.
 const at = (source, inner) => [source, inner];
 const boundary = source => [source, source, 'main may perform only Console'];
 

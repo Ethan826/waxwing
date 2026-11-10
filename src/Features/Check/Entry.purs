@@ -16,11 +16,11 @@ import Features.Check.Provenance (Boundary(Main), trail)
 import Features.Check.Report (boundaryNote, crossingNotes, originNotes)
 import Features.Check.RowName (labelName)
 import Features.Check.RowSide (Entry, expanded, written)
-import Features.Check.Scheme (State, flexibleRow, openedRow)
+import Features.Check.Scheme (State, checkedRow, flexibleRow)
 import Features.Check.Subst (Subst, resolveLabel, resolveRow)
 
 resolvedRow ∷ Subst → TyRow Open → TyRow Open
-resolvedRow subst row = openedRow (resolveRow subst (flexibleRow row))
+resolvedRow subst row = checkedRow (resolveRow subst (flexibleRow row))
 
 -- A row written at `span`, its tail spliced in: `resolveRow`'s labels, in
 -- order with duplicates, each paired with its occurrence by one walk.

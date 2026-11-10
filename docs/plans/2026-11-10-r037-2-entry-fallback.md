@@ -120,3 +120,70 @@ test/fx-scale-labels.test.mjs; test/regression-fx008.mjs).
 
 The other R037 (2) sites (Walked, DeclarationUse, Function, Body,
 Desugar, Core) are outside this step.
+
+## Repair (§18.178, implemented)
+
+Authorized by the author (§18.178). Scope kept to row conversion, Entry's
+two wrapper removals, and one-walk pairing.
+
+- Domain/Type/Core.purs: `renameRow change = substituteRow (renaming
+  change)`, beside `rename`, which now shares `renaming`.
+- Scheme.purs: `flexibleRow = renameRow toFlex`, with no `Meta 0` arm, and a
+  new `checkedRow = renameRow toOpen`. `toFlex` and `toOpen` move to the
+  top level unchanged.
+- Entry.purs: `resolvedRow subst row = checkedRow (resolveRow subst
+  (flexibleRow row))`. The new `finalEntries` resolves each entry of
+  `expanded subst (written span (flexibleRow row))`, and `check` traverses
+  it. There is no `TFun`, no partial match and no zip.
+
+Why each is equal to the old form on every input: `substitute` on `TFun
+TUnit r TUnit` takes one stage and rebuilds `TFun TUnit (substituteRow s r)
+TUnit`, so the old wrapped row was `substituteRow s r`, which is
+`renameRow`. `resolve` on that arrow likewise yields `resolveRow subst r`.
+`walkRow` and `expanded` follow the same `boundAt` chain in the same order,
+so the old zip never truncated. `flexibleRow`'s other callers (Defer,
+Callback, Sync, Consume, Walked, ArgumentRow) therefore see equal values.
+The independent review re-derived all three arguments and found them
+sound.
+
+Checks:
+- test/r0-entry-rows.test.mjs (9 tests). The conversions and
+  `resolvedRow` are compared against the old arrow round trip on 400
+  generated rows plus fixed ones (repeated labels, closed, bare and rigid
+  tails). `finalEntries` is compared against the old zip on 400 cases (45
+  with tail-expanded occurrences, 154 with duplicate labels, measured).
+  Fixed cases cover a one-hop tail with duplicates and a two-hop chain.
+  Three end-to-end rejections are included.
+- The seven end-to-end probes (the three tests among them) give identical
+  diagnostics on the pre-repair compiler (an isolated build of 7153f66d)
+  and the repaired one. Programs that perform only Console still compile.
+- Restored-defect detection on the new path
+  (research/r037-2-entry-fallback/mutants.mjs, compiled output patched in
+  an isolated copy; log .build/evidence/2026-11-10-r037-2/mutants.log):
+
+| Mutant | r0-entry-rows | fx-diagnostic-origins | fx-scale-labels |
+|---|---|---|---|
+| effect-check bypass (no entries) | 6 fail | 5 fail | 1 fail |
+| truncation after the first label | 6 fail | 0 | 0 |
+| truncation of the last label (zip analog) | 6 fail | 5 fail | 0 |
+| no tail expansion | 6 fail | 3 fail | 1 fail |
+| occurrences paired with the wrong labels | 6 fail | 0 | 0 |
+| renameRow merges repeated labels | 2 fail | 1 fail | 0 |
+
+  The pre-existing suites miss truncation after the first label and wrong
+  pairing; only the new tests catch them.
+- plant.mjs applies to pre-repair output only (its site is gone).
+  docs/findings.md's mutant M5 record names that site and stays as a
+  record of its run.
+
+Independent review (2026-11-10, of bfd3f0e4): no behavioral defect. Its
+findings and their disposition:
+- Activation-gate test red: expected, because src changed. The fix is to
+  repeat the comparison and protocol and repoint the records.
+- Mutant results unrecorded: recorded here.
+- Stale citations: docs/findings.md fixed; plant.mjs annotated; RESUME
+  updated.
+- Test comments inaccurate, no multi-hop case: fixed, and a two-hop test
+  added.
+- `openedRow` collided with Stages' and Generate's minting `openedRow`:
+  renamed `checkedRow`.

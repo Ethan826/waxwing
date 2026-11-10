@@ -1,4 +1,7 @@
 // Plants R037 (2)'s defect in a scratch copy of compiled output.
+// Pre-repair output only (7153f66d or earlier): the repair (§18.178)
+// removed the `resolve` call it plants into, so on later output it throws
+// "site not unique". The new path's checks are mutants.mjs.
 // usage: node plant.mjs <outputDir> open|closed
 import { readFileSync, writeFileSync } from 'node:fs';
 const [dir, mode] = process.argv.slice(2);

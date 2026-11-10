@@ -10,7 +10,7 @@ module Features.Check.Scheme
   , flexible
   , flexibleRow
   , opened
-  , openedRow
+  , checkedRow
   , resolved
   , headOf
   , tooDeep
@@ -141,8 +141,9 @@ flexibleRow = renameRow toFlex
 opened ∷ Ty Flex → Ty Open
 opened = rename toOpen
 
-openedRow ∷ TyRow Flex → TyRow Open
-openedRow = renameRow toOpen
+-- A unifier's row as the checked IR's, renamed as a row.
+checkedRow ∷ TyRow Flex → TyRow Open
+checkedRow = renameRow toOpen
 
 toFlex ∷ Open → Flex
 toFlex = case _ of

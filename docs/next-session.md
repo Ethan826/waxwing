@@ -64,7 +64,9 @@ test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
 Done 2026-11-10 (§18.177): Entry's fallback traced and reproduced by a
 planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.
-The repair is proposed, not implemented; awaiting the author.
+Repair authorized (§18.178) and implemented: Entry has no `TFun` wrapper
+and no zip (Entry.purs `finalEntries`); reviewed. In progress: the
+comparison and protocol on the final src, then routine verify.
 
 Entry's R037 (2) investigation, its fail-open fallback first
 (src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console
