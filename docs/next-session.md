@@ -1,4 +1,9 @@
-# RESUME HERE (2026-11-09, America/New_York)
+# RESUME HERE (2026-11-10, America/New_York)
+
+Self-contained handoff for a fresh context. Read this section, then the
+dossier's latest sections (docs/plans/2026-10-20-record-composition-
+dossier.md, §18.162 to §18.176 cover this run). Wait for the author's next
+direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -8,31 +13,85 @@ underneath; position as gates and dependencies, never percentages.
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-No milestone has moved since 2026-10-25. The activation prerequisites
-are accepted (§18.163). The index-first batch is implemented, reviewed
-and verified at 2d68a85d (§18.164). Criteria 1-7 read not met (2);
-shadow minting not met (S1, S2).
+No milestone has moved since 2026-10-25; milestone changes are held.
 
-## What is running now
+## Where things stand
 
-Nothing. The return packet is written:
-docs/plans/2026-11-09-return-packet.md.
+Nothing is running. The tree is clean at the commit that added this
+section; the latest verified code is af830d41.
 
-**Next** (§18.176): Entry's R037 (2) investigation, its fail-open
-fallback first (Entry.purs:43-46). The one-minter follow-up is reviewed and
-verified; test-side minting in G0's harness is allowed (§18.176). Live
-replacement stays unresolved (criterion 2). F14's retirement, milestone
-changes and push stay held.
+The activation gate (`node scripts/r0-t2-activation-gate.mjs`; spec
+docs/plans/2026-11-03-a2-activation-gate.md) reads:
+- criteria 1-7: not met (2), live replacement's losses unruled;
+- S1 met (shadow losses accepted, §18.170); S2 met (the real
+  `EffectsUnread` reaches RT8 and the window);
+- **shadow minting: met; live replacement: not met (2).**
 
-Integrated state: r0-t2-d1. Ledger (git-ignored):
-.superpowers/sdd/2026-11-04-prerequisites/progress.md.
+What landed, in order:
+- Prerequisites accepted (§18.163): index-first walk, opaque
+  `UnnumberedRow`, the R038 (2) classes.
+- Budgets approved (§18.168): read-back CPU 2.75, RSS 1.15; validator CPU
+  2.60 against `certify`, RSS 1.15, whole-process peak; for the measured
+  corpus at this stage, not universal guarantees. The two failed
+  `npm run perf` files (354ce6e) stay failed. Option A (path ordering)
+  withdrawn; no further path-order optimization authorized.
+- Shadow minting switch (§18.170-§18.173): Online certifies through
+  `certifyPackage`; a read fault declines as `EffectsUnread`; exactly the
+  accepted 16 movements re-pinned (named in e084815d).
+- One minter (§18.174-§18.176): `certify` is now `substitutionOnly`, a
+  non-minting comparator; `certifyPackage` alone constructs `Certified`
+  in src (test/r0-minting-boundary.test.mjs; FFI covered by the
+  foreign-surface pin). Solved verdicts carry `Pending
+  certifyPackageSound` (docs/plans/r0-certify-package-argument.md), a
+  metadata-only change; earlier evidence keeps `certifySound`. G0's test
+  harness may mint `Certified` in JavaScript from the comparator: evidence
+  about G0 and Decide only (§18.176).
 
-**Running verify on this shared machine** (author, 2026-11-08): never
-ask the author to close applications. Run
+Latest evidence: routine verify at af830d41 passed (parallel 3485/3485,
+serial 242/242, regression proofs 509/509, growth 2.172 against 3.0; free
+memory fell to 16% once, uninterrupted). Records on the current src:
+test/fixtures/r0/t2-minting-comparison6.json (moved report equal to the
+pre-switch comparison) and t2-performance-6.json (read-back CPU ×2.29,
+RSS ×1.04; validator CPU ×2.21, RSS ×1.03). Any src change, comments
+included, makes both stale for the gate: repeat them on the new src
+(scripts/r0-t2-perf-run.mjs; scripts/r0-results-dump.mjs then
+scripts/r0-results-moved.mjs against
+.build/evidence/2026-11-09-comparison3/baseline-dump.json) and repoint
+test/fixtures/r0/t2-activation-gate.json, the commit literal in
+test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
+
+## Next, as the author last directed (§18.176)
+
+Entry's R037 (2) investigation, its fail-open fallback first
+(src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console
+check passes silently if reached). R037 (2) blocks live replacement, not
+shadow minting. The planted example (a `resolve` returning a non-arrow)
+is unrun; record predicted behavior as reasoned. Never call a fallback
+unreachable without its preservation argument.
+
+## Held; do not start
+
+Live replacement (criterion 2: needs measured user-visible losses and
+R037 (2)); F14's retirement; milestone changes; pushing.
+
+## Open findings, not yet ruled
+
+- Minor, recorded only: the forged-valid row detects the split in its safe
+  direction; the unsound direction is caught by a test, not a row.
+- R037 (1), (4) need not block activation; R037 (5): separate shared
+  needles before relying on those rows as activation evidence (§18.163).
+
+## How to run verify on this shared machine
+
+Never ask the author to close applications (author, 2026-11-08). Run
 `WAXWING_VERIFY_TEST_CONCURRENCY=2 WAXWING_REGRESSION_JOBS=1 node
-scripts/verify.mjs`, once under the lock, with no competing Waxwing
-builds. If memory pressure interrupts it, keep the evidence and
-investigate; do not retry unchanged.
+scripts/verify.mjs`, once, under the lock (mkdir <scratchpad>/verify.lock;
+check `pgrep -f "^node scripts/verify.mjs"` first), with no competing
+Waxwing builds; clear .build/go-cache after. Keep failed runs as records;
+if memory pressure interrupts a run, investigate rather than retry
+unchanged. Before committing: `node scripts/width.mjs` shows 0 over 80;
+the structural gate (`checkStructure`) is empty; files stay at most 250
+lines; regression rows' needles still match (a moved line breaks a row).
 
 ## Where the work is
 
@@ -58,8 +117,10 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Latest routine verify **passed** at 7af0c225 (§18.175). Earlier passed
-  at c8545b7c (§18.173), the switch.
+- Latest routine verify **passed** at af830d41 (§18.176). Earlier passed
+  at 7af0c225 (§18.175) and c8545b7c (§18.173), the switch. Failed runs
+  kept: 312ddd88, 808ebfe5, 77536d51, f079ee74, 43f7e252, 96261bc7
+  (each a test or row that followed a move, recorded in its commit).
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
