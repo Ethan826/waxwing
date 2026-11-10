@@ -8758,3 +8758,21 @@ only. Proposed repair, not implemented: row-level operations so the arm
 cannot be written, and one walk pairing labels with occurrences. It is
 predicted to change no acceptance or diagnostic, to be confirmed by
 verify and the gate's repeated records. Held as before.
+
+### 18.178 R037 (2) Entry repair authorized (2026-11-10)
+
+The author authorized §18.177's repair and its verification (a few
+hours of machine time; routine verify at concurrency 2). Scope: row
+conversion, Entry's two wrapper removals, and pairing labels with
+occurrences in one walk. Preserve label order, duplicates, substitution
+behavior and diagnostic provenance; check the other `flexibleRow`
+callers, since the helper is shared. Before landing: test row conversion
+directly, covering repeated labels and tail-expanded occurrences;
+demonstrate restored-defect detection for both the effect-check bypass
+and label truncation on the new path (the old non-arrow plant alone does
+not cover it); independent review; complete `npm run verify`; repeat the
+comparison and performance protocol on the final source. If acceptance,
+diagnostics or compilation behavior moves, stop and return the measured
+differences before re-pinning anything. This does not close all of R037
+(2) or criterion 2. Held: live replacement, F14's retirement, milestone
+changes, pushing.

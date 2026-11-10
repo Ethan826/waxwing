@@ -8,6 +8,7 @@ module Domain.Type.Core
   , foldStages
   , substitute
   , rename
+  , renameRow
   , substituteRow
   , spliceRecord
   ) where
@@ -110,8 +111,14 @@ instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
 -- Renaming keeps each variable's sort: a renamed row tail stays a tail.
 -- The tails are sorted again, since a rename need not keep their order.
 rename ∷ ∀ v w. Ord w ⇒ (v → w) → Ty v → Ty w
-rename change = substitute
-  { types: TVar <<< change, rows: openRow <<< change }
+rename change = substitute (renaming change)
+
+-- A row renamed alone: what `rename` does to an arrow's row (R037 (2)).
+renameRow ∷ ∀ v w. Ord w ⇒ (v → w) → TyRow v → TyRow w
+renameRow change = substituteRow (renaming change)
+
+renaming ∷ ∀ v w. (v → w) → Substitution v w
+renaming change = { types: TVar <<< change, rows: openRow <<< change }
 
 -- The stages with `look` applied before each step, so a checker can follow
 -- a result that is a bound meta into the arrow it stands for. Two loops:

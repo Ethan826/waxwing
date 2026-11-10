@@ -1,29 +1,34 @@
-module Features.Check.Entry (check, resolvedRow) where
+module Features.Check.Entry (check, finalEntries, resolvedRow) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Tuple (Tuple(..))
+import Data.Maybe (maybe)
 import Domain.Checked.Internal (Open)
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..))
-import Domain.Syntax (Diagnostic)
-import Domain.Type (Ty(..), TyRow)
+import Domain.Row (EffectRef(..), Label(..))
+import Domain.Syntax (Diagnostic, Span)
+import Domain.Type (TyRow)
 import Features.Check.Context (CheckEnv)
-import Features.Check.Provenance (Boundary(Main), occurrencesAt, trail)
+import Features.Check.Provenance (Boundary(Main), trail)
 import Features.Check.Report (boundaryNote, crossingNotes, originNotes)
 import Features.Check.RowName (labelName)
-import Features.Check.Scheme (State, flexible, flexibleRow, opened)
-import Features.Check.Subst (Subst, resolve)
+import Features.Check.RowSide (Entry, expanded, written)
+import Features.Check.Scheme (State, flexibleRow, openedRow)
+import Features.Check.Subst (Subst, resolveLabel, resolveRow)
 
 resolvedRow ∷ Subst → TyRow Open → TyRow Open
-resolvedRow subst row =
-  case opened (resolve subst (flexible (TFun TUnit row TUnit))) of
-    TFun _ found _ → found
-    _ → row
+resolvedRow subst row = openedRow (resolveRow subst (flexibleRow row))
+
+-- A row written at `span`, its tail spliced in: `resolveRow`'s labels, in
+-- order with duplicates, each paired with its occurrence by one walk.
+finalEntries ∷ Subst → Span → TyRow Open → Array Entry
+finalEntries subst span row =
+  map resolved (expanded subst (written span (flexibleRow row))).entries
+  where
+  resolved entry = entry { label = resolveLabel subst entry.label }
 
 -- `main` may perform only Console. The first other label of its final row
 -- is rejected at the expression whose consumption put it there, with
@@ -38,18 +43,13 @@ check env state definition
   | definition.name /= "main" = Right unit
   | otherwise =
       traverse_ allowed
-        (Array.zip labels (occurrences definition.span))
+        (finalEntries state.subst definition.span env.current)
       where
-      Row labels _ =
-        case resolve state.subst (flexible (TFun TUnit env.current TUnit)) of
-          TFun _ row _ → row
-          _ → Row [] Nothing
-      occurrences span = occurrencesAt span state.subst
-        (flexibleRow env.current)
-      allowed (Tuple (Label ConsoleEffect _ _) _) = Right unit
-      allowed (Tuple label occurrence) = do
-        name ← labelName env definition.span label
-        rejection name (trail state.subst state.origins occurrence)
+      allowed entry = case entry.label of
+        Label ConsoleEffect _ _ → Right unit
+        label → do
+          name ← labelName env definition.span label
+          rejection name (trail state.subst state.origins entry.occurrence)
       rejection name hops = Left
         { problem: UnhandledEffect name
         , span: primary hops

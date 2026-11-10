@@ -10,6 +10,7 @@ module Features.Check.Scheme
   , flexible
   , flexibleRow
   , opened
+  , openedRow
   , resolved
   , headOf
   , tooDeep
@@ -25,8 +26,7 @@ import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Syntax (Diagnostic, Span)
-import Domain.Type (Ty(..), TyRow, VarId(..), rename)
-import Domain.Row (openRow)
+import Domain.Type (Ty(..), TyRow, VarId(..), rename, renameRow)
 import Features.Check.Provenance (Origins, noOrigins)
 import Features.Check.Restricted (Restricted, emptyRestricted)
 import Features.Check.Site (Site)
@@ -132,23 +132,27 @@ at scheme = rename shifted
 
 flexible ∷ Ty Open → Ty Flex
 flexible = rename toFlex
-  where
-  toFlex = case _ of
-    Checked.Rigid id → Unify.Rigid id
-    Hole meta → Unify.Meta meta
 
--- A row of the checked IR's types as the unifier's.
+-- A row of the checked IR's types as the unifier's, renamed as a row, so
+-- no wrapper arrow and no arm for its absence (R037 (2)).
 flexibleRow ∷ TyRow Open → TyRow Flex
-flexibleRow found = case flexible (TFun TUnit found TUnit) of
-  TFun _ result _ → result
-  _ → openRow (Unify.Meta 0)
+flexibleRow = renameRow toFlex
 
 opened ∷ Ty Flex → Ty Open
 opened = rename toOpen
-  where
-  toOpen = case _ of
-    Unify.Rigid id → Checked.Rigid id
-    Unify.Meta meta → Hole meta
+
+openedRow ∷ TyRow Flex → TyRow Open
+openedRow = renameRow toOpen
+
+toFlex ∷ Open → Flex
+toFlex = case _ of
+  Checked.Rigid id → Unify.Rigid id
+  Hole meta → Unify.Meta meta
+
+toOpen ∷ Flex → Open
+toOpen = case _ of
+  Unify.Rigid id → Checked.Rigid id
+  Unify.Meta meta → Hole meta
 
 resolved ∷ Subst → Ty Open → Ty Open
 resolved subst ty = opened (resolve subst (flexible ty))

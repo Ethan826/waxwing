@@ -14,6 +14,7 @@ import Domain.Type.Core
   , stagesThrough
   , substitute
   , rename
+  , renameRow
   , spliceRecord
   , substituteRow
   )
