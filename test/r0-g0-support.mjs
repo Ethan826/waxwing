@@ -41,6 +41,8 @@ export const g0From = async (load, stubs) => {
   const { unfoldableArray } = await load('Data.Unfoldable');
   const CertifiedInternal = await load('Domain.Verdict.Certified.Internal');
   const { Right } = await load('Data.Either');
+  // Allowed test-side construction (§18.176): evidence about G0 and Decide,
+  // not package certification or effect safety.
   // src no longer mints from a substitution (§18.174). These tests drive
   // Decide with G0's own judgment, so the test mints, as test/r0-stubs.mjs
   // does (BACKLOG R026), from exactly what the comparator judged.

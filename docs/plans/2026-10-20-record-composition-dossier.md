@@ -8711,3 +8711,19 @@ protocol as stale after §18.174's src change; both repeated at 96261bc7,
 t2-minting-comparison5.json and t2-performance-5.json). Protocol, within
 budget: read-back CPU ×2.33, peak RSS ×1.04; validator CPU ×2.21, peak RSS
 ×1.02. The comparison's moved report equals the pre-switch one.
+
+### 18.176 Test-side minting in G0's harness allowed (2026-11-10)
+
+The author allowed test/r0-g0-support.mjs to construct `Certified` in
+JavaScript from the comparator's result: §18.174 (1)'s restriction applies
+to production minting, and its earlier wording was too broad. The harness
+calls the real comparator, keeps its refusals, and wraps exactly the
+returned validity and compilation for the Decide harness, as
+test/r0-stubs.mjs does. Scope: those tests are evidence about G0 and
+Decide, not about package certification or effect safety. No re-scoping.
+
+Before Entry, an independent reviewer covers §18.175's final caller
+repairs, the minting-helper detection and the re-aimed row; findings are
+fixed, with a verify after any code change. Then Entry's R037 (2)
+investigation. Held: live replacement, F14's retirement, milestone
+changes, pushing.
