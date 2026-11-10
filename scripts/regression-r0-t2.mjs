@@ -16,7 +16,8 @@ import { t2CompatRows } from './regression-r0-t2-compat.mjs';
 import { t2ActivationRows } from './regression-r0-t2-activation.mjs';
 import { t6Rows } from './regression-r0-t6.mjs';
 import { t2PrerequisitesRows } from './regression-r0-t2-prerequisites.mjs';
-import { switchRows, t2BatchRows } from './regression-r0-t2-batch.mjs';
+import { t2BatchRows } from './regression-r0-t2-batch.mjs';
+import { switchRows } from './regression-r0-t2-switch.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
