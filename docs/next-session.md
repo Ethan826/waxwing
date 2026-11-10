@@ -18,12 +18,11 @@ shadow minting not met (S1, S2).
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (§18.175): one-minter follow-up landed.
-1. G0's tests mint `Certified` in JavaScript from the comparator's result
-   (test/r0-g0-support.mjs), as test/r0-stubs.mjs does: fits §18.174 (1)?
-Next authorized work: Entry's fail-open fallback (R037 (2)) once this is
-settled. Live replacement stays unresolved (criterion 2). F14's
-retirement, milestone changes and push stay held.
+**Next** (§18.176): Entry's R037 (2) investigation, its fail-open
+fallback first (Entry.purs:43-46). The one-minter follow-up is reviewed and
+verified; test-side minting in G0's harness is allowed (§18.176). Live
+replacement stays unresolved (criterion 2). F14's retirement, milestone
+changes and push stay held.
 
 Integrated state: r0-t2-d1. Ledger (git-ignored):
 .superpowers/sdd/2026-11-04-prerequisites/progress.md.

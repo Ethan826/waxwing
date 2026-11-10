@@ -8734,3 +8734,10 @@ research/t2-read-back-inventory/corpus.mjs, now on the comparator. The
 Internal check reads every export block, and stale comments naming
 `certify` as live are corrected. FFI construction stays covered by the
 foreign-surface pin (scripts/forgery.mjs), not by the minting scan.
+
+Verified (2026-11-10): routine verify at af830d41 passed (see
+.build/evidence/2026-11-10-verify/). The comparison and protocol were
+repeated on that src (t2-minting-comparison6.json, t2-performance-6.json):
+moved report unchanged; read-back CPU ×2.29, peak RSS ×1.04; validator CPU
+×2.21, peak RSS ×1.03, within the budgets. Next: Entry's R037 (2)
+investigation.
