@@ -49,7 +49,7 @@ blocks open problem =
 -- A2 spec §4.1 and §6: record validation before any search. A problem
 -- that breaks a record invariant blocks Solved whatever a strategy
 -- offers, and is reported even when no strategy offers a candidate
--- (C4(b)). It reads the problem alone, as `certify`'s step 0 does.
+-- (C4(b)). It reads the problem alone, as the check's step 0 does.
 defective ∷ RecordedProblem → Array Unsupport
 defective problem = maybe [] defect (recordDefect problem)
   where

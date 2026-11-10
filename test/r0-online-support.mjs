@@ -63,7 +63,7 @@ export const onlineFrom = async load => {
   const sigmaOf = substitution => pairs(substitution)
     .map(([variable, ty]) => [decodeVar(variable), decodeType(ty)]);
   // σ as the check judges it: the certificate's pre-default σ with each
-  // hole at its default (Substitution `certify`; BACKLOG R026).
+  // hole at its default (Substitution `substitutionOnly`; BACKLOG R026).
   const settledOf = certificate =>
     Map.functorMap.map(settled)(certificate.unsettled);
   const check = (problem, substitution) =>

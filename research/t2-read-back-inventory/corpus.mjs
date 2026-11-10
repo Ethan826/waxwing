@@ -1,6 +1,7 @@
 // Every declaration of the pinned R0 corpus (test/r0-corpus.mjs), with
 // its recorded problem, today's live check, the online search's outcome
-// and the G0-only `certify` verdict on its candidate. Research only.
+// and the G0-only comparator's verdict on its candidate (`substitutionOnly`
+// since §18.174; its column keeps the label `certify`). Research only.
 import { loadCorpus } from '../../test/r0-corpus.mjs';
 import { load, resolved } from '../../test/r0-generate-support.mjs';
 import { budget, onlineFrom } from '../../test/r0-online-support.mjs';
@@ -26,7 +27,8 @@ const searchOf = (program, problem) => {
 
 const certifyOf = (problem, found) => {
   if (named(found) !== 'Candidate') return null;
-  const verdict = Substitution.certify(problem)(found.value0.unsettled);
+  const verdict = Substitution.substitutionOnly(problem)(
+    found.value0.unsettled);
   return named(verdict) === 'Right' ? 'accepts'
     : `refuses ${named(verdict.value0)}`;
 };
@@ -61,7 +63,7 @@ export const corpus = async () => loadCorpus();
 
 // The four-way split of §18.151 (1), in order: refused by the live
 // checker; online search failed otherwise; a candidate (then split by
-// `certify`); mapping is the inventory's own column.
+// the comparator); mapping is the inventory's own column.
 export const stageOf = item => {
   if (item.stage !== undefined) return item.stage;
   if (item.live.refused !== undefined)

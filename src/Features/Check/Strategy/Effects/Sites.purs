@@ -117,7 +117,7 @@ entryCheck context row = maybe unread judged (underRow context.package row)
 
 -- E9 (FailNeedsConcrete), one check: the payload, read as a type after
 -- settling, has a key (spec §4.2: `typeHead` defined), asked of `key` on
--- a `Fail` label carrying it. `certify`'s context is already settled;
+-- a `Fail` label carrying it. `certifyPackage`'s context is settled;
 -- settling the read payload again, which is idempotent, keeps "after
 -- settling" local to this check. A hole payload settles to `Int` and
 -- passes. Observed on the fixture: this is a shadow-only expected

@@ -8727,3 +8727,10 @@ repairs, the minting-helper detection and the re-aimed row; findings are
 fixed, with a verify after any code change. Then Entry's R037 (2)
 investigation. Held: live replacement, F14's retirement, milestone
 changes, pushing.
+
+Review before Entry (2026-11-10): the minting-helper detection and the
+re-aimed row r0-forged-valid-old-field closed; one caller was still missed,
+research/t2-read-back-inventory/corpus.mjs, now on the comparator. The
+Internal check reads every export block, and stale comments naming
+`certify` as live are corrected. FFI construction stays covered by the
+foreign-surface pin (scripts/forgery.mjs), not by the minting scan.

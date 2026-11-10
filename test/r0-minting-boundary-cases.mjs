@@ -9,11 +9,12 @@ const constructor = /Domain_Verdict_Certified_Internal\.Certified\b/g;
 export const minterModule = 'Features.Check.Strategy.Substitution';
 export const internalModule = 'Domain.Verdict.Certified.Internal';
 
-// The constructor's own module: exports `Certified` alone, and `new
-// Certified(` once, in its `create`.
+// The constructor's own module: exports `Certified` alone, in every
+// export block, and `new Certified(` once, in its `create`.
 const internalWrong = text => {
-  const exported = /export \{([^}]*)\}/.exec(text ?? '')?.[1]
-    .split(',').map(name => name.trim()).filter(Boolean) ?? [];
+  const exported = [...(text ?? '').matchAll(/export \{([^}]*)\}/g)]
+    .flatMap(found => found[1].split(','))
+    .map(name => name.trim()).filter(Boolean);
   const built = ((text ?? '').match(/new Certified\(/g) ?? []).length;
   return [
     ...(String(exported) === 'Certified' ? []
@@ -68,5 +69,8 @@ export const boundaryScanWrong = () => {
     ...(mintingWrong({ ...healthy, [minterModule]: two }).length > 0 ? []
       : ['a second minter goes unreported']),
     ...(mintingWrong({ ...healthy, [internalModule]: helper }).length > 0
-      ? [] : ['an Internal helper goes unreported'])];
+      ? [] : ['an Internal helper goes unreported']),
+    ...(mintingWrong({ ...healthy, [internalModule]:
+      `${internal}export { mint };\n` }).length > 0 ? []
+      : ['a second export block goes unreported'])];
 };

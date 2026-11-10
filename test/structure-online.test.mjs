@@ -4,8 +4,9 @@ import { readFileSync } from 'node:fs';
 import { facts } from '../output/Style.Trace/index.js';
 import { onlineImportFindings } from '../scripts/structure-online.mjs';
 
-// Tranche 2 Task 12 review I1: Online takes exactly `certify` and
-// `certifySound` from Strategy.Substitution, so its `validate` (A2's
+// Tranche 2 Task 12 review I1, §18.174: Online takes exactly
+// `certifyPackage` and `certifyPackageSound` from Strategy.Substitution, so
+// its `validate` (A2's
 // validator) cannot reach the online strategy. Read from the syntax tree.
 const online = 'src/Features/Check/Strategy/Online.purs';
 const source = readFileSync(online, 'utf8');

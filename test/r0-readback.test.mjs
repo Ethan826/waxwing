@@ -8,7 +8,7 @@ import { supportFrom } from './r0-entailed-support.mjs';
 
 // Task 4.3, acceptance criterion 2: the online search's read-back
 // (Features.Check.Strategy.ReadBack) recovers a σ that passes
-// G0 (`certify`) against the same problem, at positions that are
+// G0 (`substitutionOnly`) against the same problem, at positions that are
 // generation's: each positioned variable's position names its origin's
 // path, and σ(types(p)) is the checked node's type at every body path.
 // RT8 runs the same checks over the corpus; these fixtures name each

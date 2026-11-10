@@ -184,7 +184,7 @@ declaration inputs program problem =
 
 -- The candidate certifies only if its effect package validates; a read
 -- fault declines, its fault kept, and nothing falls back to
--- substitution-only `certify` (§18.159 criteria 5, 7; §18.170).
+-- the substitution-only comparator (§18.159 criteria 5, 7; §18.170).
 certified ∷ RecordedProblem → Certificate → Either CheckRefusal Certified
 certified problem certificate =
   either unread (certifyPackage problem) certificate.effects

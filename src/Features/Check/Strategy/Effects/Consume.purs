@@ -62,7 +62,7 @@ type Reading = { arguments ∷ Boolean, marks ∷ Boolean, tail ∷ Boolean }
 
 -- An unreadable side is refused at check 0, never accepted unread. I3
 -- runs first and binds every key a record names (spec §5), so this is
--- defensive and unreachable from `certify`.
+-- defensive and unreachable from `certifyPackage`.
 consumeCheck ∷ Context → ConsumeRecord → Judged
 consumeCheck context record = maybe unread judged
   (Tuple <$> read record.source <*> read record.target)
@@ -85,7 +85,7 @@ readingAt record = case record.site of
 -- A keyless label on either side cannot be matched: the run stops at the
 -- first check (spec §4.2). A source ending in a hole is refused there
 -- too: `settle` leaves no hole in a settled row, so this is defensive and
--- unreachable from `certify`.
+-- unreachable from `certifyPackage`.
 consumed ∷ Context → Reading → PRow → PRow → Checks
 consumed context reading row target =
   maybe (check false) judged
