@@ -22,8 +22,9 @@ import Features.Check.Subst (Subst, resolveLabel, resolveRow)
 resolvedRow ∷ Subst → TyRow Open → TyRow Open
 resolvedRow subst row = checkedRow (resolveRow subst (flexibleRow row))
 
--- A row written at `span`, its tail spliced in: `resolveRow`'s labels, in
--- order with duplicates, each paired with its occurrence by one walk.
+-- A row written at `span`, its tail's bindings spliced in: `resolveRow`'s
+-- labels, in order with duplicates kept, each paired with its occurrence
+-- by the one walk that reaches it (R037 (2): no zip to truncate).
 finalEntries ∷ Subst → Span → TyRow Open → Array Entry
 finalEntries subst span row =
   map resolved (expanded subst (written span (flexibleRow row))).entries
@@ -45,11 +46,10 @@ check env state definition
       traverse_ allowed
         (finalEntries state.subst definition.span env.current)
       where
-      allowed entry = case entry.label of
-        Label ConsoleEffect _ _ → Right unit
-        label → do
-          name ← labelName env definition.span label
-          rejection name (trail state.subst state.origins entry.occurrence)
+      allowed { label: Label ConsoleEffect _ _ } = Right unit
+      allowed { label, occurrence } = do
+        name ← labelName env definition.span label
+        rejection name (trail state.subst state.origins occurrence)
       rejection name hops = Left
         { problem: UnhandledEffect name
         , span: primary hops
