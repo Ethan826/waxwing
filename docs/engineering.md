@@ -227,10 +227,11 @@ adding a bypass allowlist.
   its soundness rests on all of these (test/structure-trusted.test.mjs
   pins this list and the header marker in each module):
   - `Features.Check.Strategy.Substitution`: mints `Valid` and
-    `Certified`; G0's check; `certify`, substitution-only; `validate`,
-    A2's runner, returns a `Valid` without a `Certified` (dossier §18.145
-    (b)); and `certifyPackage`, its composition minting, the online
-    strategy's check since §18.170.
+    `Certified`; G0's check; `substitutionOnly`, the non-minting
+    comparator (§18.174); `validate`, A2's runner, returns a `Valid`
+    without a `Certified` (dossier §18.145 (b)); and `certifyPackage`,
+    the only code that constructs `Certified`, the online strategy's
+    check since §18.170 (test/r0-minting-boundary.test.mjs).
   - `Features.Check.Strategy.Candidate`: `generic` and `under` define the
     candidate every judgement is taken under.
   - `Features.Check.Strategy.Atoms`: judges each `B` atom against `D`; an
@@ -266,7 +267,8 @@ adding a bypass allowlist.
     witness from the completed package; no other certificate field
     reaches the verdict or the witness. A read fault declines as
     `EffectsUnread`, and Online takes only `certifyPackage` and
-    `certifySound` from Substitution (scripts/structure-online.mjs).
+    `certifyPackageSound` from Substitution (scripts/structure-online.mjs;
+    docs/plans/r0-certify-package-argument.md).
   - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
     builds the witness here, so a wrong binding is a wrong compilation.
     Its solved form is also A2's I3 check (i) over packages,

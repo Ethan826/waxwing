@@ -65,7 +65,7 @@ import Features.Check.Strategy.ReadBack.Fault as Fault
 import Features.Check.Strategy.ReadBack.Package (readEffects)
 import Features.Check.Strategy.Substitution
   ( certifyPackage
-  , certifySound
+  , certifyPackageSound
   )
 
 -- What `checkFunction` needs that a recorded problem does not carry,
@@ -102,7 +102,7 @@ online = onlineWith <<< onlineSearch
 onlineWith ∷ (Budget → RecordedProblem → Search Certificate) → Strategy
 onlineWith search = strategy
   { name: OnlineSolver
-  , sound: Pending certifySound
+  , sound: Pending certifyPackageSound
   , guard: g0Guard
   , search
   , check: certified

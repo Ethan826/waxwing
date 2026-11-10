@@ -67,7 +67,7 @@ export const onlineFrom = async load => {
   const settledOf = certificate =>
     Map.functorMap.map(settled)(certificate.unsettled);
   const check = (problem, substitution) =>
-    Substitution.certify(problem)(substitution);
+    Substitution.substitutionOnly(problem)(substitution);
   const decisions = program =>
     Shadow.shadowDecisions(legacyText)(budget)(program);
   const decisionOf = (program, name) =>

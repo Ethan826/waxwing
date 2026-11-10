@@ -1410,17 +1410,20 @@
  "Features.Check.Strategy.Substitution": {
   "source": [
    "ValidationResult",
-   "certify",
+   "SubstitutionVerdict",
    "certifyPackage",
+   "certifyPackageSound",
    "certifySound",
    "genericSubstitutionSound",
+   "substitutionOnly",
    "validate"
   ],
   "compiled": [
-   "certify",
    "certifyPackage",
+   "certifyPackageSound",
    "certifySound",
    "genericSubstitutionSound",
+   "substitutionOnly",
    "validate"
   ]
  },

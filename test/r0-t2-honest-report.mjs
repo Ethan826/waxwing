@@ -72,7 +72,7 @@ export const honestReport = async (load, checkStages = stagesCheck) => {
   };
 
   const verdicts = (problem, live, found) => {
-    const today = Substitution.certify(problem)(found.unsettled);
+    const today = Substitution.substitutionOnly(problem)(found.unsettled);
     const readBack = RB.readBack(problem)(live.function).value0;
     const read = Package.readEffects(problem)(readBack)(live.function)(
       live.state.subst.marks)(live.trace);

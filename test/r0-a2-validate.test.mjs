@@ -120,7 +120,7 @@ test('G0 reads erase (settle P_in), not erase (P_c)', () => {
   const settledIn = cases.Package.erase(cases.Package.settle(input));
   const completed = cases.Package.erase(cases.Complete.settledOf(
     cases.Complete.complete(problem)(input)));
-  const certify = cases.Substitution.certify(problem);
+  const certify = cases.Substitution.substitutionOnly(problem);
   assert.equal(certify(settledIn).constructor.name, 'Left');
   assert.equal(certify(completed).constructor.name, 'Right');
 });

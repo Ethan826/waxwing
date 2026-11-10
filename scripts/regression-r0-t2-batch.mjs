@@ -19,6 +19,20 @@ const onlineFile = 'src/Features/Check/Strategy/Online.purs';
 // §18.172: each forged-witness case against its restored defect; §18.170:
 // the real constructor against RT8's decline kinds.
 export const switchRows = [
+  // §18.174: a substitution-only minter restored beside the comparator.
+  { name: 'r0-minting-bypass', edits: [{ file: substitution,
+    needle: '  , substitutionOnly\n',
+    replacement: '  , substitutionOnly\n  , certifySubstitution\n' },
+  { file: substitution, needle: 'substitutionOnly\n  ∷ RecordedProblem',
+    replacement: 'certifySubstitution\n'
+      + '  ∷ RecordedProblem → Substitution → Either CheckRefusal Certified\n'
+      + 'certifySubstitution problem unsettled = map minted\n'
+      + '  (substitutionOnly problem unsettled)\n'
+      + '  where\n'
+      + '  minted found = Certified found.validity found.compilation\n\n'
+      + 'substitutionOnly\n  ∷ RecordedProblem' }],
+  probe: 'r0-minting-boundary',
+  message: /Substitution constructs Certified other than once/ },
   // G0 and the obligations each refuse this forgery, so both go.
   { name: 'r0-forged-bool-no-g0', edits: [{ file: substitution,
     needle: '  validity ← checkSubstitution problem '

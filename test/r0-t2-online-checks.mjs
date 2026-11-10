@@ -21,7 +21,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Each fixture's whole `decide` result as plain data (verdict, Solution's
 // validity, assurance and compilation, attempts, search faults), pinned
 // from a plain-purs build of 8ad30c1, before Task 12; `unframed`, `c7` and
-// `q7` re-pinned at the minting switch (§18.172).
+// `q7` re-pinned at the minting switch (§18.172); `lone` and `held`'s
+// assurance label only, at §18.174.
 export const pinnedDecisions = () => JSON.parse(readFileSync(join(root,
   'test/fixtures/r0/t2-online-decisions.json'), 'utf8')).decisions;
 const named = value => value.constructor.name;

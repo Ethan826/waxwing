@@ -8657,3 +8657,28 @@ Open for the author, not decided here:
 The gate: criteria 1-7 not met (2); shadow minting met; live replacement
 not met (2). Live replacement, F14's retirement, milestone changes and
 pushing stay held.
+
+### 18.174 Substitution-only minting removed; the package path's statement (2026-11-09)
+
+The author ruled both §18.173 findings for a bounded follow-up before
+Entry:
+1. Substitution-only minting is removed now, as unfinished switch cleanup
+   that does not retire F14. The old check stays as a non-minting
+   comparator where tests, loss measurements and performance baselines
+   need it, with their evidence and coverage kept and their ability to
+   construct `Certified` removed. Boundary checks are updated, and a
+   restored bypass is shown detected.
+2. The package path gets its own statement, `certifyPackageSound`, still
+   `Pending`, documenting its premises, existing evidence and unresolved
+   obligations, including the input-to-completed-package G0 obligation
+   the source notes. This names the argument relied on; it does not
+   establish soundness.
+
+The assurance label change is authorized beyond the accepted 16, as
+metadata only: outputs are compared with that field normalized, and no
+other verdict, witness, diagnostic or compilation change is allowed.
+Historical evidence keeps its original labels. The independent review
+covers the follow-up and the switch's unreviewed fixes; then a complete
+verify on the final code. Shadow minting stays met; live replacement stays
+blocked on criterion 2; F14's retirement, milestone changes and pushing
+stay held.

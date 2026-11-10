@@ -41,7 +41,7 @@ export const compatChecks = async load => {
   };
   const settledMap = map => Maps.functorMap.map(settled)(map);
   const accepts = (problem, substitution) =>
-    named(Substitution.certify(problem)(substitution)) === 'Right';
+    named(Substitution.substitutionOnly(problem)(substitution)) === 'Right';
   const completedOf = (problem, pkg) => Complete.complete(problem)(pkg);
 
   // The canonical comparison, given each map as its [key, image] pairs in

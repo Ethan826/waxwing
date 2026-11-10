@@ -14,20 +14,20 @@ const found = text => onlineImportFindings({ [online]: text }, facts);
 const imports = list => `${header}import Features.Check.Strategy`
   + `.Substitution ${list}\n`;
 
-test('the tree passes: Online takes certifyPackage, certifySound', () => {
+test('the tree passes: Online takes certifyPackage, its statement', () => {
   assert.deepEqual(found(source), []);
-  assert.deepEqual(found(imports('(certifySound, certifyPackage)')), []);
+  assert.deepEqual(found(imports('(certifyPackageSound, certifyPackage)')), []);
 });
 
 test('validate, an open, hiding or missing import is a finding', () => {
   const rule = 'structure: Features.Check.Strategy.Online must import'
-    + ' exactly certifyPackage, certifySound from'
+    + ' exactly certifyPackage, certifyPackageSound from'
     + ' Features.Check.Strategy.Substitution';
-  for (const list of ['(certifyPackage, certifySound, validate)', '',
+  for (const list of ['(certifyPackage, certifyPackageSound, validate)', '',
     'as S', 'hiding (validate)', '(certifyPackage)', '(certify, certifySound)'])
     assert.deepEqual(found(imports(list)), [rule], list);
   assert.deepEqual(found(`${header}import Prelude\n`), [rule]);
-  assert.deepEqual(found(`${imports('(certifyPackage, certifySound)')}`
+  assert.deepEqual(found(`${imports('(certifyPackage, certifyPackageSound)')}`
     + 'import Features.Check.Strategy.Substitution (validate)\n'), [rule]);
   assert.deepEqual(onlineImportFindings({}, facts),
     ['structure: 0 modules named Features.Check.Strategy.Online']);

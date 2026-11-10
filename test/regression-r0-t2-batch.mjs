@@ -30,6 +30,17 @@ const cloneUses = context => {
 };
 
 export const t2BatchProbes = {
+  'r0-minting-boundary': async context => {
+    const output = resolve(dirname(context.compilerPath), '..');
+    const compiled = Object.fromEntries(readdirSync(output)
+      .filter(name => existsSync(`${output}/${name}/index.js`))
+      .map(name => [name,
+        readFileSync(`${output}/${name}/index.js`, 'utf8')]));
+    const { mintingWrong } = await import('./r0-minting-boundary-cases.mjs');
+    const wrong = mintingWrong(compiled);
+    if (wrong.length > 0) fail(`${context.probe}: ${JSON.stringify(wrong)}`);
+    passed(context);
+  },
   'r0-t2-shadow-gate': probe(async () => [...wrongShadowCases(),
     ...verdictsWrong()]),
   'r0-t2-unnumbered-gate': async context => {

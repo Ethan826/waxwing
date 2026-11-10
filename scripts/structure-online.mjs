@@ -17,7 +17,7 @@
 // read. A file that does not parse is the trace gate's finding.
 export const onlineModule = 'Features.Check.Strategy.Online';
 export const substitutionModule = 'Features.Check.Strategy.Substitution';
-export const substitutionNames = ['certifyPackage', 'certifySound'];
+export const substitutionNames = ['certifyPackage', 'certifyPackageSound'];
 
 // `sources`: src file path to text; `facts`: Style.Trace's reader.
 export const onlineImportFindings = (sources, facts) => {

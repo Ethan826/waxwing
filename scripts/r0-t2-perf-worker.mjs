@@ -169,7 +169,7 @@ export const arms = {
   'recheck alone': onlineArm(recheckAlone),
   'recheck and read-back': onlineArm(withReadBack),
   certify: validatorArm((Substitution, found) =>
-    Substitution.certify(found.problem)(found.unsettled)),
+    Substitution.substitutionOnly(found.problem)(found.unsettled)),
   validate: validatorArm((Substitution, found) =>
     Substitution.validate(found.problem)(found.pkg))
 };

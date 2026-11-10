@@ -38,6 +38,16 @@ export const g0From = async (load, stubs) => {
   const Open = await load('Features.Check.Decide.Open');
   const { Tuple } = await load('Data.Tuple');
   const { unfoldableArray } = await load('Data.Unfoldable');
+  const CertifiedInternal = await load('Domain.Verdict.Certified.Internal');
+  const { Right } = await load('Data.Either');
+  // src no longer mints from a substitution (§18.174). These tests drive
+  // Decide with G0's own judgment, so the test mints, as test/r0-stubs.mjs
+  // does (BACKLOG R026), from exactly what the comparator judged.
+  const minting = problem => candidate => {
+    const found = Substitution.substitutionOnly(problem)(candidate);
+    return found instanceof Right ? new Right(new CertifiedInternal.Certified(
+      found.value0.validity, found.value0.compilation)) : found;
+  };
 
   const keys = vars => Map.keys(vars);
   // The flexible variables' reduced types, identities left out.
@@ -65,10 +75,11 @@ export const g0From = async (load, stubs) => {
     guard: Guard.g0Guard,
     search: () => problem => new Strategy.Candidate(
       candidateOf(problem, override), Verdict.ClaimsComplete.value, []),
-    check: Substitution.certify });
+    check: minting });
   const open = Open.openRequirements;
+  // G0's own judgment, non-minting: the comparator (§18.174).
   const check = (problem, candidate) =>
-    Substitution.certify(problem)(candidate);
+    Substitution.substitutionOnly(problem)(candidate);
   // The flexible type variable a `BQ` atom names, for an override.
   const atomVariable = entry => entry.value.value0.value0;
   return { candidateOf, g0, open, check, keys, atomVariable,

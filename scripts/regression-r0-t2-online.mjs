@@ -40,19 +40,18 @@ export const t2OnlineRows = [
     message: /Online imports Features\.Check\.Strategy\.Effects\.Validate/ },
   // Online takes the validator from Substitution beside G0's check.
   { name: 'r0-t2-online-takes-validate', file: online,
-    needle: '  , certifySound\n  )\n',
-    replacement: '  , certifySound\n  , validate\n  )\n',
+    needle: '  , certifyPackageSound\n  )\n',
+    replacement: '  , certifyPackageSound\n  , validate\n  )\n',
     probe: 'r0-t2-online-substitution',
-    message: /Online must import exactly certifyPackage, certifySound/ },
-  // A read fault falls back to substitution-only `certify` rather than
-  // declining (§18.170): the fault fixtures move back to accepted.
-  { name: 'r0-t2-online-certified-reads',
-    edits: [{ file: online,
-      needle: '  either unread (certifyPackage problem) certificate.effects\n',
-      replacement: '  either (const (certify problem certificate.unsettled))\n'
-        + '    (certifyPackage problem) certificate.effects\n' },
-    { file: online, needle: '  ( certifyPackage\n',
-      replacement: '  ( certify\n  , certifyPackage\n' }],
+    message: /Online must import exactly certifyPackage, certifyPackageSound/ },
+  // A read fault refuses the candidate rather than declining (§18.170):
+  // the fault fixtures' verdicts move.
+  { name: 'r0-t2-online-certified-reads', edits: [{ file: online,
+    needle: '  unread fault = Left (PackageUnread (faultName fault))\n',
+    replacement: '  unread fault = '
+      + 'Left (const NotGeneric (faultName fault))\n' },
+  { file: online, needle: '  , CheckRefusal(PackageUnread)\n',
+    replacement: '  , CheckRefusal(NotGeneric, PackageUnread)\n' }],
     probe: 'r0-t2-online-verdict',
     message: /r0-t2-online-verdict: \["unframed","c7","q7"\]/ }
 ];

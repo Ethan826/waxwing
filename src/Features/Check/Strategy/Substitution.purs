@@ -12,19 +12,19 @@
 -- genericSubstitutionSound`, argued as the standard check of a proposed
 -- unifier, not proved.
 --
--- `certify` is the substitution-only check (BACKLOG R026), no longer the
--- online strategy's since the minting switch (§18.170): given σ
--- before the hole defaults, it checks σ with each hole at its default
--- (ReadBack.Type `settled`, the defaults lowering and the hole contract
--- use) and builds the witness from the same σ, so a hole stays `Free`
--- for the contract to judge, the witness always built from what this
--- check judged. `checkSubstitution`, which yields a bare
--- `Valid`, is no longer exported (BACKLOG R030): `certify` is the only
--- entry besides `validate` (below), and a substitution without holes
--- settles to itself.
--- `certifySound` names `certify`'s statement: G0's check
--- (`genericSubstitutionSound`) plus C1 and C2 of
--- docs/plans/r0-certify-argument.md, argued with checks, not proved.
+-- `substitutionOnly` is the substitution-only check (BACKLOG R026), a
+-- non-minting comparator since §18.174 for tests, loss measurements and
+-- performance baselines: given σ before the hole defaults, it checks σ
+-- with each hole at its default (ReadBack.Type `settled`) and gives the
+-- witness the same σ would build, but constructs no `Certified`.
+-- `checkSubstitution`, which yields a bare `Valid`, is not exported
+-- (BACKLOG R030). `certifySound` names that check's argument
+-- (docs/plans/r0-certify-argument.md) and no minting path uses it.
+--
+-- `certifyPackage` is the only minter (§18.170, §18.174), the online
+-- strategy's check: `validate`'s composition ending in `Certified`. Its
+-- statement is `certifyPackageSound`, still Pending
+-- (docs/plans/r0-certify-package-argument.md).
 --
 -- `validate` is A2's non-minting runner (dossier §18.145 (b); spec §4):
 -- record validation, the first `Unsupported`, I3 (Effects.Validate
@@ -36,10 +36,12 @@
 -- constructs none. `certifyPackage` is the same composition and mints.
 module Features.Check.Strategy.Substitution
   ( ValidationResult
-  , certify
+  , SubstitutionVerdict
   , certifyPackage
+  , certifyPackageSound
   , certifySound
   , genericSubstitutionSound
+  , substitutionOnly
   , validate
   ) where
 
@@ -71,18 +73,26 @@ import Features.Check.Strategy.Witness
 type ValidationResult =
   { validity ∷ Valid, completed ∷ Completed, compilation ∷ Compilation }
 
+-- The substitution-only check's answer: what it judged and the witness
+-- it would give, never a `Certified`.
+type SubstitutionVerdict = { validity ∷ Valid, compilation ∷ Compilation }
+
 genericSubstitutionSound ∷ StatementRef
 genericSubstitutionSound = StatementRef "genericSubstitutionSound"
 
 certifySound ∷ StatementRef
 certifySound = StatementRef "certifySound"
 
-certify ∷ RecordedProblem → Substitution → Either CheckRefusal Certified
-certify problem unsettled = map witnessed
+certifyPackageSound ∷ StatementRef
+certifyPackageSound = StatementRef "certifyPackageSound"
+
+substitutionOnly
+  ∷ RecordedProblem → Substitution → Either CheckRefusal SubstitutionVerdict
+substitutionOnly problem unsettled = map judged
   (checkSubstitution problem (map settled unsettled))
   where
-  witnessed validity =
-    Certified validity (substitutionWitness problem unsettled)
+  judged validity =
+    { validity, compilation: substitutionWitness problem unsettled }
 
 -- Each step runs only when the earlier ones hold; completion runs once,
 -- after G0, and its package is the one the obligations and the witness
