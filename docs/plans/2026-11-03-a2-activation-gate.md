@@ -316,11 +316,10 @@ gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
 Measured on 2026-11-09: met. The status cites
-test/fixtures/r0/t2-minting-comparison6.json, the repeat after the
-one-minter follow-up (§18.174, §18.176), at 7acd6e56. Census 0 moved, window
-16, rt8
-15, shadow 16. Its `commit` is
-7acd6e56aca1067274577ee8f6cf4211a7c2b888, and src is unchanged since. Whether
+test/fixtures/r0/t2-minting-comparison7.json, the repeat after the
+R037 (2) Entry repair (§18.178), at 5b592cca. Census 0 moved, window 16,
+rt8 15, shadow 16. Its `commit` is
+5b592ccad04c73dc015b3d31959f9af23addc6b0, and src is unchanged since. Whether
 the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
@@ -347,9 +346,9 @@ Measured on 2026-11-04 (3cad78cd): not met. There is no budget
 ruling and there are no budget figures, so the report lists the
 missing ruling, the missing figures and each of the four budgets the
 status lacks. A measurement is recorded:
-test/fixtures/r0/t2-performance-6.json, measured at 7acd6e56, with
+test/fixtures/r0/t2-performance-7.json, measured at 5b592cca, with
 its conditions and both parts. Its `commit` is
-7acd6e56aca1067274577ee8f6cf4211a7c2b888, and src is unchanged since.
+5b592ccad04c73dc015b3d31959f9af23addc6b0, and src is unchanged since.
 The budgets are approved (§18.168) and its figures are within them; the
 source identity check passes. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not

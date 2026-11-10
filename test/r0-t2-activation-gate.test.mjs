@@ -172,12 +172,12 @@ const reportRun = () => spawnSync('node',
 
 // Criteria 5 and 6 read each record's `commit` against HEAD's src tree.
 // On the committed tree both records are fresh (src unchanged since
-// 7acd6e56, both). Must-fail: src changed since the commit names
+// 5b592cca, both). Must-fail: src changed since the commit names
 // it stale; without the field the record is unmet.
 test('criteria 5 and 6 see a record stale against src', () => {
   const run = reportRun();
   assert.ok(run.stdout.includes('    src unchanged since '
-    + '7acd6e56aca1067274577ee8f6cf4211a7c2b888\n'), run.stdout);
+    + '5b592ccad04c73dc015b3d31959f9af23addc6b0\n'), run.stdout);
   assert.doesNotMatch(run.stdout, /stale: |no commit|or HEAD unread/);
   const stateOf = (change, id) => {
     const evidence = met();

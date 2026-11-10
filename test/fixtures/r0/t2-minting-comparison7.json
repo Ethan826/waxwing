@@ -1,0 +1,607 @@
+{
+ "ruling": "dossier §18.178: the repeat after the R037 (2) Entry repair; nothing re-pinned",
+ "build": "5b592cca. Against the pre-switch baseline at 2c5b9e30, its moved report equals comparisons 3 to 6 line for line, and its dump is byte-identical to comparison 6 (7acd6e56). Evidence: .build/evidence/2026-11-10-comparison7/.",
+ "commit": "5b592ccad04c73dc015b3d31959f9af23addc6b0",
+ "scratchDiff": "docs/plans/2026-11-04-minting-comparison-scratch2.diff (verbatim; never applied to a branch)",
+ "census": {
+  "moved": []
+ },
+ "rt8": {
+  "moved": [
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw#statsEvidence",
+    "from": "agree: Solved",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported EffectsUnread UnreadImage",
+    "gapList": "faults"
+   },
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw#statsEvidence",
+    "from": "agree: Solved",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported EffectsUnread UnreadImage",
+    "gapList": "faults"
+   },
+   {
+    "at": "editors/vscode/fixtures/effect-namespaces.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType",
+    "to": "declined by the check, a limitation (NotCertifiable): Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "examples/services.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType",
+    "to": "declined by the check, a limitation (NotCertifiable): Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fixtures/r0/audit/expected-handler.pinned-selection.json#k",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx-services-programs.mjs:fake#1#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType",
+    "to": "declined by the check, a limitation (NotCertifiable): Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:aroundBoth#1#around",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType",
+    "to": "declined by the check, a limitation (NotCertifiable): Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r2#1#run",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r9#1#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/f3.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late1.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late2.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/one3.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/two3.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rigid.wxw#main",
+    "from": "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+    "to": "declined by the check, a read fault (PackageUnread): Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+    "gapList": "faults"
+   }
+  ],
+  "aggregates": ".build/evidence/2026-11-04-comparison2/rt8-pin.diff: three EffectsUnchecked blocked classes gone; Outside HandlerType 94 -> 90; agree: Solved 2030 -> 2028; new declined by the check, a limitation (NotCertifiable) 4, a read fault (PackageUnread) 11 in four verdict classes (2 + 2 + 3 + 4); defects [] unchanged; Witnessed 2826 -> 2811"
+ },
+ "window": {
+  "moved": [
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw#statsEvidence",
+    "from": {
+     "window": null,
+     "r0": {
+      "verdict": "Solved",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported EffectsUnread UnreadImage",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw#statsEvidence",
+    "from": {
+     "window": null,
+     "r0": {
+      "verdict": "Solved",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported EffectsUnread UnreadImage",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "editors/vscode/fixtures/effect-namespaces.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a limitation): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+      "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+     }
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "examples/services.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a limitation): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+      "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+     }
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "inline:fx032#g",
+    "from": {
+     "r0": {
+      "verdict": "Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "r0": {
+      "verdict": "Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fixtures/r0/audit/expected-handler.pinned-selection.json#k",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx-services-programs.mjs:fake#1#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a limitation): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+      "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+     }
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:aroundBoth#1#around",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a limitation): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+      "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+     }
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r2#1#run",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r9#1#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/f3.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late1.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late2.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/one3.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/two3.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rigid.wxw#main",
+    "from": {
+     "window": "markers: compiles today, R0 Unsupported Outside",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+      "attempt": "Accepted"
+     }
+    },
+    "to": {
+     "window": "the check declines the candidate (a read fault): compiles today",
+     "r0": {
+      "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+      "attempt": "CheckFailed ClaimsComplete PackageUnread"
+     }
+    },
+    "gapList": "faults"
+   }
+  ]
+ },
+ "shadow": {
+  "moved": [
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw#statsEvidence",
+    "from": {
+     "verdict": "Solved",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported EffectsUnread UnreadImage",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw#statsEvidence",
+    "from": {
+     "verdict": "Solved",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported EffectsUnread UnreadImage",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "editors/vscode/fixtures/effect-namespaces.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+     "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "examples/services.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+     "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "inline:fx032#g",
+    "from": {
+     "verdict": "Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fixtures/r0/audit/expected-handler.pinned-selection.json#k",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx-services-programs.mjs:fake#1#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+     "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:aroundBoth#1#around",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail",
+     "attempt": "CheckFailed ClaimsComplete NotCertifiable"
+    },
+    "gapList": "forcedTail"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r2#1#run",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-defer-programs.mjs:r9#1#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/f3.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late1.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev7/late2.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/one3.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rev8/two3.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   },
+   {
+    "at": "test/fx008-probes/rigid.wxw#main",
+    "from": {
+     "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall]",
+     "attempt": "Accepted"
+    },
+    "to": {
+     "verdict": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined",
+     "attempt": "CheckFailed ClaimsComplete PackageUnread"
+    },
+    "gapList": "faults"
+   }
+  ]
+ },
+ "unexpected": [],
+ "gapListUnmoved": [
+  {
+   "at": "examples/records.wxw#details",
+   "list": "refusals"
+  },
+  {
+   "at": "research/division-campaign/compile/split-selection.md#1#divide",
+   "list": "refusals"
+  },
+  {
+   "at": "research/division-campaign/r0/probes/f05-print-key.wxw#shown",
+   "list": "refusals"
+  }
+ ],
+ "harnessGaps": [],
+ "grouping": "a declaration is listed under a pin when that pin's row for it changed; RT8 rows are named in the scratch RT8 table (inline:fx032#g is a defect probe, not an RT8 source); window rows from window-pin.diff; the window key appears only where the window class changed"
+}
