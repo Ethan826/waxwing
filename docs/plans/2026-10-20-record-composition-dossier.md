@@ -8701,3 +8701,13 @@ comparator's result (test/r0-g0-support.mjs), as test/r0-stubs.mjs already
 does (BACKLOG R026). src cannot mint outside `certifyPackage`; whether
 test-side minting from the comparator fits §18.174 (1) is the author's
 call.
+
+Verified (2026-11-10): routine verify at 7af0c225 passed, at concurrency 2
+and regression jobs 1: parallel 3485/3485, serial 242/242, regression
+proofs 509/509, growth ratio 2.321 against 3.0. Earlier runs kept in
+.build/evidence/2026-11-09-verify7/: 43f7e252 (a rows file over 250
+lines) and 96261bc7 (the gate rightly read the earlier comparison and
+protocol as stale after §18.174's src change; both repeated at 96261bc7,
+t2-minting-comparison5.json and t2-performance-5.json). Protocol, within
+budget: read-back CPU ×2.33, peak RSS ×1.04; validator CPU ×2.21, peak RSS
+×1.02. The comparison's moved report equals the pre-switch one.

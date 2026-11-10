@@ -18,14 +18,12 @@ shadow minting not met (S1, S2).
 Nothing. The return packet is written:
 docs/plans/2026-11-09-return-packet.md.
 
-**Waiting on the author** (§18.173): the shadow minting switch landed.
-1. `Substitution.certify` remains a G0-only minter (plan Task 16's guard);
-   possibly part of F14's retirement, held.
-2. Solved verdicts carry `Pending certifySound`, naming `certify`'s
-   statement; a new reference would move every Solved verdict.
-Live replacement stays unresolved (criterion 2): it needs measured
-user-visible losses and R037 (2), Entry first. F14's retirement, milestone
-changes and push stay held.
+**Waiting on the author** (§18.175): one-minter follow-up landed.
+1. G0's tests mint `Certified` in JavaScript from the comparator's result
+   (test/r0-g0-support.mjs), as test/r0-stubs.mjs does: fits §18.174 (1)?
+Next authorized work: Entry's fail-open fallback (R037 (2)) once this is
+settled. Live replacement stays unresolved (criterion 2). F14's
+retirement, milestone changes and push stay held.
 
 Integrated state: r0-t2-d1. Ledger (git-ignored):
 .superpowers/sdd/2026-11-04-prerequisites/progress.md.
@@ -61,8 +59,8 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Latest routine verify **passed** at c8545b7c (§18.173), the switch.
-  Earlier passed at 9f4069e3 (§18.169).
+- Latest routine verify **passed** at 7af0c225 (§18.175). Earlier passed
+  at c8545b7c (§18.173), the switch.
 - Index-first batch routine verify **passed** at 2d68a85d (§18.164):
   parallel 3481/3481, serial 238/238, regression proofs 478/478, growth
   ratio 2.302 against 3.0. Failed run kept: 808ebfe5 (one regression row
