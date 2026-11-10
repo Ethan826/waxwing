@@ -15,7 +15,7 @@
     "R036 (3)": "r0-t2-r036-3-row-coarse",
     "T6": "r0-t6-rt8-declines-defect"
   },
-  "comparison": "test/fixtures/r0/t2-minting-comparison7.json",
+  "comparison": "test/fixtures/r0/t2-minting-comparison8.json",
   "shadowLosses": {
     "faults": "§18.170",
     "forcedTail": "§18.170"
@@ -27,7 +27,7 @@
       "readBack": { "compileTime": 2.75, "peakMemory": 1.15 },
       "validator": { "compileTime": 2.6, "peakMemory": 1.15 }
     },
-    "measurement": "test/fixtures/r0/t2-performance-7.json"
+    "measurement": "test/fixtures/r0/t2-performance-8.json"
   },
   "routing": "§18.159"
 }
