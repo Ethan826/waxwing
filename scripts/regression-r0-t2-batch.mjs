@@ -19,6 +19,16 @@ const onlineFile = 'src/Features/Check/Strategy/Online.purs';
 // §18.172: each forged-witness case against its restored defect; §18.170:
 // the real constructor against RT8's decline kinds.
 export const switchRows = [
+  // §18.174: a minting helper inside the constructor's own module.
+  { name: 'r0-minting-internal-helper', edits: [{ file:
+    'src/Domain/Verdict/Certified/Internal.purs',
+  needle: 'module Domain.Verdict.Certified.Internal (Certified(..)) where\n',
+  replacement: 'module Domain.Verdict.Certified.Internal (Certified(..), mint)'
+    + ' where\n' }, { file: 'src/Domain/Verdict/Certified/Internal.purs',
+    needle: 'data Certified = Certified Valid Compilation\n',
+    replacement: 'data Certified = Certified Valid Compilation\n\n'
+      + 'mint ∷ Valid → Compilation → Certified\nmint = Certified\n' }],
+  probe: 'r0-minting-boundary', message: /Certified\.Internal exports/ },
   // §18.174: a substitution-only minter restored beside the comparator.
   { name: 'r0-minting-bypass', edits: [{ file: substitution,
     needle: '  , substitutionOnly\n',
@@ -45,12 +55,24 @@ export const switchRows = [
       + 'view.bq\n',
     replacement: '', probe: 'r0-forged-function',
     message: /r0-forged-function: Solved/ },
-  { name: 'r0-forged-valid-old-field', edits: [{ file: onlineFile,
-    needle: '  either unread (certifyPackage problem) certificate.effects\n',
-    replacement: '  certify problem certificate.unsettled\n' },
+  // The witness bound from the pre-default field while the package is what
+  // was judged: Online cannot mint since §18.174, so the split is restored
+  // inside the one minter.
+  { name: 'r0-forged-valid-old-field', edits: [{ file: substitution,
+    needle: '  ∷ RecordedProblem → EffectPackage → '
+      + 'Either CheckRefusal Certified\n'
+      + 'certifyPackage = validatedBy minted\n  where\n'
+      + '  minted validity _ compilation = Certified validity compilation\n',
+    replacement: '  ∷ RecordedProblem → Substitution → EffectPackage'
+      + ' → Either CheckRefusal Certified\n'
+      + 'certifyPackage problem unsettled = validatedBy minted problem\n'
+      + '  where\n  minted validity _ _ =\n'
+      + '    Certified validity (substitutionWitness problem unsettled)\n' },
   { file: onlineFile,
-    needle: '  ( certifyPackage\n',
-    replacement: '  ( certify\n  , certifyPackage\n' }],
+    needle: '  either unread (certifyPackage problem) certificate.effects\n',
+    replacement: '  either unread '
+      + '(certifyPackage problem certificate.unsettled)\n'
+      + '    certificate.effects\n' }],
   probe: 'r0-forged-valid', message: /r0-forged-valid: witness Free/ },
   { name: 'r0-forged-hole-no-contract', file: substitution,
     needle: '  either NoWitness (const (Witnessed witness))\n'

@@ -8682,3 +8682,22 @@ covers the follow-up and the switch's unreviewed fixes; then a complete
 verify on the final code. Shadow minting stays met; live replacement stays
 blocked on criterion 2; F14's retirement, milestone changes and pushing
 stay held.
+
+### 18.175 The one-minter follow-up reviewed and verified (2026-11-09)
+
+The review of §18.174's follow-up (and of the switch's earlier unreviewed
+fixes, which it found sound) found the `certify` rename had missed four
+callers (test/r0-u8-solved-form, test/r0-g0-atoms, the a2-props probe, row
+r0-forged-valid-old-field), and that the minting scan could not see a
+helper inside `Domain.Verdict.Certified.Internal`. Fixed: the callers use
+the comparator; the old-field row restores its split inside the one minter;
+the scan also pins the Internal module's exports and its single
+construction, with row r0-minting-internal-helper. The argument note now
+records the Task 15 obligation as unproved but checked on fixtures and
+observed on the corpus. These fixes had no further independent review.
+
+Open for the author: G0's tests mint `Certified` in JavaScript from the
+comparator's result (test/r0-g0-support.mjs), as test/r0-stubs.mjs already
+does (BACKLOG R026). src cannot mint outside `certifyPackage`; whether
+test-side minting from the comparator fits §18.174 (1) is the author's
+call.

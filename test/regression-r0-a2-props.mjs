@@ -86,7 +86,7 @@ export const propertiesOf = async load => {
   const made = fixtures(cases);
   const completedOf = (problem, input) => Complete.complete(problem)(input);
   const accepts = (problem, substitution) =>
-    cases.Substitution.certify(problem)(substitution).constructor.name
+    cases.Substitution.substitutionOnly(problem)(substitution).constructor.name
       === 'Right';
 
   // The case packages and, from each, every package with one of its

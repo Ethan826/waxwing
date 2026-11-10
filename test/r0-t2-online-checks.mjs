@@ -91,7 +91,8 @@ export const onlineChecks = async load => {
       || text(found.value1) !== text(made.claim);
   }).map(fixture => fixture.name);
 
-  // Each decides as pinned, the whole result equal to the recorded
+  // Each decides as pinned, the whole result equal to the recorded one;
+  // since the switch the verdict reads `effects` (§18.170). Was:
   // build's; no verdict reads `effects`, so a read fault is never shown
   // as effect validation, nor a package as one.
   const verdictWrong = () => {

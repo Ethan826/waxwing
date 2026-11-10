@@ -1,7 +1,7 @@
 // Tranche 2 Task 12 review I1 (design §C.6; dossier §18.155 (5)): the
-// online strategy takes exactly `certifyPackage` and `certifySound` from
-// Strategy.Substitution, never the bare `validate` (A2's non-minting
-// runner) or the substitution-only `certify` (§18.170). Read from
+// online strategy takes exactly `certifyPackage` and `certifyPackageSound`
+// from Strategy.Substitution, never the bare `validate` (A2's non-minting
+// runner) or the comparator `substitutionOnly` (§18.170, §18.174). Read from
 // each src module's syntax tree with Style.Trace's `facts` (the trace
 // gate's reader), never its text.
 //

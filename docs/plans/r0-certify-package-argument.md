@@ -16,7 +16,9 @@ only), **owed** (stated, with no check yet).
 Online's `certified` hands the certificate's effect package P_in to
 `certifyPackage` (Features.Check.Strategy.Substitution), the only code
 that constructs `Certified` (checked: test/r0-minting-boundary.test.mjs,
-row r0-minting-bypass). It runs `validate`'s composition:
+rows r0-minting-bypass and r0-minting-internal-helper). Tests may still
+mint in JavaScript (test/r0-stubs.mjs, test/r0-g0-support.mjs); src
+cannot. It runs `validate`'s composition:
 
 1. `prerequisites`: record validation, the first `Unsupported`, and I3
    (Effects.Validate). Cited.
@@ -58,12 +60,15 @@ A read fault never reaches this: it declines as `EffectsUnread` (§18.170).
 
 ## Unresolved obligations
 
-1. **G0 on the input, not the completed package (owed, plan Task 15).**
+1. **G0 on the input, not the completed package (plan Task 15).**
    Step 2 judges `erase (settle P_in)`; the witness and obligations read
-   P_c. The obligation is that G0 accepts `erase P_c` whenever it
-   accepts `erase (settle P_in)` (Substitution.purs, "Owed (Task 15)").
-   Completion only adds absent variables and forced effect tails
-   (argued, from Effects.Complete); no check covers it.
+   P_c. The obligation is that G0 accepts the completed package whenever
+   it accepts `erase (settle P_in)` (Substitution.purs, "Owed (Task 15)").
+   Unproved; checked on fixtures and observed on the corpus over
+   `erase (settledOf P_c)` (A2 specification §11; test/r0-a2-validate
+   .test.mjs and test/r0-t2-compat.serial.test.mjs), while what compiles
+   is the defaulted completed package. Completion only adds absent
+   variables and forced effect tails (argued, from Effects.Complete).
 2. **The analogue of C1 and C2 for the package path.** The
    substitution-only note argues defaulting and witness agreement for
    σ₀. Here C2's corpus check compares against the package's erasure,

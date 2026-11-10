@@ -7,14 +7,15 @@ import { stableStringify } from './r0-canonical.mjs';
 // U8's solved form (docs/plans/r0-u8-solved-form.md §2): every variable
 // in a witness binding's image is a declared rigid at its position's
 // sort or a hole at one sort across the witness. Each must-refuse
-// fixture goes through `certify` over a directly built problem
+// fixture goes through `substitutionOnly` (§18.174)
+// over a directly built problem
 // (test/r0-entailed-support.mjs: x, y flexible types; r, s flexible
 // rows; p rigid type 100; q rigid row 101) and keeps G0's `Valid`: the
 // refusal is the compilation's, `NoWitness (UnsolvedImage v)`. Each has
 // a positive control that is Witnessed.
 const { Atom, t, v, problemOf } = await supportFrom(load);
-const { certify } = await load('Features.Check.Strategy.Substitution');
-const { certifiedCompilation } = await load('Domain.Verdict.Certified');
+const { substitutionOnly } =
+  await load('Features.Check.Strategy.Substitution');
 const { holeVar } = await load('Domain.Recorded.Hole');
 const Origin = await load('Domain.Recorded.Origin');
 const Map = await load('Data.Map.Internal');
@@ -26,9 +27,9 @@ const candidate = bindings => bindings.reduce((made, [name, image]) =>
 // 'Witnessed', or the reason and the variable it names; G0's refusal,
 // if any, fails the test, since every fixture here is Valid.
 const compiled = (bindings, options = {}) => {
-  const found = certify(problemOf(options))(candidate(bindings));
+  const found = substitutionOnly(problemOf(options))(candidate(bindings));
   assert.equal(found.constructor.name, 'Right', 'G0 accepts σ');
-  const compilation = certifiedCompilation(found.value0);
+  const { compilation } = found.value0;
   if (compilation.constructor.name === 'Witnessed') return 'Witnessed';
   return [compilation.value0.constructor.name,
     stableStringify(compilation.value0.value0)];

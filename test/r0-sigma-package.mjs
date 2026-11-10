@@ -1,7 +1,6 @@
 // A substitution as an input effect package, each key at its recorded sort
-// and no effect variables or marks: how a test-built strategy reaches the
-// one minter, `certifyPackage` (dossier §18.174), and how A3's corpus
-// property reads a candidate. Takes a loader and loads nothing itself.
+// and no effect variables or marks: how A3's corpus property reads a
+// candidate. Takes a loader and loads nothing itself.
 export const sigmaPackageFrom = async load => {
   const Atom = await load('Domain.Recorded.Atom');
   const P = await load('Domain.Verdict.EffectPackage');

@@ -1,6 +1,7 @@
 // Support for Task 4.2's G0 tests: a program's recorded problems and
 // holder set, a test-side candidate search, and a G0 strategy built by
-// the production `strategy` from G0's production guard and check. The
+// the production `strategy` from G0's production guard and the comparator
+// `substitutionOnly`, test-minted (§18.174). The
 // search is untrusted test code (as Task 4.3's `onlineSearch` will be):
 // it reads the problem's most general unifier through
 // Features.Check.Entailed's `reduction`, so its candidate maps each

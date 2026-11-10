@@ -269,8 +269,9 @@ adding a bypass allowlist.
     `EffectsUnread`, and Online takes only `certifyPackage` and
     `certifyPackageSound` from Substitution (scripts/structure-online.mjs;
     docs/plans/r0-certify-package-argument.md).
-  - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
-    builds the witness here, so a wrong binding is a wrong compilation.
+  - `Features.Check.Strategy.Witness`: G0's adapter and Cov; the
+    witness is built here (`witnessOf` for the package path), so a wrong
+    binding is a wrong compilation.
     Its solved form is also A2's I3 check (i) over packages,
     `unsolvedKey`, through the one `outside` predicate (spec D9).
   - `Features.Check.Strategy.HoleContract`: decides which holes may stay

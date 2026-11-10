@@ -7,10 +7,11 @@ import { supportFrom } from './r0-entailed-support.mjs';
 // genericity and `ff` arms, each driven by a candidate that is not the
 // problem's own unifier, with a positive control beside each refusal.
 // Problems are built directly (test/r0-entailed-support.mjs). Through
-// `certify` since BACKLOG R030 (`checkSubstitution` is private); these
+// `certify` since BACKLOG R030, `substitutionOnly` since §18.174
+// (`checkSubstitution` is private); these
 // candidates hold no holes, so settling leaves them unchanged.
 const { Atom, t, v, problemOf } = await supportFrom(load);
-const { certify: checkSubstitution } =
+const { substitutionOnly: checkSubstitution } =
   await load('Features.Check.Strategy.Substitution');
 const Map = await load('Data.Map.Internal');
 const int = t.base('Int');

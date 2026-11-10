@@ -56,8 +56,8 @@ export const r0WitnessProbes = {
       fail(`route's defaulted u was witnessed: ${found}`);
     passed(context);
   },
-  // R022: a row slot's bare hole read as a type makes σ not generic, so
-  // G0 refuses what today accepts.
+  // R022: a row slot's bare hole read as a type: G0 refused σ as not
+  // generic; since §18.172 the package's read fault declines it first.
   'r0-readback-sort-blind': async context => {
     const w = await loaded(context);
     for (const { origin, source } of r022Probes) {

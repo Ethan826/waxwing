@@ -1,3 +1,8 @@
+> Superseded as the online strategy's argument (dossier §18.174): `certify`
+> is now `substitutionOnly`, a non-minting comparator, and the online
+> strategy's statement is docs/plans/r0-certify-package-argument.md. Kept as
+> the record behind verdicts labeled `certifySound`.
+
 # `certify`: settling, defaulting and the witness (BACKLOG R030)
 
 Since BACKLOG R026, G0's `certify` (Features.Check.Strategy.Substitution)
