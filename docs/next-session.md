@@ -62,6 +62,10 @@ test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
 ## Next, as the author last directed (§18.176)
 
+Done 2026-11-10 (§18.177): Entry's fallback traced and reproduced by a
+planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.
+The repair is proposed, not implemented; awaiting the author.
+
 Entry's R037 (2) investigation, its fail-open fallback first
 (src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console
 check passes silently if reached). R037 (2) blocks live replacement, not

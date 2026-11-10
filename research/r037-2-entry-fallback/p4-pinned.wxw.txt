@@ -1,0 +1,1 @@
+effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit with Log = Log.log(x); fn main(): Unit = { let call = fn(r: { f: Int -> Unit with Log }) => r.f(1); call({ f: h }) };

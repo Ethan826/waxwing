@@ -1,0 +1,2 @@
+type Boom = Boom;
+fn main(): Int = Fail.fail(Boom);

@@ -1,0 +1,2 @@
+effect Log { fn log(n: Int): Unit; };
+fn main(): Unit = Log.log(1);

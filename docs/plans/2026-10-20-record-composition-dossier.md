@@ -8741,3 +8741,20 @@ repeated on that src (t2-minting-comparison6.json, t2-performance-6.json):
 moved report unchanged; read-back CPU ×2.29, peak RSS ×1.04; validator CPU
 ×2.21, peak RSS ×1.03, within the budgets. Next: Entry's R037 (2)
 investigation.
+
+### 18.177 R037 (2): Entry's fallback traced (2026-11-10)
+
+Evidence only, no src change: docs/plans/2026-11-10-r037-2-entry-fallback.md.
+Entry.purs:43-46's `Row [] Nothing` arm cannot run on today's code: an
+arrow-preservation argument through `substitute`, `walk` and `resolve`'s
+arrow arm, which no type enforces. Planted in a scratch copy of compiled
+output (research/r037-2-entry-fallback/plant.mjs), a `resolve` that
+returns a non-arrow makes `main` performing `Log` or `Fail` compile and
+`emit` exit 0. The program then panics at run time ("no handler for Log",
+E_TOOL) in place of E_EFFECT "Unhandled Log in main". This supersedes the
+packet's reasoned prediction of silent acceptance. A second fail-open in
+the same function: `Array.zip` truncation, also preserved by argument
+only. Proposed repair, not implemented: row-level operations so the arm
+cannot be written, and one walk pairing labels with occurrences. It is
+predicted to change no acceptance or diagnostic, to be confirmed by
+verify and the gate's repeated records. Held as before.
