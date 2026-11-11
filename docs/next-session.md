@@ -70,8 +70,15 @@ planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.
 Repair authorized (§18.178), implemented, reviewed and verified
 (§18.179): Entry has no `TFun` wrapper and no zip (Entry.purs
 `finalEntries`); no acceptance, diagnostic or compilation movement.
-Awaiting the author. R037 (2)'s other sites (Walked, DeclarationUse,
-Function, Body, Desugar, Core) remain open; criterion 2 remains unmet.
+Entry's portion closed by the author (§18.180).
+
+Done 2026-11-10 (§18.181): evidence-only inventory of the remaining
+R037 (2) sites, docs/plans/2026-11-10-r037-2-remaining-sites.md. Forced
+fallbacks measured on the corpus: Walked and DeclarationUse fail open
+(30 and 48 refused programs compile, "Unhandled ... in main" among
+them); Function fails closed (925 rejected); Body, Desugar and Core show
+no movement. Proposed repair scope and cost there; no src changed.
+Awaiting the author.
 
 Entry's R037 (2) investigation, its fail-open fallback first
 (src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console

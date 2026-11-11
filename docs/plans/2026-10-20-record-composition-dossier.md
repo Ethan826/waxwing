@@ -8791,3 +8791,36 @@ comparison 8's dump is byte-identical to comparison 6's, and performance
 run at e432c053 failed at the structural gate and is kept. Not closed:
 R037 (2)'s other sites and criterion 2. Held: live replacement, F14's
 retirement, milestone changes, pushing.
+
+### 18.180 Entry's portion of R037 (2) closed; inventory next (2026-11-10)
+
+The author closed Entry's portion of R037 (2) on §18.179's evidence: the
+repair preserves behavior, and the new tests cover two defects the
+existing suites missed. The correction about scripts/structure.mjs
+stands in the record: its earlier invocation supplied no verification
+evidence; the direct `checkStructure()` call and the complete verify do.
+Next, evidence only: inventory the remaining R037 (2) sites (Walked,
+DeclarationUse, Function, Body, Desugar, Core), each with its fallback's
+reachability, the invariant it assumes and the consequence if that
+invariant breaks, reusing existing evidence; then bring back a proposed
+repair scope and cost before changing source. Shadow minting met; live
+replacement blocked on criterion 2; holds continue.
+
+### 18.181 R037 (2) remaining sites inventoried (2026-11-10)
+
+Evidence only, no src change:
+docs/plans/2026-11-10-r037-2-remaining-sites.md. Every site is
+unreachable by the arrow-preservation argument (Core's by the
+construction its comments state). Each fallback forced in an isolated
+copy (research/r037-2-sites/plants.mjs) and the corpus dump compared:
+Walked's `walkedRow` and DeclarationUse's `arrowRow` fail open (30 and
+48 programs refused today compile, including unhandled effects in
+`main`, defer and signature refusals) and also refuse some valid ones;
+Function's `current` fails closed (925 programs refused, none
+accepted); Body's `rowOf`, Desugar's `freshRow` and Core's
+`stagesThrough` arm move nothing in the corpus (Body's row has no live
+reader today; Core's arm degrades safely in `resolve`). Proposed: repair
+Walked, DeclarationUse, Function and Body by row-level operations, and
+optionally Desugar's `Meta 0`; leave Core's arms and `resolver`'s
+duplicated renames with their arguments. About 30 lines; one full
+verification round of roughly 1.5 hours. Awaiting the author.
