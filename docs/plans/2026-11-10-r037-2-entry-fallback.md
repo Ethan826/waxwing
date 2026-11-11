@@ -187,3 +187,28 @@ findings and their disposition:
   added.
 - `openedRow` collided with Stages' and Generate's minting `openedRow`:
   renamed `checkedRow`.
+
+## Verification (§18.179)
+
+- The first routine verify, at e432c053, failed at the structural gate
+  ("Entry.purs: move branch work into a named helper": a `do` inside a
+  `case` arm). Log kept in
+  .build/evidence/2026-11-10-verify-r037-failed-e432c053/. The fix,
+  98278e0d, returns `allowed` to equation patterns, as before the repair.
+  Earlier "structure exit=0" checks in this work called
+  scripts/structure.mjs, which only exports `checkStructure` and checked
+  nothing. The gate itself is now empty.
+- After the fix: focused suites 46/46, mutants unchanged (table above),
+  and end-to-end probes identical to the pre-repair compiler.
+- Comparison 8 at 98278e0d: the dump is byte-identical to comparison 6's
+  (7acd6e56, before the repair), and the moved report against the
+  pre-switch baseline is equal line for line. Nothing moved.
+- Performance 8 at 98278e0d: read-back CPU ×2.37, RSS ×1.07; validator
+  CPU ×2.20, RSS ×1.02, within the §18.168 budgets. Records 7 (5b592cca)
+  went stale with the fix and stay as records.
+- Routine verify at 42461f06 passed: parallel 3494/3494, serial 242/242,
+  regression proofs 509/509, growth 2.167 against 3.0; free memory fell
+  to 24%, uninterrupted. Log: .build/evidence/2026-11-10-verify-r037/.
+- Gate unchanged: shadow minting met; live replacement not met (2).
+
+Not closed: R037 (2)'s other sites and criterion 2.

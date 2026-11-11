@@ -18,7 +18,7 @@ No milestone has moved since 2026-10-25; milestone changes are held.
 ## Where things stand
 
 Nothing is running. The tree is clean at the commit that added this
-section; the latest verified code is af830d41.
+section; the latest verified code is 42461f06 (src 98278e0d).
 
 The activation gate (`node scripts/r0-t2-activation-gate.mjs`; spec
 docs/plans/2026-11-03-a2-activation-gate.md) reads:
@@ -47,12 +47,15 @@ What landed, in order:
   harness may mint `Certified` in JavaScript from the comparator: evidence
   about G0 and Decide only (§18.176).
 
-Latest evidence: routine verify at af830d41 passed (parallel 3485/3485,
-serial 242/242, regression proofs 509/509, growth 2.172 against 3.0; free
-memory fell to 16% once, uninterrupted). Records on the current src:
-test/fixtures/r0/t2-minting-comparison6.json (moved report equal to the
-pre-switch comparison) and t2-performance-6.json (read-back CPU ×2.29,
-RSS ×1.04; validator CPU ×2.21, RSS ×1.03). Any src change, comments
+Latest evidence: routine verify at 42461f06 passed (parallel 3494/3494,
+serial 242/242, regression proofs 509/509, growth 2.167 against 3.0; free
+memory fell to 24%, uninterrupted; .build/evidence/2026-11-10-verify-r037/).
+Records on the current src (98278e0d):
+test/fixtures/r0/t2-minting-comparison8.json (dump byte-identical to
+comparison 6; moved report equal to the pre-switch comparison) and
+t2-performance-8.json (read-back CPU ×2.37, RSS ×1.07; validator CPU
+×2.20, RSS ×1.02). Note: this section earlier quoted perf 6's read-back
+RSS as ×1.04; the file's measured value is 1.061. Any src change, comments
 included, makes both stale for the gate: repeat them on the new src
 (scripts/r0-t2-perf-run.mjs; scripts/r0-results-dump.mjs then
 scripts/r0-results-moved.mjs against
@@ -64,9 +67,11 @@ test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
 Done 2026-11-10 (§18.177): Entry's fallback traced and reproduced by a
 planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.
-Repair authorized (§18.178) and implemented: Entry has no `TFun` wrapper
-and no zip (Entry.purs `finalEntries`); reviewed. In progress: the
-comparison and protocol on the final src, then routine verify.
+Repair authorized (§18.178), implemented, reviewed and verified
+(§18.179): Entry has no `TFun` wrapper and no zip (Entry.purs
+`finalEntries`); no acceptance, diagnostic or compilation movement.
+Awaiting the author. R037 (2)'s other sites (Walked, DeclarationUse,
+Function, Body, Desugar, Core) remain open; criterion 2 remains unmet.
 
 Entry's R037 (2) investigation, its fail-open fallback first
 (src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console

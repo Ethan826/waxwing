@@ -8776,3 +8776,18 @@ diagnostics or compilation behavior moves, stop and return the measured
 differences before re-pinning anything. This does not close all of R037
 (2) or criterion 2. Held: live replacement, F14's retirement, milestone
 changes, pushing.
+
+### 18.179 R037 (2) Entry repair verified (2026-11-10)
+
+Implemented as §18.178 authorized (98278e0d; evidence and review in
+docs/plans/2026-11-10-r037-2-entry-fallback.md). Row conversion is
+row-level (`renameRow`; Scheme's `flexibleRow`, `checkedRow`), and Entry
+has no `TFun` wrapper and no zip (`finalEntries`). An independent review
+found no behavioral defect; its findings are fixed. Restored-defect
+detection is shown on the new path for bypass, both truncations, lost
+tail expansion, wrong pairing and merged duplicates. Nothing moved:
+comparison 8's dump is byte-identical to comparison 6's, and performance
+8 is within the budgets. Routine verify passed at 42461f06; an earlier
+run at e432c053 failed at the structural gate and is kept. Not closed:
+R037 (2)'s other sites and criterion 2. Held: live replacement, F14's
+retirement, milestone changes, pushing.
