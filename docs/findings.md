@@ -4151,7 +4151,9 @@ counts only).
   FX032 as a defect (reject an unsupported operation-level `with` for now;
   a separate compatibility fix). BACKLOG.md's FX032 row still reads "Open,
   observation" and is pending correction, with C001, AS001, M001, STD001
-  and D001. Check: the row's status text changes to "Defect".
+  and D001. Check: the row's status text changes to "Defect". FX032's
+  row was corrected on 2026-11-12 (dossier §18.186); the other rows'
+  corrections are still pending.
 - Argued-unreachable live inconsistency (BACKLOG entry pending, not
   fixed in this tranche): Features.Check.Record's `select` renders a bare
   `Homeless` as "x is not a field" (`unselected`), while Require and

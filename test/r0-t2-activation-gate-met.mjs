@@ -7,6 +7,7 @@
 import { forcedTail, unjudged, unreadImages, unsupported }
   from './r0-t2-honest-gate.mjs';
 import { gapEntriesOf, verdictFileOf } from './r0-t2-gap-verdicts.mjs';
+import { lossesFileOf, namesOf } from './r0-t2-replacement-losses.mjs';
 
 export const dossier = ['# Dossier', '### 18.150 Earlier',
   'C6, routing, read fault, ForcedTail and R035 named, not ruled.',
@@ -72,6 +73,16 @@ const pinOf = () => ({ ruling: 'dossier §18.155 (7), §18.157',
   denominators: { 'corpus loader': denominator(2823, 2805, 11),
     'effect pin': denominator(2832, 2813, 12) } });
 
+// The census union, two programs, one of them also on a gap list.
+export const census = () => ({ union: { origins: ['census-only.wxw',
+  'test/fx008-probes/f3.wxw'] } });
+
+// Every named program solved by `decide` (`notLost`): nothing lost, so
+// criterion 2's whole-program part is met.
+export const lossesOf = (verdicts, found = census()) => lossesFileOf(
+  [...namesOf(found, verdicts).keys()].map(origin =>
+    ({ origin, today: 'compiles', blockers: [] })), found, verdicts, {});
+
 const withPin = pin => ({
   status: { repin: null, losses: { faults: '§18.303',
     refusals: '§18.303', forcedTail: '§18.303' }, c6: '§18.300',
@@ -82,8 +93,9 @@ const withPin = pin => ({
   comparison: 'cmp.json',
   performance: { ruling: '§18.302', measurement: 'perf.json',
     budget: { readBack: budget(), validator: budget() } },
-  routing: '§18.301' },
-  pin, verdicts: verdictsOf(pin), dossier, statements,
+  routing: '§18.301', knownDefects: {}, acceptedLosses: {} },
+  pin, verdicts: verdictsOf(pin), census: census(),
+  losses: lossesOf(verdictsOf(pin)), dossier, statements,
   rows: new Set(['r0-a2-r034-2-merge', 'r0-a2-r034-10-owner',
     'r0-a2-defect-block', 'r0-r034-2-r034-10', 'r0-t2-r036-1-scan',
     'r0-t2-r036-2-fallback', 'r0-t2-r036-3-conversion',

@@ -2,12 +2,12 @@
 // activation-gate.md): each of the seven criteria with its measured
 // state, read from files in the working tree only (the gate-status file
 // test/fixtures/r0/t2-activation-gate.json, Task 13's honest pin, the
-// gap-verdict file, the dossier, the statements, the regression
-// registry's row names and the files the status cites), and, through
-// `git rev-parse`, the src trees of HEAD and of each cited record's
-// `commit`. It runs neither the corpus nor the compiler, and it changes
-// nothing. Exit 1
-// while any criterion is unmet, an absent or unreadable file included;
+// gap-verdict file, the census, the replacement-loss file, the dossier,
+// the statements, the regression registry's row names and the files the
+// status cites), and, through `git rev-parse`, the src trees of HEAD and
+// of each cited record's `commit`. It runs neither the corpus nor the
+// compiler, and it changes nothing. Exit 1 while any criterion is unmet,
+// an absent or unreadable file included;
 // exit 0 only when the seven and the shadow criteria (S1, S2) are all met.
 // Shadow minting and live replacement report apart (§18.168). A met gate
 // activates nothing:
@@ -20,6 +20,8 @@ import { dossierFile, fullSha, statementsFile, statusFile }
   from '../test/r0-t2-activation-evidence.mjs';
 import { pinFile } from '../test/r0-t2-activation-pin.mjs';
 import { verdictsFile } from '../test/r0-t2-gap-verdicts.mjs';
+import { censusFile, lossesFile }
+  from '../test/r0-t2-replacement-losses.mjs';
 import { evaluate, reportText }
   from '../test/r0-t2-activation-gate.mjs';
 import { allMet, evaluateShadow, shadowReport }
@@ -55,6 +57,7 @@ const commits = Object.values(files).map(file => file?.commit)
   .filter(commit => typeof commit === 'string' && fullSha.test(commit));
 const evidence = {
   status, pin: json(pinFile), verdicts: json(verdictsFile),
+  census: json(censusFile), losses: json(lossesFile),
   dossier: text(dossierFile),
   statements: text(statementsFile),
   rows: new Set(r0Rows.map(row => row.name)),

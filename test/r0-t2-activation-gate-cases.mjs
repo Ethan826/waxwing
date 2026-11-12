@@ -7,9 +7,9 @@
 // must stay met. `gateCases()` gives, per case, the ids `evaluate` finds
 // unmet.
 import { evaluate, unmet } from './r0-t2-activation-gate.mjs';
-import { met, statements, verdictsOf }
+import { lossesOf, met, statements, verdictsOf }
   from './r0-t2-activation-gate-met.mjs';
-import { freshChanges } from './r0-t2-activation-gate-fresh.mjs';
+import { laterChanges } from './r0-t2-activation-gate-losses.mjs';
 
 const loader = evidence => evidence.pin.denominators['corpus loader'];
 
@@ -22,11 +22,12 @@ const lowered = evidence => {
 
 const status = evidence => evidence.status;
 
-// A change to the pin's lists, with the verdict file written again for
-// the changed pin, so only the check the case aims at sees it.
+// A change to the pin's lists, with the verdict and loss files written
+// again for the changed pin, so only the check the case aims at sees it.
 const listsChanged = change => evidence => {
   change(evidence);
   evidence.verdicts = verdictsOf(evidence.pin);
+  evidence.losses = lossesOf(evidence.verdicts, evidence.census);
 };
 
 // The gap-verdict entries of one list, both denominators.
@@ -221,7 +222,7 @@ const changes = {
     evidence.statements = statements
       .replace('| U4 | §11 | unresolved | no | yes |\n', '')
       .replace('## 7a. Trace', '## 7a. Trace\n| U4 | §11 | x | no | y |'); }],
-  ...freshChanges
+  ...laterChanges
 };
 
 export const expected = Object.fromEntries(Object.entries(changes)

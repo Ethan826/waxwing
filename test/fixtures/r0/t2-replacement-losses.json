@@ -1,0 +1,6363 @@
+{
+ "ruling": "dossier §18.186",
+ "census": "test/fixtures/r0/census.json",
+ "programs": [
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/a3-fixed-carriers.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/a4-phantom.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "tag",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw",
+   "named": [
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "statsEvidence",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported EffectsUnread UnreadImage"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c8-pure-stages-runtime.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "runtime",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c9-source-order.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "runtime",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/h1-print-empty.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/h2-print-chosen.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/p1-choices.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "foldFrom",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/p4-two-operands.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "both",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q1-pure-choices.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "foldFrom",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q4-pure-two-operands.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "both",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw",
+   "named": [
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "statsEvidence",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported EffectsUnread UnreadImage"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/r1-returned-captures.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/r2-source-order-captures.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/s1-shared-copy.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "editors/vscode/fixtures/effect-namespaces.wxw",
+   "named": [
+    "census",
+    "forcedTail"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "database",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "logger",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "examples/functions.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "filter",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "foldLeft",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "upTo",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "examples/lists.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "length",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "append",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "reverseOnto",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "reverse",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "zip",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "headOr",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "last",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "take",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "drop",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fromMaybe",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fst",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "snd",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "swap",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "size",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "depth",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "flatten",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "leftOr",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "examples/records.wxw",
+   "named": [
+    "census",
+    "refusals"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "details",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported RequirementAtoms"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "examples/services.wxw",
+   "named": [
+    "census",
+    "forcedTail"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "audited",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    },
+    {
+     "name": "liveDatabase",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "systemClock",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "consoleLogger",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "examples/text.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "directory",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "inline:fx032",
+   "named": [
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported EffectsUnchecked [OperationWithRow 1 0], EffectsUnread Declined"
+    }
+   ],
+   "class": "knownDefect"
+  },
+  {
+   "origin": "research/composition-assessment/programs/p10-b.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "lookup",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "authorize",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "guestGreeting",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "research/composition-assessment/programs/p10.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "lookup",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "authorize",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "guestGreeting",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-layers.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "withRepository",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-test-alone.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "testProfile",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-wide.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "withRepository",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "research/division-campaign/compile/split-selection.md#1",
+   "named": [
+    "refusals"
+   ],
+   "today": "refused",
+   "blockers": [
+    {
+     "name": "divide",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported RequirementAtoms"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Inference NoCandidate"
+    }
+   ],
+   "class": "existingRefusal"
+  },
+  {
+   "origin": "research/division-campaign/r0/probes/f05-print-key.wxw",
+   "named": [
+    "refusals"
+   ],
+   "today": "refused",
+   "blockers": [
+    {
+     "name": "shown",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported RequirementAtoms"
+    }
+   ],
+   "class": "existingRefusal"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-handler-may-fail.selected.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-handler-variable.selected.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-may-fail.selected.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-may-perform.selected.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/expected-handler.pinned-selection.json",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/fail-needs-concrete-check.applied.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/fail-needs-concrete-check.pinned.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/handler-may-fail.selected.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "use",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "k",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/non-exhaustive.selected-v.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/redundant-arm.pinned.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/audit/redundant-arm.selected-int.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.annotation-label.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.apply-meta.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.callee-signature.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.constructor-field.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.fail-unwritten.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.fail-written-record.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-ground.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-plain.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-record.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.own-signature.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.pattern-row.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.perform-parameterized.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.pipe-meta.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.reference-parameterized.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.with-plain.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/obligation-annotation.control.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/obligation-data.control.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "apply",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fixtures/r0/erased/obligation-record.control.json",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [],
+   "class": "notLost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#10",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#11",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#12",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#13",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#14",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#15",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#16",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#17",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#18",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#19",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#2",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#20",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#21",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#22",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#23",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#24",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#25",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#26",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#27",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#28",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#29",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#3",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#30",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#4",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#5",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#6",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#7",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#8",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#9",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "fold",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "g3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#10",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#15",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#17",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#19",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#21",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#23",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#25",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#27",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#9",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#15",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#5",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "inner",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#10",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "run",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#11",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "start",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "runAll",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication, Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#12",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "run",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#13",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#14",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#15",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "loop",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#16",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#17",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#18",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "map",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "sum",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#19",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#2",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "wrap",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#20",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#3",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#4",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "boom",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#5",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#6",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "inner",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#7",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#8",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#9",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "constant",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:caught#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "catch",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:installation#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "step",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:lookup#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "deep",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:unwinding#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "nest",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-services-programs.mjs:baseline#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "audited",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-services-programs.mjs:fake#1",
+   "named": [
+    "census",
+    "forcedTail"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "audited",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    },
+    {
+     "name": "fakeDatabase",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "fixedClock",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "silentLogger",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#2",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#3",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:specialized#4",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:a1Control#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "id",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:aroundBoth#1",
+   "named": [
+    "census",
+    "forcedTail"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "prefix",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "around",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectLimit ForcedTail"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxCrash#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxOwnFailure#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxPlain#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:clauseDefer#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:consoleCleanup#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:copies#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:count#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "count",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:forwardingFailFree#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:pass#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:q1Nofail#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "prefix",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "run",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r1#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "mk",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "pick",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r2#1",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "mk",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "run",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r9#1",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "mk",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "app",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#2",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#3",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside Deferred, Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#4",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "inst",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/argbind-internal.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside Deferred, Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/argbind.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside Deferred, Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/cycle2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/cycle2open.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/design-review/p1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/design-review/p2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/design-review/r3.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/f1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/f2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/f3.wxw",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev10/gain1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev10/gain1ctl.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev10/pair1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev10/rl1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev10/rl1ctl.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/amb.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/amb3.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/annotb.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/around5.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "prefix",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "around",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/con2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/extb.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2b.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2c.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole3.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole4.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/meta1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/meta2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev6/reuse.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/annotc.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/annotd.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late1.wxw",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late2.wxw",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late3.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/merge1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev7/merge2ctl.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, Outside Deferred"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/cyc1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/cyc1ok.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one1rev8.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one3.wxw",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two1f.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside EffectArgument"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two2ctl.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two3.wxw",
+   "named": [
+    "census",
+    "faults"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev9/ov1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev9/ov1f.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rev9/set1.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/rigid.wxw",
+   "named": [
+    "faults"
+   ],
+   "today": "refused",
+   "blockers": [
+    {
+     "name": "mk",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside FailFamily, Outside HandlerType, EffectsUnchecked [UnframedInstall], EffectsUnread Declined"
+    }
+   ],
+   "class": "existingRefusal"
+  },
+  {
+   "origin": "test/fx008-probes/witness/famw.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "use",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/fx008-probes/witness/famw2.wxw",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#1",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#10",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#11",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#12",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#13",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#14",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#15",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#16",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#17",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#18",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#19",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#2",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#20",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#21",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#22",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#23",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#24",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#25",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#26",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#27",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#28",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#29",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#3",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#30",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#31",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#32",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#33",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#34",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#35",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#36",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#37",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#38",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#39",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#4",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#40",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#41",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#42",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#43",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#44",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#45",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#46",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#47",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#48",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#49",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#5",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#50",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#51",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#52",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#53",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#54",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#55",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#56",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#57",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#58",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#59",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#6",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#60",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#7",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#8",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#9",
+   "named": [
+    "census"
+   ],
+   "today": "compiles",
+   "blockers": [
+    {
+     "name": "f0",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f1",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f2",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "f3",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    },
+    {
+     "name": "main",
+     "decide": "Unresolved",
+     "reason": "Unresolved Unsupported Outside DataApplication"
+    }
+   ],
+   "class": "lost"
+  }
+ ]
+}

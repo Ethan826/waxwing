@@ -29,5 +29,9 @@
     },
     "measurement": "test/fixtures/r0/t2-performance-10.json"
   },
-  "routing": "§18.159"
+  "routing": "§18.159",
+  "knownDefects": {
+    "inline:fx032#g": { "id": "FX032", "ruling": "§18.186" }
+  },
+  "acceptedLosses": {}
 }

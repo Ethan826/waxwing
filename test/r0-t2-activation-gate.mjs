@@ -18,6 +18,7 @@
 import { citesWhole, missing, result, ruling, staleness, standing,
   statementsSeven, statusKey, tagged } from './r0-t2-activation-evidence.mjs';
 import { acceptance, pinApproved } from './r0-t2-activation-pin.mjs';
+import { programLosses } from './r0-t2-replacement-losses.mjs';
 import { separatedLive } from './r0-t2-shadow-gate.mjs';
 
 // Each activation prerequisite with the tag its regression row's name
@@ -162,11 +163,22 @@ const routing = evidence => {
     .map(([name, found]) => `${name}: ${found}`)]);
 };
 
+// 2. Whole-program losses under `decide` (dossier §18.186), with the
+// certification losses (§18.159) kept as supporting evidence: both are
+// measured, and the criterion is met only when both are.
+const replacementLosses = evidence => {
+  const programs = programLosses(evidence);
+  const certification = separatedLive(acceptance, evidence);
+  return { met: programs.met && certification.met,
+    state: [...programs.state,
+      ...certification.state.map(line => `supporting: ${line}`)] };
+};
+
 export const criteria = [
   { id: 1, title: 'Task 13\'s pin approved; no unexpected refusal',
     measure: pinApproved },
-  { id: 2, title: 'A1: each gap list\'s loss on replacement ruled',
-    measure: evidence => separatedLive(acceptance, evidence) },
+  { id: 2, title: 'A1: whole-program losses under decide ruled',
+    measure: replacementLosses },
   { id: 3, title: 'the author\'s C6 decision', measure: c6 },
   { id: 4, title: 'BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed',
     measure: landed },

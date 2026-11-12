@@ -166,9 +166,55 @@ pin still matches a fresh run is checked by
 test/r0-t2-honest.serial.test.mjs in the routine verify, not by this
 gate.
 
-### 2. A1: each gap list's loss on replacement ruled
+### 2. A1: whole-program losses under decide ruled
 
-Check:
+Corrected by dossier §18.186. Replacement acts on `decide`, and one
+declaration `decide` does not solve stops its program (r0-census.md),
+so criterion 2 assesses whole programs. Certification losses (the
+checks after this one) remain supporting evidence. Both must hold.
+
+Check, whole programs (test/r0-t2-replacement-losses.mjs):
+
+- test/fixtures/r0/t2-replacement-losses.json holds one entry per
+  program: every census-union program (test/fixtures/r0/census.json)
+  and every program of the gap lists (the gap-verdict file, both
+  denominators), together and deduplicated, plus any other program
+  that compiles today and that `decide` would lose. Each entry records
+  `named` (which of `census` and the gap lists name it), `today` (the
+  whole program's `compile`), `blockers` (each declaration `decide`
+  leaves unsolved) and `class`.
+- An omitted program, a repeated one, a `named` that differs from its
+  sources, or a `class` its facts do not give is unmet, with the
+  program named. The class is derived, never chosen: `existingRefusal`
+  when refused today; `notLost` when it compiles and `decide` solves
+  every declaration; `knownDefect` when every blocker is a declaration
+  the gate status registers under `knownDefects`, with an `id` and a
+  ruling after §18.157 that names that id; otherwise `lost`.
+- Each registered known defect must name a declaration that blocks a
+  recorded program.
+- Each `lost` program is unmet unless `acceptedLosses` maps it to a
+  ruling after §18.157 that names the program and live replacement.
+- The file is written by scripts/r0-t2-replacement-losses-pin.mjs,
+  which refuses to write an inconsistent file.
+  test/r0-t2-replacement-losses.serial.test.mjs recomputes it from the
+  committed checker and compares both ways, with must-fail cases on the
+  real data. test/r0-t2-replacement-losses.test.mjs holds the must-fail
+  cases on synthetic evidence. As with the gap-verdict file, the gate
+  reads the file; whether it still matches the checker is the serial
+  test's.
+
+Measured on 2026-11-12: not met. 262 programs assessed: 252 lost (none
+accepted), 1 known defect correctly refused (inline:fx032, FX032,
+§18.186), 3 existing refusals (rigid, f05-print-key, split-selection:
+refused today), and 6 census programs not lost under `decide` (the
+ErasedRow-only fixtures under test/fixtures/r0/erased/, where `decide`
+solves every declaration). Of the 252, 250 are census programs and 2
+(c7 and q7 `statsEvidence`, UnreadImage) are named only by the read
+fault list. The author recommends accepting none of these losses for
+live replacement (§18.186). The report names the known defect and each
+lost program on a gap list; the file lists all of them.
+
+Supporting check, certification losses (§18.159):
 
 - In each denominator, the candidates equal the validated floor plus
   the read faults, the `RequirementUnjudged` refusals and the
@@ -243,9 +289,11 @@ defect under the author's G-erased ruling item 5
 (test/r0-shadow-known.mjs), which matters when ruling on the read-fault
 losses.
 
-Criterion 2 reads certification losses, as §18.159 defines them.
-Whether the existing-refusal programs, all of which compile today,
-survive the replacement of the old checker is not measured here.
+This supporting check reads certification losses, as §18.159 defines
+them. Whether programs survive the replacement of the old checker is
+the whole-program check above (§18.186). The three existing refusals
+here are certification refusals: there, examples/records.wxw is lost,
+and the other two programs are refused today.
 
 One point is reasoned rather than checked: a declaration today's
 `certify` accepts is a candidate, because
@@ -441,7 +489,7 @@ in full.
 ```text
 A2 activation gate (docs/plans/2026-11-03-a2-activation-gate.md)
 1 met: Task 13's pin approved; no unexpected refusal
-2 NOT MET: A1: each gap list's loss on replacement ruled
+2 NOT MET: A1: whole-program losses under decide ruled
 3 met: the author's C6 decision
 4 met: BACKLOG R034 (2), (10), R036 (1)-(3) and T6 landed
 5 met: scratch-build comparison with the validator minting

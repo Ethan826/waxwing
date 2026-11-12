@@ -8905,3 +8905,24 @@ level; if replacement is wanted soon, a statements-first handler-type
 design first; optionally UnreadImage, and RequirementAtoms after the A7
 `show` ruling. Awaiting the author. Held: live replacement, milestone
 changes, F14's retirement, pushing.
+
+### 18.186 Criterion 2 at `decide` level; FX032 recorded a defect (2026-11-12)
+
+Directed by the author:
+- Criterion 2 assesses whole-program losses under `decide`, using the
+  census and the named lists together, deduplicated by program.
+  Certification losses remain supporting evidence. Criterion 2 stays
+  unmet. The author recommends accepting none of the identified
+  valid-program losses for live replacement. FX032 is recorded
+  separately as a known defect correctly refused; existing refusals are
+  distinguished from lost programs.
+- BACKLOG FX032's classification becomes Defect, citing the existing
+  ruling (G-erased item 5). This does not authorize its repair.
+- Implement and review the gate correction, with tests that demonstrate
+  detection of omitted losses and of incorrect classifications, then a
+  full verify. Existing pins and failed-run evidence are preserved.
+- Not started: UnframedInstall, ForcedTail, UnreadImage,
+  RequirementAtoms, handler types. Handler types are a plausible
+  priority, but the full census, DataApplication and overlapping
+  blockers included, must inform that choice first.
+Held: live replacement, milestone changes, F14's retirement, pushing.

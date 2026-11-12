@@ -8,6 +8,7 @@ const pin = 'test/r0-t2-activation-pin.mjs';
 const gate = 'test/r0-t2-activation-gate.mjs';
 const losses = 'test/r0-t2-activation-verdicts.mjs';
 const verdicts = 'test/r0-t2-gap-verdicts.mjs';
+const programs = 'test/r0-t2-replacement-losses.mjs';
 
 const helper = (name, file, needle, replacement, message) =>
   ({ name, tree: 'test', edits: [{ file, needle, replacement }],
@@ -121,5 +122,36 @@ export const t2ActivationRows = [
   helper('r0-t2-activation-commit-unrequired', evidence,
     '    return [`${path}: no commit (a full sha) recorded`];\n',
     '    return [];\n',
-    /r0-t2-activation-gate: .*"comparisonNoCommit","comparisonShortCommit"/)
+    /r0-t2-activation-gate: .*"comparisonNoCommit","comparisonShortCommit"/),
+  // Criterion 2's whole programs (§18.186): a census or gap-list
+  // program left out of the loss file read as assessed.
+  helper('r0-t2-activation-losses-omission', programs,
+    '    if (!seen.has(origin))\n', '    if (false)\n',
+    /r0-t2-activation-gate: .*"lossOmitted"/),
+  // A program recorded twice read as one.
+  helper('r0-t2-activation-losses-repeat', programs,
+    '    if (seen.has(program.origin))\n', '    if (false)\n',
+    /r0-t2-activation-gate: .*"lossRepeated"/),
+  // A program named by sources other than its own.
+  helper('r0-t2-activation-losses-named', programs,
+    '    if (JSON.stringify(program.named) !== JSON.stringify(named))\n',
+    '    if (false)\n', /r0-t2-activation-gate: .*"lossMisnamed"/),
+  // A class its facts do not give (a lost program as not lost).
+  helper('r0-t2-activation-losses-class', programs,
+    '    else if (program.class !== classOf(program, known))\n',
+    '    else if (false)\n', /r0-t2-activation-gate: .*"lossMisclassed"/),
+  // A lost program met without a live-replacement ruling accepting it.
+  helper('r0-t2-activation-losses-unaccepted', programs,
+    '  if (unaccepted.length > 0)\n', '  if (false)\n',
+    /r0-t2-activation-gate: .*"lossUnaccepted"/),
+  // A known defect registered without a ruling naming its id.
+  helper('r0-t2-activation-losses-defect-unruled', programs,
+    "      ...(typeof defect?.id === 'string' && found.met ? []\n",
+    '      ...(true ? []\n', /r0-t2-activation-gate: .*"defectIdUnnamed"/),
+  // The certification losses dropped from the criterion: supporting
+  // evidence that no longer counts.
+  helper('r0-t2-activation-losses-supporting', gate,
+    '  return { met: programs.met && certification.met,\n',
+    '  return { met: programs.met,\n',
+    /r0-t2-activation-gate: .*"lossUnruled"/)
 ];
