@@ -8824,3 +8824,17 @@ Walked, DeclarationUse, Function and Body by row-level operations, and
 optionally Desugar's `Meta 0`; leave Core's arms and `resolver`'s
 duplicated renames with their arguments. About 30 lines; one full
 verification round of roughly 1.5 hours. Awaiting the author.
+
+### 18.182 R037 (2) remaining repair authorized, items 1-5 (2026-11-12)
+
+The author authorized §18.181's items 1-5: Walked `walkedRow`,
+DeclarationUse `arrowRow` (by `atRow` and `mapRowMarks`), Function
+`current` and Body `rowOf` (by `rigidRow`), which remove the
+arrow-wrapper fallbacks, and Desugar `freshRow`, which removes the
+invented `Meta 0` at small additional scope though no corpus effect was
+measured. Kept: Body's token review, equivalence properties,
+restored-defect checks, the comparison and performance protocol on the
+final source, and a full verify. Any behavioral movement is a stop.
+Unchanged: Core's arms and `resolver`. Separate and held: live
+replacement, milestone changes, and the read-fault and ForcedTail
+rulings.

@@ -29,14 +29,14 @@ module Features.Check.Generate.Body (generateIn) where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Checked.Internal (rigid)
+import Domain.Checked.Internal (rigid, rigidRow)
 import Domain.Checked.Internal as Checked
 import Domain.Checked.Unnumbered (unnumbered)
 import Domain.Recorded.Effect (ERole(..), EVar(..), MRow)
 import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
 import Domain.Resolved (FunctionDecl, VarId(..), exprSpan)
 import Domain.Row (Row(..))
-import Domain.Type (Ty(..), TyRow)
+import Domain.Type (TyRow)
 import Features.Check.Generate.Ambient (callbackParameters)
 import Features.Check.Generate.Declared (declaredSignature)
 import Features.Check.Generate.Elab (Elab)
@@ -128,8 +128,7 @@ checkedOf function body =
   parameterType parameter = rigid parameter.ty
 
 rowOf ∷ FunctionDecl → TyRow Checked.Open
-rowOf function = case rigid (TFun TUnit function.row TUnit) of
-  TFun _ (Row labels tail) _
-    | isEntry function → Row labels Nothing
-    | otherwise → Row labels tail
-  _ → Row [] Nothing
+rowOf function = ended (rigidRow function.row)
+  where
+  ended (Row labels tail) =
+    Row labels (if isEntry function then Nothing else tail)

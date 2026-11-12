@@ -27,7 +27,7 @@ import Features.Check.PartOrigin (Step(..))
 import Features.Check.RowMerge.Occurrence (nextPredicate)
 import Features.Check.RowMerge.Several (severalUnknownBy)
 import Features.Check.RowStore (Because(..))
-import Features.Check.Subst (Flex(..), Subst)
+import Features.Check.Subst (Flex, Subst)
 
 -- What a step of the traversal returns: the substitution reached and the
 -- part rebuilt (Data.Traversable's `Accum`).
@@ -39,13 +39,15 @@ type Built a = { accum ∷ Subst, value ∷ a }
 freshRow
   ∷ Maybe Span → Array Step → Row → Subst → { row ∷ Row, subst ∷ Subst }
 freshRow site steps written subst =
-  if Array.length metas < 2 then { row: written, subst }
-  else finished site steps (nextPredicate subst) written
-    (foldl stored { tail: first, subst } rest)
+  maybe { row: written, subst } several (Array.uncons metas)
   where
   metas = Array.filter isMeta written.tails
-  first = maybe (Meta 0) identity (Array.head metas)
-  rest = Array.drop 1 metas
+  -- One unknown tail or none: nothing to require apart. The first tail
+  -- comes from the array, so none is invented (R037 (2)).
+  several { head: first, tail: rest } =
+    if Array.null rest then { row: written, subst }
+    else finished site steps (nextPredicate subst) written
+      (foldl stored { tail: first, subst } rest)
   stored found part = pairedWith (predicateFor site found part)
     (seedApart found.tail part Implied (predicateFor site found part).subst)
 

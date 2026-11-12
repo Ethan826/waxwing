@@ -4,9 +4,9 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
-import Domain.Checked.Internal (rigid, Open(..))
+import Domain.Checked.Internal (rigid, rigidRow, Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Checked.Unnumbered (unnumbered)
 import Domain.Resolved as Resolved
@@ -173,10 +173,9 @@ settle subst body =
   if isEmpty subst then body else retype (resolved subst) body
 
 current ∷ Resolved.FunctionDecl → TyRow Open
-current function = case rigid (TFun TUnit function.row TUnit) of
-  TFun _ row _ → if function.name == "main" then mainRow row else row
-  _ → Row [] Nothing
+current function = scoped (rigidRow function.row)
   where
+  scoped row = if function.name == "main" then mainRow row else row
   mainRow (Row labels tail) = Row labels (map flexible tail)
   flexible (Rigid (VarId index)) = Hole index
   flexible hole = hole

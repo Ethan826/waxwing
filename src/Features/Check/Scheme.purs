@@ -7,6 +7,7 @@ module Features.Check.Scheme
   , threadAll
   , instantiate
   , at
+  , atRow
   , flexible
   , flexibleRow
   , opened
@@ -126,9 +127,15 @@ instantiate variables state =
 
 -- A scheme's type at one use.
 at ∷ Scheme → Ty VarId → Ty Open
-at scheme = rename shifted
-  where
-  shifted (VarId index) = Hole (scheme.base + index)
+at scheme = rename (shifted scheme)
+
+-- A scheme's row at one use: what `at` does to an arrow's row, with no
+-- wrapper arrow (R037 (2)).
+atRow ∷ Scheme → TyRow VarId → TyRow Open
+atRow scheme = renameRow (shifted scheme)
+
+shifted ∷ Scheme → VarId → Open
+shifted scheme (VarId index) = Hole (scheme.base + index)
 
 flexible ∷ Ty Open → Ty Flex
 flexible = rename toFlex

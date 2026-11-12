@@ -13,7 +13,7 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Row (EffectRef(..), Label(..), Row(..), TypeHead(..))
 import Domain.Type (Ty(..), TyRow, VarId)
 import Features.Check.FlatRecord (failHead)
-import Features.Check.Scheme (flexible, flexibleRow, opened)
+import Features.Check.Scheme (checkedRow, flexible, flexibleRow)
 import Features.Check.Subst (Flex, Subst, walk, walkRow)
 
 -- How a row ends once its tail's bindings are spliced in: an unbound meta, a
@@ -34,11 +34,7 @@ endOf subst row = maybe Ended ended tail
 -- inference row doubles the tree per level of nesting (Task 7); the hook
 -- reads only a row's spine, its tail and its label keys, so it uses this.
 walkedRow ∷ Subst → TyRow Open → TyRow Open
-walkedRow subst row = case opened (TFun TUnit spine TUnit) of
-  TFun _ found _ → found
-  _ → row
-  where
-  spine = walkRow subst (flexibleRow row)
+walkedRow subst row = checkedRow (walkRow subst (flexibleRow row))
 
 -- The spliced row with each label argument followed to its head, enough for
 -- a `Fail` label's key; the arguments below the head stay as written.

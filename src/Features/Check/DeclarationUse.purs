@@ -10,7 +10,7 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Domain.Row (Mark(..), Row(..), closedRow, openRow)
+import Domain.Row (Mark(..), Row(..), openRow)
 import Domain.Type (TyRow)
 import Domain.Syntax as Syntax
 import Features.Check.Stages (openedRow, stages)
@@ -18,10 +18,11 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Resolved (Ty(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Span)
-import Domain.Type.Marks (mapMarks)
+import Domain.Type.Marks (mapMarks, mapRowMarks)
 import Features.Check.MarkUse (instantiateMarks)
 import Features.Check.Provenance (Consumed(..))
-import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
+import Features.Check.Scheme
+  (Scheme, State, Threaded, at, atRow, instantiate)
 import Features.Check.Trace (Slot(..), recordUse)
 
 -- One use of a function's or constructor's scheme, its variables
@@ -102,7 +103,9 @@ declarationUse state variables markNames sorts fields result row =
   marked = instantiateMarks markNames scheme.state
   withMarks ty =
     if Array.null markNames then ty else mapMarks marked.value ty
-  instantiated = arrowRow (withMarks (at scheme.value (TFun TUnit row TUnit)))
+  withRowMarks found =
+    if Array.null markNames then found else mapRowMarks marked.value found
+  instantiated = withRowMarks (atRow scheme.value row)
   opened = openedRow marked.state instantiated
   staged = stages opened.state (Array.length fields) opened.value
   arguments = Array.catMaybes
@@ -124,11 +127,6 @@ traced span use = use
     , fields: use.value.fields
     , result: use.value.result
     }
-
--- The row of a one-arrow type.
-arrowRow ∷ ∀ v. Ty v → TyRow v
-arrowRow (TFun _ found _) = found
-arrowRow _ = closedRow
 
 -- A row variable's meta is a row's tail; any other variable's a type.
 -- `instantiate` makes every slot a meta, so the second case only takes

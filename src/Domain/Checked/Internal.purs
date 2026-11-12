@@ -5,7 +5,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe)
 import Domain.Syntax (Operator, Sort, Span)
 import Domain.Checked.Unnumbered (UnnumberedRow)
-import Domain.Type (rename)
+import Domain.Type (TyRow, rename, renameRow)
 import Domain.Ids (EffectId)
 import Domain.Resolved
   ( CtorId
@@ -142,6 +142,11 @@ type FieldPattern = { label ∷ String, pattern ∷ Pattern }
 -- rigid.
 rigid ∷ Ty VarId → Ty Open
 rigid = rename Rigid
+
+-- A declared row seen from inside its declaration: what `rigid` does to
+-- an arrow's row, with no wrapper arrow (R037 (2)).
+rigidRow ∷ TyRow VarId → TyRow Open
+rigidRow = renameRow Rigid
 
 typeOf ∷ Expr → Ty Open
 typeOf (Expr expression) = expression.ty
