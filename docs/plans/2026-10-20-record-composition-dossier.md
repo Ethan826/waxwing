@@ -8926,3 +8926,8 @@ Directed by the author:
   priority, but the full census, DataApplication and overlapping
   blockers included, must inform that choice first.
 Held: live replacement, milestone changes, F14's retirement, pushing.
+
+The gate status registers this record (criterion 2 reads it as a whole
+line):
+
+Known defect, correctly refused: inline:fx032#g (FX032).

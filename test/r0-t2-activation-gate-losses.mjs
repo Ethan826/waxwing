@@ -14,10 +14,14 @@ const withLost = (evidence, change = () => {}) => {
   evidence.census.union.origins.push('lost.wxw');
   evidence.losses.programs.push({ origin: 'lost.wxw', named: ['census'],
     today: 'compiles', blockers: [blocker], class: 'lost' });
-  evidence.dossier += '\n### 18.320 Rulings\nlost.wxw accepted for live'
-    + ' replacement. FX9 is a defect.\n';
+  evidence.dossier += ['', '### 18.320 Rulings',
+    'Live replacement accepts the loss of lost.wxw.',
+    'Known defect, correctly refused: lost.wxw#main (FX9).',
+    '### 18.321 Held', 'lost.wxw named. Held: live replacement.', '']
+    .join('\n');
   change(evidence);
 };
+const ruled = line => `\n### 18.322 Ruled\n${line}\n`;
 const defect = id => evidence => withLost(evidence, found => {
   at(found, 'lost.wxw').class = 'knownDefect';
   found.status.knownDefects = { 'lost.wxw#main': { id, ruling: '§18.320' } };
@@ -37,11 +41,27 @@ export const lossChanges = {
   lossUnaccepted: [[2], evidence => withLost(evidence)],
   lossAccepted: [[], evidence => withLost(evidence, found => {
     found.status.acceptedLosses = { 'lost.wxw': '§18.320' }; })],
+  // A section that names the program and holds live replacement.
+  lossHeldCited: [[2], evidence => withLost(evidence, found => {
+    found.status.acceptedLosses = { 'lost.wxw': '§18.321' }; })],
+  // One registered blocker of two, recorded as a known defect: the
+  // program is lost.
+  defectPartial: [[2], evidence => {
+    defect('FX9')(evidence);
+    at(evidence, 'lost.wxw').blockers.push({ ...blocker, name: 'other' });
+  }],
+  // Each of these two fails one check only: its ruling line is recorded.
+  lossAcceptedNotLost: [[2], evidence => {
+    evidence.dossier += ruled('Live replacement accepts the loss of '
+      + 'census-only.wxw.');
+    evidence.status.acceptedLosses = { 'census-only.wxw': '§18.322' }; }],
   defectRuled: [[], defect('FX9')],
   defectIdUnnamed: [[2], defect('FX8')],
   defectNoBlocker: [[2], evidence => {
+    evidence.dossier += ruled('Known defect, correctly refused: gone.wxw#g'
+      + ' (FX9).');
     evidence.status.knownDefects = { 'gone.wxw#g':
-      { id: 'FX9', ruling: '§18.150' } }; }]
+      { id: 'FX9', ruling: '§18.322' } }; }]
 };
 
 export const laterChanges = { ...freshChanges, ...lossChanges };

@@ -9,9 +9,11 @@ import { classOf } from './r0-t2-replacement-losses.mjs';
 // must leave exactly criterion 2 unmet, naming the problem. Omitted
 // programs and wrong classes are the defects the correction exists to
 // catch; the serial test shows the same on the committed file.
-const dossierAdd = ['### 18.310 Known defect', 'FX9 is a defect.',
-  '### 18.311 Accepted', 'lost.wxw accepted for live replacement.',
-  '### 18.312 Shadow only', 'lost.wxw named, shadow certification.',
+const dossierAdd = ['### 18.310 Known defect',
+  'Known defect, correctly refused: lost.wxw#main (FX9).',
+  '### 18.311 Accepted', 'Live replacement accepts the loss of lost.wxw.',
+  '### 18.312 Held', 'lost.wxw named. Held: live replacement.',
+  '### 18.313 Not a defect', 'FX9 is not a defect; lost.wxw#main.',
   ''].join('\n');
 
 const evidenceWith = change => {
@@ -90,11 +92,15 @@ test('a lost program is unmet until a live ruling naming it accepts it',
       evidence.status.acceptedLosses = { 'lost.wxw': '§18.311' };
     }));
     assert.ok(accepted.met, accepted.state.join('\n'));
+    // A held section naming the program, another ruling, an early one.
     for (const cite of ['§18.312', '§18.310', '§18.150'])
       assert.match(unmetOnly2(cite, evidenceWith(evidence => {
         addLost(evidence);
         evidence.status.acceptedLosses = { 'lost.wxw': cite };
-      })), /accepted loss lost\.wxw: .* is no live-replacement ruling/);
+      })), /accepted loss lost\.wxw: .* holds no line "Live replacement/);
+    assert.match(unmetOnly2('not lost', evidenceWith(evidence => {
+      evidence.status.acceptedLosses = { 'census-only.wxw': '§18.311' };
+    })), /accepted loss census-only\.wxw: not a lost program/);
   });
 
 test('a known defect needs a ruling naming its id and a blocker', () => {
@@ -109,13 +115,21 @@ test('a known defect needs a ruling naming its id and a blocker', () => {
   assert.match(ruled.state.join('\n'),
     /known defect correctly refused: lost\.wxw/);
   assert.match(unmetOnly2('wrong id', defect('§18.310', 'FX8')),
-    /known defect lost\.wxw#main: ruling recorded: no .*FX8/);
-  assert.match(unmetOnly2('early', defect('§18.150')),
-    /not after §18\.157/);
+    /known defect lost\.wxw#main: §18\.310 holds no line .*\(FX8\)/);
+  // A section naming the id while denying the defect, and an early one.
+  for (const cite of ['§18.313', '§18.150'])
+    assert.match(unmetOnly2(cite, defect(cite)),
+      /known defect lost\.wxw#main: .* holds no line/);
   assert.match(unmetOnly2('no blocker', evidenceWith(evidence => {
     evidence.status.knownDefects = { 'gone.wxw#g':
       { id: 'FX9', ruling: '§18.310' } };
   })), /known defect gone\.wxw#g blocks no recorded program/);
+});
+
+test('unrecorded today or class values are refused', () => {
+  assert.match(unmetOnly2('today', evidenceWith(evidence => {
+    evidence.losses.programs[0].today = 'Compiles';
+  })), /today Compiles, class .*: not recorded values/);
 });
 
 test('missing registry, census or file is unmet, never assumed met', () => {

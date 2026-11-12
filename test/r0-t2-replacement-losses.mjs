@@ -18,7 +18,7 @@
 // - `knownDefect`: compiles today, and every blocker is a known defect
 //   the gate status registers with a ruling (`knownDefects`);
 // - `lost`: compiles today and some other declaration is unsolved.
-import { isLater, missing, result, ruling, section, statusKey }
+import { isLater, missing, result, section, statusKey }
   from './r0-t2-activation-evidence.mjs';
 
 export const lossesFile = 'test/fixtures/r0/t2-replacement-losses.json';
@@ -26,7 +26,22 @@ export const censusFile = 'test/fixtures/r0/census.json';
 export const lossesRuling = 'dossier §18.186';
 export const classes = ['lost', 'knownDefect', 'existingRefusal',
   'notLost'];
-const liveToken = 'live replacement';
+const todays = ['compiles', 'refused'];
+
+// The record lines a ruling must hold, each a whole line of its section
+// (review, 2026-11-12: a section that merely names a program and "live
+// replacement", such as "Held: live replacement", accepts nothing).
+export const acceptLine = origin =>
+  `Live replacement accepts the loss of ${origin}.`;
+export const defectLine = (at, id) =>
+  `Known defect, correctly refused: ${at} (${id}).`;
+
+// `cite`'s section, after §18.157, holds `line` as a whole line.
+const recorded = (dossier, cite, line) => {
+  const text = isLater(cite) ? section(dossier, cite) : null;
+  return text !== null && text.split('\n').some(found =>
+    found.trim() === line);
+};
 
 const isObject = value => value !== null && typeof value === 'object';
 const originOf = at => at.slice(0, at.lastIndexOf('#'));
@@ -67,28 +82,29 @@ export const lossesFileOf = (observed, census, verdicts, known) => {
       .sort((a, b) => (a.origin < b.origin ? -1 : 1)) };
 };
 
+// Each registered known defect: its ruling holds `defectLine`, and the
+// declaration blocks a recorded program.
 const knownProblems = (evidence, known, byOrigin) =>
   Object.entries(known).flatMap(([at, defect]) => {
-    const found = ruling(evidence.dossier, defect?.ruling, defect?.id ?? '');
     const program = byOrigin.get(originOf(at));
     return [
-      ...(typeof defect?.id === 'string' && found.met ? []
-        : [`known defect ${at}: ${found.line}`]),
+      ...(typeof defect?.id === 'string' && recorded(evidence.dossier,
+        defect.ruling, defectLine(at, defect.id)) ? []
+        : [`known defect ${at}: ${defect?.ruling} holds no line `
+          + `"${defectLine(at, defect?.id)}"`]),
       ...(program?.blockers.some(blocker =>
         `${program.origin}#${blocker.name}` === at) ? []
         : [`known defect ${at} blocks no recorded program`])];
   });
 
-// Each accepted loss: a ruling after §18.157 naming the program and
-// live replacement.
-const acceptedProblems = (evidence, accepted) =>
-  Object.entries(accepted).flatMap(([origin, cite]) => {
-    const text = isLater(cite) ? section(evidence.dossier, cite) : null;
-    return text !== null && text.includes(origin)
-      && text.toLowerCase().includes(liveToken) ? []
-      : [`accepted loss ${origin}: ${cite} is no live-replacement ruling`
-        + ' naming it'];
-  });
+// Each accepted loss: a lost program, and its ruling holds `acceptLine`.
+const acceptedProblems = (evidence, accepted, byOrigin) =>
+  Object.entries(accepted).flatMap(([origin, cite]) => [
+    ...(recorded(evidence.dossier, cite, acceptLine(origin)) ? []
+      : [`accepted loss ${origin}: ${cite} holds no line `
+        + `"${acceptLine(origin)}"`]),
+    ...(byOrigin.get(origin)?.class === 'lost' ? []
+      : [`accepted loss ${origin}: not a lost program`])]);
 
 // The file against the census, the gap lists and the registry: none
 // omitted, none repeated, each named as its sources name it and in the
@@ -106,9 +122,14 @@ export const fileProblems = (file, census, verdicts, known) => {
       problems.push(`program repeated: ${program.origin}`);
     seen.set(program.origin, program);
     const named = names.get(program.origin) ?? [];
-    if (JSON.stringify(program.named) !== JSON.stringify(named))
+    const sorted = list => JSON.stringify([...list].sort());
+    if (!Array.isArray(program.named) || sorted(program.named)
+      !== sorted(named))
       problems.push(`${program.origin}: named ${JSON.stringify(
         program.named)}, but its sources name ${JSON.stringify(named)}`);
+    if (!todays.includes(program.today) || !classes.includes(program.class))
+      problems.push(`${program.origin}: today ${program.today}, class `
+        + `${program.class}: not recorded values`);
     if (!Array.isArray(program.blockers))
       problems.push(`${program.origin}: no blockers recorded`);
     else if (program.class !== classOf(program, known))
@@ -140,7 +161,7 @@ export const programLosses = evidence => {
   const byOrigin = new Map(programs.map(program =>
     [program.origin, program]));
   problems.push(...knownProblems(evidence, known, byOrigin),
-    ...acceptedProblems(evidence, accepted));
+    ...acceptedProblems(evidence, accepted, byOrigin));
   const lost = programs.filter(program => program.class === 'lost');
   const unaccepted = lost.filter(program =>
     !Object.hasOwn(accepted, program.origin));

@@ -12,15 +12,24 @@ import { declarationsOf } from './r0-rt8-run.mjs';
 
 const named = value => value.constructor.name;
 
-export const programOf = source => ({
-  origin: source.origin,
-  today: named(compile(source.source)) === 'Right' ? 'compiles'
-    : 'refused',
-  blockers: declarationsOf(source)
-    .filter(row => verdictClass(row.decision) !== 'Solved')
-    .map(row => ({ name: row.decl.name,
-      decide: verdictClass(row.decision),
-      reason: describe(row.decision).verdict })) });
+// A program with no decided declaration (one that does not resolve)
+// fails closed: one blocker standing for the whole program, never
+// `notLost` (review, 2026-11-12).
+const undecided = { name: '', decide: 'Undecided',
+  reason: 'no declaration decided' };
+
+export const programOf = source => {
+  const rows = declarationsOf(source);
+  return { origin: source.origin,
+    today: named(compile(source.source)) === 'Right' ? 'compiles'
+      : 'refused',
+    blockers: rows.length === 0 ? [undecided] : rows
+      .filter(row => verdictClass(row.decision) !== 'Solved')
+      .map(row => ({ name: row.decl.name,
+        decide: verdictClass(row.decision),
+        reason: describe(row.decision).verdict
+          ?? verdictClass(row.decision) })) };
+};
 
 export const observedPrograms = async () =>
   (await sourcesOf()).map(programOf);

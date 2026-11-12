@@ -134,8 +134,9 @@ export const t2ActivationRows = [
     /r0-t2-activation-gate: .*"lossRepeated"/),
   // A program named by sources other than its own.
   helper('r0-t2-activation-losses-named', programs,
-    '    if (JSON.stringify(program.named) !== JSON.stringify(named))\n',
-    '    if (false)\n', /r0-t2-activation-gate: .*"lossMisnamed"/),
+    '    if (!Array.isArray(program.named) || sorted(program.named)\n',
+    '    if (false && sorted(program.named)\n',
+    /r0-t2-activation-gate: .*"lossMisnamed"/),
   // A class its facts do not give (a lost program as not lost).
   helper('r0-t2-activation-losses-class', programs,
     '    else if (program.class !== classOf(program, known))\n',
@@ -146,8 +147,28 @@ export const t2ActivationRows = [
     /r0-t2-activation-gate: .*"lossUnaccepted"/),
   // A known defect registered without a ruling naming its id.
   helper('r0-t2-activation-losses-defect-unruled', programs,
-    "      ...(typeof defect?.id === 'string' && found.met ? []\n",
-    '      ...(true ? []\n', /r0-t2-activation-gate: .*"defectIdUnnamed"/),
+    "      ...(typeof defect?.id === 'string' && recorded(evidence.dossier,\n",
+    '      ...(true || recorded(evidence.dossier,\n',
+    /r0-t2-activation-gate: .*"defectIdUnnamed"/),
+  // A registered defect naming no recorded blocker read as valid.
+  helper('r0-t2-activation-losses-defect-stray', programs,
+    '      ...(program?.blockers.some(blocker =>\n',
+    '      ...(true || program?.blockers.some(blocker =>\n',
+    /r0-t2-activation-gate: .*"defectNoBlocker"/),
+  // One registered blocker of several taken for the whole program.
+  helper('r0-t2-activation-losses-defect-partial', programs,
+    '  return program.blockers.every(blocker =>\n',
+    '  return program.blockers.some(blocker =>\n',
+    /r0-t2-activation-gate: .*"defectPartial"/),
+  // An acceptance read from a section that only names the program and
+  // live replacement (review, 2026-11-12: "Held: live replacement").
+  helper('r0-t2-activation-losses-accept-unrecorded', programs,
+    '    ...(recorded(evidence.dossier, cite, acceptLine(origin)) ? []\n',
+    '    ...(true ? []\n', /r0-t2-activation-gate: .*"lossHeldCited"/),
+  // An accepted entry for a program that is not lost.
+  helper('r0-t2-activation-losses-accept-unlost', programs,
+    "    ...(byOrigin.get(origin)?.class === 'lost' ? []\n",
+    '    ...(true ? []\n', /r0-t2-activation-gate: .*"lossAcceptedNotLost"/),
   // The certification losses dropped from the criterion: supporting
   // evidence that no longer counts.
   helper('r0-t2-activation-losses-supporting', gate,

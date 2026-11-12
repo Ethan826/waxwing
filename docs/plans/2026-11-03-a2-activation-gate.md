@@ -188,12 +188,20 @@ Check, whole programs (test/r0-t2-replacement-losses.mjs):
   program named. The class is derived, never chosen: `existingRefusal`
   when refused today; `notLost` when it compiles and `decide` solves
   every declaration; `knownDefect` when every blocker is a declaration
-  the gate status registers under `knownDefects`, with an `id` and a
-  ruling after §18.157 that names that id; otherwise `lost`.
-- Each registered known defect must name a declaration that blocks a
+  the gate status registers under `knownDefects`; otherwise `lost`. A
+  program with no decided declaration (one that does not resolve)
+  records one blocker standing for the whole program, so it is never
+  `notLost`. `today` and `class` must be recorded values.
+- Each registered known defect cites a ruling after §18.157 whose
+  section holds, as a whole line, `Known defect, correctly refused:
+  <origin#name> (<id>).`, and names a declaration that blocks a
   recorded program.
 - Each `lost` program is unmet unless `acceptedLosses` maps it to a
-  ruling after §18.157 that names the program and live replacement.
+  ruling after §18.157 whose section holds, as a whole line, `Live
+  replacement accepts the loss of <origin>.`; an accepted entry must be
+  a lost program. Mentioning a program and live replacement is not
+  acceptance: "Held: live replacement" accepts nothing (review,
+  2026-11-12).
 - The file is written by scripts/r0-t2-replacement-losses-pin.mjs,
   which refuses to write an inconsistent file.
   test/r0-t2-replacement-losses.serial.test.mjs recomputes it from the
