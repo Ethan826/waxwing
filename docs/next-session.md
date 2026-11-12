@@ -2,7 +2,7 @@
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.185 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.187 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -18,7 +18,7 @@ No milestone has moved since 2026-10-25; milestone changes are held.
 ## Where things stand
 
 Nothing is running. The tree is clean at the commit that added this
-section; the latest verified code is 863a0992 (src 59e70fdb).
+section; the latest verified code is 0e8f7adf (src 59e70fdb).
 
 The activation gate (`node scripts/r0-t2-activation-gate.mjs`; spec
 docs/plans/2026-11-03-a2-activation-gate.md) reads:
@@ -63,7 +63,19 @@ scripts/r0-results-moved.mjs against
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.184)
+## Next, as the author last directed (§18.186)
+
+Done 2026-11-12 (§18.187): criterion 2 now assesses whole-program
+losses under `decide` (census and gap lists, deduplicated;
+test/fixtures/r0/t2-replacement-losses.json, written by
+scripts/r0-t2-replacement-losses-pin.mjs, kept current by
+test/r0-t2-replacement-losses.serial.test.mjs). 252 lost, none
+accepted; FX032 a known defect; criterion 2 unmet. FX032's BACKLOG row
+reads Defect. Verify passed at 0e8f7adf (3511/3511, 245/245, 520/520).
+Awaiting the author. Not started: any cause's lift; the handler-type
+choice waits on the full census (DataApplication, overlaps).
+
+Earlier (§18.184):
 
 Done 2026-11-12 (§18.185): replacement's end-to-end losses on the gap
 lists measured, evidence only, in

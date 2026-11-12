@@ -8931,3 +8931,32 @@ The gate status registers this record (criterion 2 reads it as a whole
 line):
 
 Known defect, correctly refused: inline:fx032#g (FX032).
+
+### 18.187 Criterion 2 corrected and verified; FX032 reclassified (2026-11-12)
+
+Implemented as §18.186 directed (52f85f7f, review fixes 0e8f7adf; spec
+docs/plans/2026-11-03-a2-activation-gate.md, criterion 2). Criterion 2
+reads test/fixtures/r0/t2-replacement-losses.json: every census-union
+and gap-list program, deduplicated, plus any other program `decide`
+would lose, each with its naming sources, today's compile, its unsolved
+declarations and a class derived from those facts. Omitted, repeated,
+misnamed or misclassified programs are unmet. A known defect or an
+accepted loss needs an exact record line in its cited ruling. The
+certification check stays as supporting evidence and still counts.
+Measured: 262 programs; 252 lost, none accepted; FX032 a known defect
+correctly refused; 3 existing refusals; 6 census ErasedRow fixtures not
+lost under `decide`. Criterion 2 stays unmet; the gate reads shadow
+minting met, live replacement not met (2).
+
+An independent review found one Important hole, fixed: an acceptance
+was read from any section naming the program and "live replacement",
+so "Held: live replacement" (§18.185) accepted a loss. The six Minor
+findings are fixed or recorded (the gate trusts the file's facts; the
+serial test keeps them current). Detection is shown by must-fail cases
+on synthetic and real data and by eleven new regression rows. BACKLOG
+FX032 now reads Defect, citing G-erased item 5; repair not authorized.
+Routine verify passed at 0e8f7adf: parallel 3511/3511, serial 245/245,
+regression proofs 520/520, growth 2.296 against 3.0
+(.build/evidence/2026-11-12-verify-criterion2/). Existing pins and
+failed-run evidence unchanged. Held: live replacement, milestone
+changes, F14's retirement, pushing; no cause lifted.
