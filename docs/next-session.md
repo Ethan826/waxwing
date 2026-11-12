@@ -2,7 +2,7 @@
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.183 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.185 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -63,7 +63,18 @@ scripts/r0-results-moved.mjs against
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.182)
+## Next, as the author last directed (§18.184)
+
+Done 2026-11-12 (§18.185): replacement's end-to-end losses on the gap
+lists measured, evidence only, in
+docs/plans/2026-11-12-replacement-losses.md: 15 valid programs lost, 1
+existing defect (FX032) correctly refused, 3 refused today; 12 of the
+15 also need handler types; the census's 256-program loss dwarfs the
+lists. Repair recommendation and cost there. Awaiting the author. R037
+(2) is closed (§18.184); its Desugar one-tail test gap is a retained
+follow-up (BACKLOG R037).
+
+Earlier (§18.182):
 
 Done 2026-11-12 (§18.183): R037 (2) items 1-5 repaired, reviewed and
 verified (Walked, DeclarationUse, Function, Body row-level; Desugar's

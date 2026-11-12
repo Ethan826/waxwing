@@ -8863,3 +8863,45 @@ this, every R037 (2) site is repaired or left with its recorded argument
 (Core). Criterion 2 is still not met: the read-fault and ForcedTail
 losses are unruled. Held: live replacement, milestone changes, those
 rulings, pushing.
+
+### 18.184 R037 (2) closed; replacement's losses to be measured (2026-11-12)
+
+The author closed R037 (2) on §18.183's recorded evidence (inspected,
+not independently rerun). Retained as an explicit follow-up: Desugar's
+one-tail guard has no test that fails without it (the missed mutant).
+No further fallback cleanup is needed.
+
+Criterion 2: both loss lists (read fault, ForcedTail) stay unresolved
+for live replacement. Certification losses alone do not establish which
+working programs replacement would reject. Next, evidence only: measure
+replacement's end-to-end outcome for each named read-fault and
+ForcedTail declaration, and for the three existing RequirementUnjudged
+refusals; separate valid programs lost from existing defects correctly
+refused; bring back a repair recommendation and cost. Held: live
+replacement, milestone changes, F14's retirement, pushing.
+
+### 18.185 Replacement's losses on the gap lists measured (2026-11-12)
+
+Evidence only, as §18.184 directed: docs/plans/2026-11-12-replacement-
+losses.md (script research/r0-replacement-losses/measure.mjs; output
+.build/evidence/2026-11-12-replacement-losses/). Replacement's rule is
+the census's: one declaration `decide` does not solve stops its program.
+All 19 listed declarations are `Unresolved`. Of their 19 programs, 16
+compile today and replacement rejects all of them: 15 valid programs
+lost (pinned outputs or probe `ok` outcomes; including
+examples/records.wxw and examples/services.wxw) and one existing defect
+correctly refused (inline:fx032; FX032 is ruled a defect, G-erased item
+5). The other 3 (rigid, f05-print-key, split-selection) are refused
+today; f05's declaration shape loses a valid program once its caller is
+valid. The named fault is the only cause for 3 lost programs (c7 and
+q7: UnreadImage; records: RequirementAtoms). The other 12 also carry
+`Outside HandlerType`, and 6 have other blocking declarations, so no
+UnframedInstall or ForcedTail repair alone rescues any program. The
+pinned census counts 256 of 751 accepted programs rejected under
+replacement; certification losses understate replacement. No design or
+cost estimate exists for lifting any cause. Recommended: no isolated
+UnframedInstall or ForcedTail repair; read criterion 2 at `decide`
+level; if replacement is wanted soon, a statements-first handler-type
+design first; optionally UnreadImage, and RequirementAtoms after the A7
+`show` ruling. Awaiting the author. Held: live replacement, milestone
+changes, F14's retirement, pushing.
