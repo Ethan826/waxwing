@@ -22,7 +22,13 @@ import Domain.Type.Marks (mapMarks, mapRowMarks)
 import Features.Check.MarkUse (instantiateMarks)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.Scheme
-  (Scheme, State, Threaded, at, atRow, instantiate)
+  ( Scheme
+  , State
+  , Threaded
+  , at
+  , atRow
+  , instantiate
+  )
 import Features.Check.Trace (Slot(..), recordUse)
 
 -- One use of a function's or constructor's scheme, its variables
