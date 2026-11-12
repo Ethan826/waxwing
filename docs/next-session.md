@@ -1,8 +1,8 @@
-# RESUME HERE (2026-11-10, America/New_York)
+# RESUME HERE (2026-11-12, America/New_York)
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.176 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.183 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -18,7 +18,7 @@ No milestone has moved since 2026-10-25; milestone changes are held.
 ## Where things stand
 
 Nothing is running. The tree is clean at the commit that added this
-section; the latest verified code is 42461f06 (src 98278e0d).
+section; the latest verified code is 863a0992 (src 59e70fdb).
 
 The activation gate (`node scripts/r0-t2-activation-gate.mjs`; spec
 docs/plans/2026-11-03-a2-activation-gate.md) reads:
@@ -47,23 +47,34 @@ What landed, in order:
   harness may mint `Certified` in JavaScript from the comparator: evidence
   about G0 and Decide only (§18.176).
 
-Latest evidence: routine verify at 42461f06 passed (parallel 3494/3494,
-serial 242/242, regression proofs 509/509, growth 2.167 against 3.0; free
-memory fell to 24%, uninterrupted; .build/evidence/2026-11-10-verify-r037/).
-Records on the current src (98278e0d):
-test/fixtures/r0/t2-minting-comparison8.json (dump byte-identical to
-comparison 6; moved report equal to the pre-switch comparison) and
-t2-performance-8.json (read-back CPU ×2.37, RSS ×1.07; validator CPU
-×2.20, RSS ×1.02). Note: this section earlier quoted perf 6's read-back
-RSS as ×1.04; the file's measured value is 1.061. Any src change, comments
-included, makes both stale for the gate: repeat them on the new src
-(scripts/r0-t2-perf-run.mjs; scripts/r0-results-dump.mjs then
+Latest evidence: routine verify at 863a0992 passed (parallel 3501/3501,
+serial 242/242, regression proofs 509/509, growth 2.342 against 3.0;
+.build/evidence/2026-11-12-verify-r037/). Records on the current src
+(59e70fdb): test/fixtures/r0/t2-minting-comparison10.json (dump
+byte-identical to comparison 8; moved report equal) and
+t2-performance-10.json (read-back CPU ×2.36, RSS ×1.09; validator CPU
+×2.22, RSS ×1.01). Before any src change, run `purs-tidy check src
+tools/style/src` (verify's first step) as well as width and structure.
+Any src change, comments included, makes both stale for the gate:
+repeat them on the new src (scripts/r0-t2-perf-run.mjs;
+scripts/r0-results-dump.mjs then
 scripts/r0-results-moved.mjs against
 .build/evidence/2026-11-09-comparison3/baseline-dump.json) and repoint
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.176)
+## Next, as the author last directed (§18.182)
+
+Done 2026-11-12 (§18.183): R037 (2) items 1-5 repaired, reviewed and
+verified (Walked, DeclarationUse, Function, Body row-level; Desugar's
+`Meta 0` removed); nothing moved. Evidence in
+docs/plans/2026-11-10-r037-2-remaining-sites.md, "Repair". Every R037
+(2) site is now repaired or argued (Core). Awaiting the author. Still
+separate and held: live replacement, milestone changes, the read-fault
+and ForcedTail rulings (criterion 2). Recorded test gap: Desugar's
+one-tail guard has no test that fails without it.
+
+Earlier:
 
 Done 2026-11-10 (§18.177): Entry's fallback traced and reproduced by a
 planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.

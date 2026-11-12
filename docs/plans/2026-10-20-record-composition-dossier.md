@@ -8838,3 +8838,28 @@ final source, and a full verify. Any behavioral movement is a stop.
 Unchanged: Core's arms and `resolver`. Separate and held: live
 replacement, milestone changes, and the read-fault and ForcedTail
 rulings.
+
+### 18.183 R037 (2) remaining repair verified (2026-11-12)
+
+Implemented as §18.182 authorized (final src 59e70fdb; evidence and
+review in docs/plans/2026-11-10-r037-2-remaining-sites.md, "Repair").
+Walked, DeclarationUse (Scheme `atRow`, `mapRowMarks`), Function and
+Body (Checked `rigidRow`) convert rows as rows, with no `TFun` wrapper
+and no fallback arm; Desugar's `freshRow` takes its first tail from
+`Array.uncons`. Core's arms and `resolver` are unchanged. Equivalence
+against the old arrow forms is tested (test/r0-site-rows.test.mjs);
+Body's token review and an independent review found no behavioral
+defect, and their findings are fixed. Restored-defect checks catch nine
+of ten mutants on the new paths; the one missed (Desugar's one-tail
+guard removed) leaves the row unchanged but adds substitution
+constraints no suite reaches, recorded as a test gap. Nothing moved:
+comparison 10's dump is byte-identical to comparison 8's, and
+performance 10 is within the budgets (read-back CPU x2.36, RSS x1.09;
+validator CPU x2.22, RSS x1.01). Routine verify passed at 863a0992. Two
+harness consequences, fixed: the trace-removal baseline needed
+Function's `Maybe` import back (77b08566), and an import's layout failed
+purs-tidy at c30a1e52, so records 9 went stale and were repeated. With
+this, every R037 (2) site is repaired or left with its recorded argument
+(Core). Criterion 2 is still not met: the read-fault and ForcedTail
+losses are unruled. Held: live replacement, milestone changes, those
+rulings, pushing.

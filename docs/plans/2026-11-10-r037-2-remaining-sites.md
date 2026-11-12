@@ -206,3 +206,103 @@ checker and in R0's generation. With item 5, every R037 (2) site is
 either repaired or left with a recorded argument (Core). Closing R037
 (2) does not by itself meet criterion 2, which also needs the
 read-fault and ForcedTail losses ruled.
+
+## Repair (§18.182, implemented)
+
+Authorized by the author (§18.182): items 1-5. Core's arms and
+`resolver` are unchanged. Final source at 59e70fdb: 422aae52, the review
+fixes (94edf6eb), and a purs-tidy formatting fix.
+
+- Walked.purs: `walkedRow subst row = checkedRow (walkRow subst
+  (flexibleRow row))`.
+- Scheme.purs: `atRow scheme = renameRow (shifted scheme)` beside `at`,
+  which now shares the top-level `shifted`. DeclarationUse.purs:
+  `instantiated = withRowMarks (atRow scheme.value row)`, where
+  `withRowMarks` is `mapRowMarks` under the same `markNames` test as
+  `withMarks`. `arrowRow` is removed.
+- Domain/Checked/Internal.purs: `rigidRow = renameRow Rigid` beside
+  `rigid`. Function.purs `current` and Generate/Body.purs `rowOf` use
+  it; `main`'s handling (`mainRow`, `isEntry`) is unchanged. Body is
+  trusted surface: the reviewer's token review found no token built and
+  no export added (`generateIn` only, as pinned).
+- RowMerge/Desugar.purs `freshRow`: the first tail comes from
+  `Array.uncons`; one tail or none returns the row as written. No
+  `Meta 0` is written anywhere.
+
+Why each is the same function: `rename f (TFun TUnit r TUnit)` is
+`TFun TUnit (substituteRow (renaming f) r) TUnit` (`stagesThrough
+identity` gives one stage; `foldStages` rebuilds it), so its row is
+`renameRow f r`. `mapMarks c` on that arrow is `editedRow` on `r`,
+which is `mapRowMarks c r`. Desugar: zero, one, and two or more metas
+take the same branch as the old `length < 2` guard with the same
+`first` and `rest`.
+
+Checks:
+- test/r0-site-rows.test.mjs (7 tests): each new form against the old
+  arrow form on 400 generated rows plus fixed ones (repeated labels,
+  every mark kind, nested arrows whose rows carry marks inside label
+  arguments, all tail kinds), compared both as plain rows and as raw
+  structure; walkedRow under generated substitutions and a tail
+  splice with duplicates; atRow's shift; Body's elaborated row end to
+  end (labels kept, `main`'s tail closed); Desugar's closed record
+  beside a several-tail one staying closed.
+- Restored-defect checks (research/r037-2-sites/mutants.mjs, compiled
+  output patched in an isolated copy; log
+  .build/evidence/2026-11-12-r037-2-sites/mutants.log). Each mutant is
+  confined to its named function.
+
+| Mutant | site-rows | entry-rows | origins | defer | defer-run | nofail-k | elab-build |
+|---|---|---|---|---|---|---|---|
+| Walked: spliced labels dropped (row unwalked) (caught) | 2 | 0 | 0 | 24 | 6 | 5 | 0 |
+| DeclarationUse: instantiated row dropped at a use (caught) | 1 | 3 | 11 | 23 | 0 | 3 | 0 |
+| DeclarationUse: instantiated row's labels dropped, tail kept (caught) | 1 | 3 | 10 | 23 | 0 | 3 | 0 |
+| DeclarationUse: row marks not instantiated (caught) | 0 | 0 | 0 | 0 | 1 | 2 | 0 |
+| Scheme.atRow: variables not shifted by the base (caught) | 2 | 1 | 4 | 2 | 8 | 5 | 0 |
+| Checked.rigidRow: labels dropped (caught) | 2 | 1 | 7 | 6 | 9 | 4 | 3 |
+| Function.current: labels dropped (caught) | 1 | 1 | 7 | 6 | 9 | 4 | 3 |
+| Body.rowOf: labels dropped (caught) | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Desugar.freshRow: one-tail guard removed (missed) | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Desugar.freshRow: Meta 0 invented (old default, unguarded) (caught) | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+
+  Failing tests per suite. r0-static, r005b-render and r005b-outcome
+  failed under no mutant.
+
+  The marks mutant is caught only by fx008-defer-run and fx008-nofail-k.
+  The one-tail guard mutant is missed. With one meta `m`, `finished`
+  returns the same row (Flex's order puts rigid before meta, and
+  `recordRow` sorts), but the substitution gains `addLacks m`, `seedApart`
+  against each rigid tail, and an occurrence in the origins. No suite
+  reaches a binding that the lacks constraint would refuse, or reads
+  that occurrence. The guard is unchanged; this is a test gap, recorded,
+  not a defect. The `Meta 0` mutant restores the old default without
+  the guard; only the new Desugar test catches it, and the old code
+  passes that test too, because its guard made the default unreachable.
+- Independent review (2026-11-12, of 422aae52): no behavioral defect.
+  Fixed: Desugar's guard comment, nested label arguments and raw
+  comparison in the tests, the Desugar test's comment. One finding was
+  wrong: `main`'s written row has a tail variable, so Body's test does
+  exercise the tail closing; the test now asserts it.
+- Comparison: the corpus dump is byte-identical to comparison 8's, and
+  the moved report against the pre-switch baseline equals comparison 8's
+  line for line, at 422aae52, 94edf6eb and 59e70fdb. No acceptance,
+  diagnostic or compilation movement. Recorded as
+  test/fixtures/r0/t2-minting-comparison10.json (59e70fdb; evidence
+  .build/evidence/2026-11-12-comparison10/). Comparison 9 (94edf6eb)
+  went stale with the formatting fix.
+- Performance 10: test/fixtures/r0/t2-performance-10.json at 59e70fdb:
+  read-back CPU ×2.36, peak RSS ×1.09; validator CPU ×2.22, peak RSS
+  ×1.01, within the §18.168 budgets. Performance 9 (77b08566, src as at
+  94edf6eb: ×2.33, ×1.06; ×2.22, ×1.02) went stale the same way.
+- The first protocol run on 94edf6eb failed before measuring: the
+  no-collection baseline (scripts/r0-t2-trace-removal.mjs) writes
+  `Row [] Nothing` into Function.purs, and `current` no longer needs
+  `Nothing`, so its import was gone. One more removal edit restores the
+  import in the scratch copy (77b08566). Kept:
+  .build/evidence/r0-t2-perf-2026-11-12T18-42-34-092Z/.
+- Routine verify at c30a1e52 failed at purs-tidy (DeclarationUse's
+  import layout; log in
+  .build/evidence/2026-11-12-verify-r037-failed-c30a1e52/). Fixed in
+  59e70fdb, and both records repeated.
+- Routine verify passed at 863a0992 (src as at 59e70fdb): parallel
+  3501/3501, serial 242/242, regression proofs 509/509, growth ratio
+  2.342 against 3.0 (.build/evidence/2026-11-12-verify-r037/).
