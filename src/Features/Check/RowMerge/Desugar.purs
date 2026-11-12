@@ -42,8 +42,9 @@ freshRow site steps written subst =
   maybe { row: written, subst } several (Array.uncons metas)
   where
   metas = Array.filter isMeta written.tails
-  -- One unknown tail or none: nothing to require apart. The first tail
-  -- comes from the array, so none is invented (R037 (2)).
+  -- One unknown tail or none: the row as written, with no lacks, apart
+  -- or occurrence recorded for its tail. The first tail comes from the
+  -- array, so none is invented (R037 (2)).
   several { head: first, tail: rest } =
     if Array.null rest then { row: written, subst }
     else finished site steps (nextPredicate subst) written

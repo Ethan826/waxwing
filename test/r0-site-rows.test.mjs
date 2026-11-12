@@ -37,14 +37,23 @@ const plainFlex = flexRow => ({ labels: flexRow.value0.map(plainLabel),
     : null });
 // An Open row, compared through the conversion r0-entry-rows checks.
 const plain = open => plainFlex(scheme.flexibleRow(open));
+// Raw structure as well: `plain` reads no mark inside a label argument.
+const same = (found, old) => {
+  assert.deepEqual(plain(found), plain(old));
+  assert.deepEqual(found, old);
+};
 const arrow = row => TFun.create(TUnit.value)(row)(TUnit.value);
 const rowOfArrow = ty => {
   assert.ok(ty instanceof TFun, 'the old form kept the arrow');
   return ty.value1;
 };
 
-const genArg = next =>
-  [int, bool, meta(0), meta(1), rigid(4)][choose(next, 5)];
+// A nested arrow's row puts labels, with marks, inside a label argument,
+// so the conversions' recursion into arguments is compared too.
+const nested = mark => ({ k: 'fun', args: [int, meta(1)],
+  row: { labels: [{ e: 1, args: [int], mark }], tail: meta(11) } });
+const genArg = next => [int, bool, meta(0), meta(1), rigid(4),
+  nested('nofail'), nested({ variable: 'm' })][choose(next, 7)];
 const genLabel = next => {
   const shape = choose(next, 4);
   if (shape === 0) return { e: 'console', args: [] };
@@ -81,7 +90,7 @@ test('walkedRow agrees with the arrow round trip under a substitution',
       const open = fixed[index] ?? genOpen(next);
       const old = rowOfArrow(scheme.opened(arrow(
         subst.walkRow(found)(scheme.flexibleRow(open)))));
-      assert.deepEqual(plain(walked.walkedRow(found)(open)), plain(old));
+      same(walked.walkedRow(found)(open), old);
     }
   });
 
@@ -109,9 +118,9 @@ test('atRow, with and without marks, agrees with at on the arrow', () => {
     const row = declared(fixed[index] ?? genOpen(next));
     const use = { arguments: [], base: choose(next, 30) };
     const old = at => rowOfArrow(scheme.at(use)(arrow(at)));
-    assert.deepEqual(plain(scheme.atRow(use)(row)), plain(old(row)));
-    assert.deepEqual(plain(mapRowMarks(remark)(scheme.atRow(use)(row))),
-      plain(rowOfArrow(mapMarks(remark)(scheme.at(use)(arrow(row))))));
+    same(scheme.atRow(use)(row), old(row));
+    same(mapRowMarks(remark)(scheme.atRow(use)(row)),
+      rowOfArrow(mapMarks(remark)(scheme.at(use)(arrow(row)))));
   }
 });
 
@@ -127,8 +136,7 @@ test('rigidRow agrees with rigid on the arrow', () => {
   const next = generator(0x3714);
   for (let index = 0; index < cases + fixed.length; index += 1) {
     const row = declared(fixed[index] ?? genOpen(next));
-    assert.deepEqual(plain(checked.rigidRow(row)),
-      plain(rowOfArrow(checked.rigid(arrow(row)))));
+    same(checked.rigidRow(row), rowOfArrow(checked.rigid(arrow(row))));
   }
 });
 
@@ -148,6 +156,8 @@ test('Body: an elaborated declaration keeps its written row', () => {
   for (const row of found) {
     assert.equal(named(row.elaborated), 'Elaborated', row.decl.name);
     const old = plain(rowOfArrow(checked.rigid(arrow(row.decl.row))));
+    // `main`'s written row has a tail variable, which Body closes.
+    if (row.decl.name === 'main') assert.notEqual(old.tail, null);
     const expected = row.decl.name === 'main' ? { ...old, tail: null } : old;
     const elaborated = plain(row.elaborated.value0.row);
     assert.ok(elaborated.labels.length > 0, row.decl.name);
@@ -157,9 +167,10 @@ test('Body: an elaborated declaration keeps its written row', () => {
 
 // Desugar's `freshRow`: a record with fewer than two unknown tails is
 // left as written, so a closed record in a type that has a row of
-// several unknown tails gets no invented tail (the old `Meta 0`
-// default, dossier §18.181). `desugaredType` rebuilds every record of
-// such a type.
+// several unknown tails gets no invented tail. The old code passes too:
+// its guard made the `Meta 0` default unreachable (dossier §18.181).
+// This catches that default restored without the guard (mutants.mjs).
+// `desugaredType` rebuilds every record of such a type.
 test('Desugar: a closed record beside a several-tail one stays closed',
   () => {
     const record = (fields, tails) => TRecord.create({ fields: fields.map(
