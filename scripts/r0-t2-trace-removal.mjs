@@ -53,7 +53,11 @@ export const removalEdits = [
   ''],
   [`${check}/Install.purs`, '    , trace = recordInstallation span'
     + ' { frame, current: env.current }\n        framed.trace\n', ''],
-  // `row` (Task 8): the closed empty row, as `emptyTraced` has it.
+  // `row` (Task 8): the closed empty row, as `emptyTraced` has it. Its
+  // `Nothing` needs the import that R037 (2)'s `current` no longer uses
+  // (dossier §18.182).
+  [`${check}/Function.purs`, 'import Data.Maybe (maybe)\n',
+    'import Data.Maybe (Maybe(..), maybe)\n'],
   [`${check}/Function.purs`, '    , trace: finish (resolver settledSubst)'
     + ' (numbering settled) entryRow\n        marked.trace\n',
   '    , trace: Right\n        { uses: Map.empty, applied: Map.empty,'
