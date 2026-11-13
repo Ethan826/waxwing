@@ -9076,3 +9076,30 @@ undertaking P-G0, stop and report the dependency); the constructor-table
 and holder-set assumptions are explicit, and the reviewer's
 counterexamples become reproducible fixtures. Implementation
 unauthorized. Criterion 2 and all holds unchanged.
+
+### 18.193 Scope A's bounded proof work returned (2026-11-13)
+
+As §18.192 authorized; results in docs/plans/2026-11-13-scope-a-free-
+constructor-design.md §15. The Lean module Composition/App sits beside
+the existing model, which is unchanged. Proved:
+- S2 and S3;
+- S4, conservativity: `Scoped` turned out unnecessary;
+- S5′, relative to exactly `PG0Clauses`, P-G0's two clauses on the
+  existing model: the "no `app` in `D`" hypothesis turned out
+  unnecessary;
+- S6, requirement agreement under all three G-ValidR readings;
+- S8, no hidden function, with `TableBases`.
+
+S8 without `TableBases` is refuted and kept (`not_s8NoBases`); the
+missing hypothesis was a formalization error in the interface, already
+present in S6, with S8's scope unchanged. The axioms gate passes: a
+clean rebuild, no placeholders, 90 theorems, at most `propext`,
+`Quot.sound` and `Classical.choice` (the last from the existing model's
+classical composition). Oracle O-A (amendment A1, recorded before the
+run): 495 accepted problems, 13,083 assignments, 0 failures; the
+negative control finds failures on all 7,524 refused candidates. R1-R6
+are reproducible fixtures on the committed compiler. S5 (P-G0) stays
+unproved, and these results do not establish checker soundness. Spent
+about 0.9M tokens. Awaiting the author's decision to use the results:
+the completed-dossier review, and U6. Implementation unauthorized.
+Criterion 2 unmet; holds continue.

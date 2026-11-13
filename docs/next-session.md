@@ -2,7 +2,7 @@
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.191 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.193 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -63,7 +63,18 @@ scripts/r0-results-moved.mjs against
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.190)
+## Next, as the author last directed (§18.192)
+
+Done 2026-11-13 (§18.193): Scope A's bounded proof work. Lean module
+research/composition-proofs/Composition/App (proved: S2, S3, S4, S5′
+relative to `PG0Clauses`, S6, S8 with `TableBases`; refuted and kept:
+S8 without it). The gate (check-axioms.sh, 90 theorems) passes. Oracle
+O-A: 0 failures. R1-R6 are reproducible fixtures. Results in
+docs/plans/2026-11-13-scope-a-free-constructor-design.md §15. Awaiting
+the author's decision to use them (completed-dossier review, U6). No
+implementation. P-G0 stays unproved.
+
+Earlier (§18.190):
 
 Done 2026-11-13 (§18.191): Scope A's statements-first design,
 docs/plans/2026-11-13-scope-a-free-constructor-design.md (statements

@@ -443,3 +443,121 @@ claim, or the definedness part of S5′. It confirmed §10's first counts
 (TypeId indexes `program.types`) and R2 and R3. The revision's new
 counts (holder heads, arrows in arguments) were measured after the
 review and have not been reviewed.
+
+## 15. Proof and oracle results (2026-11-13; for the completed-dossier review)
+
+Authorized by §18.192 as bounded proof work. The statements were
+approved for investigation, not adoption. Nothing here establishes the
+checker's soundness: S5 (P-G0 over `GA`) is unproved, and every Solved
+stays at `Pending genericSubstitutionSound` (decision U1).
+
+**Where.**
+- The Lean module is research/composition-proofs/Composition/App/:
+  Defs.lean and Statements.lean (the interface), Proofs/Subst.lean,
+  Agree.lean, Req.lean and Check.lean, and Main.lean (integration).
+- The existing model and its theorems are unchanged (U4). The library
+  root now imports the module, so `lake build` covers it.
+- The gate is the proof-dossier skill's check-axioms.sh: a clean
+  rebuild, no placeholders, the theorem inventory read back from Lean,
+  and a diff of the report. It passes on f5c58cc1 for 90 theorems.
+  Report: research/composition-proofs/app-axioms.out; list:
+  app-theorems.txt; log: .build/evidence/2026-11-13-scope-a/gate.log.
+
+| Id | Status | Theorem | Notes |
+|---|---|---|---|
+| S1 | published | Lean's generated injectivity and `noConfusion` for `GA` | used by the proofs, not restated |
+| S2 | proved | `s2` | |
+| S3 | proved | `s3` | the existing `subst_evalT` pattern, plus the `app` case |
+| S4 | proved | `s4` (`s4_of_s2` does not need S2) | **the `Scoped` hypothesis is unused**: conservativity holds for every `SigProblem` (finite rigid values suffice for `dec ∘ enc = id`) |
+| S5 | unresolved | — | P-G0 over `GA`; not attempted (U1) |
+| S5′ | proved, relative | `s5'` (= `s5'_of_s3 s3`) | assumes exactly `PG0Clauses`, P-G0's two clauses on the existing model; **the "no `app` in `D`" hypothesis is unused**, since erasure moves every `D` atom across |
+| S5e | experimentally checked | oracle O-A (A1) | below |
+| S6 | proved | `s6` | needs `TableBases` and `kind (dataB t) = .data t`; **`TableWF` is unused** |
+| S7 | not started | — | a generation test under implementation; the corpus measurements in §10 cover in-scope declarations only |
+| S8 (first form) | **refuted** | `not_s8NoBases` | without `TableBases`, a field written as a base classified as a holder's type lets reachability enter the holder. Kept as `S8NoBases` |
+| S8 | proved | `s8` | carries `TableBases`, the assumption S6 already had; `TableWF` unused |
+| R1-R6 | reproducible | research/r0-scope-a/counterexamples.mjs | on the committed compiler: G0's own check accepts R1, R4, R5 and R6, which today refuses; R2 and R3 are refused by both |
+
+**The S8 correction** was a formalization error in the interface: S6
+had `TableBases` and S8 did not. The design's S8 is stated "under D6",
+and S8's scope did not change. The refuted form is kept, as the policy
+requires.
+
+**What S5′ assumes of P-G0, exactly** (`PG0Clauses`,
+Statements.lean). Under an assignment satisfying a problem's `D` and a
+candidate's binding equations, on the existing app-free model:
+- a term G0's `defined` accepts is defined;
+- a `lacks` or `disjoint` atom its row tests accept holds.
+
+The existence of such an assignment is also P-G0's, and is neither
+assumed nor claimed. Its non-vacuity is shown: `pg0Clauses_semCheck`
+builds a semantic check satisfying the clauses, and an `example` shows
+that check accepting an `app` equation, carried through `s5'` to the
+equation holding.
+
+**Non-vacuity and controls (in the Lean module).**
+- S3 at a binding to `app 0 [tvar 1]`.
+- S4 at a scoped example (`AgreeExample`).
+- S6 at `L(a) = N | C(a, L(a))`, with `app L [Int]`: JHolds and all
+  three readings (`ex_jholds`, `ex_readings`). `app L [Int]` reaches
+  `Int`, so ReqHb's "for all reachable values" covers at least one.
+- Negative control: `Box(a) = Box(a -> a)` is a holder and fails JHolds
+  (`box_holder`, `box_not_jholds`).
+- S5′ through `semCheck`.
+
+**Axioms.** Every theorem uses at most Lean's standard axioms:
+`propext`, `Quot.sound`, and for some `Classical.choice`.
+- `s2`, `s3`, `s4` and `s5'` use `Classical.choice` because evaluation
+  is classical: the existing model's `compose` decides disjointness
+  classically (Compose.lean:12), and `evalA` inherits it.
+- `s6` and `s8` use only `propext` and `Quot.sound`.
+- There is no declared axiom, `sorry`, `admit` or `native_decide`
+  (checked by the gate).
+
+**Definitional choices the proofs fixed**, for review:
+- H-b is modeled as reachability through instantiated constructor
+  fields.
+- A handler field instantiates to an arrow stand-in that no requirement
+  accepts.
+- A parameter index out of range instantiates to the empty record.
+- A declared type with no parameters is written `.data u .nil` and
+  instantiates through `dataB`.
+- `enc` codes finite `app` values as fresh bases, deciding finiteness
+  classically.
+
+**Oracle O-A, amendment A1** (research/r0-scope-a/oracle.mjs; output
+.build/evidence/2026-11-13-scope-a/oracle.json; grammar recorded before
+the run, commit 15954081).
+- All 8,019 programs were judged: none refused, none out of scope.
+- The compiler's `substitutionOnly` returned `Valid` on 495.
+- Under all 13,083 rigid assignments satisfying `D`, every `B` atom
+  held in the JS evaluator of `GA`: **0 failures**.
+- The negative control: on all 7,524 refused candidates, the evaluator
+  found a failing atom, so it can fail.
+- Bounded evidence; no finite reduction is argued.
+
+**Model-to-implementation gap.**
+1. `CheckA` mirrors Strategy/Atoms.purs by hand, and the Lean model is
+   not extracted. The link is differential: oracle O-A runs the
+   compiler's own check against the `GA` evaluator on its grammar.
+   Bounded.
+2. The tables are assumptions about the compiler. Its `holders` field
+   must equal `Holder T` (K-a's obligation; test/r0-holders.test.mjs),
+   and declared field types must name only Waxwing's bases
+   (`TableBases`). The second is argued from resolution and is not
+   tested yet: a test is proposed for implementation.
+3. Generation exactness (S7) and D6's conditions are measured on the
+   corpus (§10) and still need their generation tests and U3's
+   defensive refusal under implementation.
+4. P-G0 is unproved (U1).
+
+**Remaining before any use.** Implementation stays unauthorized.
+- The completed-dossier review, which includes U6, the exemption
+  ruling.
+- O1, confirming the literature citations' sections.
+- An implementation proposal, with U3's refusal, S7's test, the
+  `TableBases` test and the re-pin list (U7).
+
+**Spent.** About 0.9M tokens for this round by rough count: four proof
+agents about 0.37M in total, plus the interface, fixtures, oracle,
+integration and gate. That is inside the 1.0-2.4M planning range.
