@@ -2,7 +2,7 @@
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.189 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.191 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -63,7 +63,17 @@ scripts/r0-results-moved.mjs against
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.188)
+## Next, as the author last directed (§18.190)
+
+Done 2026-11-13 (§18.191): Scope A's statements-first design,
+docs/plans/2026-11-13-scope-a-free-constructor-design.md (statements
+S1-S8, refuted variants R1-R6, boundary D6, 118 programs in scope
+conditionally, cost about 2.2-4.7M by analogy, decisions U1-U8). An
+adversarial statement review ran; its findings are fixed (§14 there).
+Awaiting the author's statement approval. No proof work, no
+implementation.
+
+Earlier (§18.188):
 
 Done 2026-11-12 (§18.189): census analysis, evidence only, in
 docs/plans/2026-11-12-census-analysis.md (per-program blocker sets in

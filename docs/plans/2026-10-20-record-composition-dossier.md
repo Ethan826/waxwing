@@ -9002,3 +9002,46 @@ cost estimate exists for any; costs are analogies, labeled. Recommended
 first scope: A. Its design needs the author's authorization (the plan
 marks destination E's design unauthorized); not started. Criterion 2
 unmet; holds continue.
+
+### 18.190 Scope A: statements-first design authorized, design only (2026-11-13)
+
+The author authorized Scope A's statements-first design only. The 121
+potential rescues justify examining A first. Disabling markers showed
+that no further blocker appeared in those runs; it does not establish
+soundness or authorize removing the marker. The design is to define the
+free-constructor model, its assumptions and its boundary with existing
+R0 semantics; separate published components from the ValidR draft's
+unproved claims; state the obligations G-exempt needs, with
+distinguishing examples and counterexamples; explain generation,
+validation and read-back changes, including how unsupported cases stay
+blocked; identify which of the 121 programs fall within the proposed
+scope, with rescue counts conditional until implemented and verified;
+and return a costed proposal for proof and implementation with
+unresolved decisions explicit. The statement set and cost come back
+before proof work. Not authorized: implementation, marker removal,
+effect-marker work, expansion to Scope C. Criterion 2 unmet; all holds
+continue.
+
+### 18.191 Scope A statement set returned for approval (2026-11-13)
+
+Design only, as §18.190 authorized:
+docs/plans/2026-11-13-scope-a-free-constructor-design.md (scripts and
+evidence in research/r0-scope-a/ and .build/evidence/2026-11-13-
+scope-a/). The free-constructor model `GA` (nominal: constructors
+injective, distinct heads unequal), `ValidR_A` as a family over the
+unruled G-ValidR choices, and the boundary `InScopeA` (D6): declared
+heads with no effect-row or record-row parameter and not in the holder
+set, no arrow inside an `app` argument, no `app` in `D`, no other
+marker, no open requirement atom. Statements S1 (published), S2-S4,
+S5′, S6, S8 (derived, to prove), S5 (G0's check sound over `GA`:
+unresolved, it is P-G0), S5e and S7 (to check); refuted variants R1-R6
+kept as the boundary's reasons. An adversarial statement review found
+two Critical and four Important issues, all fixed: S5 needs the
+open-requirement condition (G0's check accepts open atoms), and effect
+rows hide inside function fields and arrow arguments, so those are
+excluded. In scope, conditionally: 118 of the 121 (12 with no
+requirement over `app`, 106 with), 3 excluded. Cost by analogy about
+2.2-4.7M tokens without proving P-G0, whose cost is unknown. Decisions
+U1-U8 for the author, U1 (whether `Pending` assurance suffices) first.
+Awaiting statement approval; no proof work, no implementation, no
+marker change. Criterion 2 unmet; holds continue.
