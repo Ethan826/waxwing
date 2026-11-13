@@ -10,7 +10,8 @@ S8 as first stated, `S8NoBases`, is false (`not_s8NoBases`): without
 `TableBases`, a constructor field `.base b` whose base is classified
 `kind b = .data u` for a holder `u` is no `HoldsFn` field, yet
 `Reach.base` passes through it into `u`'s arrow. S8 now carries
-`TableBases`.
+`TableBases` and is proved (`s8`) by the same closure argument, with
+"reaches no arrow" as an extra leaf of the invariant (`OkS8`).
 -/
 import Composition.App.Statements
 
@@ -144,6 +145,134 @@ theorem s6 {Label B : Type} [DecidableEq Label] :
   have ha := jholds_reqHa T kind hv
   exact ⟨ha, fun w hr => reqHa_safe (reach_reqHa hB hd hr ha),
     jholds_reqHc T kind hv⟩
+
+/-! ## S8
+
+The invariant: a value is `OkS8` if it reaches no arrow, or if it has
+H-a's shape (printable or non-holder base, records and non-holder
+applications of `OkS8` values). `OkS8` is closed under every `Reach`
+step (given `TableBases` and `kind (dataB t) = .data t`) and admits no
+arrow. `TableWF` and `(T t).isSome` are not used. -/
+
+section S8Proof
+
+variable {T : Table Label B} {kind : B → BaseKind} {dataB : Nat → B}
+
+/-- The value reaches no arrow. -/
+def NoArrow (T : Table Label B) (kind : B → BaseKind) (dataB : Nat → B)
+    (v : GA Label B) : Prop :=
+  ∀ w, Reach T kind dataB v w → ∀ a c, w ≠ .arrow a c
+
+/-- S8's invariant over `Reach`. -/
+inductive OkS8 (T : Table Label B) (kind : B → BaseKind) (dataB : Nat → B) :
+    GA Label B → Prop where
+  | noArrow {v : GA Label B} : NoArrow T kind dataB v → OkS8 T kind dataB v
+  | prim {b : B} : kind b = .prim → OkS8 T kind dataB (.base b)
+  | data {b : B} {t : Nat} : kind b = .data t → ¬ Holder T t →
+      OkS8 T kind dataB (.base b)
+  | record {f : Label → Option (GA Label B)} :
+      (∀ k g, f k = some g → OkS8 T kind dataB g) →
+      OkS8 T kind dataB (.record f)
+  | app {t : Nat} {vs : List (GA Label B)} : ¬ Holder T t →
+      (∀ v ∈ vs, OkS8 T kind dataB v) → OkS8 T kind dataB (.app t vs)
+
+mutual
+  theorem instFT_ok (hd : ∀ t, kind (dataB t) = .data t)
+      {vs : List (GA Label B)} (hvs : ∀ v ∈ vs, OkS8 T kind dataB v) :
+      ∀ f : FT Label B, ¬ HoldsFn T f → FTBases kind f →
+        OkS8 T kind dataB (instFT dataB vs f)
+    | .base b, _, hb => by
+      rw [instFT]; exact .prim hb
+    | .param i, _, _ => by
+      rw [instFT]
+      cases h : vs[i]? with
+      | none => exact .record fun _ _ hk => by simp at hk
+      | some v => exact hvs v (List.mem_of_getElem? h)
+    | .arrow _ _, hn, _ => absurd .arrow hn
+    | .record fs, hn, hb => by
+      rw [instFT]
+      exact .record (instFields_ok hd hvs fs (fun h => hn (.record h)) hb)
+    | .data u .nil, hn, _ => by
+      rw [instFT]; exact .data (hd u) (fun h => hn (.head h))
+    | .data u (.cons a as), hn, hb => by
+      rw [instFT]
+      have := instArgs_ok hd hvs (.cons a as) (fun h => hn (.arg h)) hb
+      rw [instArgs] at this
+      exact .app (fun h => hn (.head h)) this
+    | .handler, hn, _ => absurd .handler hn
+
+  theorem instFields_ok (hd : ∀ t, kind (dataB t) = .data t)
+      {vs : List (GA Label B)} (hvs : ∀ v ∈ vs, OkS8 T kind dataB v) :
+      ∀ fs : FTFields Label B, ¬ HoldsFnF T fs → FTBasesF kind fs →
+        ∀ k g, instFields dataB vs fs k = some g → OkS8 T kind dataB g
+    | .nil, _, _, k, g, h => by rw [instFields] at h; simp at h
+    | .cons l f rest, hn, hb, k, g, h => by
+      rw [instFields] at h
+      dsimp only at h
+      split at h
+      · cases h
+        exact instFT_ok hd hvs f (fun h' => hn (.here h')) hb.1
+      · exact instFields_ok hd hvs rest (fun h' => hn (.there h'))
+          hb.2 k g h
+
+  theorem instArgs_ok (hd : ∀ t, kind (dataB t) = .data t)
+      {vs : List (GA Label B)} (hvs : ∀ v ∈ vs, OkS8 T kind dataB v) :
+      ∀ as : FTArgs Label B, ¬ HoldsFnA T as → FTBasesA kind as →
+        ∀ v ∈ instArgs dataB vs as, OkS8 T kind dataB v
+    | .nil, _, _, v, hv => by rw [instArgs] at hv; simp at hv
+    | .cons f rest, hn, hb, v, hv => by
+      rw [instArgs] at hv
+      rcases List.mem_cons.mp hv with rfl | hv
+      · exact instFT_ok hd hvs f (fun h' => hn (.here h')) hb.1
+      · exact instArgs_ok hd hvs rest (fun h' => hn (.there h')) hb.2 v hv
+end
+
+/-- `OkS8` is closed under `Reach`. -/
+theorem reach_ok (hB : TableBases T kind)
+    (hd : ∀ t, kind (dataB t) = .data t) {v w : GA Label B}
+    (hr : Reach T kind dataB v w) (hv : OkS8 T kind dataB v) :
+    OkS8 T kind dataB w := by
+  induction hr with
+  | refl => exact hv
+  | field hk _ ih =>
+    cases hv with
+    | noArrow hp =>
+      exact ih (.noArrow fun w' hr'' => hp w' (.field hk hr''))
+    | record hf => exact ih (hf _ _ hk)
+  | ctor hT hc hfl _ ih =>
+    cases hv with
+    | noArrow hp =>
+      exact ih (.noArrow fun w' hr'' => hp w' (.ctor hT hc hfl hr''))
+    | app hn hvs =>
+      exact ih (instFT_ok hd hvs _
+        (fun h => hn (.mk hT hc hfl h)) (hB _ _ hT _ hc _ hfl))
+  | base hb hT hc hfl _ ih =>
+    cases hv with
+    | noArrow hp =>
+      exact ih (.noArrow fun w' hr'' => hp w' (.base hb hT hc hfl hr''))
+    | prim hp => rw [hb] at hp; cases hp
+    | data hb' hn =>
+      rw [hb] at hb'
+      cases hb'
+      exact ih (instFT_ok hd (by simp) _
+        (fun h => hn (.mk hT hc hfl h)) (hB _ _ hT _ hc _ hfl))
+
+/-- `OkS8` admits no arrow. -/
+theorem ok_not_arrow {w : GA Label B} (h : OkS8 T kind dataB w) :
+    ∀ a c, w ≠ .arrow a c := by
+  intro a c he
+  subst he
+  cases h with
+  | noArrow hp => exact hp _ .refl a c rfl
+
+end S8Proof
+
+/-- S8. `TableWF` and `(T t).isSome` are not used. -/
+theorem s8 {Label B : Type} [DecidableEq Label] :
+    S8 (Label := Label) (B := B) := by
+  intro T kind dataB _ hB hd t vs _ hn hvs w hr
+  exact ok_not_arrow (reach_ok hB hd hr
+    (.app hn fun v hv => .noArrow (hvs v hv)))
 
 /-! ## S8 is false as stated
 
