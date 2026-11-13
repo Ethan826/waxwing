@@ -3,7 +3,7 @@ Scope A, S6 and S8 (Composition.App.Statements). Proofs only; the
 statements are the interface's.
 
 S6 is proved (`s6`). Its argument: `ReqHa` is closed under every `Reach`
-step, given `TableBases` and `kind (dataB t) = .data t`; `ReqHa` admits no
+step, given `TableBases` and `kind (dataB t) = .data t`; `ReqHa` allows no
 arrow and no fresh base; `JHolds` implies `ReqHa`. `TableWF` is not used.
 
 S8 as first stated, `S8NoBases`, is false (`not_s8NoBases`): without
@@ -125,7 +125,7 @@ theorem reach_reqHa (hB : TableBases T kind)
         (fun h => hn (.mk hT hc hfl h)) (hB _ _ hT _ hc _ hfl))
 
 omit [DecidableEq Label] in
-/-- H-a admits no arrow and no fresh base. -/
+/-- H-a allows no arrow and no fresh base. -/
 theorem reqHa_safe {w : GA Label B} (h : ReqHa T kind w) :
     (∀ a c, w ≠ .arrow a c) ∧ ∀ b, w = .base b → kind b ≠ .fresh := by
   constructor
