@@ -292,6 +292,38 @@ part of implementation (§8).
   rigid assignment, with the flexible assignment `evalA θR ∘ σ`.
 - **Bounded evidence only.** No finite reduction is argued.
 
+**Amendment A1 (2026-11-13, recorded before any run).** A recorded
+problem can be built only by generation (Domain.Recorded.Internal is
+Generate*-only), so the property above cannot be run on raw atoms
+through the compiler's own check. The grammar becomes the problems
+generation records for these programs, which have the same heads,
+bases and bounds:
+- **Declarations:** `type L(a) = N | C(a, L(a))`, `type P(a, b) =
+  P(a, b)`, `type T(a) = T(Int)`. None is a holder, and none has a row
+  parameter.
+- **One function** `fn f(p: τ1, q: τ2): τ3 = e`:
+  - each τ from {`Int`, `Bool`, `a`, `L(Int)`, `L(a)`, `P(a, Int)`,
+    `T(Bool)`, `{ x: Int, ...r }`, `{ x: a }`}, with one rigid type
+    variable `a` and one rigid row variable `r`;
+  - `e` from {`p`, `q`, `C(p, N)`, `C(q, N)`, `P(p, 1)`, `P(q, true)`,
+    `T(1)`, `{ x: p }`, `p.x`, `q.x`, `N`}.
+
+  That is 8,019 programs; those resolution or generation refuses are
+  skipped and counted.
+- **The candidate** is test/r0-g0-support.mjs's unifier candidate (the
+  online search needs today's checker). A flexible variable it leaves
+  unbound takes the default (`Int`, or the empty row), as hole
+  defaulting does.
+- **Problems judged:** only those whose markers are `DataApplication`
+  alone or none, and whose `BQ` is empty.
+- **Rigid assignments:** `a` from {`Int`, `Bool`, a fresh base,
+  `L(Int)`, `P(Bool, Int)`, `T(Int)`, `{ x: Int }`}; `r` from {`{}`,
+  `{ y: Int }`, `{ y: L(Bool) }`, `{ x: Int }`}. Those that violate `D`
+  are skipped.
+- **Property:** wherever the compiler's `substitutionOnly` returns
+  `Valid`, every `B` atom holds in the JS evaluator of `GA`
+  (research/r0-scope-a/oracle.mjs).
+
 ## 10. Which of the 121 programs fall within scope
 
 Measured by research/r0-scope-a/membership.mjs over each program's
