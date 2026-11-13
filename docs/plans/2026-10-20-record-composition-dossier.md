@@ -9045,3 +9045,34 @@ requirement over `app`, 106 with), 3 excluded. Cost by analogy about
 U1-U8 for the author, U1 (whether `Pending` assurance suffices) first.
 Awaiting statement approval; no proof work, no implementation, no
 marker change. Criterion 2 unmet; holds continue.
+
+### 18.192 Scope A statements approved for investigation; bounded proof work (2026-11-13)
+
+The author approved investigating and proving the corrected statements
+of §18.191, not adopting them as established facts, and authorized the
+bounded proof-and-oracle portion, with 1.0-2.4M tokens as a planning
+range (not an estimate). Return before exceeding it or materially
+changing a statement. Decisions:
+- U1: the existing `Pending genericSubstitutionSound` assurance is the
+  basis for proceeding. S5/P-G0 stays unproved, and these proofs must
+  not be described as establishing full checker soundness. Any
+  exemption still needs the completed-dossier review.
+- U2: keep the `DataApplication` name; document precisely what stays
+  blocked.
+- U3: add the defensive refusal in `checkSubstitution` when
+  implementation is authorized, preserving existing out-of-scope
+  refusals.
+- U4: a separate Lean module; the existing model and its theorems stay
+  intact.
+- U5: all 118 programs together, S6 included; no separate round for the
+  12-program subset.
+- U6-U7: the exemption ruling and exact re-pins deferred to the
+  completed dossier and implementation proposal.
+- U8: the three excluded programs stay outside this scope.
+
+Two requirements: S5′ needs an exact formal statement of what it
+assumes about P-G0 (if that cannot be expressed and proved without
+undertaking P-G0, stop and report the dependency); the constructor-table
+and holder-set assumptions are explicit, and the reviewer's
+counterexamples become reproducible fixtures. Implementation
+unauthorized. Criterion 2 and all holds unchanged.
