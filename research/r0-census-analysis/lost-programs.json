@@ -1,0 +1,6952 @@
+{
+ "source": "test/fixtures/r0/t2-replacement-losses.json at 0e8f7adf (src 59e70fdb); research/r0-census-analysis/analyze.mjs",
+ "programs": [
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/a3-fixed-carriers.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/a4-phantom.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "tag",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c7-pure-stages-construction.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "UnreadImage"
+   ],
+   "blockers": [
+    {
+     "name": "statsEvidence",
+     "causes": [
+      "UnreadImage"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c8-pure-stages-runtime.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "runtime",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/c9-source-order.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "runtime",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/h1-print-empty.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/h2-print-chosen.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/p1-choices.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "foldFrom",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/p4-two-operands.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "both",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q1-pure-choices.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "foldFrom",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q4-pure-two-operands.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "both",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/q7-pure-construction.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "UnreadImage"
+   ],
+   "blockers": [
+    {
+     "name": "statsEvidence",
+     "causes": [
+      "UnreadImage"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/r1-returned-captures.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/r2-source-order-captures.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "docs/plans/2026-10-21-c001-explicit/baseline/s1-shared-copy.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "editors/vscode/fixtures/effect-namespaces.wxw",
+   "tier": "editor fixture",
+   "causes": [
+    "ForcedTail",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "database",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "logger",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "ForcedTail"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "examples/functions.wxw",
+   "tier": "shipped example",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "filter",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "foldLeft",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "upTo",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "examples/lists.wxw",
+   "tier": "shipped example",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "length",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "append",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "reverseOnto",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "reverse",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "zip",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "headOr",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "last",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "take",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "drop",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fromMaybe",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fst",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "snd",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "swap",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "size",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "depth",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "flatten",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "leftOr",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "examples/records.wxw",
+   "tier": "shipped example",
+   "causes": [
+    "RequirementAtoms"
+   ],
+   "blockers": [
+    {
+     "name": "details",
+     "causes": [
+      "RequirementAtoms"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "examples/services.wxw",
+   "tier": "shipped example",
+   "causes": [
+    "Deferred",
+    "ForcedTail",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "audited",
+     "causes": [
+      "Deferred"
+     ]
+    },
+    {
+     "name": "liveDatabase",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "systemClock",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "consoleLogger",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "ForcedTail"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "examples/text.wxw",
+   "tier": "shipped example",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "directory",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "research/composition-assessment/programs/p10-b.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "lookup",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "authorize",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "guestGreeting",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "research/composition-assessment/programs/p10.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "lookup",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "authorize",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "guestGreeting",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-layers.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "withRepository",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-test-alone.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "testProfile",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "research/composition-assessment/programs/p9-wide.wxw",
+   "tier": "unclassified (docs or research)",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "withRepository",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-handler-may-fail.selected.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-handler-variable.selected.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-may-fail.selected.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "k",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/defer-may-perform.selected.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "k",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/expected-handler.pinned-selection.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "k",
+     "causes": [
+      "HandlerType",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/fail-needs-concrete-check.applied.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "k",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/fail-needs-concrete-check.pinned.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "k",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/handler-may-fail.selected.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "use",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "k",
+     "causes": [
+      "HandlerType",
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/non-exhaustive.selected-v.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/redundant-arm.pinned.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/audit/redundant-arm.selected-int.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.apply-meta.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.fail-unwritten.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.fail-written-record.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-ground.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-plain.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.handler-record.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.pattern-row.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.perform-parameterized.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "EffectArgument"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.pipe-meta.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.reference-parameterized.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "EffectArgument"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/form.with-plain.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "g",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fixtures/r0/erased/obligation-data.control.json",
+   "tier": "fixture pinned compiling",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "apply",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#1",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#10",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#11",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#12",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#13",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#14",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#15",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#16",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#17",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#18",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#19",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#2",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#20",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#21",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#22",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#23",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#24",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#25",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#26",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#27",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#28",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#29",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#3",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#30",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#4",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#5",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#6",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#7",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#8",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fn-programs.mjs:programs#9",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "fold",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "g3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#10",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#15",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#17",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#19",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#21",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#23",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#25",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#27",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-block-programs.mjs:runs#9",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#15",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-cleanup-programs.mjs:cases#5",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "inner",
+     "causes": [
+      "Deferred"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#10",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "run",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#11",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "start",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "runAll",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication",
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#12",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "run",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#13",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#14",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#15",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "loop",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#16",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#17",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#18",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "map",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "sum",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#19",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication",
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#2",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "wrap",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#20",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#3",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#4",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "boom",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#5",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#6",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "inner",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#7",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "DataApplication",
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#8",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-run-programs.mjs:cases#9",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "constant",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:caught#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "catch",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:installation#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "step",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:lookup#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "deep",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-scale-programs.mjs:unwinding#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "nest",
+     "causes": [
+      "FailFamily"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-services-programs.mjs:baseline#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "audited",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-services-programs.mjs:fake#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "Deferred",
+    "ForcedTail",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "audited",
+     "causes": [
+      "Deferred"
+     ]
+    },
+    {
+     "name": "fakeDatabase",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "fixedClock",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "silentLogger",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "ForcedTail"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#1",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#2",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "FailFamily"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:checkedRuns#3",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx-task7-programs.mjs:specialized#4",
+   "tier": "tested valid: expected output",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:a1Control#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "id",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:aroundBoth#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "ForcedTail",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "prefix",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "around",
+     "causes": [
+      "HandlerType",
+      "ForcedTail"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxCrash#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxOwnFailure#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "FailFamily",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:boxPlain#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:clauseDefer#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:consoleCleanup#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:copies#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:count#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "count",
+     "causes": [
+      "Deferred"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:forwardingFailFree#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:pass#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:q1Nofail#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "prefix",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "run",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r1#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "mk",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "pick",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r2#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "mk",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "run",
+     "causes": [
+      "HandlerType",
+      "UnframedInstall"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-defer-programs.mjs:r9#1",
+   "tier": "test program (fx008-defer)",
+   "causes": [
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "mk",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#1",
+   "tier": "test program (fx008-nofail-k)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "app",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#2",
+   "tier": "test program (fx008-nofail-k)",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#3",
+   "tier": "test program (fx008-nofail-k)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "Deferred",
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-nofail-k-programs.mjs:accepted#4",
+   "tier": "test program (fx008-nofail-k)",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "inst",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/argbind-internal.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "EffectArgument",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "Deferred",
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/argbind.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "EffectArgument",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "Deferred",
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/cycle2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/cycle2open.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/design-review/p1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/design-review/p2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/design-review/r3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/f1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/f2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/f3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "FailFamily",
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev10/gain1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev10/gain1ctl.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev10/pair1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev10/rl1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev10/rl1ctl.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/amb.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/amb3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/annotb.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/around5.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "prefix",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "around",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/con2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "f",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/extb.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2b.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole2c.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/hole4.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/meta1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/meta2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev6/reuse.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/annotc.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/annotd.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/late3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/merge1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev7/merge2ctl.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "Deferred",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "FailFamily",
+      "HandlerType",
+      "Deferred"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/cyc1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/cyc1ok.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one1rev8.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/one3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two1f.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "FailFamily",
+      "EffectArgument"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two2ctl.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev8/two3.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "EffectArgument",
+    "HandlerType",
+    "UnframedInstall"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "EffectArgument",
+      "UnframedInstall"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev9/ov1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev9/ov1f.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/rev9/set1.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "EffectArgument",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "DataApplication",
+      "EffectArgument",
+      "FailFamily"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/witness/famw.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "use",
+     "causes": [
+      "HandlerType"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "FailFamily",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/fx008-probes/witness/famw2.wxw",
+   "tier": "tested valid: probe pinned ok",
+   "causes": [
+    "DataApplication",
+    "FailFamily",
+    "HandlerType"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "HandlerType",
+      "FailFamily",
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#1",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#10",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#11",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#12",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#13",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#14",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#15",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#16",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#17",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#18",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#19",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#2",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#20",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#21",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#22",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#23",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#24",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#25",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#26",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#27",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#28",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#29",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#3",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#30",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#31",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#32",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#33",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#34",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#35",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#36",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#37",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#38",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#39",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#4",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#40",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#41",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#42",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#43",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#44",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#45",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#46",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#47",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#48",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#49",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#5",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#50",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#51",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#52",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#53",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#54",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#55",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#56",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#57",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#58",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#59",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#6",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#60",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#7",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#8",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  },
+  {
+   "origin": "test/poly-programs.mjs:programs#9",
+   "tier": "tested valid: execution oracle",
+   "causes": [
+    "DataApplication"
+   ],
+   "blockers": [
+    {
+     "name": "f0",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f1",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f2",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "f3",
+     "causes": [
+      "DataApplication"
+     ]
+    },
+    {
+     "name": "main",
+     "causes": [
+      "DataApplication"
+     ]
+    }
+   ]
+  }
+ ]
+}

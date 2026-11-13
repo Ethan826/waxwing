@@ -2,7 +2,7 @@
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.187 cover this run). Wait for the author's next
+dossier.md, §18.162 to §18.189 cover this run). Wait for the author's next
 direction before starting work.
 
 **Report in milestones first** (author, 2026-10-25): which of three
@@ -63,7 +63,16 @@ scripts/r0-results-moved.mjs against
 test/fixtures/r0/t2-activation-gate.json, the commit literal in
 test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
 
-## Next, as the author last directed (§18.186)
+## Next, as the author last directed (§18.188)
+
+Done 2026-11-12 (§18.189): census analysis, evidence only, in
+docs/plans/2026-11-12-census-analysis.md (per-program blocker sets in
+research/r0-census-analysis/lost-programs.json). Recommended first
+scope: A, the free-constructor model for DataApplication (121 programs
+alone). Its design needs the author's authorization first. Awaiting
+the author.
+
+Earlier (§18.186):
 
 Done 2026-11-12 (§18.187): criterion 2 now assesses whole-program
 losses under `decide` (census and gap lists, deduplicated;

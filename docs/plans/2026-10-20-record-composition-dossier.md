@@ -8960,3 +8960,45 @@ regression proofs 520/520, growth 2.296 against 3.0
 (.build/evidence/2026-11-12-verify-criterion2/). Existing pins and
 failed-run evidence unchanged. Held: live replacement, milestone
 changes, F14's retirement, pushing; no cause lifted.
+
+### 18.188 Census analysis for a first lift, evidence only (2026-11-12)
+
+The author directed an evidence-only census analysis, with no lift
+implementation: exact blocker sets per lost program (DataApplication and
+overlapping causes included); programs rescued by each lift and by
+useful combinations, counting a rescue only when every blocker is
+removed; shipped examples and tested valid programs kept apart from
+known defects and unclassified cases; a reconciliation of the census's
+256 rejected programs with the 252 losses, the six solved ErasedRow
+fixtures included; and two or three candidate scopes with prerequisites,
+rulings, expected rescues and design costs, unknown costs labelled.
+Existing measurements first; rerun only where missing or stale; state
+the cost before expensive agent work. Return with a recommended first
+scope before starting its design. Criterion 2 stays unmet; all holds
+continue.
+
+### 18.189 Census analysis for a first lift returned (2026-11-12)
+
+Evidence only, as §18.188 directed: docs/plans/2026-11-12-census-
+analysis.md; script research/r0-census-analysis/analyze.mjs, per-
+program blocker sets in research/r0-census-analysis/lost-programs.json.
+The 252 losses have nine causes; per-cause program counts equal the
+census categories (DataApplication 143, HandlerType 102, FailFamily 41,
+Deferred 41, EffectArgument 31), plus UnframedInstall 8, ForcedTail 4,
+UnreadImage 2, RequirementAtoms 1. Single lifts rescue DataApplication
+121, HandlerType 32, FailFamily 13, Deferred 8; the five markers
+together 237. Marker suppression in an isolated copy (measured, not a
+soundness claim) rescues exactly the marker-only counts in every scope:
+no hidden later blocker. Tiers: 5 shipped examples, 184 tested valid
+(oracle 90, expected output 42, probes 52), 19 test programs accepted by
+their tests, 23 fixtures pinned compiling, 1 editor fixture, 20
+unclassified; no known defect among them. Reconciliation: census 256 =
+250 lost + 6 ErasedRow-only fixtures `decide` solves (the G-erased
+question stays open); 252 = 250 + c7 and q7 (UnreadImage). Candidate
+scopes with prerequisites, rulings and labeled costs: A, the free-
+constructor model for DataApplication (121); B, the effect markers (94;
+106 with UnframedInstall and ForcedTail); C, both (237). No design or
+cost estimate exists for any; costs are analogies, labeled. Recommended
+first scope: A. Its design needs the author's authorization (the plan
+marks destination E's design unauthorized); not started. Criterion 2
+unmet; holds continue.
