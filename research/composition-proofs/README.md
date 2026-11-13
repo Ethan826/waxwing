@@ -29,6 +29,19 @@ toolchain lives in `~/.elan` (2.8 GB).
 A clean `lake build` reports no errors and no warnings. No file uses
 `sorry`, `admit`, `native_decide` or a declared `axiom` (`grep -rn`).
 
+Scope A's module, Composition/App (docs/plans/2026-11-13-scope-a-free-
+constructor-design.md), has its own report and gate. app-axioms.out is
+generated from Composition/App/Axioms.lean, and app-theorems.txt lists
+every public theorem there. The gate is the proof-dossier skill's
+check-axioms.sh, run from this directory:
+
+    bash ~/.claude/skills/proof-dossier/check-axioms.sh Composition/App \
+      Composition/App/Axioms.lean app-axioms.out app-theorems.txt
+
+It rebuilds from clean, refuses placeholders, reads the theorems back
+from Lean and diffs the report. Run it after any change to Composition/
+App or the toolchain, and before Scope A's completed-dossier review.
+
 ## Files and theorems
 
 | File | Dossier | Theorems |

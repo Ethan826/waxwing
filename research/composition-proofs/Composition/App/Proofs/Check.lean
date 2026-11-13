@@ -26,40 +26,40 @@ section RowMap
 variable {V W : Type}
 
 /-- A row with every present field mapped by `f`. -/
-def rmap (f : V → W) (r : Row Label V) : Row Label W :=
+def ermap (f : V → W) (r : Row Label V) : Row Label W :=
   fun k => (r k).map f
 
 omit [DecidableEq Label] in
-theorem disjoint_rmap (f : V → W) (r s : Row Label V) :
-    Disjoint (rmap f r) (rmap f s) ↔ Disjoint r s := by
-  simp [Disjoint, rmap]
+theorem disjoint_ermap (f : V → W) (r s : Row Label V) :
+    Disjoint (ermap f r) (ermap f s) ↔ Disjoint r s := by
+  simp [Disjoint, ermap]
 
 omit [DecidableEq Label] in
-theorem union_rmap (f : V → W) (r s : Row Label V) :
-    union (rmap f r) (rmap f s) = rmap f (union r s) := by
+theorem union_ermap (f : V → W) (r s : Row Label V) :
+    union (ermap f r) (ermap f s) = ermap f (union r s) := by
   funext l
-  cases h : r l <;> simp [union, rmap, h]
+  cases h : r l <;> simp [union, ermap, h]
 
 omit [DecidableEq Label] in
-theorem compose_rmap (f : V → W) (r s : Row Label V) :
-    compose (rmap f r) (rmap f s) = (compose r s).map (rmap f) := by
+theorem compose_ermap (f : V → W) (r s : Row Label V) :
+    compose (ermap f r) (ermap f s) = (compose r s).map (ermap f) := by
   unfold compose
   by_cases h : Disjoint r s
-  · simp [h, (disjoint_rmap f r s).mpr h, union_rmap]
-  · have : ¬ Disjoint (rmap f r) (rmap f s) :=
-      fun h' => h ((disjoint_rmap f r s).mp h')
+  · simp [h, (disjoint_ermap f r s).mpr h, union_ermap]
+  · have : ¬ Disjoint (ermap f r) (ermap f s) :=
+      fun h' => h ((disjoint_ermap f r s).mp h')
     simp [h, this]
 
 omit [DecidableEq Label] in
-theorem composeAll_rmap (f : V → W) (rs : List (Row Label V)) :
-    composeAll (rs.map (rmap f)) = (composeAll rs).map (rmap f) := by
+theorem composeAll_ermap (f : V → W) (rs : List (Row Label V)) :
+    composeAll (rs.map (ermap f)) = (composeAll rs).map (ermap f) := by
   induction rs with
   | nil => rfl
   | cons r rs ih =>
     simp only [List.map_cons, composeAll, ih]
     cases composeAll rs with
     | none => rfl
-    | some v => simp [compose_rmap]
+    | some v => simp [compose_ermap]
 
 end RowMap
 
@@ -71,18 +71,18 @@ theorem eraseGO_eq (o : Option (GA Label B)) : eraseGO o = o.map eraseG := by
 
 /-- The erased assignment `θ₀` of the existing model. -/
 def eraseAssign (θ : AssignA Label B) : Assign Label B :=
-  ⟨fun n => eraseG (θ.ty n), fun r => rmap eraseG (θ.row r)⟩
+  ⟨fun n => eraseG (θ.ty n), fun r => ermap eraseG (θ.row r)⟩
 
 omit [DecidableEq Label] in
 theorem eraseG_record (r : Row Label (GA Label B)) :
-    eraseG (GA.record r) = G.record (rmap eraseG r) := by
+    eraseG (GA.record r) = G.record (ermap eraseG r) := by
   simp only [eraseG, eraseGO_eq]
   rfl
 
-theorem rmap_singleA (l : Label) (g : GA Label B) :
-    rmap eraseG (singleA l g) = single l (eraseG g) := by
+theorem ermap_singleA (l : Label) (g : GA Label B) :
+    ermap eraseG (singleA l g) = single l (eraseG g) := by
   funext k
-  by_cases h : k = l <;> simp [rmap, singleA, single, h]
+  by_cases h : k = l <;> simp [ermap, singleA, single, h]
 
 mutual
   /-- Step 1: evaluation commutes with erasure. -/
@@ -99,11 +99,11 @@ mutual
       cases evalFA θ fs with
       | none => rfl
       | some fr =>
-        have : (rmap eraseG fr :: tails.map (eraseAssign θ).row) =
-            (fr :: tails.map θ.row).map (rmap eraseG) := by
+        have : (ermap eraseG fr :: tails.map (eraseAssign θ).row) =
+            (fr :: tails.map θ.row).map (ermap eraseG) := by
           simp [eraseAssign, Function.comp_def]
         simp only [Option.map_some, Option.bind_some, this,
-          composeAll_rmap]
+          composeAll_ermap]
         cases composeAll (fr :: tails.map θ.row) <;>
           simp [eraseG_record]
     | .app _ as => by
@@ -112,7 +112,7 @@ mutual
 
   theorem evalF_eraseF (θ : AssignA Label B) :
       ∀ fs : FieldsA Label B,
-        evalF (eraseAssign θ) (eraseF fs) = (evalFA θ fs).map (rmap eraseG)
+        evalF (eraseAssign θ) (eraseF fs) = (evalFA θ fs).map (ermap eraseG)
     | .nil => by
       simp only [eraseF, evalF, evalFA, Option.map_some]
       congr
@@ -125,7 +125,7 @@ mutual
         cases evalFA θ rest with
         | none => rfl
         | some r =>
-          simp [← rmap_singleA, compose_rmap]
+          simp [← ermap_singleA, compose_ermap]
 
   theorem evalArgs_eraseArgs (θ : AssignA Label B) :
       ∀ as : ArgsA Label B,
@@ -150,10 +150,10 @@ theorem holds_erase (θ : AssignA Label B) (a : AtomA Label B)
     exact ⟨eraseG g, by simp [evalT_eraseT, ht], by simp [evalT_eraseT, hu]⟩
   | lacks r l =>
     simp only [HoldsA] at h
-    simp [eraseAtom, Holds, eraseAssign, rmap, h]
+    simp [eraseAtom, Holds, eraseAssign, ermap, h]
   | disjoint r s =>
     simp only [HoldsA] at h
-    exact (disjoint_rmap eraseG _ _).mpr h
+    exact (disjoint_ermap eraseG _ _).mpr h
   | ff => exact h
 
 theorem sat_erase (θ : AssignA Label B) (C : ProblemA Label B)
@@ -191,11 +191,11 @@ theorem s5'_of_s3 (h3 : S3 (Label := Label) (B := B)) :
     · rw [← h3 θ σ hθσ u, ← hsyn]; exact hg
   | lacks r l =>
     have h := hrow (.lacks r l) (.inl ⟨r, l, rfl⟩) hca
-    simp only [Holds, eraseAssign, rmap, Option.map_eq_none_iff] at h
+    simp only [Holds, eraseAssign, ermap, Option.map_eq_none_iff] at h
     exact h
   | disjoint r s =>
     have h := hrow (.disjoint r s) (.inr ⟨r, s, rfl⟩) hca
-    exact (disjoint_rmap eraseG _ _).mp h
+    exact (disjoint_ermap eraseG _ _).mp h
   | ff => exact hca.elim
 
 /-! ### Non-vacuity: the semantic check satisfies P-G0's clauses -/

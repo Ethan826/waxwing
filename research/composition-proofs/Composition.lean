@@ -156,3 +156,4 @@ import Composition.Typed.Cell.Proofs.W6
 import Composition.Typed.Cell.Proofs.Wave2
 import Composition.Typed.Cell.Proofs.W4
 import Composition.Typed.Cell.Proofs.Corollaries
+import Composition.App.Main

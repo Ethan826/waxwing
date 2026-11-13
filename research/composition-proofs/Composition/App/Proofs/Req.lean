@@ -151,7 +151,7 @@ theorem s6 {Label B : Type} [DecidableEq Label] :
 The invariant: a value is `OkS8` if it reaches no arrow, or if it has
 H-a's shape (printable or non-holder base, records and non-holder
 applications of `OkS8` values). `OkS8` is closed under every `Reach`
-step (given `TableBases` and `kind (dataB t) = .data t`) and admits no
+step (given `TableBases` and `kind (dataB t) = .data t`) and allows no
 arrow. `TableWF` and `(T t).isSome` are not used. -/
 
 section S8Proof
@@ -257,7 +257,7 @@ theorem reach_ok (hB : TableBases T kind)
       exact ih (instFT_ok hd (by simp) _
         (fun h => hn (.mk hT hc hfl h)) (hB _ _ hT _ hc _ hfl))
 
-/-- `OkS8` admits no arrow. -/
+/-- `OkS8` allows no arrow. -/
 theorem ok_not_arrow {w : GA Label B} (h : OkS8 T kind dataB w) :
     ∀ a c, w ≠ .arrow a c := by
   intro a c he
