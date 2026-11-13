@@ -360,13 +360,25 @@ def S6 : Prop :=
 
 /-! ## S8: no hidden effects inside an in-scope application -/
 
-/-- S8 (its Lean part). A declared head outside the holder set, applied
-to arguments that reach no arrow, reaches no arrow through its
-constructor fields: no function value, and so no erased effect row,
-lies inside an in-scope application. -/
-def S8 : Prop :=
+/-- S8 as first written, without `TableBases`. **Refuted**
+(`not_s8NoBases`, Proofs/Req.lean): a field written as a base whose
+kind is a declared type lets `Reach` enter a holder that `Holder` never
+inspects. Kept as the reason S8 carries `TableBases`. -/
+def S8NoBases : Prop :=
   ∀ (T : Table Label B) (kind : B → BaseKind) (dataB : Nat → B),
     TableWF T → (∀ t, kind (dataB t) = .data t) →
+    ∀ (t : Nat) (vs : List (GA Label B)), (T t).isSome → ¬ Holder T t →
+      (∀ v ∈ vs, ∀ w, Reach T kind dataB v w → ∀ a c, w ≠ .arrow a c) →
+      ∀ w, Reach T kind dataB (.app t vs) w → ∀ a c, w ≠ .arrow a c
+
+/-- S8 (its Lean part). A declared head outside the holder set, in a
+closed table naming only Waxwing's bases, applied to arguments that
+reach no arrow, reaches no arrow through its constructor fields: no
+function value, and so no erased effect row, lies inside an in-scope
+application. -/
+def S8 : Prop :=
+  ∀ (T : Table Label B) (kind : B → BaseKind) (dataB : Nat → B),
+    TableWF T → TableBases T kind → (∀ t, kind (dataB t) = .data t) →
     ∀ (t : Nat) (vs : List (GA Label B)), (T t).isSome → ¬ Holder T t →
       (∀ v ∈ vs, ∀ w, Reach T kind dataB v w → ∀ a c, w ≠ .arrow a c) →
       ∀ w, Reach T kind dataB (.app t vs) w → ∀ a c, w ≠ .arrow a c

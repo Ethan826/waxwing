@@ -6,10 +6,11 @@ S6 is proved (`s6`). Its argument: `ReqHa` is closed under every `Reach`
 step, given `TableBases` and `kind (dataB t) = .data t`; `ReqHa` admits no
 arrow and no fresh base; `JHolds` implies `ReqHa`. `TableWF` is not used.
 
-S8 as stated is false (`not_s8`): without `TableBases`, a constructor
-field `.base b` whose base is classified `kind b = .data u` for a holder
-`u` is no `HoldsFn` field, yet `Reach.base` passes through it into `u`'s
-arrow.
+S8 as first stated, `S8NoBases`, is false (`not_s8NoBases`): without
+`TableBases`, a constructor field `.base b` whose base is classified
+`kind b = .data u` for a holder `u` is no `HoldsFn` field, yet
+`Reach.base` passes through it into `u`'s arrow. S8 now carries
+`TableBases`.
 -/
 import Composition.App.Statements
 
@@ -193,7 +194,7 @@ theorem cx_reach :
   exact .refl
 
 /-- S8 as stated is false. -/
-theorem not_s8 : ¬ S8 (Label := Unit) (B := Nat) := by
+theorem not_s8NoBases : ¬ S8NoBases (Label := Unit) (B := Nat) := by
   intro h
   exact h cxT cxKind id cxT_wf (fun _ => rfl) 0 [] rfl cx_not_holder0
     (by simp) _ cx_reach _ _ rfl
