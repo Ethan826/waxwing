@@ -9103,3 +9103,41 @@ unproved, and these results do not establish checker soundness. Spent
 about 0.9M tokens. Awaiting the author's decision to use the results:
 the completed-dossier review, and U6. Implementation unauthorized.
 Criterion 2 unmet; holds continue.
+
+### 18.194 Completed-dossier review and implementation proposal authorized (2026-11-13)
+
+The author directed the completed-dossier review and a concrete
+implementation proposal. Implementation is not authorized. In the
+author's plain terms, the results support treating ordinary data types
+this way, but it still has to be checked that the compiler supplies the
+assumptions the proofs require. The author has inspected the written
+results and has not rebuilt the proofs.
+
+- **S8's change is material.** Adding a necessary hypothesis weakens a
+  theorem's guarantee. That S6 shares the assumption does not make the
+  change immaterial. The corrected S8 (with `TableBases`) is approved
+  for review. The false form (`S8NoBases`) and its counterexample
+  (`not_s8NoBases`) stay recorded. This supersedes the wording of
+  §18.193 and design §15 that called the change a formalization error
+  with S8's scope unchanged.
+- **The review is bounded to four items:**
+  1. whether `TableBases`, the holder-set correspondence and the other
+     hypotheses match real compiler inputs, and how implementation will
+     enforce or test each;
+  2. whether S5′ proves the intended extension under exactly the stated
+     P-G0 assumptions (`PG0Clauses`);
+  3. whether the amended oracle grammar (A1) leaves relevant cases
+     uncovered;
+  4. confirmation of the literature citations (O1), and of the combined
+     proofs and axioms report.
+- **U6 stays pending that review.** The intended policy is still the
+  narrow exemption at `Pending genericSubstitutionSound`, not a claim
+  that the checker is proved sound.
+- **The original scope restrictions are kept** even where a theorem no
+  longer needs one (`Scoped` for S4, no `app` in `D` for S5′, and
+  `TableWF` for S6 and S8). D6 is unchanged.
+- **The proposal must cover** the defensive refusal, S7 and the
+  assumption checks, the exact permitted pin movements, the expected
+  program recoveries, and the cost.
+
+Criterion 2 and all existing holds are unchanged.
