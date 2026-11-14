@@ -9327,3 +9327,85 @@ path. The author's ruling record (updated, copied unchanged) notes that
 `certifyPackage` can still build a `Certified` carrying such a `Valid`.
 Proof qualifications and all holds stay; no live replacement, milestone
 movement, merge or push is authorized.
+
+### 18.201 Scope A implementation verified (2026-11-14)
+
+Branch `scope-a-impl`; the final source is at 4372ce35 and the verified
+tree at 62ec785d. **Verify passed at 62ec785d:** parallel 3521/3521,
+serial 245/245, regression proofs 541/541, growth ratio 2.235. The
+failed runs are kept in .build/evidence/2026-11-14-scope-a-verify/:
+- e0180375: the structural gate (file length, a lambda, `exposure` not
+  yet pinned);
+- 268e5ee3: the holders test, and records 11 stale against src;
+- 75b707fe: serial pins (elab counts, E4, RT1 owner markers, bound
+  holes, the window floor);
+- 852f1602: the bound-hole list under test/fixtures/r0 entered the
+  corpus manifest, and RT1's call tests;
+- b97ec157: RT1's total check (E4);
+- b4103f22: regression row r0-a2-defect-block, whose message expected
+  famw's three outside kinds (540/541). The row's message was
+  corrected to two kinds and proved alone before the final run.
+
+**What landed.**
+- Features.Check.Admitted: the admitted set, enforcing the transitive
+  boundary through nullary types.
+- The narrowed marker in Translate.purs.
+- U3 as revised: Strategy.Exposed reads the atoms, the site table and
+  the candidate's images after substitution; `Valid` carries the
+  exposed kinds; rule 1 and rule 2's gating in Decide.purs read them.
+- The requirement-definedness refusal in Asked.purs.
+
+**Movement.** research/r0-scope-a/movement-check.mjs passes against
+both allowlists: 551 declarations of the 116 programs Solved, the 42
+listed movements exact, nothing else. Losses go from 252 to 136. The
+dumps before and after the review fix are byte-identical. Records 12:
+test/fixtures/r0/t2-minting-comparison12.json (16 minting moves
+unchanged, 593 Scope A moves, none in both) and t2-performance-12.json
+(read-back CPU ×2.39, RSS ×1.03; validator CPU ×2.07, RSS ×1.04). The
+activation gate reads shadow minting met, live replacement not met (2).
+
+**Independent consumer review** (one reviewer; findings checked by
+the controller):
+- No path from an exposed candidate to Solved, `Judged` or
+  elaboration.
+- Fixed: exposure missed a variable that occurs only in the site table
+  or the candidate's images; the "exposure alone" check was vacuous
+  and was replaced by a direct per-shape exposure check through
+  `substitutionOnly`; per-branch restored-defect rows added; the switch
+  and shadow-decides rows repaired for `Valid`'s payload; Exposed and
+  Admitted added to the trusted lists, with a test that every marked
+  module is listed; the movement and digest checks hardened.
+- Restored-defect evidence: research/r0-scope-a's scripts plus 22
+  scope-a rows (scripts/regression-r0-scope-a.mjs), each proved. The
+  `unplain` head test has no row: it is a structural equivalent mutant,
+  argued in the rows file.
+
+**Found in the serial suite.** 105 recovered declarations, in 70
+programs, rest on a bound hole (research/r0-scope-a/
+bound-hole-recoveries.json). The window falls to 578 rows. Three
+programs change in problems.json with no result movement
+(research/r0-scope-a/problem-only.json).
+
+Pushed once by the author's leave on 2026-11-14: `scope-a-impl` at
+62ec785d and `r0-t2-d1` at 03b8671f, as new remote branches.
+
+### 18.202 Revised U3 accepted; residual items ruled (2026-11-14)
+
+The author ruled:
+- Revised U3 is accepted, now that the final verify passed and §18.201
+  links the consumer review, the fixes and the restored-defect
+  evidence. This accepts the implementation contract, not a new
+  soundness theorem.
+- The 105 bound-hole declarations stay under the existing ambiguity
+  hold. Their inclusion in the 116 programs does not resolve that
+  policy.
+- The `> 500` floor is approved only as the residual window's sanity
+  floor; the exact 578-row pin and the full corpus inventory stay.
+- Exactly the three listed problem-only changes are approved, subject
+  to the stripped-digest and unchanged-result checks.
+- The omitted mutant is accepted on its documented structural
+  equivalence argument, not merely because it survived testing.
+- The protected fixtures' census-list removal is accepted as the
+  consequence of their approved categories change.
+
+All remaining holds continue. No further push is authorized.

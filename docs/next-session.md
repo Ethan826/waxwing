@@ -1,4 +1,52 @@
-# RESUME HERE (2026-11-14, America/New_York; updated §18.199)
+# RESUME HERE (2026-11-14, America/New_York; updated §18.202)
+
+Self-contained handoff for a fresh context. Work in this worktree,
+/Users/ethan/Desktop/waxwing/.claude/worktrees/r0-t2-d1, which is now
+on branch **`scope-a-impl`** (head after 62ec785d: records only). Read
+this block, then dossier §18.194-§18.202 (docs/plans/2026-10-20-record-
+composition-dossier.md). Wait for the author's next direction; nothing
+is authorized beyond it.
+
+**State.**
+- Scope A is implemented and verified: verify passed at 62ec785d
+  (parallel 3521/3521, serial 245/245, regression proofs 541/541,
+  growth 2.235). Revised U3 is accepted as an implementation contract,
+  not a soundness theorem (§18.202).
+- 116 programs recovered; losses 252 to 136. The activation gate reads
+  shadow minting met, live replacement not met (2). No milestone has
+  moved.
+- 105 recovered declarations rest on a bound hole and stay under the
+  ambiguity hold. The approved residual items are in §18.202.
+- Records 12 (comparison and performance) are fresh against src
+  4372ce35. Any src change makes them stale: repeat
+  scripts/r0-t2-perf-run.mjs and research/r0-scope-a/comparison11.mjs
+  (usage in its header), then repoint test/fixtures/r0/
+  t2-activation-gate.json, the commit literal in
+  test/r0-t2-activation-gate.test.mjs, and the gate spec's text.
+- Branches: `scope-a-impl` holds everything; `r0-t2-d1` is at 03b8671f
+  (an ancestor; not fast-forwarded, since integration is not
+  authorized). Both were pushed once at the author's leave (62ec785d
+  and 03b8671f). **No further push is authorized.**
+- The locked proof worktree .claude/worktrees/agent-a6b037df598f8ab39
+  (branch `scope-a-canon`) stays; its cleanup is deferred.
+
+**Before any src commit:** `purs-tidy check src tools/style/src`;
+`node scripts/width.mjs` (0 over 80); the structural gate
+(`checkStructure` in scripts/structure.mjs, which must be empty; it
+also caps files at 250 lines); regression needles still match. Verify:
+`WAXWING_VERIFY_TEST_CONCURRENCY=2 WAXWING_REGRESSION_JOBS=1 node
+scripts/verify.mjs` under the lock (<scratchpad>/verify.lock). Never
+put data files under test/fixtures/r0 (the corpus loader reads them).
+
+**Held:** live replacement, milestone changes, F14's retirement,
+effect-marker lifts, Scope B and C, merging or integrating into
+`r0-t2-d1` or main, pushing.
+
+---
+
+# Earlier handoff (superseded by the block above)
+
+## Earlier: RESUME (updated §18.199)
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
