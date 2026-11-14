@@ -17,8 +17,9 @@ export const a2DecideRows = [
     replacement: '  ([] <* defective problem) <> ordinary open problem'
       + ' <> unchecked problem\n',
     probe: 'r0-a2-defect-block',
+    // famw records two `outside` kinds since Scope A (§18.200).
     message: new RegExp('a record defect not blocked: '
-      + 'Unsupported Outside Outside Outside; alone: Solved')
+      + 'Unsupported Outside Outside; alone: Solved')
   },
   {
     // Task 12: a limitation read as a refused candidate (Task 1's
