@@ -9235,3 +9235,37 @@ As §18.196 authorized; details in design §17. No compiler change.
   PureScript property test owed under implementation.
 Spent about 0.72M of the 0.45-1.0M range. U6 awaits the author.
 Implementation unauthorized; all holds continue.
+
+### 18.198 U6 approved; Scope A implementation authorized after plan correction (2026-11-14)
+
+The author approved U6, the narrow exemption at the existing `Pending
+genericSubstitutionSound` assurance, and authorized implementation once
+the written plan is reconciled with the ruling's contract. No further
+proof tranche is required first. The author's record is
+docs/plans/2026-11-14-scope-a-implementation-ruling.md (copied into this
+branch unchanged). Conditions:
+- Use the 116-program list (research/r0-scope-a/in-scope-stage0.json),
+  predicting losses 252 to 136.
+- Preserve form.apply-meta#g and form.pipe-meta#g as Outside
+  DataApplication, their recorded reasons included; if that proves
+  impractical, return with the exact proposed reason changes first.
+- Enforce the transitive declaration boundary, nullary declared types
+  included. Finding no affected corpus program is membership evidence,
+  not enforcement.
+- Separate allowlists for program recoveries and for declaration-level
+  marker, class and reason changes; a reason-only movement must not
+  pass because the program stays refused. No additional Solved results
+  are authorized.
+- Implementation includes the `under`/canonical properties, generated
+  holder tests, boundary and definedness checks, restored-defect
+  demonstrations, comparison, performance, an independent review and a
+  full verify on the final source; failures and protected pins are
+  preserved.
+- I5: S8 stays conditional on its argument hypotheses; rigid variables
+  may receive arrow-valued assignments, so no universal claim about
+  hidden effects is made beyond the theorem.
+Planning range 1.2-2.2M tokens; return before exceeding it or changing
+scope. The locked proof worktree and its branch stay; their cleanup is
+deferred. Criterion 2 and all holds are unchanged; live replacement,
+milestone changes, F14's retirement, effect-marker lifts and pushing
+stay held.

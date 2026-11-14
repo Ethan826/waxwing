@@ -168,3 +168,75 @@ Spent on this review and proposal: about 0.2M in agents (reviewer about
 134K, citations about 64K) plus the controller's reads and probes,
 roughly 0.15M, about 0.35M in all. That is slightly above the
 design's 0.15-0.3M analogy for step 5.
+
+## 8. Corrected plan (2026-11-14, §18.198; supersedes §2-§6 where they differ)
+
+**Corrections required by the ruling** (I1-I4):
+- Membership is research/r0-scope-a/in-scope-stage0.json: 116
+  programs, losses 252 to 136. §5 and §6's 118 and 134 are superseded.
+- **U3 is realized as detection in `checkSubstitution` and refusal of
+  Solved by rule 1**, not as a refusal of the candidate. Reason (I2): in
+  form.apply-meta and form.pipe-meta the arrow appears only after the
+  candidate is applied, so generation cannot keep their marker. A
+  candidate refusal would change their attempt (`Accepted`) and reason.
+  Instead `checkSubstitution` returns `Valid` carrying the outside kinds
+  the substituted terms expose (`DataApplication` for any `app` node
+  outside the boundary), and `decide` treats a solution that exposes
+  one exactly as a marker: it blocks Solved, keeps the run going (rule
+  2's gating), and adds `Outside DataApplication` to the reason. The
+  run then matches today's for those two declarations. `Valid` gains a
+  payload; the trusted-surface record that says it has none is updated
+  as a reviewed change.
+- **The boundary is enforced, not measured** (I4). Generation computes,
+  beside the holder set, the set of **admitted** declared types: no
+  effect-row or record-row parameter, not a holder, and every
+  declaration reachable through constructor fields (through type
+  arguments, record fields and nullary declared types) expressible in
+  the Lean model's `FT` (no record-row parameter, no effect-row
+  argument). The narrowed marker and the exposure check read this one
+  set. A generated property test compares it with a literal JS
+  reference.
+- **Pins:** test/fixtures/r0/problems.json holds digests of recorded
+  problems, so it moves wherever markers change and wherever the new
+  field is encoded. §5 listed it as must-not-move; that was wrong. Its
+  check: every digest recomputed with the new field removed must equal
+  the old digest except for declarations on the declaration allowlist.
+- **Two allowlists, fixed before the implementation runs**, predicted
+  by a JS model of the narrowing that is separate from the PureScript
+  implementation (research/r0-scope-a/allowlists.mjs):
+  1. program recoveries: exactly the 116 origins;
+  2. declaration movements: each `origin#declaration` whose markers,
+     class or reason change, with the old and new values. Any movement
+     not on a list, or different from its entry, stops the work.
+
+**Tasks** (the ledger is §8.1):
+1. Records and allowlists: this section; baseline dumps at the parent
+   commit; the allowlists from the JS model, committed before src.
+2. Generation: `admitted` (Generate.purs beside `holdersOf`), the
+   problem field and its canonical encoding, `dataOf` narrowed (owner
+   admitted; arguments free of arrows, handlers, records, and of heads
+   or nullary bases not admitted).
+3. Validation: the exposure check on substituted `B`, `BQ` and `D`
+   terms; `Valid`'s payload; rule 1 on the solution and rule 2's
+   gating; the requirement-definedness refusal in `requirementUnder`.
+4. Tests, each new one shown to fail on a restored defect: `under` =
+   canonicalize after substitution and `canonical` idempotent
+   (properties); generated holder-set and admitted-set tests against JS
+   references; S7 generation; `TableBases`; `kind (dataB t)`;
+   definedness; exposure for R1, R4, R5, R6, a holder base, a record
+   argument, a transitive record-tail declaration through a nullary
+   type, and the two preserved fixtures; marker tests switched to
+   out-of-scope heads with paired in-scope tests; regression rows for
+   every boundary.
+5. Pins and movement: re-pin census, RT8, window, losses, gap verdicts
+   and problems; compare the full movement report with both allowlists.
+6. Comparison and performance on the final src (comparison11,
+   performance-11), activation-gate repoint.
+7. One independent review; fixes; full verify under the lock.
+
+### 8.1 Ledger
+
+| Task | State |
+|---|---|
+| 1 | in progress |
+| 2-7 | not started |
