@@ -9176,3 +9176,34 @@ refusal, mutant-proven assumption tests, an exact pin list and 118
 conditional recoveries (losses 252 to 134; criterion 2 stays unmet).
 Spent about 0.35M. U6 awaits the author. Implementation unauthorized;
 all holds continue.
+
+### 18.196 Scope A Stage 0 approved, 0a-0e and its review (2026-11-14)
+
+The author approved all of Stage 0 (proposal §1), including the
+`canonA` lemma, the expanded oracle and the review. U6 stays pending. In
+the author's plain terms: before the restriction is removed, close the
+gaps between what Lean proved and what the compiler actually checks.
+`Pending` assurance is not to be used to dismiss the newly identified
+gaps. Scope:
+- 0a: narrow the boundary as proposed. Holder bases and records inside
+  applied-type arguments are excluded, checked after substitution.
+- 0b: correct S5′'s description. It assumes `PG0Clauses`, which are
+  neither proved for the compiler nor implied by P-G0 as currently
+  stated. The earlier overstatement is kept as a corrected finding.
+- 0c: prove `canonA`'s evaluation-preservation lemma, connect the
+  revised check to it, and add the stronger examples and the refusal
+  control. A statement that fails comes back for a decision.
+- 0d: fix and record oracle grammar A2 before running it, with
+  requirement atoms and patterns.
+- 0e: measure reachable record-tail declarations. Prefer excluding
+  unsupported shapes over extending the model in this tranche, and
+  report any reduction from 118.
+
+Compiler changes, the defensive refusals and the marker narrowing
+included, wait for the later implementation approval. Stage 0 may
+change proof code, research scripts, fixtures and records. The planning
+range is 0.45-1.0M tokens: return before exceeding it or widening the
+scope. The return states what now connects to the real compiler, what
+remains assumed, and whether the 118-program prediction survives. No
+implementation, exemption, milestone change or activation is approved.
+All holds continue.
