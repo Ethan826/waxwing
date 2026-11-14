@@ -173,6 +173,19 @@ in Composition/Syntax.lean.
   Conditions 2-4 together mean an in-scope `app` can hold no function
   value, so no effect row can hide inside one (S8). Everything else
   keeps its marker or its existing block.
+
+  **Amendment (Stage 0a, §18.196, 2026-11-14).** Condition 4 as first
+  written did not enforce S8's argument hypothesis (design §16.1): a
+  nullary holder argument such as `L(F)` holds a function with no arrow
+  written. Condition 4 is replaced by 4′, and 8 is added. Both are read
+  on the terms **after** the candidate substitution, so a flexible
+  variable inside an `app` argument bound to an excluded shape is
+  excluded too. The original condition 4 is kept above as written.
+  4′. no arrow, handler head, holder head, or base `DataBase u` with `u`
+      in `H`, inside an `app` argument, at any depth;
+  8.  no record inside an `app` argument, at any depth (so `App`
+      comparison never depends on canonicalization inside it).
+  Whether these cost any of the 118 is measured (§17).
 - **D7 `H`**: the problem's holder set (K-a): declared types whose
   constructors hold a function, directly or through another declared
   type, a record field or a type argument (Features.Check.Functional).
@@ -472,7 +485,7 @@ stays at `Pending genericSubstitutionSound` (decision U1).
 | S3 | proved | `s3` | the existing `subst_evalT` pattern, plus the `app` case |
 | S4 | proved | `s4` (`s4_of_s2` does not need S2) | **the `Scoped` hypothesis is unused**: conservativity holds for every `SigProblem` (finite rigid values suffice for `dec ∘ enc = id`) |
 | S5 | unresolved | — | P-G0 over `GA`; not attempted (U1) |
-| S5′ | proved, relative | `s5'` (= `s5'_of_s3 s3`) | assumes exactly `PG0Clauses`, P-G0's two clauses on the existing model; **the "no `app` in `D`" hypothesis is unused**, since erasure moves every `D` atom across |
+| S5′ | proved, relative | `s5'` (= `s5'_of_s3 s3`) | assumes exactly `PG0Clauses`: two lemma-level clauses of G0's check, proved for no compiler code and **not implied by P-G0 as currently stated** (corrected, §16.2, §18.196; first described as "P-G0's two clauses", an overstatement). **The "no `app` in `D`" hypothesis is unused**, since erasure moves every `D` atom across; it is kept (§18.194) |
 | S5e | experimentally checked | oracle O-A (A1) | below |
 | S6 | proved | `s6` | needs `TableBases` and `kind (dataB t) = .data t`; **`TableWF` is unused** |
 | S7 | not started | — | a generation test under implementation; the corpus measurements in §10 cover in-scope declarations only |
@@ -487,7 +500,8 @@ S8 is approved for review; the false form and its counterexample stay
 recorded. (This replaces the earlier wording, which called it a
 formalization error with S8's scope unchanged.)
 
-**What S5′ assumes of P-G0, exactly** (`PG0Clauses`,
+**What S5′ assumes, exactly** (`PG0Clauses`; corrected in §16.2: these
+are not P-G0's clauses, and P-G0 as stated does not imply them;
 Statements.lean). Under an assignment satisfying a problem's `D` and a
 candidate's binding equations, on the existing app-free model:
 - a term G0's `defined` accepts is defined;
@@ -668,3 +682,76 @@ whether S5′'s relabel and `canonA` restatement are needed first; whether
 oracle A2 runs before implementation; and whether D6 gains the two
 measured-free conditions (no holder base and no record inside an `app`
 argument). No milestone moves on this review.
+
+## 17. Stage 0 (authorized by §18.196)
+
+### 17.1 0a and 0b: statement text
+
+D6 is amended (§4, 4′ and 8, read after substitution). S5′ is relabeled
+in §15 and in the Lean comments: it is relative to `PG0Clauses`, which
+are proved for no compiler code and are not implied by P-G0 as
+currently stated. The earlier wording is kept as a corrected finding.
+
+### 17.2 0c: statements (interface owner; before any proof)
+
+Composition/App/CanonStatements.lean:
+- `Orders`: the orders canonicalization applies, abstract, each
+  returning a permutation of its input (the compiler's `sortWith fst`
+  and `sort` are such functions).
+- `canonA`: the compiler's `canonical` over `TExprA`.
+- **S9**: `evalA θ (canonA o t) = evalA θ t` for every `o`, `θ`, `t`.
+- `CheckAc`: the check as the compiler performs it, comparing canonical
+  forms and asking `defined` of the canonical form.
+- **S5′c**: S5′ for `CheckAc`, relative to `PG0Clauses`, keeping D6.5's
+  hypothesis.
+- Required examples: `CheckAc` accepting a problem with a `lacks` atom
+  in `D` and a record tail, carried through S5′c; `CheckAc` accepting
+  `{x: Int, ...r} = {a: Bool, x: Int}` under `σ(r) = {a: Bool}` where
+  `CheckA` refuses; `CheckAc` refusing `L(Int) = L(Bool)`.
+
+### 17.3 0d: oracle grammar A2 (fixed here, before any run)
+
+- **Declarations:** A1's `L`, `P`, `T`, plus `type Box(a) = Box(a ->
+  a)` (a holder), `type F = F(Unit -> Unit)` (a nullary holder) and
+  `fn idL(y: L(c)): L(c) = y`.
+- **One function** `fn f(p: τ1, q: τ2): τ3 = e`:
+  - τ1, τ2 from {`Int`, `a`, `b`, `L(Int)`, `L(a)`, `L(L(a))`, `P(a,
+    a)`, `P(a, b)`, `T(Bool)`, `Box(Int)`, `L(F)`, `L({ x: Int })`,
+    `L({ x: Int, ...r })`, `{ x: L(a), ...r }`}, with rigid type
+    variables `a`, `b` and rigid row variable `r`;
+  - τ3 from {`Text`, `Bool`, `Int`, `a`, `L(a)`, `L(L(a))`, `P(a, a)`};
+  - `e` from {`show(p)`, `p == q`, `p`, `C(p, N)`, `C(C(p, N), N)`,
+    `idL(p)`, `P(p, q)`, `match p { N => q, C(h, t) => h }`, `match p {
+    P(x, y) => x }`}.
+
+  That is 12,348 programs; those resolution or generation refuses are
+  skipped and counted.
+- **Candidate:** as A1 (the unifier candidate; unbound flexible
+  variables defaulted).
+- **Judged:** problems whose markers are `DataApplication` alone or
+  none and with no open requirement atom (`Decide.Open` empty; A1
+  required `BQ` empty).
+- **Scope:** amended D6, computed in the harness on the terms after the
+  candidate (every head declared, not a holder, no row parameters; no
+  arrow, handler, holder head, holder base or record inside an `app`
+  argument). Accepted problems outside it are reported as
+  excluded-shape controls, not counted against the properties.
+- **Rigid assignments:** `a` from A1's list plus `L(L(Int))` and `Int
+  -> Int`; `b` from {`Int`, `Bool`, `L(Int)`}; `r` from A1's four rows.
+  Those that violate `D` are skipped.
+- **P1 (as A1):** where `substitutionOnly` returns `Valid` on an
+  in-scope problem, every `B` atom holds in the JS evaluator of `GA`.
+- **P2 (new):** there, every `BQ` atom's type evaluates to a defined
+  value satisfying the three readings H-a, H-b and H-c, transcribed
+  from Statements.lean (`ReqHa`, `ReqHb`, `ReqHc`), with the holder set
+  computed by a literal JS reference of `Holder`/`HoldsFn` from the
+  declarations; a mismatch with the problem's `holders.holding` is a
+  failure.
+- **Controls:** on refused candidates, some `B` atom or requirement
+  fails; excluded-shape controls are reported with their failures.
+- **Pass:** 0 failures of P1 and P2, and the controls fail somewhere.
+  Bounded evidence; no finite reduction is argued.
+
+### 17.4 0e: reachable record-tail declarations
+
+Reserved for the measurement's result.

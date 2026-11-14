@@ -1,7 +1,8 @@
 /-
 Scope A, S5′ (Statements.lean): the check over `TExprA` is sound atom
-by atom, relative to P-G0's two clauses on the existing model (taken as
-the hypothesis `PG0Clauses M`) and to S3 (taken as the hypothesis `h3`,
+by atom, relative to two assumed lemma-level clauses of G0's check on
+the existing model (the hypothesis `PG0Clauses M`; not P-G0, design
+§16.2) and to S3 (taken as the hypothesis `h3`,
 proved elsewhere).
 
 The argument erases the assignment over `GA` to one over `G`

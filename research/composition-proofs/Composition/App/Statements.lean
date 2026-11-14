@@ -439,17 +439,21 @@ def eraseS (σ : SubstA Label B) : Subst Label B :=
 
 /-- G0's check on application-free terms, left abstract: `DefOK` is its
 `defined` and `RowOK` its `lacking`/`apart` tests (Strategy/Atoms.purs).
-Nothing is assumed about them beyond P-G0's clauses. -/
+Nothing is assumed about them beyond `PG0Clauses`. -/
 structure Check0 (Label B : Type) where
   DefOK : SigProblem Label B → TExpr Label B → Prop
   RowOK : SigProblem Label B → Subst Label B → Atom Label B → Prop
 
-/-- P-G0's two clauses on the existing model, assumed and not proved
-(R0 plan §4, P-G0, `Pending genericSubstitutionSound`): under an
-assignment satisfying a problem's `D` and a candidate's binding
-equations, a term the check calls defined is defined, and a `lacks` or
-`disjoint` atom the check accepts holds. The existence of such an
-assignment is also P-G0's and is not assumed or claimed here. -/
+/-- Two lemma-level clauses of G0's check on the existing model,
+assumed: under an assignment satisfying a problem's `D` and a
+candidate's binding equations, a term the check calls defined is
+defined, and a `lacks` or `disjoint` atom the check accepts holds.
+They are proved for no compiler code, and P-G0 as currently stated (R0
+plan §4, `Pending genericSubstitutionSound`) does not imply them: it
+states soundness of the whole check for a generic candidate, not these
+clauses for every problem, substitution and assignment. Corrected
+finding (design §16.2, §18.196): this was first described as "P-G0's
+two clauses", which overstated the assumption. -/
 def PG0Clauses (M : Check0 Label B) : Prop :=
   ∀ (P : SigProblem Label B) (σ : Subst Label B) (θ : Assign Label B),
     Sat θ P.D → Sat θ (eqs σ) →
@@ -488,7 +492,8 @@ def AppFreeAtom : AtomA Label B → Prop
   | .eq t u => AppFreeT t ∧ AppFreeT u
   | _ => True
 
-/-- S5′. If P-G0's clauses hold on the existing model, then on a
+/-- S5′. If the assumed clauses `PG0Clauses` hold on the existing
+model (not P-G0; see `PG0Clauses`), then on a
 problem with no `app` in `D` (D6.5), every atom of `B` holds under any
 assignment over `GA` satisfying `D` and the candidate's binding
 equations, whenever the check over `TExprA` accepts. Requirement atoms

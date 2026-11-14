@@ -1,8 +1,9 @@
 /-
 Scope A's integration (dossier §18.192): the dependent results
 instantiated by the interface owner. `s5'` is S5′ from `s3` (S3). It
-still assumes P-G0's clauses (`PG0Clauses`), which nothing here proves:
-these proofs do not establish the checker's soundness.
+assumes `PG0Clauses`, lemma-level clauses of G0's check that nothing
+here proves and that P-G0 as currently stated does not imply (design
+§16.2): these proofs do not establish the checker's soundness.
 -/
 import Composition.App.Proofs.Subst
 import Composition.App.Proofs.Agree
