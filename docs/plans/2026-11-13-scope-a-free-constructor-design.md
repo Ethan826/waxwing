@@ -752,6 +752,42 @@ Composition/App/CanonStatements.lean:
 - **Pass:** 0 failures of P1 and P2, and the controls fail somewhere.
   Bounded evidence; no finite reduction is argued.
 
-### 17.4 0e: reachable record-tail declarations
+### 17.4 0a and 0e measured: 116 of the 118 stay in scope
 
-Reserved for the measurement's result.
+research/r0-scope-a/stage0-membership.mjs, run on 2026-11-14 at
+12f9c720 (src 59e70fdb), over the 121 programs of membership.json. It
+generates every declaration's problem, applies the unifier candidate
+(as oracle O-A does), and checks amended D6 on the substituted terms,
+plus 0e: whether any declaration reachable from an in-scope head
+through constructor fields falls outside `FT`. A record tail in a field
+can only name the declaration's own record-row parameter (the tables
+store it as a tail index), so the test is a reachable declaration with
+a `RecordSort` parameter, or a field with effect-row arguments. Four
+controls (holder base, record argument, unexpressible reachable
+declaration, holder head) are each flagged; the script fails otherwise.
+Output: .build/evidence/2026-11-14-scope-a-stage0/membership.json;
+the list is research/r0-scope-a/in-scope-stage0.json.
+
+| Condition | Programs flagged |
+|---|---|
+| effect-row head (D6.2) | 2 (already excluded) |
+| holder head (D6.3) | 3 (the 2 above and a4-phantom; already excluded) |
+| arrow inside an argument, **after substitution** (4′) | **2 new**: test/fixtures/r0/erased/form.apply-meta and form.pipe-meta |
+| record inside an argument (8) | 0 |
+| holder base inside an argument (4′) | 0 |
+| handler head or handler inside an argument | 0 |
+| reaches a declaration `FT` cannot express (0e) | 0 |
+| no candidate | 0 |
+
+**116 programs remain in scope**, down from 118. The two new exclusions
+are real. In form.apply-meta, `let n = None; match n { Some(f) => f(1),
+None => 0 }` binds `Opt`'s argument to an arrow by inference, so its
+effect row would be erased inside an `app`: R5's shape, reached without
+writing it. form.pipe-meta is the same through a pipe. **Corrected
+finding:** §10's "none of the 121 has an arrow inside an `app`
+argument (measured)" measured the recorded terms before substitution
+and missed these two. Both are effect-erasure fixtures and belong
+outside the scope.
+
+0e needs no exclusion and no extension of `FT`: no in-scope head reaches
+a declaration with a record-row parameter or an effect-row argument.
