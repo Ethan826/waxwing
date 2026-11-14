@@ -64,7 +64,11 @@ test('records, vars and types are in canonical order', () => {
 test('every rule with entries emits some; the rest emit none', () => {
   const seen = new Set(problems.flatMap(({ problem }) => entryLists
     .flatMap(list => problem[list].map(entry => entry.origin.rule))));
-  assert.deepEqual(allRules.filter(rule => !seen.has(rule)), entryFree);
+  // E4 records only its owner's marker, and since Scope A (dossier
+  // §18.200) every corpus E4 is in scope, so it records none here.
+  assert.deepEqual(allRules.filter(rule => !seen.has(rule)),
+    [...entryFree.slice(0, entryFree.indexOf('E24')), 'E4',
+      ...entryFree.slice(entryFree.indexOf('E24'))]);
 });
 
 // R11: LocalGeneralization is produced by no resolved construct today
