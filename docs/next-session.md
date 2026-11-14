@@ -1,4 +1,4 @@
-# RESUME HERE (2026-11-13, America/New_York)
+# RESUME HERE (2026-11-13, America/New_York; updated §18.195)
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
@@ -84,7 +84,12 @@ statements, §14 review record, §15 results).
 - **Counterexamples R1-R6:** research/r0-scope-a/counterexamples.mjs,
   exit 0 when they reproduce.
 
-**Awaiting the author:** the decision to use these results, which is the
+**Update (§18.194-§18.195):** the completed-dossier review is done
+(design §16) and the implementation proposal is written
+(docs/plans/2026-11-13-scope-a-implementation-proposal.md). S8's
+correction is material (author). **Awaiting the author:** U6, and
+whether Stage 0 (proposal §1) runs before implementation. Originally
+awaiting: the decision to use these results, which is the
 completed-dossier review and U6, the exemption ruling. Implementation is
 unauthorized. When it is authorized, the decided points are:
 - U2: keep the `DataApplication` name, narrowed;

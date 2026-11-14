@@ -9141,3 +9141,38 @@ results and has not rebuilt the proofs.
   program recoveries, and the cost.
 
 Criterion 2 and all existing holds are unchanged.
+
+### 18.195 Completed-dossier review and implementation proposal returned (2026-11-13)
+
+As §18.194 directed, bounded to its four items. The review is design
+§16; the proposal is docs/plans/2026-11-13-scope-a-implementation-
+proposal.md. One independent reviewer and one citation check; the
+controller checked the reviewer's code claims, reran the axioms gate
+(e3bb6bf9: 90 theorems, unchanged report) and ran probes. No theorem
+was found false and no path to an unsound Solved was found. Findings:
+- Item 1: `TableBases` and `kind (dataB t)` are supplied by the
+  compiler's representation. The holder set matches `Holder` by case
+  analysis and five probes, but its only test is a fixed list and a
+  missed holder cannot fail closed. `FT` cannot express record-row
+  tails. GroundRule's `Holds` is not linked to `JHolds`: `requirementUnder`
+  judges with no definedness check. D6.4 as written does not enforce
+  S8's argument hypothesis (a nullary holder argument); none of the 118
+  has one.
+- Item 2: S5′ holds but proves less than stated. `CheckA` omits the
+  compiler's canonical record sorting, so it covers a subset of the
+  compiler's acceptances. `PG0Clauses` are lemma-level clauses that
+  P-G0 as stated does not imply. Erasure is sound in the direction used.
+- Item 3: A1 never exercises requirement atoms (106 programs rest on
+  S6) or patterns; records inside arguments and nested applications
+  are absent.
+- Item 4: O1 closed with corrections (applied to design §3); three
+  section-level details unconfirmed, none load-bearing.
+
+The proposal puts a Stage 0 (two D6 conditions measured to cost none of
+the 118, S5′'s relabel, a `canonA` lemma, oracle A2, a record-tail
+measurement; 0.45-1.0M) before implementation (1.2-2.2M), with the
+defensive refusal on substituted terms, a requirement definedness
+refusal, mutant-proven assumption tests, an exact pin list and 118
+conditional recoveries (losses 252 to 134; criterion 2 stays unmet).
+Spent about 0.35M. U6 awaits the author. Implementation unauthorized;
+all holds continue.

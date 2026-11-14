@@ -7,8 +7,10 @@ the proof-dossier policy's two approvals, before any proof work starts.
 Source at 59e70fdb; evidence under .build/evidence/2026-11-13-scope-a/.
 Revised after an adversarial statement review (§14).
 
-Approvals: statements, pending (author) / completed dossier, not yet
-(rule: the default two; AGENTS.md sets none).
+Approvals: statements, approved for investigation (§18.192; S8's
+corrected form approved for review, §18.194) / completed dossier,
+reviewed (§16), awaiting the author (rule: the default two; AGENTS.md
+sets none).
 
 ## 1. The question
 
@@ -102,12 +104,12 @@ confirmed against the texts before the second approval (open item O1).
 
 | Component | Source | Used for |
 |---|---|---|
-| Types as first-order terms over type constructors, compared syntactically | Damas and Milner, "Principal type-schemes for functional programs", POPL 1982; Pierce, *Types and Programming Languages* (2002), ch. 22 | applied types as free constructor terms |
-| Syntactic unification: decomposition and clash rules | Robinson, JACM 1965; Martelli and Montanari, TOPLAS 1982; Baader and Nipkow, *Term Rewriting and All That* (1998), ch. 4 | Mgu R2′, already in the code |
-| Free term algebras: constructors injective, distinct heads unequal ("no junk, no confusion") | Goguen, Thatcher, Wagner and Wright, JACM 1977; in Lean 4, `noConfusion` and the injectivity theorems generated for every inductive type | S1 |
-| Homomorphisms preserve satisfied equations | Birkhoff, "On the structure of abstract algebras", 1935 | S4's encode and collapse steps |
-| Substitution commutes with evaluation (the substitution lemma) | Baader and Nipkow (1998), ch. 3, for terms without records | S3's `app` case |
-| Rigid variables as skolem constants under givens | Odersky, Sulzmann and Wehr, HM(X), 1999; Vytiniotis et al., OutsideIn(X), 2011 | the ∀rigid/∃flexible shape, unchanged |
+| Types as first-order terms over type constructors, compared syntactically | Damas and Milner, "Principal type-schemes for functional programs", POPL 1982, pp. 207-212; Pierce, *Types and Programming Languages* (2002), ch. 22 "Type Reconstruction" (§22.4 unification) | applied types as free constructor terms |
+| Syntactic unification: decomposition and clash rules | Robinson, JACM 12(1):23-41, 1965; Martelli and Montanari, TOPLAS 4(2):258-282, 1982; Baader and Nipkow, *Term Rewriting and All That* (1998), §4.5-4.6 (the rule's exact section unconfirmed) | Mgu R2′, already in the code |
+| Free term algebras: constructors injective, distinct heads unequal | Goguen, Thatcher, Wagner and Wright, JACM 24(1):68-95, 1977; Baader and Nipkow §3.3-3.4. "No junk, no confusion" is a later folklore label, not ADJ's phrase. In Lean 4, `GA.app.injEq` and `GA.noConfusion` (checked by `#check` on the project's `GA`, 2026-11-13) | S1 |
+| Homomorphisms preserve satisfied equations | Baader and Nipkow ch. 3 (§3.2, §3.5); an elementary fact. Birkhoff 1935 (Proc. Cambridge Phil. Soc. 31(4):433-454) is the HSP result, a different statement, and is no longer cited for it | S4's encode and collapse steps |
+| Substitution commutes with evaluation (the substitution lemma) | Baader and Nipkow ch. 3 (candidate §3.1-3.2; lemma number unconfirmed), for terms without records | S3's `app` case |
+| Rigid variables as skolem constants under givens | Vytiniotis, Peyton Jones, Schrijvers and Sulzmann, OutsideIn(X), JFP 21(4-5):333-412, 2011 (the rigid-variable treatment unconfirmed from the text). HM(X) (TAPOS 5(1):35-55, 1999) parameterizes inference over a constraint system and does not treat rigid variables; it is cited for the constraint shape only | the ∀rigid/∃flexible shape, unchanged |
 
 **Not published** (this design's composition, as the ValidR draft §7
 flags): free constructor nodes inside this project's record model (row
@@ -478,10 +480,12 @@ stays at `Pending genericSubstitutionSound` (decision U1).
 | S8 | proved | `s8` | carries `TableBases`, the assumption S6 already had; `TableWF` unused |
 | R1-R6 | reproducible | research/r0-scope-a/counterexamples.mjs | on the committed compiler: G0's own check accepts R1, R4, R5 and R6, which today refuses; R2 and R3 are refused by both |
 
-**The S8 correction** was a formalization error in the interface: S6
-had `TableBases` and S8 did not. The design's S8 is stated "under D6",
-and S8's scope did not change. The refuted form is kept, as the policy
-requires.
+**The S8 correction is material** (author, §18.194). Adding a
+necessary hypothesis weakens the theorem's guarantee, and sharing the
+assumption with S6 does not make the change immaterial. The corrected
+S8 is approved for review; the false form and its counterexample stay
+recorded. (This replaces the earlier wording, which called it a
+formalization error with S8's scope unchanged.)
 
 **What S5′ assumes of P-G0, exactly** (`PG0Clauses`,
 Statements.lean). Under an assignment satisfying a problem's `D` and a
@@ -561,3 +565,106 @@ the run, commit 15954081).
 **Spent.** About 0.9M tokens for this round by rough count: four proof
 agents about 0.37M in total, plus the interface, fixtures, oracle,
 integration and gate. That is inside the 1.0-2.4M planning range.
+
+## 16. Completed-dossier review (2026-11-13, bounded by §18.194)
+
+Scope: the four items §18.194 names, nothing else. Method: one
+independent adversarial reviewer (items 1-3; Opus, about 134K tokens),
+one citation check (item 4; about 64K), and the controller's own reruns
+and probes. Every reviewer claim used below was checked against the
+code by the controller; the probe scripts are in the session scratchpad
+and are recorded here by result only, to be re-run as fixtures under
+implementation. No theorem was found false. No path to an unsound
+Solved was found. The findings are about how closely the model matches
+the compiler, and about what the oracle leaves out.
+
+### 16.1 Hypotheses against the compiler's inputs (item 1)
+
+| Hypothesis | Supplied by the compiler? | Evidence | Enforcement under implementation |
+|---|---|---|---|
+| `TableBases` | yes, by representation | a constructor field is a `Ty` (src/Domain/IR/Internal.purs:85-86); `Ty`'s only bases are `TInt`, `TBool`, `TUnit`, `TText` (Domain/Type/Core.purs:57-66); a nullary declared type is `TData id [] []`, never a base. The shape refuting `S8NoBases` cannot be written | a test that every recorded `Base (DataBase u)` names a declared `u` with arity {types 0, rows 0}; plus `Ty`'s exhaustive match (a new base constructor breaks compilation of the test's translator) |
+| `kind (dataB t) = .data t` | yes | src/Features/Check/GroundRule.purs:71 classifies `DataBase t` as the declared type `t` | a GroundRule unit test |
+| holders = `Holder T` (K-a) | yes, by case analysis | `holdersOf` (Generate.purs:93-100): declared is every table index, holding is `functional tables.ctors`; `containsFunction`'s cases match `HoldsFn`'s; `spread` is a least fixed point. Controller probes, 2026-11-13: row-argument propagation (`R({g: Unit -> Unit})` makes its user a holder; `R({g: Int})` does not), mutual recursion, propagation through an argument only (`Q(T(F))`), a record field of holder type, a handler field: all correct | **cannot fail closed** (a missed holder turns `Open` into `Holds`). test/r0-holders.test.mjs is a fixed list of nine declarations. Add a generated property test comparing `functional` with a literal JS reference of `Holder`/`HoldsFn`, with a mutant per propagation case |
+| `TableWF` (unused) | yes | resolution enforces arity | kept as a restriction (§18.194); no new test |
+| `FT` expresses every field type | **no** (reviewer 1c) | `FT` has no record-row tails and no effect-row arguments. A declaration `R(...r) = R({x: Int, ...r})` is reachable from a non-holder head (probe). An effect-row argument in a constructor field is refused by resolution (RowSort, probe), so only the record-tail case is live | treat as an assumption check: the S8/S6 proofs cover declarations reachable from an in-scope head only when those declarations are `FT`-expressible. Either extend D6 to refuse heads that reach a record-tail declaration, or extend `FT` with tails and re-prove. Measure on the 118 first |
+| `JHolds` models GroundRule's `Holds` on the judged term | **not linked** (reviewer 1a) | Asked.purs:36-40 judges `under candidate (atomType …)` with no `defined` check; `canonical` keeps repeated labels (Candidate.purs:95-105). A spliced tail repeating a label could be judged `Holds` on a term `evalA` leaves undefined | fail-closed refusal: `requirementUnder` refuses `Undefined` when a `BQ` atom's type contains an `App` and is not `defined` under σ. A Lean lemma `judge_holds_jholds` is the alternative |
+| D6.4 enforces S8's argument hypothesis | **no, as written** (controller) | S8 needs each argument to reach no arrow. D6.4 forbids only syntactic arrows. A nullary holder argument, `L(F)` with `F = F(Unit -> Unit)`, records `App L [Base (DataBase F)]` with no arrow and a non-holder head, so D6 admits it while S8's hypothesis fails. Measured: none of the 118 has one (positive control detected) | the narrowed marker and U3's refusal test S8's hypothesis directly: no arrow, handler, holder head or holder base inside an `app` argument, at any depth, after substitution |
+
+### 16.2 S5′ (item 2)
+
+S5′ is proved, but it proves less than the dossier said:
+- **The modeled check is narrower than the compiler's** (reviewer 2a,
+  confirmed). The compiler compares canonical forms: `under` and
+  `canonical` sort record fields and tails at every depth, inside `App`
+  arguments included (Candidate.purs:45-58, 93-106; Atoms.purs:76-79).
+  `CheckA` compares raw `substTA`. For `L({x: Int, ...r}) = L({a: Bool,
+  x: Int})` with σ(r) = {a: Bool} the compiler accepts and `CheckA`
+  refuses, so S5′ says nothing about that acceptance. The same holds
+  for records outside `App`. This is a gap in coverage, not a
+  soundness failure. Measured: no in-scope program has a record inside
+  an `app` argument in `B` or `BQ` (controls detect one).
+- **`PG0Clauses` is not P-G0** (reviewer 2b, confirmed). P-G0 (R0 plan
+  §4) states soundness of the whole check for a generic σ. `PG0Clauses`
+  states two lemma-level clauses for every problem, substitution and
+  assignment. P-G0 as stated does not imply them. "Relative to P-G0"
+  overstated the assumption. The clauses look true of the code
+  (`defined` reads only `D`'s facts; an erased `App` is judged as its
+  arrow chain, Atoms.purs:97 against :101), but that rests on reading.
+- **Erasure is sound in the direction used** (reviewer 2c): `sat_erase`
+  moves satisfaction from `GA` to `G` only, and equality comes from
+  syntactic equality over `TExprA` with S3. Collisions such as `app L
+  [x]` against `x -> {}` only weaken the erased hypotheses.
+- **Non-vacuity is thin** (2d): the `semCheck` example has an empty `D`,
+  no tail, no row atom, and no refusal control.
+- **Requirement atoms are outside the Lean S5′** (2e). The bridge from
+  GroundRule to `JHolds` is §16.1's missing link.
+
+Corrections proposed, for the author: relabel S5′ as "relative to
+`PG0Clauses`, lemma-level clauses of G0's check, assumed; not implied by
+P-G0 as stated"; restate `CheckA` through a canonicalization `canonA`
+with the lemma `evalA θ (canonA t) = evalA θ t`; add the 2d examples.
+These change a statement's wording and add a lemma, so they come back
+for approval before any proof work (proposal, Stage 0).
+
+### 16.3 Oracle grammar A1 (item 3)
+
+| Gap | Matters for the 118? | Cheap amendment |
+|---|---|---|
+| requirement atoms: A1 judges only `BQ`-empty problems | **yes**: 106 rest on S6, and 65 have `BQ` atoms over `app` that mention variables | bodies `show(p)`, `p == q`; a holder `Box(a) = Box(a -> a)`; judge on `Decide.Open` empty; property: an accepted `Holds` satisfies all three readings in the JS evaluator |
+| records and tails inside `app` arguments | not in the 118 (measured); matters for 16.2 | types `L({x: Int, ...r})`, `L({x: a})` |
+| patterns and `match` arms | yes: a separate emission point (Node.purs) covered only by the `inScope` probe | `match` bodies over `L` |
+| nested applications | Minor | `L(L(a))`, `C(C(p, N), N)` |
+| one rigid twice, two rigids | Minor | `P(a, a)`; a second rigid `b` |
+| calls to a generic function | Minor | `fn idL(y: L(b)): L(b)`; body `idL(p)` |
+| rigid values with arrows or nested `app` | Minor | `a := Int -> Int`, `L(L(Int))` |
+| online search's candidate | stated in A1 | none |
+
+The amendment (A2) must be fixed and recorded before it runs.
+
+### 16.4 Citations and the combined report (item 4)
+
+- O1 is closed with corrections, applied to §3: section numbers added
+  where confirmed; the "no junk, no confusion" attribution to ADJ
+  removed; Birkhoff replaced by Baader and Nipkow ch. 3 for the
+  homomorphism fact; HM(X) restricted to the constraint shape. Still
+  unconfirmed from the texts: Baader and Nipkow's exact section for the
+  decomposition rules and the substitution lemma's number, and
+  OutsideIn(X)'s rigid-variable treatment. None of these is load-bearing
+  for a theorem.
+- S1 for this project's type: `#check` shows `GA.app.injEq` and
+  `GA.noConfusion` generated (Lean 4.35.0, 2026-11-13).
+- The axioms gate, rerun by the controller at e3bb6bf9: clean build, no
+  placeholders, 90 theorems, unchanged report
+  (app-axioms.out). `s6` and `s8` use `propext` and `Quot.sound`; the
+  rest add `Classical.choice`. The theorems are typed by the interface's
+  `Prop`s (Main.lean; `s4 : S4`, `not_s8NoBases : ¬ S8NoBases`).
+
+### 16.5 Bearing on U6
+
+The review supports the narrow exemption at `Pending
+genericSubstitutionSound` only with §16.1's checks added. Before U6 the
+author has three open choices, each with a cost in the proposal:
+whether S5′'s relabel and `canonA` restatement are needed first; whether
+oracle A2 runs before implementation; and whether D6 gains the two
+measured-free conditions (no holder base and no record inside an `app`
+argument). No milestone moves on this review.
