@@ -44,8 +44,12 @@ test('generation records the program\'s complete holder set', () => {
   assert.deepEqual(ids(recorded.holders.holding), wanted);
   assert.deepEqual(ids(recorded.holders.declared),
     program.types.map((_, index) => index));
+  // RT1's translator (a separate algorithm) agrees on all four sets;
+  // `admitted` and `overRecords` since Scope A (dossier §18.198).
   assert.deepEqual(holdersOf(program), { declared: ids(
-    recorded.holders.declared), holding: wanted });
+    recorded.holders.declared), holding: wanted,
+  admitted: ids(recorded.holders.admitted),
+  overRecords: ids(recorded.holders.overRecords) });
 });
 
 // σ binds the flexible `y` of `pr y` to each type in turn.
