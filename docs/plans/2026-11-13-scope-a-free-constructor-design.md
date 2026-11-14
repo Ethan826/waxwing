@@ -791,3 +791,123 @@ outside the scope.
 
 0e needs no exclusion and no extension of `FT`: no in-scope head reaches
 a declaration with a record-row parameter or an effect-row argument.
+
+### 17.5 0c and 0d results
+
+**0c, proved** (Composition/App/Proofs/Canon.lean; branch
+`scope-a-canon` at e843c03d, integrated as 4e846a63; statements
+unchanged from 12f9c720):
+- `s9 : S9`, by mutual induction. The record case rests on
+  `evalFA_ofList_perm` (a permutation of written fields evaluates the
+  same; its swap case is the existing `compose_swap`; a repeated label
+  fails in every order, so no hypothesis is needed) and the existing
+  `composeAll_perm` for tails.
+- `s5'c : S5'c` (= `s5'c_of_s3_s9 s3 s9`), relative to `PG0Clauses`
+  only. As in S5′, D6.5's hypothesis is unused and kept.
+- Examples (namespace `CanonExample`; acceptance is shown for the
+  semantic check `semCheck`, not for every `M`): (a) `checkAc_exP` and
+  `holds_exP`, a `lacks` atom in `D` and a record tail, carried through
+  `s5'c` (a reflexive one-field equation, so canonicalization does no
+  work there); (b) `checkAc_exP2`, `{x: Int, ...r} = {a: Bool, x: Int}`
+  under `σ(r) = {a: Bool}`, accepted by `CheckAc semCheck` with fields
+  sorted by `List.mergeSort`, and `not_checkA_exP2`, refused by
+  `CheckA M` for every `M` (not carried through `s5'c`); (c)
+  `not_checkAc_app`, `L(i) = L(c)` refused for distinct bases, every
+  `M`, `o` and `σ`.
+- Gate, rerun by the controller after integration: clean build, no
+  placeholders, 106 theorems, report changed by additions only. The
+  new theorems use at most `propext`, `Classical.choice` and
+  `Quot.sound`. The gate counts `Orders`' two permutation fields as
+  theorems; they were added to the inventory.
+
+**0d, run** (research/r0-scope-a/oracle-a2.mjs; output
+.build/evidence/2026-11-14-scope-a-stage0/oracle-a2.json and
+oracle-a2-pr2.json):
+- 12,348 programs, none refused; 1,176 out of scope by open requirement
+  atoms, none by markers; 217 accepted in scope; 15 accepted outside
+  amended D6 (all a record inside an argument; no evaluator failure
+  among them).
+- **P1: 0 failures** over 2,905 assignments. **P2: 0 failures** in
+  every category (undefined value, H-a, H-b, H-c, holder-set mismatch);
+  45 accepted in-scope problems carry a `BQ` atom. 31 accepted in-scope
+  problems come from `match` bodies, 57 involve `L(L(..))`.
+- Controls: 7,259 of 7,273 refused candidates fail somewhere. The 14
+  that do not are `show(p)` at rigid `b`, which G0 refuses because `pr`
+  at a rigid variable is unjudged; every enumerated `b` is printable.
+  A deliberately broken evaluator (`--broken-evaluator=never-equal-apps`,
+  off by default) produces P1 failures, so the evaluator can fail.
+  H-a and H-b reject `Box(Int)` and `L(F)` in the script's own sanity
+  checks.
+- **Amendment A2.1** (labeled; an interpretation made after the first
+  run, not in §17.3): P2 first checked a reading only under assignments
+  whose rigid values satisfy it (Pr-1's `Q_imp`). Rerun without that
+  filter (Pr-2, `--no-pr1-filter`): 309 instead of 249 assignments per
+  reading, still 0 failures. Both are reported.
+- **A2 is nearly vacuous where it was meant to add coverage** (Stage 0
+  review, §17.6; confirmed by the controller from the reviewer's log).
+  Of the 217 accepted in-scope problems, 172 have no `BQ` atom; the
+  other 45 are three ground types (`Int`, `L(Int)`, `T(Bool)`), 15
+  each, differing only in an unused parameter. No accepted `BQ` atom
+  mentions a variable, so the Pr-1/Pr-2 agreement is forced. No
+  accepted problem has a record with a tail in `B`, so nothing S5′c
+  adds is exercised. Patterns are exercised (31 problems). A2's P2 and
+  canonicalization claims are therefore weak evidence; amendment A3
+  (§17.7) addresses them.
+- The holder set computed by the literal JS reference of
+  `Holder`/`HoldsFn` matched `holders.holding` on every problem.
+- Bounded evidence; no finite reduction is argued.
+
+### 17.6 Stage 0 review (2026-11-14)
+
+One independent adversarial reviewer (Opus, about 136K tokens) over
+4e846a63 and the uncommitted §17.5. No false theorem, no path to an
+unsound Solved. Findings, each checked by the controller where it
+matters:
+- **Important, model to code:** `CheckAc` uses `canonA o (substTA σ
+  t)`; the compiler uses `under`, which canonicalizes again terms it
+  already canonicalized (Candidate.purs:51, 102). They agree if
+  `canonical` is idempotent and `under c = canonical ∘ substOnce c`
+  under `generic`. Both look true; neither is checked. Closing check:
+  a PureScript property test of both equations, with a mutant, under
+  implementation (no compiler change is needed to state it; it is a
+  test).
+- Confirmed by reading: arrow spines rebuild the same binary chain;
+  `under` splices fields before tails as `substTA` does; `equal` asks
+  `defined` of both sides, which is stricter than `CheckAc`; `sortWith
+  fst` is stable and keeps repeats, so it is a permutation, and a
+  repeated label or tail is `Undefined`; `generic` rules out chained
+  bindings.
+- **Important, oracle:** A2's P2 nearly vacuous and canonicalization
+  unexercised (§17.5). Closing check: A3.
+- **Minor, examples:** wording corrected in §17.5.
+- **Minor, membership script** (stage0-membership.mjs): row tails
+  outside `app` were not spliced; 0e did not follow nullary declared
+  bases (`Base (DataBase u)`), so a control `L(N0)` with `N0 =
+  N0(R({ y: Int }))` went unflagged; `noCandidate` was not an
+  exclusion. The reviewer re-measured with both fixes: still 116.
+  Fixed in the script (§17.7), with the new controls.
+- **Minor, oracle controls:** refused-candidate controls test H-a only;
+  the holder check compares id sets, not the id-to-name mapping.
+- Still outside S5′c, unchanged: `BQ` atoms (the GroundRule-to-`JHolds`
+  link, §16.1, to be closed by the requirement-definedness refusal and
+  A3's P2) and handler heads (excluded by D6).
+
+### 17.7 Amendment A3 (labeled; fixed here after A2's run and before A3 runs)
+
+A2's grammar stays as run. A3 adds to it:
+- **Declaration:** `fn idR(y: { x: c, ...s }): { x: c, ...s } = y`.
+- **τ3** adds `{ a: Bool, x: Int }` and `{ x: L(a), ...r }`.
+- **Bodies** add `show(C(p, N))`, `show(idL(p))`, `show(P(p, q))`,
+  `show(N)`, `C(p, N) == C(q, N)`, `idR({ a: true, x: 1 })`.
+
+  That is 14 × 14 × 9 × 15 = 26,460 programs.
+- Rigid assignments, the judged filter, the scope filter, P1, P2 and
+  the controls are A2's; P2 runs under both Pr-1 and Pr-2.
+- **Exercise requirements, added to the pass rule:** at least one
+  accepted in-scope `BQ` atom whose type mentions a variable before
+  substitution; at least one accepted in-scope problem whose `B` holds
+  a record with a tail; at least one accepted in-scope `B` atom where
+  canonical sorting changes the substituted term (the case `CheckA`
+  would refuse). The run reports the distinct substituted `BQ` types
+  and these three counts. If an exercise count is 0, A3 fails and is
+  reported as such, not amended again in this tranche.
