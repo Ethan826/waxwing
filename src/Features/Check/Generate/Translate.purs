@@ -72,10 +72,11 @@ translate tables naming = case _ of
   TRecord row → recordOf (map fieldName row.fields)
     <$> translateAll tables naming (map fieldType row.fields)
     <*> traverse (named naming) row.tails
-  TData owner arguments rows → dataOf tables.admitted
-    (map (rowOf naming) rows)
-    <$> typeInfo tables owner
-    <*> translateAll tables naming arguments
+  TData owner arguments rows →
+    dataOf tables.admitted
+      (map (rowOf naming) rows)
+      <$> typeInfo tables owner
+      <*> translateAll tables naming arguments
   THandler (Label effect arguments mark) rows →
     handlerOf (Label effect <@> mark) (mapHandlerRows (rowOf naming) rows)
       <$> translateAll tables naming arguments

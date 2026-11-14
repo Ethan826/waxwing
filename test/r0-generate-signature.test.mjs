@@ -12,8 +12,10 @@ import { problemFindings } from './r0-generate-checks.mjs';
 const lacks = (variable, label) => ({ lacks: [variable, label] });
 const disjoint = (one, other) => ({ disjoint: [one, other] });
 
+// \`Hold\` makes \`Box\` a holder, outside Scope A's boundary (dossier
+// §18.198), so Sig8 marks it; the in-scope pair follows Sig6/Sig8.
 const shapes = `type Holder(...r) = Holder({ x: Int, ...r });
-type Box(a) = Box(a);
+type Box(a) = Box(a) | Hold(Unit -> Unit);
 fn f(p: { a: Int, ...r }, h: Holder(...s), b: Box(Int)): { b: Bool, ...t }
     where r lacks { c }, r disjoint t = crash(1);
 fn main(): Int = 1;
@@ -56,6 +58,12 @@ test('Sig6, Sig8: implied lacks per type; Sig8 marks f\'s own types', () => {
     ['outside', ['parameters', 2], 0, 'DataApplication']]);
   assert.deepEqual(problem.outside.map(entry => entry.origin.row),
     ['O5', 'F8']);
+});
+
+test('Scope A: Sig8 leaves an in-scope head unmarked', () => {
+  const { problem } = generated(shapes.replace(
+    'type Box(a) = Box(a) | Hold(Unit -> Unit);', 'type Box(a) = Box(a);'));
+  assert.deepEqual(problem.outside.map(entry => entry.origin.row), ['O5']);
 });
 
 test('Sig3: the body\'s type against the written result (B1, body)', () => {
@@ -117,7 +125,10 @@ test('Features.Check.Generate exports its enumerated values only',
 // Domain.Checked is retired with the port (Task 7.1a's carry), and T10
 // (test/r0-elab-rules.test.mjs) checks the same allowlist from every
 // Generate* module, transitively.
-const reused = ['Features.Check.Components', 'Features.Check.Functional',
+// Features.Check.Admitted joins at Scope A (dossier §18.198), pure over
+// the tables like Functional.
+const reused = ['Features.Check.Admitted', 'Features.Check.Components',
+  'Features.Check.Functional',
   'Features.Check.Holes', 'Features.Check.Implied', 'Features.Check.Nested',
   'Features.Check.NestedArguments', 'Features.Check.Spine',
   'Features.Check.Tables', 'Features.Check.Walk',

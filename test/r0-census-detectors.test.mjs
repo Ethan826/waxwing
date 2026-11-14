@@ -45,8 +45,9 @@ const cases = [
     ['EffectArgument', 'ErasedRow']],
   ['test/fixtures/r005b/precedence-p5.json', 'k', true,
     ['DataOverRecords']],
-  ['test/fixtures/r0/audit/redundant-arm.pinned.json', 'f', true,
-    ['DataApplication']],
+  // An effect-row head stays outside Scope A's boundary (dossier
+  // §18.198); redundant-arm.pinned's `Opt(Int)` is in it since then.
+  [`${erasedDir}/form.pattern-row.json`, 'g', true, ['DataApplication']],
   [`${erasedDir}/form.handler-plain.json`, 'g', true, ['HandlerType']],
   [`${erasedDir}/form.fail-unwritten.json`, 'g', true,
     ['FailFamily', 'ErasedRow']],

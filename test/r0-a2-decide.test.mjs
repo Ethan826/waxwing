@@ -25,9 +25,10 @@ const at = { provenance: fx032.effects.obligations[0].provenance,
   check: 0 };
 const kind = fx032.effects.obligations
   .find(placed => placed.value instanceof Effect.Unsupported).value.value0;
-// famw records three `outside` kinds, rule 1's blocks after the defect.
-const outside = ', Outside HandlerType, Outside FailFamily'
-  + ', Outside DataApplication';
+// famw records two `outside` kinds, rule 1's blocks after the defect;
+// its `Job(Int)` is in Scope A's boundary since dossier §18.200 (an
+// authorized movement in research/r0-scope-a/impl1-movements.json).
+const outside = ', Outside HandlerType, Outside FailFamily';
 const run = (options, problem) => describe(decide(checking(options),
   problem));
 const reasonOf = (options, problem) =>

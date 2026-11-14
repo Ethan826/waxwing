@@ -20,7 +20,11 @@ const pinned = (source, name, rule, expected) => {
   return problem;
 };
 
-const opt = 'type Opt(a) = None | Some(a);\n'
+// `Hold` makes `Opt` a holder, outside Scope A's boundary (dossier
+// §18.198), so it keeps its marker; `inOpt` is the in-scope pair.
+const opt = 'type Opt(a) = None | Some(a) | Hold(Unit -> Unit);\n'
+  + 'fn f(o: Opt(Int)): Int = match o { Some(n) => n, None => 0, _ => 1 };';
+const inOpt = 'type Opt(a) = None | Some(a);\n'
   + 'fn f(o: Opt(Int)): Int = match o { Some(n) => n, None => 0, _ => 1 };';
 test('P1, P2, P4: θ(owner) against τ_s, then the owner\'s marker', () => {
   const owner = index => app({ data: 0 }, [tv(v(arm(index), { inst: 0 }))]);
@@ -33,6 +37,13 @@ test('P1, P2, P4: θ(owner) against τ_s, then the owner\'s marker', () => {
     eq(tv(v(arm(0), { inst: 0 })), tv(v([], 'res'))));
   assert.deepEqual(problem.types.find(([path]) => JSON.stringify(path.steps)
     === JSON.stringify(arm(2)))?.[1], typeOpt);
+});
+
+test('Scope A: an in-scope owner\'s pattern has no marker', () => {
+  const owner = index => app({ data: 0 }, [tv(v(arm(index), { inst: 0 }))]);
+  const typeOpt = app({ data: 0 }, [B('Int')]);
+  pinned(inOpt, 'f', 'P4', [0, 1].map(index =>
+    ['b', ['body', ...arm(index)], 0, eq(typeOpt, owner(index))]));
 });
 
 test('P3: a literal pattern against Int or Bool', () => {

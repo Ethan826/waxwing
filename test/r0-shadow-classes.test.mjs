@@ -50,6 +50,9 @@ const cases = [
     + ' RequirementAtoms'), 'today refuses, BQ pending G-ValidR'],
   ['refused, no candidate', noCandidate('Unresolved Inference NoCandidate'),
     'today\'s refusal becomes Unresolved (no candidate)'],
+  // Scope A (dossier §18.200): h5-type-depth#deepest's shape.
+  ['refused, a limit', noCandidate('Unresolved Limit InferredTypeDepth@body'),
+    'today refuses, R0 Limit'],
   ['refused, out of budget', facts('agree: no candidate (OutOfBudget)', {
     today: refused, r0: { verdict: 'Unresolved Inference NoCandidate',
       attempt: 'Searched OutOfBudget' } }),

@@ -40,7 +40,8 @@ const fixtures = [
   ['Deferred', 'E16', 'fn f(): Unit with Console = { defer'
     + ` Console.print(1); let bad = ${bad}; Console.print(3) };`,
   'defer Console.print(1)'],
-  ['DataApplication', 'E6', 'type Box(a) = Box(a); fn f(): Int ='
+  ['DataApplication', 'E6', 'type Box(a) = Box(a) | Hold(Unit -> Unit);'
+    + ' fn f(): Int ='
     + ` { let b = Box(1); ${bad} };`, 'Box(1)'],
   ['DataOverRecords', 'E6', 'type Both(...r, ...s) = Both({ ...r, ...s });'
     + ` fn f(): Int = { let b = Both({ x: 1, y: 2 }); ${bad} };`,

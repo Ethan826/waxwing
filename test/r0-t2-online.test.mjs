@@ -28,7 +28,7 @@ test('the pinned decisions cover every fixture with whole Solutions', () => {
     const [solution] = pinned[name].Right[0].verdict.Solved;
     assert.deepEqual(Object.keys(solution), ['strategy', 'validity',
       'assurance', 'compilation'], name);
-    assert.deepEqual(solution.validity, { Valid: [] }, name);
+    assert.deepEqual(solution.validity, { Valid: [[]] }, name);
     assert.ok('Pending' in solution.assurance, name);
     assert.ok('Witnessed' in solution.compilation, name);
   }

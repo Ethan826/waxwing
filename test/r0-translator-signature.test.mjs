@@ -76,13 +76,20 @@ test('Sig8: a declared type\'s record argument, and its marker', () => {
   assert.deepEqual(ruleEntries(f, 'Sig8'), [
     ['d', 'parameters:1', 0, 'A5', 'types', lacks(rv(1), 'y')],
     ['outside', 'parameters:1', 1, 'O5', 'types', 'DataOverRecords']]);
+  // `Hold` makes `List` a holder, outside Scope A's boundary (dossier
+  // §18.198); without it the head is in scope and Sig8 marks nothing.
   const list = translated(`
-type List(a) = Nil | Cons(a, List(a));
+type List(a) = Nil | Cons(a, List(a)) | Hold(Unit -> Unit);
 fn g(xs: List(Int)): List(Bool) = Nil;
 ${main}`).g;
   assert.deepEqual(ruleEntries(list, 'Sig8'), [
     ['outside', 'parameters:0', 0, 'F8', 'types', 'DataApplication'],
     ['outside', 'result:', 0, 'F8', 'types', 'DataApplication']]);
+  const inScope = translated(`
+type List(a) = Nil | Cons(a, List(a));
+fn g(xs: List(Int)): List(Bool) = Nil;
+${main}`).g;
+  assert.deepEqual(ruleEntries(inScope, 'Sig8'), []);
 });
 
 test('Sig9 and Sig10: Q empty; the entry\'s result printable', () => {

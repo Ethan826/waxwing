@@ -68,7 +68,7 @@ const shapes = [
     ['Inadmissible', 2], ['ComponentBlocked', 1], ['NotLowerable', 2],
     ['NoCompilation', 1], ['AdmissionLimit', 1], ['Forced', 1],
     ['NotForced', 1], ['Checked', 1], ['Undecided', 0]],
-  [VerdictInternal, ['Valid', 0], ['Alternatives', 1],
+  [VerdictInternal, ['Valid', 1], ['Alternatives', 1],
     ['NonForcedness', 1], ['ForcednessEvidence', 0]],
   [TheoremInternal, ['TheoremRef', 1]],
   [Unsound, ['Unregistered', 0], ['Unprojectable', 0], ['DAtomPremise', 1],

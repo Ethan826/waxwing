@@ -191,7 +191,10 @@ test('the real tree has no E6 finding; every declaration is read', () => {
 // Features, Format, Program or Runtime outside the generator's own, the
 // moved `holes` module and the named pure helpers. So no checker
 // `State`, no strategy and no `Witness` accessor is in reach of a rule.
-const helpers = ['Features.Check.Components', 'Features.Check.Functional',
+// Features.Check.Admitted (Scope A, dossier §18.198) is the admitted set,
+// pure over the tables like Functional.
+const helpers = ['Features.Check.Admitted', 'Features.Check.Components',
+  'Features.Check.Functional',
   'Features.Check.Holes', 'Features.Check.Implied', 'Features.Check.Nested',
   'Features.Check.NestedArguments', 'Features.Check.Spine',
   'Features.Check.Tables', 'Features.Check.Walk',

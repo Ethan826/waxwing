@@ -64,7 +64,10 @@ test('E3: an adm site per reference, slots every inst variable', () => {
     tv(inst([], 0))));
 });
 
-const box = 'type Box(a) = Box(a);\n';
+// `Hold` makes `Box` a holder, outside Scope A's boundary (dossier
+// §18.198), so it keeps its marker; the in-scope pair follows E6.
+const box = 'type Box(a) = Box(a) | Hold(Unit -> Unit);\n';
+const inBox = 'type Box(a) = Box(a);\n';
 test('E4: the owner\'s app is marked DataApplication (F8, inst)', () => {
   const problem = pinned(box + 'fn f(): (Int) -> Box(Int) = Box;', 'f',
     'E4', [['outside', ['body'], 0, 'DataApplication']]);
@@ -78,6 +81,17 @@ test('E6 over-applied: F1 at 0, B1 at 1, the marker at 2', () => {
     ['b', ['body'], 1, eq(app({ data: 0 }, [tv(inst([], 0))]),
       fun([B('Int')], res([])))],
     ['outside', ['body'], 2, 'DataApplication']]);
+});
+
+test('Scope A: an in-scope head records its app with no marker', () => {
+  const problem = pinned(inBox + 'fn f(): (Int) -> Box(Int) = Box;', 'f',
+    'E4', []);
+  assert.deepEqual(problem.types[0][1], fun([tv(inst([], 0))],
+    app({ data: 0 }, [tv(inst([], 0))])));
+  pinned(inBox + 'fn f(): Int = Box(1, 2);', 'f', 'E6', [
+    ['b', ['body'], 0, eq(B('Int'), tv(inst([], 0)))],
+    ['b', ['body'], 1, eq(app({ data: 0 }, [tv(inst([], 0))]),
+      fun([B('Int')], res([])))]]);
 });
 
 const ops = 'fn f(x: Int, t: Text): Bool = '

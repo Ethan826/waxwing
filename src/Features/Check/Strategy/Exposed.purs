@@ -44,6 +44,7 @@ exposedBy problem candidate = nubEq (concatMap (nodes holders) terms)
         <> concatMap atomTerms (values view.d)
         <> map atomType (values view.bq)
     )
+
   values ∷ ∀ a. Array (Entry a) → Array a
   values = map _.value
 

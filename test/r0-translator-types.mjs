@@ -1,6 +1,7 @@
 // RT1's translator: written types (T-R0b §2.2) and a declaration's `D`
 // (Sig4-Sig8, §3.1). Reads resolved syntax from the compiled output.
 import { arrow, base, record, tvar } from './r0-translator-context.mjs';
+import { admittedSet } from './r0-translator-holders.mjs';
 
 const load = name => import(`../output/${name}/index.js`);
 export const T = await load('Domain.Type');
@@ -50,10 +51,22 @@ export const translate = (program, type, naming, marks) => {
   return fail(`not a Ty: ${String(type)}`);
 };
 
+// Scope A (dossier §18.198): an admitted head whose arguments are plain
+// (builtins, variables, admitted declared types over plain arguments)
+// carries no marker.
+const plain = (admitted, type) => (type instanceof T.TData
+  ? admitted.has(type.value0) && type.value2.length === 0
+    && type.value1.every(arg => plain(admitted, arg))
+  : !(type instanceof T.TFun || type instanceof T.THandler
+    || type instanceof T.TRecord));
+
 const dataType = (program, type, go, marks) => {
   const [owner, args, rows] = [type.value0, type.value1, type.value2];
   if (args.length === 0 && rows.length === 0) return base({ data: owner });
-  marks.push(dataKind(program, owner));
+  const admitted = admittedSet(program);
+  if (!(admitted.has(owner) && rows.length === 0
+    && args.every(arg => plain(admitted, arg))))
+    marks.push(dataKind(program, owner));
   return { app: { head: { data: owner }, args: args.map(go) } };
 };
 

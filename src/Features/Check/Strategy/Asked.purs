@@ -39,9 +39,10 @@ requirementUnder problem candidate = judged
   isOpen = openAtom problem
   judged entry
     | isOpen entry.value = Right unit
-    | otherwise = refusal entry.origin.atom
-        (judge holders (candidateView entry.value) (typeUnder entry))
-        *> definedIn entry
+    | otherwise =
+        refusal entry.origin.atom
+          (judge holders (candidateView entry.value) (typeUnder entry))
+          *> definedIn entry
   typeUnder entry = under candidate (atomType entry.value)
   -- Scope A (dossier §18.198; design §16.1): GroundRule's `Holds` is not
   -- linked to the model's `JHolds` on a term the model leaves undefined
@@ -49,8 +50,8 @@ requirementUnder problem candidate = judged
   -- `Holds` must also be `defined`, or the atom is refused, after the
   -- judgement, so no existing refusal changes.
   definedIn entry =
-    if applied (typeUnder entry) && not (defined known (typeUnder entry))
-    then Left (Undefined entry.origin.atom)
+    if applied (typeUnder entry) && not (defined known (typeUnder entry)) then
+      Left (Undefined entry.origin.atom)
     else Right unit
   known = facts problem
 

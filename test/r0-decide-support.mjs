@@ -8,7 +8,10 @@ export const sources = {
   // E7's `eq Bool Int`: a refutable atom.
   clash: `fn f(): Int = 1 + true;\n${main}`,
   // A `DataApplication` marker beside the same atom (test/r0-markers).
-  boxed: `type Box(a) = Box(a);\nfn f(): Int = { let b = Box(1);`
+  // `Box` holds a function (`Hold`), so it stays outside Scope A's
+  // boundary (dossier §18.198) and keeps its marker.
+  boxed: `type Box(a) = Box(a) | Hold(Unit -> Unit);\n`
+    + `fn f(): Int = { let b = Box(1);`
     + ` 1 + true };\n${main}`,
   // `D` holds `lacks r a`.
   lacking: `fn f(p: { ...r }): Int where r lacks { a } = 1;\n${main}`,
