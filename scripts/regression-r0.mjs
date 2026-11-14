@@ -99,12 +99,13 @@ export const r0Rows = [
         needle: 'import Data.Foldable (foldM)\n',
         replacement: 'import Data.Foldable (any, foldM)\n' },
       { file: 'src/Features/Check/Decide.purs',
-        needle: '  map (decision ran) (verdictOf blocked ran)\n',
+        needle: '  map (decision ran) (verdictOf (withExposed blocked ran)'
+          + ' ran)\n',
         replacement: '  map (decision ran) (if any found (map'
           + ' (shadowRecord checking.budget ran.hints problem)'
           + ' checking.shadows) then Right (Unresolved { reason: reason'
-          + ' blocked ran.attempts, hints: [] }) else verdictOf blocked'
-          + ' ran)\n' },
+          + ' blocked ran.attempts, hints: [] }) else verdictOf'
+          + ' (withExposed blocked ran) ran)\n' },
       { file: 'src/Features/Check/Decide.purs',
         needle: '  blocked = blocks (checking.openRequirements problem)'
           + ' problem\n',

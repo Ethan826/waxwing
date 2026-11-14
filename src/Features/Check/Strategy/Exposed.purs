@@ -5,7 +5,8 @@
 -- the written terms; a variable inside an argument may still become an
 -- arrow, a record or an excluded head under the candidate, and a
 -- generation regression could drop a marker. Every `app` node of `B`,
--- `BQ` and `D` under the candidate is read again here:
+-- `BQ`, `D` and the site table under the candidate, and of the
+-- candidate's images, is read again here:
 -- - a head with a record-row parameter exposes `DataOverRecords`;
 -- - any other head that is not admitted, or an argument holding an
 --   arrow, a record, a handler head, or a head or nullary type that is
@@ -16,7 +17,8 @@
 module Features.Check.Strategy.Exposed (exposedBy) where
 
 import Prelude
-import Data.Array (concatMap, nubEq, null)
+import Data.Array (concatMap, fromFoldable, nubEq, null)
+import Data.Map as Map
 import Data.Set as Set
 import Data.Tuple (snd)
 import Domain.Recorded (RecordedProblem, fields)
@@ -39,11 +41,18 @@ exposedBy problem candidate = nubEq (concatMap (nodes holders) terms)
   where
   view = fields problem
   holders = view.holders
-  terms = map (under candidate)
-    ( concatMap atomTerms (values view.b)
-        <> concatMap atomTerms (values view.d)
-        <> map atomType (values view.bq)
-    )
+  -- Every place a substituted type can stand: the atoms, the site table
+  -- (a variable may occur only there, as `L(α)` for an unused `let`),
+  -- and the candidate's own images (design §4 D6 as amended: read after
+  -- substitution; review of 2026-11-14).
+  terms =
+    map (under candidate)
+      ( concatMap atomTerms (values view.b)
+          <> concatMap atomTerms (values view.d)
+          <> map atomType (values view.bq)
+          <> fromFoldable (Map.values view.types)
+      )
+      <> fromFoldable (Map.values candidate)
 
   values ∷ ∀ a. Array (Entry a) → Array a
   values = map _.value

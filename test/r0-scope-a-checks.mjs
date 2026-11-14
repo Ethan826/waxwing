@@ -171,6 +171,7 @@ export const scopeAChecks = async load => {
   const write = ft => {
     if (ft.base) return ft.base;
     if (ft.param !== undefined) return paramNames[ft.param];
+    if (ft.tvar !== undefined) return ft.tvar;
     if (ft.arrow) return 'Unit -> Unit';
     if (ft.handler) return 'Handler(Console)';
     if (ft.tailed) return '{ x: Int, ...r }';
@@ -213,11 +214,13 @@ export const scopeAChecks = async load => {
   };
   // The kinds the written type's `app` nodes need, in pre-order.
   const kindsOf = (decls, ref, ft) => {
+    if (ft.handler) return ['HandlerType'];
     if (ft.data === undefined) return ft.record
       ? kindsOf(decls, ref, ft.record) : [];
     const inner = ft.args.flatMap(arg => kindsOf(decls, ref, arg));
     if (ft.args.length === 0) return inner;
-    const plain = arg => arg.base !== undefined || (arg.data !== undefined
+    const plain = arg => arg.base !== undefined || arg.tvar !== undefined
+      || (arg.data !== undefined
       && ref.admitted.has(arg.data) && arg.args.every(plain));
     const kind = decls[ft.data].recrow ? ['DataOverRecords']
       : ref.admitted.has(ft.data) && ft.args.every(plain) ? []
@@ -235,7 +238,9 @@ export const scopeAChecks = async load => {
         const d = pick(next, decls);
         return { data: d.id, args: d.recrow ? [{ record: { base: 'Int' } }]
           : Array.from({ length: d.params }, () => pick(next, [{ base: 'Int' },
-            { data: pick(next, decls).id, args: [] }])) };
+            { data: pick(next, decls).id, args: [] }, { tvar: 'a' },
+            { arrow: true }, { record: { base: 'Int' } }, { handler: true }]))
+        };
       }).filter(ft => ft.args.every(arg => arg.data === undefined
         || decls[arg.data].params === 0 && !decls[arg.data].recrow));
       let found;
@@ -254,6 +259,9 @@ export const scopeAChecks = async load => {
         if (JSON.stringify(problem.holders.admitted) !==
           JSON.stringify(ids(ref.admitted))) wrong.push(`admitted ${at}`);
         const text = JSON.stringify(problem);
+        // D6.5: `D` holds no equation, so no `app` node.
+        if (problem.d.some(atom => atom.eq !== undefined))
+          wrong.push(`D equation ${at}`);
         for (const [, u] of text.matchAll(/"base":\{"data":(\d+)\}/g))
           if (decls[u].params !== 0 || decls[u].recrow)
             wrong.push(`TableBases ${at}`);
@@ -266,10 +274,19 @@ export const scopeAChecks = async load => {
         coverage[wanted.length === 0 ? 'unmarked' : 'marked'] += 1;
         if (JSON.stringify(kinds) !== JSON.stringify([...wanted, ...wanted]))
           wrong.push(`S7 markers ${at}`);
-        for (const [, head, args] of text.matchAll(
-          /"app":\{"head":\{"data":(\d+)\},"args":\[(.*?)\]\}/g))
-          if (!decls[head].recrow && args !== '' && decls[head].params
-            !== JSON.parse(`[${args}]`).length) wrong.push(`S7 args ${at}`);
+        const nodes = (value, found = []) => {
+          if (Array.isArray(value)) value.forEach(item => nodes(item, found));
+          else if (value !== null && typeof value === 'object') {
+            if (value.app !== undefined && value.app.head.data !== undefined)
+              found.push(value.app);
+            Object.values(value).forEach(item => nodes(item, found));
+          }
+          return found;
+        };
+        for (const node of nodes(problem))
+          if (!decls[node.head.data].recrow && node.args.length > 0
+            && decls[node.head.data].params !== node.args.length)
+            wrong.push(`S7 args ${at}`);
       }
     }
     return wrong;
@@ -281,11 +298,9 @@ export const scopeAChecks = async load => {
   // protected fixtures keep their reason and accepted attempt; and with
   // every marker removed from the recorded problem, the exposure check
   // alone still blocks Solved where the candidate exposes a shape.
-  const { onlineFrom, budget } = await import('./r0-online-support.mjs');
+  const { onlineFrom } = await import('./r0-online-support.mjs');
   const { describe } = await import('./r0-decide-support.mjs');
   const online = await onlineFrom(load);
-  const { decide } = await load('Features.Check.Decide');
-  const Shadow = await load('Features.Check.Decide.Shadow');
   const log = 'effect Log { fn log(n: Int): Unit; };';
   const tick = 'effect Tick { fn tick(): Unit; };';
   const list = 'type L(a) = N | C(a, L(a));';
@@ -315,11 +330,6 @@ export const scopeAChecks = async load => {
     return program === null ? null
       : { program, found: describe(online.decisionOf(program, 'f')) };
   };
-  const stripped = program => {
-    const problem = online.problemOf(program, 'f');
-    const checking = Shadow.shadowChecking(online.legacyText)(budget)(program);
-    return describe(decide(checking)({ ...problem, outside: [] }));
-  };
   const boundaryWrong = () => {
     const wrong = [];
     for (const [name, lines] of outside) {
@@ -332,9 +342,6 @@ export const scopeAChecks = async load => {
         if (verdict !== 'Unresolved Unsupported Outside DataApplication'
           || !/^Accepted/.test(attempts[0])) wrong.push(`${name}: ${verdict}`
             + ` ${attempts[0]}`);
-        const alone = stripped(run.program).verdict;
-        if (alone !== 'Unresolved Unsupported Outside DataApplication')
-          wrong.push(`${name} unmarked: ${alone}`);
       }
     }
     const control = decided(inScope);
@@ -391,6 +398,63 @@ export const scopeAChecks = async load => {
       .map(([kind, id]) => `DataBase ${id}: ${judge(id)}, not ${kind}`);
   };
 
+  // ---- The exposure check, branch by branch (review of 2026-11-14): a
+  // program whose `main` has no marker and two flexible variables, α
+  // only in the site type `L(α)` and β standing bare; G0's own check
+  // (`substitutionOnly`) with α or β bound to each shape must expose
+  // exactly the kinds listed.
+  const exposureWrong = async () => {
+    const { stubsFrom } = await import('./r0-stubs.mjs');
+    const stubs = await stubsFrom(load);
+    const support = await g0.g0From(load, stubs);
+    const Row = await load('Domain.Row');
+    const source = [list, 'type F = F(Unit -> Unit);',
+      'type W(a) = W(a, Unit -> Unit);', 'type R(...r) = R({ x: Int, ...r });',
+      'fn none(): L(a) = N;', 'fn any(): b = crash(0);',
+      'fn main(): Int = { let d = none(); let e = any(); 7 };'].join(' ');
+    const problem = stubs.recorded.problem(source, 'main');
+    if (problem.outside.length > 0) return ['main is marked'];
+    const flexible = Maps.toUnfoldable(
+      (await load('Data.Unfoldable')).unfoldableArray)(problem.vars)
+      .filter(pair => pair.value1.quant instanceof Atom.Exists)
+      .map(pair => pair.value0);
+    if (flexible.length !== 2) return [`${flexible.length} flexible`];
+    const [alpha, beta] = flexible;
+    const app = (id, args) => new Atom.App(new Atom.DataHead(id), args);
+    const arrow = new Atom.Arrow(int, int);
+    const rOf = app(3, [new Atom.Record([], [])]);
+    const DA = 'DataApplication';
+    const DOR = 'DataOverRecords';
+    const cases = [
+      ['α Int', alpha, int, []],
+      ['α arrow', alpha, arrow, [DA]],
+      ['α record', alpha, new Atom.Record([new Tuple('y', int)], []), [DA]],
+      ['α holder base', alpha, new Atom.Base(new Atom.DataBase(1)), [DA]],
+      ['α handler', alpha, new Atom.App(new Atom.HandlerHead(
+        Row.ConsoleEffect.value), []), [DA]],
+      ['α over records', alpha, rOf, [DA, DOR]],
+      ['α nested arrow', alpha, app(0, [arrow]), [DA]],
+      ['α holder head', alpha, app(2, [int]), [DA]],
+      ['β holder head', beta, app(2, [int]), [DA]],
+      ['β over records', beta, rOf, [DOR]],
+      ['β in scope', beta, app(0, [int]), []],
+      // Only the recursion into arguments names the inner node's kind.
+      ['β list of over records', beta, app(0, [rOf]), [DA, DOR]],
+      ['β under an arrow', beta, new Atom.Arrow(int, app(2, [int])), [DA]]];
+    const wrong = [];
+    for (const [name, variable, image, wanted] of cases) {
+      const found = support.check(problem, Maps.singleton(variable)(image));
+      if (named(found) !== 'Right') {
+        wrong.push(`${name}: refused ${named(found.value0)}`);
+        continue;
+      }
+      const kinds = found.value0.validity.value0.map(named);
+      if (JSON.stringify(kinds) !== JSON.stringify(wanted))
+        wrong.push(`${name}: ${JSON.stringify(kinds)}`);
+    }
+    return wrong;
+  };
+
   return { canonicalWrong, tablesWrong, coverage, boundaryWrong,
-    definednessWrong, groundKindWrong };
+    definednessWrong, groundKindWrong, exposureWrong };
 };

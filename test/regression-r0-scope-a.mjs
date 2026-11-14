@@ -23,5 +23,6 @@ export const scopeAProbes = {
   'r0-scope-a-tables': probe('tablesWrong'),
   'r0-scope-a-boundary': probe('boundaryWrong'),
   'r0-scope-a-definedness': probe('definednessWrong'),
-  'r0-scope-a-ground-kind': probe('groundKindWrong')
+  'r0-scope-a-ground-kind': probe('groundKindWrong'),
+  'r0-scope-a-exposure': probe('exposureWrong')
 };

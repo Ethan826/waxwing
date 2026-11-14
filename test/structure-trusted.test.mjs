@@ -3,16 +3,19 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Final review, Important 1: `Valid` carries no payload, so its soundness
-// rests on the modules below. BACKLOG R026 adds what `certify` builds the
-// witness with; R029 adds the lowering boundary (D1 spec §8.2), which
-// turns a `Judged` solution into checked IR, the generator family by
-// pattern. Each module must carry the header marker, and
-// docs/engineering.md and AGENTS.md must list exactly these modules, so
+// Final review, Important 1: `Valid`'s soundness rests on the modules
+// below. It carried no payload until Scope A (dossier §18.200), which
+// gives it the outside kinds its candidate exposes (Strategy.Exposed).
+// BACKLOG R026 adds what `certify` builds the witness with; R029 adds
+// the lowering boundary (D1 spec §8.2), which turns a `Judged` solution
+// into checked IR, the generator family by pattern. Each module must
+// carry the header marker, and docs/engineering.md and AGENTS.md must
+// list exactly these modules, so
 // the designation cannot drift silently.
 const trusted = [
   'Strategy.Substitution', 'Strategy.Candidate', 'Strategy.Atoms',
-  'Strategy.Asked', 'GroundRule', 'Mentions', 'Spine', 'Decide.Open',
+  'Strategy.Asked', 'Strategy.Exposed', 'GroundRule', 'Mentions', 'Spine',
+  'Decide.Open',
   'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Entailed.Triangular',
   'Decide', 'Decide.Shadow', 'Decide.Reason', 'Decide.Reading',
   'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
@@ -42,7 +45,8 @@ const lowering = ['Features.Check.Elaborate', 'Domain.Elaborating',
   'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Witness', generate,
   // BACKLOG R030: the shared helpers generation reads.
   ...['Holes', 'Walk', 'Implied', 'Tables', 'Functional', 'Nested',
-    'NestedArguments', 'Components'].map(name => `Features.Check.${name}`),
+    'NestedArguments', 'Components', 'Admitted']
+    .map(name => `Features.Check.${name}`),
   'Features.Resolve.Builtin'];
 const marker = '-- trusted surface: every diff needs token review;'
   + ' see docs/engineering.md';
@@ -74,6 +78,19 @@ test('every trusted-surface module carries the header marker', () => {
   assert.ok(family().length >= 37, `${family().length} generator modules`);
   for (const file of files)
     assert.equal(read(file).split('\n')[0], marker, file);
+});
+
+// Review of 2026-11-14: a module that carries the marker is listed, so a
+// new trusted module cannot sit outside the designation.
+test('every module carrying the marker is listed', () => {
+  const all = dir => readdirSync(dir, { withFileTypes: true }).flatMap(
+    entry => entry.isDirectory() ? all(join(dir, entry.name))
+      : entry.name.endsWith('.purs') ? [join(dir, entry.name)] : []);
+  const known = new Set([...trusted, ...lowering].map(path)
+    .concat(family()));
+  const unlisted = all('src').filter(file =>
+    read(file).split('\n')[0] === marker && !known.has(file));
+  assert.deepEqual(unlisted, []);
 });
 
 test('the docs list exactly the trusted-surface modules', () => {

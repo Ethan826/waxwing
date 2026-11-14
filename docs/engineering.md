@@ -223,9 +223,11 @@ adding a bypass allowlist.
   `Features.Check.Strategy.Witness`. Record shapes there are type
   synonyms, which neither export list shows, so a changed field moves
   no pin.
-  Review-required trusted surface, since `Valid` carries no payload and
-  its soundness rests on all of these (test/structure-trusted.test.mjs
-  pins this list and the header marker in each module):
+  Review-required trusted surface, since `Valid`'s soundness rests on
+  all of these (test/structure-trusted.test.mjs pins this list and the
+  header marker in each module). Since Scope A (dossier §18.200) `Valid`
+  carries one payload, the outside kinds its candidate exposes, which
+  rule 1 reads; it carried none before:
   - `Features.Check.Strategy.Substitution`: mints `Valid` and
     `Certified`; G0's check; `substitutionOnly`, the non-minting
     comparator (§18.174); `validate`, A2's runner, returns a `Valid`
@@ -238,6 +240,9 @@ adding a bypass allowlist.
     error here accepts a bad candidate.
   - `Features.Check.Strategy.Asked`: judges each `BQ` atom by the ground
     rule.
+  - `Features.Check.Strategy.Exposed`: the outside kinds a candidate's
+    substituted terms expose (Scope A's defensive check); an error here
+    lets an out-of-scope application reach Solved.
   - `Features.Check.GroundRule`: the three-valued ground requirement rule
     `Asked` applies.
   - `Features.Check.Mentions`: decides which variables a type mentions, so
@@ -398,7 +403,9 @@ adding a bypass allowlist.
     signatures the recorded problem is built from), and
     `Features.Check.Functional`, `Features.Check.Nested`,
     `Features.Check.NestedArguments` and `Features.Check.Components`
-    (which types hold functions, read by the static rules).
+    (which types hold functions, read by the static rules), and
+    `Features.Check.Admitted` (Scope A's admitted heads, which narrow
+    the `DataApplication` marker).
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

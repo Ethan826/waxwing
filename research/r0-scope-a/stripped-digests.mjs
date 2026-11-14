@@ -43,14 +43,22 @@ const digestOf = program => {
 };
 
 const unexpected = [];
+const visited = new Set();
 let same = 0;
 let moved = 0;
 for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
   let program;
   try { program = resolved(source); } catch { continue; }
+  visited.add(origin);
   if (digestOf(program) === old[origin]) { same += 1; continue; }
   moved += 1;
   if (!allowed.has(origin)) unexpected.push(origin);
 }
+// The visited programs are exactly the old pin's (review of
+// 2026-11-14), so no pinned program is skipped.
+for (const origin of Object.keys(old))
+  if (!visited.has(origin)) unexpected.push(`${origin}: not visited`);
+for (const origin of visited)
+  if (!(origin in old)) unexpected.push(`${origin}: not in the old pin`);
 console.log(JSON.stringify({ same, moved, unexpected }, null, 1));
 process.exitCode = unexpected.length === 0 ? 0 : 1;

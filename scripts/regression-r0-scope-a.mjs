@@ -70,6 +70,46 @@ export const scopeARows = [
   // The exposure check reads an arrow inside an argument as plain.
   row('r0-scope-a-exposure-arrow', exposed, '  Arrow _ _ → [ unit ]\n',
     '  Arrow _ _ → []\n', 'r0-scope-a-boundary'),
+  // Review of 2026-11-14: one row per branch of the exposure check.
+  // Any head counts as admitted.
+  row('r0-scope-a-exposure-any-head', exposed,
+    '  | Set.member id holders.admitted\n',
+    '  | (Set.member id holders.admitted || true)\n', 'r0-scope-a-exposure'),
+  // A record-row head is not named `DataOverRecords`.
+  row('r0-scope-a-exposure-over-records', exposed,
+    '  | Set.member id holders.overRecords = [ DataOverRecords ]\n',
+    '  | Set.member id (Set.filter (const false) holders.overRecords) ='
+      + ' [ DataOverRecords ]\n', 'r0-scope-a-exposure'),
+  // A record inside an argument reads as plain.
+  row('r0-scope-a-exposure-record', exposed, '  Record _ _ → [ unit ]\n',
+    '  Record _ _ → []\n', 'r0-scope-a-exposure'),
+  // A handler inside an argument reads as plain.
+  row('r0-scope-a-exposure-handler', exposed,
+    '  App (HandlerHead _) _ → [ unit ]\n', '  App (HandlerHead _) _ → []\n',
+    'r0-scope-a-exposure'),
+  // A nullary holder inside an argument reads as plain.
+  row('r0-scope-a-exposure-base', exposed,
+    'Base (DataBase id) → if Set.member id holders.admitted then',
+    'Base (DataBase id) → if Set.member id holders.admitted || true then',
+    'r0-scope-a-exposure'),
+  // No row for `unplain`'s head test: with the recursion into arguments
+  // every nested node meets `node`'s own test, and a record-row head's
+  // record argument is never plain, so dropping it changes no result (an
+  // equivalent mutant; the run of 2026-11-14 found it undetectable).
+  // Nodes inside an argument are not read for their own kind.
+  row('r0-scope-a-exposure-no-recursion', exposed,
+    '    node holders id arguments <> concatMap (nodes holders) arguments\n',
+    '    node holders id arguments\n      <> concatMap (nodes holders)'
+      + ' (if true then [] else arguments)\n', 'r0-scope-a-exposure'),
+  // Neither the site table nor the candidate's images are read.
+  { name: 'r0-scope-a-exposure-atoms-only', edits: [{ file: exposed,
+    needle: '          <> fromFoldable (Map.values view.types)\n',
+    replacement: '          <> fromFoldable (Map.values (Map.filter'
+      + ' (const false) view.types))\n' }, { file: exposed,
+    needle: '      <> fromFoldable (Map.values candidate)\n',
+    replacement: '      <> fromFoldable (Map.values (Map.filter (const false)'
+      + ' candidate))\n' }], probe: 'r0-scope-a-exposure',
+  message: /r0-scope-a-exposure: \[/ },
   // The requirement-definedness refusal is gone.
   row('r0-scope-a-definedness-off', asked, '        *> definedIn entry\n',
     '        *> const (Right unit) (definedIn entry)\n',

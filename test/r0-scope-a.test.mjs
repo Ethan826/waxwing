@@ -22,9 +22,14 @@ test('generated tables: holder set, admitted set, S7, TableBases', () => {
   assert.ok(seen.marked >= 50 && seen.unmarked >= 50, JSON.stringify(seen));
 });
 
-test('out-of-scope shapes stay out of Solved; exposure alone blocks',
+test('out-of-scope shapes stay out of Solved; the fixtures keep theirs',
   () => {
     assert.deepEqual(checks.boundaryWrong(), []);
+  });
+
+test('the exposure check names each shape a candidate exposes',
+  async () => {
+    assert.deepEqual(await checks.exposureWrong(), []);
   });
 
 test('an undefined requirement type with an app node is refused',

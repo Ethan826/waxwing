@@ -73,7 +73,8 @@ vertical slice before adding language features. Task tracking is local.
   rest on all of them; reasons in docs/engineering.md):
   `Features.Check.Strategy.Substitution`,
   `Features.Check.Strategy.Candidate`, `Features.Check.Strategy.Atoms`,
-  `Features.Check.Strategy.Asked`, `Features.Check.GroundRule`,
+  `Features.Check.Strategy.Asked`, `Features.Check.Strategy.Exposed`,
+  `Features.Check.GroundRule`,
   `Features.Check.Mentions`, `Features.Check.Spine`,
   `Features.Check.Decide.Open`, `Features.Check.Entailed`,
   `Features.Check.Entailed.Mgu`, `Features.Check.Entailed.Merge`,
@@ -119,7 +120,7 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Walk`, `Features.Check.Implied`, `Features.Check.Tables`,
   `Features.Resolve.Builtin`, `Features.Check.Functional`,
   `Features.Check.Nested`, `Features.Check.NestedArguments`,
-  `Features.Check.Components`.
+  `Features.Check.Components`, `Features.Check.Admitted`.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

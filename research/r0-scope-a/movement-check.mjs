@@ -54,6 +54,10 @@ for (const at of listed.keys())
 const unsolved = Object.keys(after).filter(at => programOf(at) !== undefined
   && after[at].r0.verdict !== 'Solved');
 for (const at of unsolved) violations.push(`${at}: in-scope, not Solved`);
+// Each of the 116 must be in the new dump (review of 2026-11-14).
+for (const origin of programs)
+  if (!Object.keys(after).some(at => at.startsWith(`${origin}#`)))
+    violations.push(`${origin}: no declaration in the new dump`);
 console.log(JSON.stringify({ recoveries, listedMovements: seen.size,
   violations }, null, 1));
 process.exitCode = violations.length === 0 ? 0 : 1;

@@ -36,7 +36,7 @@ export const switchRows = [
   { name: 'r0-forged-bool-no-g0', edits: [{ file: substitution,
     needle: '  validity ← checkSubstitution problem '
       + '(erase (settle package))\n',
-    replacement: '  validity ← Right Valid\n' }, { file: substitution,
+    replacement: '  validity ← Right (Valid [])\n' }, { file: substitution,
     needle: '  judgeObligations problem completed\n', replacement: '' }],
     probe: 'r0-forged-bool', message: /r0-forged-bool: Solved/ },
   { name: 'r0-forged-function-no-requirement', file: substitution,
