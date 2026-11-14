@@ -9269,3 +9269,40 @@ scope. The locked proof worktree and its branch stay; their cleanup is
 deferred. Criterion 2 and all holds are unchanged; live replacement,
 milestone changes, F14's retirement, effect-marker lifts and pushing
 stay held.
+
+### 18.199 Scope A implementation stopped at a condition: 11 extra declaration-level Solved (2026-11-14)
+
+The narrowed marker, the admitted set (transitive, through nullary
+types), the exposure check in `checkSubstitution` with rule 1 on the
+solution, and the requirement-definedness refusal were written and
+build. Before any test switch-over or re-pin, the full results dump was
+compared with the baseline (research/r0-scope-a/impl1-movements.json;
+evidence .build/evidence/2026-11-14-scope-a-impl/). 593 declarations
+move:
+- **All 116 programs are fully Solved** (551 declarations), as
+  predicted.
+- **The two preserved fixtures keep their verdict, attempt, RT8 reason,
+  window class and blockers** (form.apply-meta#g, form.pipe-meta#g);
+  only the census `categories` field goes from `["DataApplication"]`
+  to `[]`, because generation no longer records that marker there.
+- **Nothing becomes Solved where today refuses.** h3-compare-chosen#main
+  and n2-hole-comparison#main move to `Inference NoCandidate`;
+  h5-type-depth#deepest to `Limit InferredTypeDepth@body`, which needs
+  a new window class, "today refuses, R0 Limit" (§3.2(b) under ruling
+  R-b2).
+- **24 declarations lose `Outside DataApplication` from a reason** that
+  keeps its other kinds; 2 (fx008 rev9 set1, set1ctl) keep the same
+  kinds in a different order.
+- **The conflict: 11 declarations outside the 116 programs become
+  Solved,** all of which compile today: c2-annotated-runtime#runtime,
+  #main; n7a-record-closure#f; n7b-record-reference#f;
+  p3-runtime#runtime, #main; audit non-exhaustive.selected-int#f,
+  redundant-arm.inferred#f; rt2 h5-type-depth#deep; fx-run cases#18
+  #map, #sum. Four of their programs (n7a, n7b and the two audit
+  fixtures) become fully Solved; none of the eight is in the assessed
+  loss set except fx-run cases#18, which stays lost. The ruling
+  authorizes no additional Solved results, so the work stops here for
+  a decision. Excluding them would need a per-program rule with no
+  basis in the boundary.
+The unverified source is kept on branch `scope-a-impl`; `r0-t2-d1` is
+unchanged in src. No pin moved, no test ran.

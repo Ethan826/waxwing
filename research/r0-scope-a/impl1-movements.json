@@ -1,0 +1,1378 @@
+{
+ "source": "scripts/r0-results-dump.mjs at src 59e70fdb (baseline) and the Scope A working tree (impl1), 2026-11-14; dossier §18.199",
+ "programRecoveries": {
+  "count": 116,
+  "note": "every declaration of each becomes Solved (551 declarations)"
+ },
+ "inScopeDeclarationsSolved": 551,
+ "declarationMovements": [
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/c2-annotated-runtime.wxw#runtime",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/c2-annotated-runtime.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/h3-compare-chosen.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Inference NoCandidate",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today's refusal becomes Unresolved (no candidate)",
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/n2-hole-comparison.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Inference NoCandidate",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today's refusal becomes Unresolved (no candidate)",
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/n7a-record-closure.wxw#f",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/n7b-record-reference.wxw#f",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/p3-runtime.wxw#runtime",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "docs/plans/2026-10-21-c001-explicit/baseline/p3-runtime.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev10/pair1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev10/pair1ctl.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole2.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole2b.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole2c.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole3.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/hole4.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/meta1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/meta2.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev6/meta3.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev7/late3.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/one1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/one1ctl.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/one1rev8.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/two1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/two1ctl.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/two2.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev8/two2ctl.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "HandlerType",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev9/set1.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside FailFamily, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside FailFamily, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/rev9/set1ctl.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside EffectArgument, Outside FailFamily, Outside DataApplication",
+    "attempt": "Searched Exhausted",
+    "rt8": "agree: no candidate (Exhausted)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "EffectArgument",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "EffectArgument",
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/witness/famw.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside FailFamily",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx008-probes/witness/famw2.wxw#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "DataApplication",
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside FailFamily",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside FailFamily",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "FailFamily",
+     "HandlerType",
+     "ErasedRow"
+    ],
+    "categories": [
+     "HandlerType",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fixtures/r0/audit/non-exhaustive.selected-int.json#f",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fixtures/r0/audit/redundant-arm.inferred.json#f",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fixtures/r0/erased/form.apply-meta.json#g",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fixtures/r0/erased/form.pipe-meta.json#g",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fixtures/r0/rt2/h5-type-depth.json#deep",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fixtures/r0/rt2/h5-type-depth.json#deepest",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Searched OutOfBudget",
+    "rt8": "agree: no candidate (OutOfBudget)",
+    "window": "today refuses, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Limit InferredTypeDepth@body",
+    "attempt": "Searched OutOfBudget",
+    "rt8": "agree: no candidate (OutOfBudget)",
+    "window": "today refuses, R0 Limit",
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#7#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside FailFamily, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "FailFamily",
+     "ErasedRow"
+    ],
+    "categories": [
+     "DataApplication",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside FailFamily",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside FailFamily",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "FailFamily",
+     "ErasedRow"
+    ],
+    "categories": [
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#18#map",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#18#sum",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication"
+    ],
+    "categories": [
+     "DataApplication"
+    ]
+   },
+   "new": {
+    "verdict": "Solved",
+    "attempt": "Accepted",
+    "rt8": "agree: Solved",
+    "window": null,
+    "blockers": [],
+    "categories": []
+   }
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#18#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside HandlerType, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "HandlerType"
+    ],
+    "categories": [
+     "DataApplication",
+     "HandlerType"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside HandlerType",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside HandlerType",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "HandlerType"
+    ],
+    "categories": [
+     "HandlerType"
+    ]
+   }
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#19#main",
+   "inScopeProgram": false,
+   "old": {
+    "verdict": "Unresolved Unsupported Outside FailFamily, Outside DataApplication",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside FailFamily, Outside DataApplication",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "DataApplication",
+     "FailFamily",
+     "ErasedRow"
+    ],
+    "categories": [
+     "DataApplication",
+     "FailFamily",
+     "ErasedRow"
+    ]
+   },
+   "new": {
+    "verdict": "Unresolved Unsupported Outside FailFamily",
+    "attempt": "Accepted",
+    "rt8": "(a) blocked: Unresolved Unsupported Outside FailFamily",
+    "window": "markers: compiles today, R0 Unsupported Outside",
+    "blockers": [
+     "FailFamily",
+     "ErasedRow"
+    ],
+    "categories": [
+     "FailFamily",
+     "ErasedRow"
+    ]
+   }
+  }
+ ]
+}

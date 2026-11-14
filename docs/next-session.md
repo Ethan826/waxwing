@@ -1,4 +1,4 @@
-# RESUME HERE (2026-11-14, America/New_York; updated §18.197)
+# RESUME HERE (2026-11-14, America/New_York; updated §18.199)
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
@@ -84,7 +84,13 @@ statements, §14 review record, §15 results).
 - **Counterexamples R1-R6:** research/r0-scope-a/counterexamples.mjs,
   exit 0 when they reproduce.
 
-**Update (§18.196-§18.197):** Stage 0 is done (design §17): 116 of
+**Update (§18.198-§18.199):** U6 approved; implementation started and
+stopped at a ruling condition (11 declarations outside the 116 programs
+become Solved; list in §18.199). Source work is on branch
+`scope-a-impl` (worktree switched to it); `r0-t2-d1` holds the records.
+Awaiting the author's decision on those 11.
+
+**Earlier update (§18.196-§18.197):** Stage 0 is done (design §17): 116 of
 118 in scope; S9 and S5′c proved; oracle A3 passed. Awaiting the
 author: U6 and implementation approval.
 

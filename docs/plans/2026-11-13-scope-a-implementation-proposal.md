@@ -238,5 +238,6 @@ design's 0.15-0.3M analogy for step 5.
 
 | Task | State |
 |---|---|
-| 1 | in progress |
-| 2-7 | not started |
+| 1 | done: baseline dump; allowlist model (cde1d941); measured movements research/r0-scope-a/impl1-movements.json |
+| 2-3 | written and building, on branch `scope-a-impl`; stopped at §18.199 (11 extra declaration-level Solved) |
+| 4-7 | not started |
