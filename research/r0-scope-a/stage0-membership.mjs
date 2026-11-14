@@ -57,7 +57,10 @@ const unexpressible = (tables, id) => [...reachable(tables, id)].some(
   entry => typeof entry === 'string'
     || tables.types[entry].sorts.some(sort => named(sort) === 'RecordSort'));
 
-// Terms after the candidate: a variable bound by `image` is replaced.
+// Terms after the candidate: a bound type variable is replaced, and a
+// bound row tail is spliced (its fields after the record's own, as
+// `under` in Candidate.purs). Revised after the Stage 0 review (design
+// §17.6): tails were not spliced at first.
 const under = (image, ty) => {
   if ('tvar' in ty) {
     const bound = image.get(key(ty.tvar));
@@ -67,10 +70,41 @@ const under = (image, ty) => {
     .map(part => under(image, part)), result: under(image, ty.fun.result) } };
   if ('app' in ty) return { app: { head: ty.app.head,
     args: ty.app.args.map(arg => under(image, arg)) } };
-  if ('record' in ty) return { record: { fields: ty.record.fields
-    .map(([label, field]) => [label, under(image, field)]),
-  tails: ty.record.tails } };
+  if ('record' in ty) {
+    let fields = ty.record.fields
+      .map(([label, field]) => [label, under(image, field)]);
+    let tails = [];
+    for (const tail of ty.record.tails) {
+      const bound = image.get(key(tail));
+      if (bound === undefined) { tails.push(tail); continue; }
+      const row = under(image, bound).record;
+      fields = fields.concat(row.fields);
+      tails = tails.concat(row.tails);
+    }
+    return { record: { fields, tails } };
+  }
   return ty;
+};
+const isType = value => ['tvar', 'fun', 'app', 'record', 'base']
+  .some(tag => tag in value);
+const underAll = (image, value) => {
+  if (Array.isArray(value)) return value.map(item => underAll(image, item));
+  if (value === null || typeof value !== 'object') return value;
+  if (isType(value)) return under(image, value);
+  return Object.fromEntries(Object.entries(value)
+    .map(([name, item]) => [name, underAll(image, item)]));
+};
+// The splice itself, on a synthetic term: `{ x: Int, ...s }` with `s`
+// bound to `{ y: L(Int -> Int) }` must show an arrow inside an `app`.
+const spliceControl = () => {
+  const s = { fresh: 's' };
+  const image = new Map([[key(s), { record: { fields: [['y', { app: {
+    head: { data: 0 }, args: [{ fun: { params: [{ base: 'Int' }],
+      result: { base: 'Int' } } }] } }]], tails: [] } }]]);
+  const term = under(image, { record: { fields: [['x', { base: 'Int' }]],
+    tails: [s] } });
+  return apps(term).some(({ node }) => node.args
+    .some(arg => within(arg, v => 'fun' in v)));
 };
 
 // Every `app` node in a value, with whether it is inside an argument.
@@ -106,9 +140,12 @@ const flagsOf = (source, origin) => {
     } catch { flags.add('noCandidate'); }
     const terms = [problem.d, problem.b, problem.bq].flat()
       .map(entry => JSON.parse(JSON.stringify(entry.value)));
-    const substituted = JSON.parse(JSON.stringify(terms,
-      (_, v) => (v && typeof v === 'object' && !Array.isArray(v)
-        && ('tvar' in v) ? under(image, v) : v)));
+    const substituted = underAll(image, terms);
+    // 0e through nullary declared bases too (`Reach.base`), revised
+    // after the Stage 0 review: at first only `app` heads were followed.
+    if (within(substituted, v => 'base' in v && typeof v.base === 'object'
+      && unexpressible(tables, v.base.data)))
+      flags.add('reachesUnexpressible');
     for (const { node } of apps(substituted)) {
       const head = node.head.data;
       if (head === undefined) { flags.add('handlerHead'); continue; }
@@ -143,8 +180,15 @@ const controls = {
   holderHead: 'type W(a) = W(a, Unit -> Unit);\nfn f(x: W(Int)): W(Int) = x;'
     + '\nfn main(): Unit = ();\n',
 };
+// Reachability through a nullary declared base (the reviewer's control).
+const baseControl = flagsOf('type R(...r) = R({ x: Int, ...r });\n'
+  + 'type N0 = N0(R({ y: Int }));\ntype L(a) = N | C(a);\n'
+  + 'fn f(x: L(N0)): L(N0) = x;\nfn main(): Unit = ();\n')
+  .includes('reachesUnexpressible');
 const controlResults = Object.fromEntries(Object.entries(controls)
   .map(([flag, source]) => [flag, flagsOf(source, flag).includes(flag)]));
+controlResults.reachesThroughBase = baseControl;
+controlResults.spliceShowsArrow = spliceControl();
 
 const membership = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const listed = new Set(membership.rows.map(row => row.origin));
@@ -153,7 +197,8 @@ for (const source of (await sourcesOf()).filter(s => listed.has(s.origin)))
   rows.push({ origin: source.origin, flags: flagsOf(source.source) });
 const excluding = ['effectRowHead', 'recordRowHead', 'holderHead',
   'handlerHead', 'arrowInArgument', 'recordInArgument',
-  'handlerInArgument', 'holderBaseInArgument', 'reachesUnexpressible'];
+  'handlerInArgument', 'holderBaseInArgument', 'reachesUnexpressible',
+  'noCandidate'];
 const inScope = rows.filter(row => !row.flags.some(f => excluding.includes(f)));
 const byFlag = Object.fromEntries(excluding.map(flag => [flag,
   rows.filter(row => row.flags.includes(flag)).map(row => row.origin)]));

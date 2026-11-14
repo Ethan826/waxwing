@@ -911,3 +911,34 @@ A2's grammar stays as run. A3 adds to it:
   would refuse). The run reports the distinct substituted `BQ` types
   and these three counts. If an exercise count is 0, A3 fails and is
   reported as such, not amended again in this tranche.
+
+### 17.8 A3 results and the revised measurement
+
+**A3** (`node research/r0-scope-a/oracle-a2.mjs --grammar=a3`; output
+.build/evidence/2026-11-14-scope-a-stage0/oracle-a3.json and
+oracle-a3-pr2.json). A2 mode, rerun with the same script, reproduces
+§17.5's counts exactly (oracle-a2-rerun.json).
+- 26,460 programs, none refused; 1,616 out of scope by open atoms; 495
+  accepted in scope; 51 accepted outside amended D6, all a record inside
+  an argument, none with an evaluator failure.
+- **P1: 0 failures. P2: 0 failures** in every category, under Pr-1
+  (589 assignments per reading) and Pr-2 (729).
+- **Exercise counts, all above 0, so A3 passes its own rule:** 68
+  accepted `BQ` atoms mention a variable before substitution; 420
+  accepted `B` types hold a record with a tail; in 392 the canonical
+  sort changes the substituted term, the case `CheckA` would refuse and
+  S5′c covers.
+- 113 accepted problems carry a `BQ` atom, over 14 distinct substituted
+  types (`Int`, `L(Int)`, `L(L(Int))`, `T(Bool)`, `L(T(Bool))` and nine
+  `P(..)` combinations). **Every accepted `BQ` type is ground after
+  substitution.** That is structural, not a gap in the grammar: G0
+  refuses a `pr` atom over a variable (unjudged) and leaves a `cmp`
+  atom at a rigid variable open, so no accepted requirement depends on
+  the rigid assignment. The Pr-1/Pr-2 agreement is therefore forced,
+  and P2 tests the three readings on those 14 ground types.
+- Controls: 16,712 of 16,943 refused candidates fail somewhere.
+
+**The revised membership script** (§17.6's three fixes: tails spliced,
+0e through nullary bases, `noCandidate` an exclusion; two new controls,
+both flagged; output membership-revised.json): **116 in scope, the same
+origins** as research/r0-scope-a/in-scope-stage0.json.

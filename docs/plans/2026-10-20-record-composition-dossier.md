@@ -9207,3 +9207,31 @@ scope. The return states what now connects to the real compiler, what
 remains assumed, and whether the 118-program prediction survives. No
 implementation, exemption, milestone change or activation is approved.
 All holds continue.
+
+### 18.197 Scope A Stage 0 returned (2026-11-14)
+
+As §18.196 authorized; details in design §17. No compiler change.
+- 0a: D6 amended (4′ holder bases and handlers inside arguments; 8
+  records inside arguments), read after substitution. Measured: **116
+  of the 118 stay in scope**. The two dropped, form.apply-meta and
+  form.pipe-meta (erased fixtures), bind an argument to an arrow by
+  inference; §10's earlier "no arrow in an argument" measured before
+  substitution and is a corrected finding.
+- 0b: S5′ relabeled; the overstatement kept as a corrected finding.
+- 0c: S9 (`canonA` preserves evaluation) and S5′c (S5′ for the
+  canonicalizing check `CheckAc`) proved, relative to `PG0Clauses`
+  only; examples, including a problem `CheckAc` accepts and `CheckA`
+  refuses, and a refusal control. Gate: 106 theorems, additions only.
+- 0d: A2 passed with 0 failures, but the Stage 0 review showed it nearly
+  vacuous for requirements and canonicalization. Amendment A3, labeled
+  and fixed before running, passed with every exercise count above 0
+  (68, 420, 392). Accepted requirement atoms are always ground after
+  substitution, so the Pr choice cannot matter there.
+- 0e: no in-scope head reaches a declaration the model cannot express
+  (also through nullary bases); no exclusion and no model extension.
+- Review: one independent reviewer; no false theorem. Its remaining
+  Important item, that `CheckAc` matches `under` only if `canonical` is
+  idempotent and `under` is substitute-then-canonicalize, is a
+  PureScript property test owed under implementation.
+Spent about 0.72M of the 0.45-1.0M range. U6 awaits the author.
+Implementation unauthorized; all holds continue.

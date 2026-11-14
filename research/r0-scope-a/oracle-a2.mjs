@@ -46,17 +46,65 @@ const { unfoldableArray } = await load('Data.Unfoldable');
 const named = value => value.constructor.name;
 
 // ---- The grammar (§17.3), verbatim.
+// `--grammar=a3` adds amendment A3 (§17.7, fixed before it ran).
+const a3 = flag('--grammar') === 'a3';
 const decls = 'type L(a) = N | C(a, L(a)); type P(a, b) = P(a, b);'
   + ' type T(a) = T(Int); type Box(a) = Box(a -> a);'
   + ' type F = F(Unit -> Unit); fn idL(y: L(c)): L(c) = y;'
+  + (a3 ? ' fn idR(y: { x: c, ...s }): { x: c, ...s } = y;' : '')
   + ' fn main(): Int = 0;';
 const params = ['Int', 'a', 'b', 'L(Int)', 'L(a)', 'L(L(a))', 'P(a, a)',
   'P(a, b)', 'T(Bool)', 'Box(Int)', 'L(F)', 'L({ x: Int })',
   'L({ x: Int, ...r })', '{ x: L(a), ...r }'];
-const results = ['Text', 'Bool', 'Int', 'a', 'L(a)', 'L(L(a))', 'P(a, a)'];
+const results = ['Text', 'Bool', 'Int', 'a', 'L(a)', 'L(L(a))', 'P(a, a)',
+  ...(a3 ? ['{ a: Bool, x: Int }', '{ x: L(a), ...r }'] : [])];
 const bodies = ['show(p)', 'p == q', 'p', 'C(p, N)', 'C(C(p, N), N)',
   'idL(p)', 'P(p, q)', 'match p { N => q, C(h, t) => h }',
-  'match p { P(x, y) => x }'];
+  'match p { P(x, y) => x }',
+  ...(a3 ? ['show(C(p, N))', 'show(idL(p))', 'show(P(p, q))', 'show(N)',
+    'C(p, N) == C(q, N)', 'idR({ a: true, x: 1 })'] : [])];
+
+// A3's exercise measures: a term with every bound variable replaced and
+// tails spliced (fields before tails, as `under`), unsorted; and the
+// same with records sorted by label and tails sorted, as `canonical`.
+const hasVar = ty => JSON.stringify(ty).includes('"tvar"')
+  || JSON.stringify(ty).match(/"tails":\[[^\]]/) !== null;
+const spliced = (image, ty) => {
+  if ('tvar' in ty) {
+    const bound = image.get(JSON.stringify(ty.tvar));
+    return bound === undefined ? ty : spliced(image, bound);
+  }
+  if ('fun' in ty) return { fun: { params: ty.fun.params
+    .map(t => spliced(image, t)), result: spliced(image, ty.fun.result) } };
+  if ('app' in ty) return { app: { head: ty.app.head,
+    args: ty.app.args.map(t => spliced(image, t)) } };
+  if ('record' in ty) {
+    let fields = ty.record.fields.map(([l, t]) => [l, spliced(image, t)]);
+    let tails = [];
+    for (const tail of ty.record.tails) {
+      const bound = image.get(JSON.stringify(tail));
+      if (bound === undefined) { tails.push(tail); continue; }
+      const row = spliced(image, bound).record;
+      fields = fields.concat(row.fields);
+      tails = tails.concat(row.tails);
+    }
+    return { record: { fields, tails } };
+  }
+  return ty;
+};
+const sorted = ty => {
+  if ('fun' in ty) return { fun: { params: ty.fun.params.map(sorted),
+    result: sorted(ty.fun.result) } };
+  if ('app' in ty) return { app: { head: ty.app.head,
+    args: ty.app.args.map(sorted) } };
+  if ('record' in ty) return { record: {
+    fields: ty.record.fields.map(([l, t]) => [l, sorted(t)])
+      .sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0)),
+    tails: [...ty.record.tails].sort((x, y) => (JSON.stringify(x)
+      < JSON.stringify(y) ? -1 : 1)) } };
+  return ty;
+};
+const bqTypes = new Map();
 
 // ---- The declarations as a table (type ids in declaration order,
 // checked against the problem's `holders.declared`). Field types follow
@@ -378,6 +426,8 @@ const counts = { programs: 0, refused: 0, judged: 0, outOfScope: 0,
   validInScopeWithBQ: 0, validInScopeBQAtoms: 0,
   validInScopeBQAssignmentsChecked: { Ha: 0, Hb: 0, Hc: 0 },
   validInScopeFromMatch: 0, validInScopeNestedLL: 0,
+  exerciseBQWithVariable: 0, exerciseRecordWithTail: 0,
+  exerciseSortChanges: 0,
   unknownRigidName: 0 };
 const excludedShapes = {};
 const examples = { p1: [], p2undefined: [], p2Ha: [], p2Hb: [], p2Hc: [],
@@ -548,15 +598,32 @@ for (const t1 of params) for (const t2 of params) for (const t3 of results)
       counts.validInScopeBQAtoms += canon.bq.length;
     }
     if (body.startsWith('match')) counts.validInScopeFromMatch += 1;
+    for (const entry of canon.bq) {
+      const ty = reqType(entry.value);
+      if (hasVar(ty)) counts.exerciseBQWithVariable += 1;
+      const shown = JSON.stringify(spliced(image, ty));
+      bqTypes.set(shown, (bqTypes.get(shown) ?? 0) + 1);
+    }
+    for (const entry of canon.b) for (const ty of typesOfAtom(entry.value)) {
+      if (JSON.stringify(ty).match(/"tails":\[[^\]]/))
+        counts.exerciseRecordWithTail += 1;
+      const raw = spliced(image, ty);
+      if (JSON.stringify(raw) !== JSON.stringify(sorted(raw)))
+        counts.exerciseSortChanges += 1;
+    }
     if (nestedLL(canon, image)) counts.validInScopeNestedLL += 1;
   }
 const seconds = (Date.now() - started) / 1000;
 const p2Total = counts.p2.undefinedValue + counts.p2.Ha + counts.p2.Hb
   + counts.p2.Hc + counts.p2.holderSetMismatch;
+const exercised = !a3 || (counts.exerciseBQWithVariable > 0
+  && counts.exerciseRecordWithTail > 0 && counts.exerciseSortChanges > 0);
 const pass = counts.p1Failures === 0 && p2Total === 0
-  && counts.controlFailing > 0;
-const output = { grammar: 'A2 (§17.3)', broken, sample: Number.isFinite(sample)
-  ? sample : null, seconds, pass, sanity, counts, excludedShapes, examples };
+  && counts.controlFailing > 0 && exercised;
+const output = { grammar: a3 ? 'A2 + A3 (§17.3, §17.7)' : 'A2 (§17.3)',
+  exercised, bqTypes: Object.fromEntries(bqTypes), broken,
+  sample: Number.isFinite(sample) ? sample : null, seconds, pass, sanity,
+  counts, excludedShapes, examples };
 writeFileSync(outPath, JSON.stringify(output, null, 1));
 console.log(JSON.stringify({ seconds, pass, counts, excludedShapes }, null,
   1));
