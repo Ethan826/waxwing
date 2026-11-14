@@ -49,3 +49,39 @@ boundary contract, separated program and declaration movements, and
 distinguished measured membership from enforced restrictions. Re-review
 retained all assurance qualifications and found no further actionable
 wording issues.
+
+## Implementation stop: proposed amendment (2026-11-14)
+
+User supplied the implementation stop at b52bc705. Read-only inspection
+confirmed the retained impl1 movement file lists 42 declaration movements
+outside the 116-program list, including exactly 11 new Solved declarations.
+The reported 593 total movements is consistent with 551 plus 42; this pass
+did not regenerate the dump or independently verify the 116 recoveries.
+
+Recommendation, not new user authorization: allow the exact additional
+declarations when justified by the semantic boundary. Keep the 116-program
+membership and loss-recovery claims separate. Never insert program-name
+exceptions merely to preserve the original prediction. The two protected
+fixtures' empty census categories need an explicit exception; preserve the
+other protected fields. The new Limit window class needs its own check
+against R-b2 before adoption.
+
+U3's move from candidate refusal to verdict blocking changes the validation
+contract. Source inspection confirms `Valid` now carries exposed kinds,
+`decide` adds them to blockers, and `certifyPackage` can still construct a
+`Certified` carrying that `Valid`. This is not evidence of an escape, but
+requires review of every consumer and a regression showing exposed
+out-of-scope applications cannot reach an accepted Solved result through
+either path. Preserve diagnostic pins without treating them as a reason to
+weaken the semantic boundary. No soundness approval follows from this pass.
+
+The implementation remains unverified and all original landing, live
+replacement, milestone, proof and push holds remain. Suggested next step:
+the user explicitly authorizes the exact movement amendment and continued
+tests/review within the existing budget, with acceptance of U3 conditional
+on the review and restored-defect evidence. No implementation was changed
+in this pass, and no compiler verification was rerun.
+
+Record review: kept the original ruling intact; separated observed file
+contents, reported runtime behavior, recommendation and authorization.
+No further actionable prose finding after rereading the amendment.

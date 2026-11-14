@@ -9306,3 +9306,24 @@ move:
   basis in the boundary.
 The unverified source is kept on branch `scope-a-impl`; `r0-t2-d1` is
 unchanged in src. No pin moved, no test ran.
+
+### 18.200 The 42 declaration movements authorized; U3's revision conditional (2026-11-14)
+
+The author authorized the exact 42 declaration movements in
+research/r0-scope-a/impl1-movements.json, including the 11 additional
+Solved declarations: a semantic boundary decides eligibility, and the
+corpus prediction does not become a per-program restriction. The
+116-program recovery allowlist stays separate, and no program-specific
+exception is added. The two protected fixtures' census `categories` may
+become `[]`; their other protected fields are preserved. The proposed
+"today refuses, R0 Limit" window class is to be checked against ruling
+R-b2 before it is adopted. Tests and review continue within the existing
+budget (1.2-2.2M). **Acceptance of the revised U3** (detection in
+`checkSubstitution`, blocking in `decide`, in place of a candidate
+refusal) **stays conditional** on an independent review of every
+consumer of `Valid` and `Certified`, and on restored-defect tests showing
+that an exposed out-of-scope application cannot reach Solved by any
+path. The author's ruling record (updated, copied unchanged) notes that
+`certifyPackage` can still build a `Certified` carrying such a `Valid`.
+Proof qualifications and all holds stay; no live replacement, milestone
+movement, merge or push is authorized.
