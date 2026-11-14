@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { pinCommand, pinnedRt8, rt8File, rt8Table } from './r0-rt8-run.mjs';
 import { boundHoleClass, checkDeclined, checkDeclinedRefused,
   holeContractClass } from './r0-rt8-account.mjs';
@@ -61,13 +62,19 @@ export const rt8Checks = rows => {
   const c001 = 'docs/plans/2026-10-21-c001-explicit/baseline';
   const quiet = 'test/fixtures/r005b/render-quiet-annotated.json#main';
   const probes = r022Probes.map(({ origin }) => `${origin}#g`);
+  // Scope A (dossier §18.201): 105 declarations of the 116 recovered
+  // programs join the class, h1 and h2 among them, pinned by name.
+  const scopeA = JSON.parse(readFileSync(
+    'test/fixtures/r0/scope-a-bound-hole-recoveries.json', 'utf8'))
+    .declarations;
   test('RT8: a Solved resting on a bound hole is its own class', () => {
     const pending = rows.filter(row => row.class === boundHoleClass)
       .map(row => row.at);
-    assert.deepEqual(pending, [`${c001}/a1-discard-dictionary.wxw#main`,
+    assert.deepEqual([...pending].sort(), [
+      `${c001}/a1-discard-dictionary.wxw#main`,
       `${c001}/a2-unused-local.wxw#main`,
       'test/fixtures/r0/erased/form.show-reference.json#g', quiet,
-      ...probes]);
+      ...probes, ...scopeA].sort());
     const listed = table.boundHoles.map(entry => entry.split(': ')[0]);
     for (const at of [`${c001}/h1-print-empty.wxw#main`,
       `${c001}/h2-print-chosen.wxw#main`, ...pending])

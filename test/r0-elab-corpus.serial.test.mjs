@@ -42,13 +42,15 @@ const fresh = variable => 'fresh' in variable;
 // The minting switch (dossier §18.170, §18.172): the two `statsEvidence`
 // declarations leave Solved for beyond it: -2 judged and compared exactly,
 // -40 images, +2 beyond.
+// Scope A (dossier §18.200): 562 declarations (the 116 programs' 551
+// and 11 authorized) move from witnessed beyond Solved to judged Solved.
 const pinned = {
   generated: 3061,
-  judged: 2028,
-  images: 14827,
-  solved: { compared: 2028, exact: 1983, bySite: 45, sites: 153,
+  judged: 2590,
+  images: 46288,
+  solved: { compared: 2590, exact: 2545, bySite: 45, sites: 153,
     excluded: 159 },
-  beyond: { compared: 792, exact: 792, bySite: 0, sites: 0, excluded: 0 },
+  beyond: { compared: 230, exact: 230, bySite: 0, sites: 0, excluded: 0 },
   holed: 118
 };
 const isHole = variable => fresh(variable)

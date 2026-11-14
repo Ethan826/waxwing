@@ -67,9 +67,12 @@ test('RT6, RT7 and canonical order hold for every corpus problem', () => {
   assert.deepEqual(findings.slice(0, 10), []);
 });
 
-// Sig1, Sig2, Sig9, E1, E2, E24, P1 and P2 record no entry (§3).
+// Sig1, Sig2, Sig9, E1, E2, E24, P1 and P2 record no entry (§3). E4
+// records only its owner's marker, and since Scope A (dossier §18.200)
+// every corpus E4 is in scope, so it records none here; test/
+// r0-generate-expr.test.mjs keeps both its forms.
 const entryRules = ['Sig3', 'Sig4', 'Sig5', 'Sig6', 'Sig7', 'Sig8', 'Sig10',
-  ...[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+  ...[3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
     22, 23, 25, 26, 27, 28].map(n => `E${n}`),
   ...[3, 4, 5, 6, 7].map(n => `P${n}`)];
 const markers = ['EffectArgument', 'DataOverRecords', 'DataApplication',

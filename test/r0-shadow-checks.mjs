@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { pinCommand, pinnedWindow, windowFile, windowTable }
   from './r0-shadow-run.mjs';
 import { summaryOf } from './r0-shadow-summary.mjs';
@@ -30,7 +31,9 @@ export const windowChecks = programs => {
   });
 
   test('every row has a known class, its label, and no source', () => {
-    assert.ok(rows.length > 1000);
+    // Lowered from 1000 at Scope A (dossier §18.201): 457 rows became
+    // agreement when their programs were recovered; 578 remain.
+    assert.ok(rows.length > 500);
     for (const row of rows) {
       const known = classEntry(row.class);
       assert.ok(known !== undefined, row.class);
@@ -100,22 +103,39 @@ export const windowChecks = programs => {
     assert.equal(found.programs.compiling, census.corpus.accepted);
     assert.equal(found.programs.secondSpreadAtResolve,
       census.secondSpreadAtResolve);
+    // Scope A (dossier §18.200): the two protected fixtures keep
+    // `Outside DataApplication` through rule 1's exposure, which the
+    // window reads, while the census, which reads markers, records none.
+    const exposed = ['form.apply-meta', 'form.pipe-meta'].map(name =>
+      `test/fixtures/r0/erased/${name}.json#g`);
+    for (const at of exposed)
+      assert.ok(rows.some(row => row.at === at
+        && row.blockers.includes('DataApplication')), at);
+    const extra = name => (name === 'DataApplication' ? exposed.length : 0);
     for (const name of [...outsideKinds, 'ErasedRow'])
       assert.deepEqual(found.blockers[name], {
-        declarations: census.categories[name].declarations,
-        compilingPrograms: census.categories[name].programs }, name);
+        declarations: census.categories[name].declarations + extra(name),
+        compilingPrograms: census.categories[name].programs + extra(name) },
+      name);
     // The census reads detectors, not verdicts, so it does not move at the
     // minting switch; the two compiling `statsEvidence` programs, c7 and q7,
     // stop under shadow decisions since then (§18.170, §18.172).
+    // The two protected fixtures stop under shadow decisions with no
+    // census marker (Scope A, above).
     assert.equal(found.stops.underShadowDecisions,
-      census.union.programsWithoutErasedRow + mintingStops);
+      census.union.programsWithoutErasedRow + mintingStops + exposed.length);
     assert.equal(found.stops.underShadowDecisions
       + found.stops.additionalIfErasedRowAdopted,
-    census.union.programs + mintingStops);
+    census.union.programs + mintingStops + exposed.length);
     // Scenario 3 has no census counterpart: the corpus's three compiling
     // bound-hole programs (C001 a1 and a2, erased/form.show-reference) add
-    // to it; the pinned summary's two more are R022's inline probes.
-    assert.equal(found.stops.additionalIfBoundHolesRejected, 3);
+    // to it, and since Scope A (dossier §18.201) every recovered program
+    // with a declaration resting on a bound hole; the pinned summary's two
+    // more are R022's inline probes.
+    const holed = new Set(JSON.parse(readFileSync(
+      'test/fixtures/r0/scope-a-bound-hole-recoveries.json', 'utf8'))
+      .declarations.map(at => at.slice(0, at.lastIndexOf('#'))));
+    assert.equal(found.stops.additionalIfBoundHolesRejected, 3 + holed.size);
     assert.equal(table.summary.stops.additionalIfBoundHolesRejected
       - found.stops.additionalIfBoundHolesRejected, 2);
     const classes = found.classes;

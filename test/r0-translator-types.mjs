@@ -96,7 +96,8 @@ export const ownerType = (program, owner, naming, marks) => {
     if (sortName(sort) === 'row') args.push(record([], [naming(index)]));
   });
   if (info.sorts.length === 0) return base({ data: owner });
-  marks.push(dataKind(program, owner));
+  // Scope A: an admitted owner's arguments are variables, so plain.
+  if (!admittedSet(program).has(owner)) marks.push(dataKind(program, owner));
   return { app: { head: { data: owner }, args } };
 };
 
