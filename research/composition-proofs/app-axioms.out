@@ -1,10 +1,19 @@
 'Composition.App.AgreeExample.p0_scoped' depends on axioms: [propext]
+'Composition.App.CanonExample.canon_exT' depends on axioms: [propext]
+'Composition.App.CanonExample.checkAc_exP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.CanonExample.checkAc_exP2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.CanonExample.holds_exP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.CanonExample.not_checkA_exP2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.CanonExample.not_checkAc_app' depends on axioms: [propext]
+'Composition.App.FieldsA.ofList_toList' depends on axioms: [propext]
 'Composition.App.IsHomA.arrow' does not depend on any axioms
 'Composition.App.IsHomA.base' does not depend on any axioms
 'Composition.App.IsHomA.record' does not depend on any axioms
 'Composition.App.IsHomG.arrow' does not depend on any axioms
 'Composition.App.IsHomG.base' does not depend on any axioms
 'Composition.App.IsHomG.record' does not depend on any axioms
+'Composition.App.Orders.fields_perm' does not depend on any axioms
+'Composition.App.Orders.tails_perm' does not depend on any axioms
 'Composition.App.box_holder' depends on axioms: [propext]
 'Composition.App.box_not_jholds' depends on axioms: [propext]
 'Composition.App.collapseO_embedGO' depends on axioms: [propext, Quot.sound]
@@ -34,9 +43,13 @@
 'Composition.App.eraseGO_eq' does not depend on any axioms
 'Composition.App.eraseG_record' depends on axioms: [Quot.sound]
 'Composition.App.ermap_singleA' depends on axioms: [propext, Quot.sound]
+'Composition.App.evalA_canonA' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalA_homG' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.evalArgsA_canonArgsA' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalArgs_eraseArgs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.evalFA_canonFA' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalFA_homG' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.evalFA_ofList_perm' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalF_eraseF' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalF_homA' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.evalT_eraseT' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -79,8 +92,11 @@
 'Composition.App.s4_of_s2' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.s5'' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.s5'_of_s3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.s5'c' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.App.s5'c_of_s3_s9' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.s6' depends on axioms: [propext, Quot.sound]
 'Composition.App.s8' depends on axioms: [propext, Quot.sound]
+'Composition.App.s9' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.sat_erase' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.sat_homA' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.App.sat_homG' depends on axioms: [propext, Classical.choice, Quot.sound]

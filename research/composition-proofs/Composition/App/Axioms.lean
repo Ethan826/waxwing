@@ -3,12 +3,21 @@
 import Composition.App.Main
 
 #print axioms Composition.App.AgreeExample.p0_scoped
+#print axioms Composition.App.CanonExample.canon_exT
+#print axioms Composition.App.CanonExample.checkAc_exP
+#print axioms Composition.App.CanonExample.checkAc_exP2
+#print axioms Composition.App.CanonExample.holds_exP
+#print axioms Composition.App.CanonExample.not_checkA_exP2
+#print axioms Composition.App.CanonExample.not_checkAc_app
+#print axioms Composition.App.FieldsA.ofList_toList
 #print axioms Composition.App.IsHomA.arrow
 #print axioms Composition.App.IsHomA.base
 #print axioms Composition.App.IsHomA.record
 #print axioms Composition.App.IsHomG.arrow
 #print axioms Composition.App.IsHomG.base
 #print axioms Composition.App.IsHomG.record
+#print axioms Composition.App.Orders.fields_perm
+#print axioms Composition.App.Orders.tails_perm
 #print axioms Composition.App.box_holder
 #print axioms Composition.App.box_not_jholds
 #print axioms Composition.App.collapseO_embedGO
@@ -38,9 +47,13 @@ import Composition.App.Main
 #print axioms Composition.App.eraseGO_eq
 #print axioms Composition.App.eraseG_record
 #print axioms Composition.App.ermap_singleA
+#print axioms Composition.App.evalA_canonA
 #print axioms Composition.App.evalA_homG
+#print axioms Composition.App.evalArgsA_canonArgsA
 #print axioms Composition.App.evalArgs_eraseArgs
+#print axioms Composition.App.evalFA_canonFA
 #print axioms Composition.App.evalFA_homG
+#print axioms Composition.App.evalFA_ofList_perm
 #print axioms Composition.App.evalF_eraseF
 #print axioms Composition.App.evalF_homA
 #print axioms Composition.App.evalT_eraseT
@@ -83,8 +96,11 @@ import Composition.App.Main
 #print axioms Composition.App.s4_of_s2
 #print axioms Composition.App.s5'
 #print axioms Composition.App.s5'_of_s3
+#print axioms Composition.App.s5'c
+#print axioms Composition.App.s5'c_of_s3_s9
 #print axioms Composition.App.s6
 #print axioms Composition.App.s8
+#print axioms Composition.App.s9
 #print axioms Composition.App.sat_erase
 #print axioms Composition.App.sat_homA
 #print axioms Composition.App.sat_homG

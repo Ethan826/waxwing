@@ -1,11 +1,20 @@
 # Every public theorem in Composition/App (checked by the gate).
 Composition.App.AgreeExample.p0_scoped
+Composition.App.CanonExample.canon_exT
+Composition.App.CanonExample.checkAc_exP
+Composition.App.CanonExample.checkAc_exP2
+Composition.App.CanonExample.holds_exP
+Composition.App.CanonExample.not_checkA_exP2
+Composition.App.CanonExample.not_checkAc_app
+Composition.App.FieldsA.ofList_toList
 Composition.App.IsHomA.arrow
 Composition.App.IsHomA.base
 Composition.App.IsHomA.record
 Composition.App.IsHomG.arrow
 Composition.App.IsHomG.base
 Composition.App.IsHomG.record
+Composition.App.Orders.fields_perm
+Composition.App.Orders.tails_perm
 Composition.App.box_holder
 Composition.App.box_not_jholds
 Composition.App.collapseO_embedGO
@@ -35,9 +44,13 @@ Composition.App.eqs_eraseS
 Composition.App.eraseGO_eq
 Composition.App.eraseG_record
 Composition.App.ermap_singleA
+Composition.App.evalA_canonA
 Composition.App.evalA_homG
+Composition.App.evalArgsA_canonArgsA
 Composition.App.evalArgs_eraseArgs
+Composition.App.evalFA_canonFA
 Composition.App.evalFA_homG
+Composition.App.evalFA_ofList_perm
 Composition.App.evalF_eraseF
 Composition.App.evalF_homA
 Composition.App.evalT_eraseT
@@ -80,8 +93,11 @@ Composition.App.s4
 Composition.App.s4_of_s2
 Composition.App.s5'
 Composition.App.s5'_of_s3
+Composition.App.s5'c
+Composition.App.s5'c_of_s3_s9
 Composition.App.s6
 Composition.App.s8
+Composition.App.s9
 Composition.App.sat_erase
 Composition.App.sat_homA
 Composition.App.sat_homG
