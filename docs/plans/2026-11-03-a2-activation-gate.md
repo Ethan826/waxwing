@@ -371,11 +371,14 @@ Task 16 Step 1 describes, made with r0-results-diff on the dumps. The
 gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
-Measured on 2026-11-12: met. The status cites
-test/fixtures/r0/t2-minting-comparison10.json, the repeat after the
-R037 (2) remaining-sites repair (§18.182) and its formatting fix, at
-59e70fdb. Census 0 moved, window 16, rt8 15, shadow 16. Its `commit` is
-59e70fdb57975bc01f09f6f8984d17e612ceef46, and src is unchanged since.
+Measured on 2026-11-14: met. The status cites
+test/fixtures/r0/t2-minting-comparison11.json, the repeat on the Scope A
+source (§18.200) at ff5e90f8. Comparison 10's moved rows are unchanged
+(census 0, window 16, rt8 15, shadow 16), and 593 declarations move by
+Scope A, none of them among those, each checked against the two Scope A
+allowlists (its `scopeA` section; research/r0-scope-a/movement-check.mjs
+and comparison11.mjs). Its `commit` is
+ff5e90f8237799503c64f2178eb6e17a83d86e89, and src is unchanged since.
 Whether the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
@@ -402,9 +405,10 @@ Measured on 2026-11-04 (3cad78cd): not met. There is no budget
 ruling and there are no budget figures, so the report lists the
 missing ruling, the missing figures and each of the four budgets the
 status lacks. A measurement is recorded:
-test/fixtures/r0/t2-performance-10.json, measured at 59e70fdb
-(2026-11-12), with its conditions and both parts. Its `commit` is
-59e70fdb57975bc01f09f6f8984d17e612ceef46, and src is unchanged since.
+test/fixtures/r0/t2-performance-11.json, measured at ff5e90f8
+(2026-11-14; read-back CPU ×2.38, RSS ×1.09; validator CPU ×2.10, RSS
+×1.00), with its conditions and both parts. Its `commit` is
+ff5e90f8237799503c64f2178eb6e17a83d86e89, and src is unchanged since.
 The budgets are approved (§18.168) and its figures are within them; the
 source identity check passes. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
