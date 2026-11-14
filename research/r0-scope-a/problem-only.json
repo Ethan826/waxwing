@@ -1,0 +1,8 @@
+{
+ "note": "Recorded-problem changes with no result movement (dossier §18.201; for the author's review, not an allowlist of results). In each, generation dropped DataApplication markers on in-scope nodes while an out-of-scope node of the same kind keeps one, so every declaration's verdict and reason are unchanged.",
+ "programs": [
+  "test/fx-run-programs.mjs:cases#11",
+  "test/fx008-defer-programs.mjs:a3c#1",
+  "test/fx008-defer-programs.mjs:a9#1"
+ ]
+}

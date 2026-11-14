@@ -4,9 +4,10 @@
 // pin does, with those two fields removed, and compares it with the
 // digest pinned before Scope A (git show <ref>:test/fixtures/r0/
 // problems.json). A program may differ only if it is one of the 116 or
-// holds a declaration of impl1-movements.json. Exit 1 otherwise.
+// holds a declaration of impl1-movements.json, or is on the reviewed
+// problem-only list (problem-only.json). Exit 1 otherwise.
 // usage: node research/r0-scope-a/stripped-digests.mjs <old-problems.json>
-//          <in-scope-stage0.json> <impl1-movements.json>
+//          <in-scope-stage0.json> <impl1-movements.json> <problem-only.json>
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { canonicalOf } from '../../test/r0-canonical-decode.mjs';
@@ -17,11 +18,12 @@ import { rt8Sources } from '../../test/r0-rt8-run.mjs';
 import { defectProbes } from '../../test/r0-shadow-known.mjs';
 
 const read = file => JSON.parse(readFileSync(file, 'utf8'));
-const [oldFile, scopeFile, listFile] = process.argv.slice(2);
+const [oldFile, scopeFile, listFile, onlyFile] = process.argv.slice(2);
 const old = read(oldFile).digests;
 const allowed = new Set([...read(scopeFile).origins,
   ...read(listFile).declarationMovements.map(entry =>
-    entry.at.slice(0, entry.at.lastIndexOf('#')))]);
+    entry.at.slice(0, entry.at.lastIndexOf('#'))),
+  ...read(onlyFile).programs]);
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 
