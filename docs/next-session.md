@@ -1,9 +1,10 @@
-# RESUME HERE (2026-11-12, America/New_York)
+# RESUME HERE (2026-11-13, America/New_York)
 
 Self-contained handoff for a fresh context. Read this section, then the
 dossier's latest sections (docs/plans/2026-10-20-record-composition-
-dossier.md, §18.162 to §18.193 cover this run). Wait for the author's next
-direction before starting work.
+dossier.md; §18.177 to §18.193 cover the last three days). Wait for the
+author's next direction before starting work. Nothing is authorized
+beyond what is listed under "Next".
 
 **Report in milestones first** (author, 2026-10-25): which of three
 milestones moved, what became possible, what blocks the next; IDs
@@ -18,148 +19,112 @@ No milestone has moved since 2026-10-25; milestone changes are held.
 ## Where things stand
 
 Nothing is running. The tree is clean at the commit that added this
-section; the latest verified code is 0e8f7adf (src 59e70fdb).
+section. Since a965ecf3 only docs, research and Lean files changed; src
+is 59e70fdb, last verified at 0e8f7adf (parallel 3511/3511, serial
+245/245, regression proofs 520/520, growth 2.296;
+.build/evidence/2026-11-12-verify-criterion2/).
 
 The activation gate (`node scripts/r0-t2-activation-gate.mjs`; spec
-docs/plans/2026-11-03-a2-activation-gate.md) reads:
-- criteria 1-7: not met (2), live replacement's losses unruled;
-- S1 met (shadow losses accepted, §18.170); S2 met (the real
-  `EffectsUnread` reaches RT8 and the window);
-- **shadow minting: met; live replacement: not met (2).**
+docs/plans/2026-11-03-a2-activation-gate.md) reads **shadow minting:
+met; live replacement: not met (2)**. Criterion 2 was corrected by
+§18.186-§18.187:
+- it assesses whole-program losses under `decide`, using the census and
+  the gap lists together, deduplicated:
+  test/fixtures/r0/t2-replacement-losses.json, written by
+  scripts/r0-t2-replacement-losses-pin.mjs and kept current by
+  test/r0-t2-replacement-losses.serial.test.mjs;
+- 262 programs assessed: 252 lost (none accepted; the author recommends
+  accepting none), FX032 the one known defect correctly refused, 3
+  existing refusals, 6 ErasedRow-only fixtures not lost;
+- a known defect or an accepted loss needs an exact record line in its
+  ruling (`Known defect, correctly refused: <origin#name> (<id>).` /
+  `Live replacement accepts the loss of <origin>.`).
 
-What landed, in order:
-- Prerequisites accepted (§18.163): index-first walk, opaque
-  `UnnumberedRow`, the R038 (2) classes.
-- Budgets approved (§18.168): read-back CPU 2.75, RSS 1.15; validator CPU
-  2.60 against `certify`, RSS 1.15, whole-process peak; for the measured
-  corpus at this stage, not universal guarantees. The two failed
-  `npm run perf` files (354ce6e) stay failed. Option A (path ordering)
-  withdrawn; no further path-order optimization authorized.
-- Shadow minting switch (§18.170-§18.173): Online certifies through
-  `certifyPackage`; a read fault declines as `EffectsUnread`; exactly the
-  accepted 16 movements re-pinned (named in e084815d).
-- One minter (§18.174-§18.176): `certify` is now `substitutionOnly`, a
-  non-minting comparator; `certifyPackage` alone constructs `Certified`
-  in src (test/r0-minting-boundary.test.mjs; FFI covered by the
-  foreign-surface pin). Solved verdicts carry `Pending
-  certifyPackageSound` (docs/plans/r0-certify-package-argument.md), a
-  metadata-only change; earlier evidence keeps `certifySound`. G0's test
-  harness may mint `Certified` in JavaScript from the comparator: evidence
-  about G0 and Decide only (§18.176).
-
-Latest evidence: routine verify at 863a0992 passed (parallel 3501/3501,
-serial 242/242, regression proofs 509/509, growth 2.342 against 3.0;
-.build/evidence/2026-11-12-verify-r037/). Records on the current src
-(59e70fdb): test/fixtures/r0/t2-minting-comparison10.json (dump
-byte-identical to comparison 8; moved report equal) and
+Records on the current src (59e70fdb), fresh for the gate:
+test/fixtures/r0/t2-minting-comparison10.json and
 t2-performance-10.json (read-back CPU ×2.36, RSS ×1.09; validator CPU
-×2.22, RSS ×1.01). Before any src change, run `purs-tidy check src
-tools/style/src` (verify's first step) as well as width and structure.
-Any src change, comments included, makes both stale for the gate:
-repeat them on the new src (scripts/r0-t2-perf-run.mjs;
-scripts/r0-results-dump.mjs then
-scripts/r0-results-moved.mjs against
-.build/evidence/2026-11-09-comparison3/baseline-dump.json) and repoint
-test/fixtures/r0/t2-activation-gate.json, the commit literal in
-test/r0-t2-activation-gate.test.mjs and the gate spec's Measured text.
+×2.22, RSS ×1.01).
+
+Any src change, comments and formatting included, makes both stale.
+Repeat them on the new src:
+- scripts/r0-t2-perf-run.mjs;
+- scripts/r0-results-dump.mjs, then scripts/r0-results-moved.mjs
+  against .build/evidence/2026-11-09-comparison3/baseline-dump.json.
+
+Then repoint test/fixtures/r0/t2-activation-gate.json, the commit
+literal in test/r0-t2-activation-gate.test.mjs and the gate spec's
+Measured text.
+
+Before committing any src change, run:
+- `purs-tidy check src tools/style/src` (verify's first step; a
+  failed verify at c30a1e52 is on record for it);
+- `node scripts/width.mjs`, which must show 0 over 80;
+- the structural gate (`checkStructure`), which must be empty.
 
 ## Next, as the author last directed (§18.192)
 
-Done 2026-11-13 (§18.193): Scope A's bounded proof work. Lean module
-research/composition-proofs/Composition/App (proved: S2, S3, S4, S5′
-relative to `PG0Clauses`, S6, S8 with `TableBases`; refuted and kept:
-S8 without it). The gate (check-axioms.sh, 90 theorems) passes. Oracle
-O-A: 0 failures. R1-R6 are reproducible fixtures. Results in
-docs/plans/2026-11-13-scope-a-free-constructor-design.md §15. Awaiting
-the author's decision to use them (completed-dossier review, U6). No
-implementation. P-G0 stays unproved.
+Scope A, the free-constructor model for `DataApplication`, has had its
+bounded proof work done (§18.193). The design and results are in
+docs/plans/2026-11-13-scope-a-free-constructor-design.md (§6
+statements, §14 review record, §15 results).
+- **Proved** in research/composition-proofs/Composition/App:
+  - S2 and S3;
+  - S4 (`Scoped` turned out unnecessary);
+  - S5′, relative to exactly `PG0Clauses` (P-G0's two clauses, assumed;
+    the D hypothesis turned out unnecessary);
+  - S6;
+  - S8 with `TableBases`.
+- **Refuted and kept:** S8 without `TableBases` (`not_s8NoBases`).
+- **The gate:** `bash ~/.claude/skills/proof-dossier/check-axioms.sh
+  Composition/App Composition/App/Axioms.lean app-axioms.out
+  app-theorems.txt`, run from research/composition-proofs. It passes
+  for 90 theorems.
+- **Oracle O-A** (research/r0-scope-a/oracle.mjs, amendment A1): 0
+  failures over 13,083 assignments, and its negative control works.
+- **Counterexamples R1-R6:** research/r0-scope-a/counterexamples.mjs,
+  exit 0 when they reproduce.
 
-Earlier (§18.190):
+**Awaiting the author:** the decision to use these results, which is the
+completed-dossier review and U6, the exemption ruling. Implementation is
+unauthorized. When it is authorized, the decided points are:
+- U2: keep the `DataApplication` name, narrowed;
+- U3: a defensive refusal in `checkSubstitution`, keeping the existing
+  refusals;
+- U5: all 118 programs together;
+- U7: re-pins as a reviewed list;
+- U8: the 3 excluded programs stay excluded.
 
-Done 2026-11-13 (§18.191): Scope A's statements-first design,
-docs/plans/2026-11-13-scope-a-free-constructor-design.md (statements
-S1-S8, refuted variants R1-R6, boundary D6, 118 programs in scope
-conditionally, cost about 2.2-4.7M by analogy, decisions U1-U8). An
-adversarial statement review ran; its findings are fixed (§14 there).
-Awaiting the author's statement approval. No proof work, no
-implementation.
+Still owed under implementation: S7's generation test, a `TableBases`
+test, and O1 (confirm the literature sections). S5/P-G0 stays unproved
+(U1): never describe these proofs as establishing checker soundness.
 
-Earlier (§18.188):
-
-Done 2026-11-12 (§18.189): census analysis, evidence only, in
-docs/plans/2026-11-12-census-analysis.md (per-program blocker sets in
-research/r0-census-analysis/lost-programs.json). Recommended first
-scope: A, the free-constructor model for DataApplication (121 programs
-alone). Its design needs the author's authorization first. Awaiting
-the author.
-
-Earlier (§18.186):
-
-Done 2026-11-12 (§18.187): criterion 2 now assesses whole-program
-losses under `decide` (census and gap lists, deduplicated;
-test/fixtures/r0/t2-replacement-losses.json, written by
-scripts/r0-t2-replacement-losses-pin.mjs, kept current by
-test/r0-t2-replacement-losses.serial.test.mjs). 252 lost, none
-accepted; FX032 a known defect; criterion 2 unmet. FX032's BACKLOG row
-reads Defect. Verify passed at 0e8f7adf (3511/3511, 245/245, 520/520).
-Awaiting the author. Not started: any cause's lift; the handler-type
-choice waits on the full census (DataApplication, overlaps).
-
-Earlier (§18.184):
-
-Done 2026-11-12 (§18.185): replacement's end-to-end losses on the gap
-lists measured, evidence only, in
-docs/plans/2026-11-12-replacement-losses.md: 15 valid programs lost, 1
-existing defect (FX032) correctly refused, 3 refused today; 12 of the
-15 also need handler types; the census's 256-program loss dwarfs the
-lists. Repair recommendation and cost there. Awaiting the author. R037
-(2) is closed (§18.184); its Desugar one-tail test gap is a retained
-follow-up (BACKLOG R037).
-
-Earlier (§18.182):
-
-Done 2026-11-12 (§18.183): R037 (2) items 1-5 repaired, reviewed and
-verified (Walked, DeclarationUse, Function, Body row-level; Desugar's
-`Meta 0` removed); nothing moved. Evidence in
-docs/plans/2026-11-10-r037-2-remaining-sites.md, "Repair". Every R037
-(2) site is now repaired or argued (Core). Awaiting the author. Still
-separate and held: live replacement, milestone changes, the read-fault
-and ForcedTail rulings (criterion 2). Recorded test gap: Desugar's
-one-tail guard has no test that fails without it.
-
-Earlier:
-
-Done 2026-11-10 (§18.177): Entry's fallback traced and reproduced by a
-planted defect; evidence in docs/plans/2026-11-10-r037-2-entry-fallback.md.
-Repair authorized (§18.178), implemented, reviewed and verified
-(§18.179): Entry has no `TFun` wrapper and no zip (Entry.purs
-`finalEntries`); no acceptance, diagnostic or compilation movement.
-Entry's portion closed by the author (§18.180).
-
-Done 2026-11-10 (§18.181): evidence-only inventory of the remaining
-R037 (2) sites, docs/plans/2026-11-10-r037-2-remaining-sites.md. Forced
-fallbacks measured on the corpus: Walked and DeclarationUse fail open
-(30 and 48 refused programs compile, "Unhandled ... in main" among
-them); Function fails closed (925 rejected); Body, Desugar and Core show
-no movement. Proposed repair scope and cost there; no src changed.
-Awaiting the author.
-
-Entry's R037 (2) investigation, its fail-open fallback first
-(src/Features/Check/Entry.purs:43-46, `Row [] Nothing`: `main`'s Console
-check passes silently if reached). R037 (2) blocks live replacement, not
-shadow minting. The planted example (a `resolve` returning a non-arrow)
-is unrun; record predicted behavior as reasoned. Never call a fallback
-unreachable without its preservation argument.
+Earlier decisions in this run, for context:
+- R037 (2) is closed (§18.184). Its retained follow-up: Desugar
+  `freshRow`'s one-tail guard has no test that fails without it
+  (BACKLOG R037).
+- Replacement's losses were measured (§18.185,
+  docs/plans/2026-11-12-replacement-losses.md). The census analysis is
+  in docs/plans/2026-11-12-census-analysis.md, with per-program blocker
+  sets in research/r0-census-analysis/lost-programs.json. Scope B
+  (handler types and the effect markers, 94 programs) and Scope C are
+  not started.
+- FX032 is classified Defect in BACKLOG (G-erased item 5); its repair
+  is not authorized.
 
 ## Held; do not start
 
-Live replacement (criterion 2: needs measured user-visible losses and
-R037 (2)); F14's retirement; milestone changes; pushing.
+Live replacement; any lift beyond Scope A's authorized proof work
+(Scope A's implementation, Scope B, UnframedInstall, ForcedTail,
+UnreadImage, RequirementAtoms); marker removal; F14's retirement;
+milestone changes; pushing.
 
 ## Open findings, not yet ruled
 
-- Minor, recorded only: the forged-valid row detects the split in its safe
-  direction; the unsound direction is caught by a test, not a row.
+- Scope A: the completed-dossier review and U6 (above).
+- The census markdown (docs/plans/r0-census.md) still quotes the
+  2026-10-23 figures (251/743); the pinned census.json holds 256/751.
+- Minor, recorded only: the forged-valid row detects the split in its
+  safe direction; the unsound direction is caught by a test, not a row.
 - R037 (1), (4) need not block activation; R037 (5): separate shared
   needles before relying on those rows as activation evidence (§18.163).
 
@@ -199,7 +164,11 @@ validator-side (A2) or unrecorded (settling's deferred rows).
 
 ## Verification state
 
-- Latest routine verify **passed** at af830d41 (§18.176). Earlier passed
+- Latest routine verify **passed** at 0e8f7adf (§18.187): parallel
+  3511/3511, serial 245/245, regression proofs 520/520. Earlier passed
+  at 863a0992 (§18.183) and af830d41 (§18.176). Failed run kept:
+  c30a1e52 (purs-tidy, §18.183).
+- Earlier: passed at af830d41 (§18.176). Earlier passed
   at 7af0c225 (§18.175) and c8545b7c (§18.173), the switch. Failed runs
   kept: 312ddd88, 808ebfe5, 77536d51, f079ee74, 43f7e252, 96261bc7
   (each a test or row that followed a move, recorded in its commit).
