@@ -18,7 +18,8 @@ const root = Origin.Path({ root: Origin.InResult.value, steps: [] });
 const int = new Effect.MBase(Atom.IntBase.value);
 const unit = new Effect.MBase(Atom.UnitBase.value);
 const closed = { labels: [], tail: Nothing.value };
-const holders = { declared: Set.empty, holding: Set.empty };
+const holders = { declared: Set.empty, holding: Set.empty,
+  admitted: Set.empty, overRecords: Set.empty };
 const assemble = effects => Assemble.assemble({ decl: 0, holders,
   declarations: Effect.emptyEffects.declarations })(
   { ...Out.noOut, effects });

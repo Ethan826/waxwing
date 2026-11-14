@@ -80,7 +80,8 @@ export const r0AminProbes = {
     const effects = [new Out.NodeAt(path, int), new Out.NodeAt(path, int),
       new Out.SignatureAt(Origin.Path({ root: Origin.InResult.value,
         steps: [] }), signature)];
-    const holders = { declared: Set.empty, holding: Set.empty };
+    const holders = { declared: Set.empty, holding: Set.empty,
+      admitted: Set.empty, overRecords: Set.empty };
     const result = Assemble.assemble({ decl: 0, holders,
       declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });

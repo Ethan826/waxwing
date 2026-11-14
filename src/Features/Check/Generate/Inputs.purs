@@ -17,6 +17,10 @@ module Features.Check.Generate.Inputs
 import Prelude
 import Data.Map (Map)
 import Data.Map as Map
+import Data.Set (Set)
+import Domain.Type (TypeId)
+import Features.Check.Admitted (admitted)
+import Features.Check.Functional (functional)
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Resolved
@@ -34,11 +38,13 @@ import Domain.Resolved
 import Domain.Resolved as Resolved
 import Domain.Syntax (Sort)
 
--- T-R0b §10's `Tables = { types, ctors, effects }`.
+-- T-R0b §10's `Tables = { types, ctors, effects }`, plus Scope A's
+-- admitted set (Features.Check.Admitted), settled once per program.
 type Tables =
   { types ∷ Array TypeInfo
   , ctors ∷ Array CtorInfo
   , effects ∷ Array EffectInfo
+  , admitted ∷ Set TypeId
   }
 
 -- A callee as a reference reads it: its written signature (Resolved.purs
@@ -64,6 +70,8 @@ generationInputs program =
       { types: program.types
       , ctors: program.ctors
       , effects: program.effects
+      , admitted: admitted program.types program.ctors
+          (functional program.ctors)
       }
   , signatures: Signatures (Map.fromFoldable (map keyed program.functions))
   }

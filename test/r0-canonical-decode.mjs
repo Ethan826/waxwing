@@ -154,7 +154,9 @@ export const canonicalOf = problem => {
     types: pairsOf(found.types).map(([key, value]) =>
       [path(key), rtexpr(value)]),
     holders: { declared: idsOf(found.holders.declared),
-      holding: idsOf(found.holders.holding) }
+      holding: idsOf(found.holders.holding),
+      admitted: idsOf(found.holders.admitted),
+      overRecords: idsOf(found.holders.overRecords) }
   };
 };
 

@@ -46,7 +46,7 @@ export const armFrom = async load => {
     flexRow: [v('x'), v('y')], d: entries(d), q: [], b: entries(b),
     bq: entries(bq), outside: [], adm: [], split: [], vars: varMap,
     types: Map.empty, holders: { declared: Set.insert(ordInt)(7)(Set.empty),
-      holding: Set.empty } });
+      holding: Set.empty, admitted: Set.empty, overRecords: Set.empty } });
   const lacks = (name, label) => new Atom.Lacks(v(name), label);
   const disjoint = (one, other) => new Atom.Disjoint(v(one), v(other));
   const equal = (one, other) => new Atom.Equal(one, other);

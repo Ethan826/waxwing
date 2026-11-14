@@ -49,7 +49,8 @@ export const signatureProbes = {
       result: unit };
     const effects = [new Out.SignatureAt(path, sig),
       new Out.SignatureAt(path, sig)];
-    const holders = { declared: Set.empty, holding: Set.empty };
+    const holders = { declared: Set.empty, holding: Set.empty,
+      admitted: Set.empty, overRecords: Set.empty };
     const result = Assemble.assemble({ decl: 0, holders,
       declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });
@@ -73,7 +74,8 @@ export const signatureProbes = {
     const root = Origin.Path({ root: Origin.InResult.value, steps: [] });
     const unit = { parameters: [], row: { labels: [], tail: Nothing.value },
       result: new Effect.MBase(Atom.UnitBase.value) };
-    const holders = { declared: Set.empty, holding: Set.empty };
+    const holders = { declared: Set.empty, holding: Set.empty,
+      admitted: Set.empty, overRecords: Set.empty };
     const assemble = effects => Assemble.assemble({ decl: 0, holders,
       declarations: Effect.emptyEffects.declarations })(
       { ...Out.noOut, effects });

@@ -25,6 +25,8 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe)
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Ids (TypeId(..))
@@ -70,7 +72,8 @@ translate tables naming = case _ of
   TRecord row → recordOf (map fieldName row.fields)
     <$> translateAll tables naming (map fieldType row.fields)
     <*> traverse (named naming) row.tails
-  TData owner arguments rows → dataOf (map (rowOf naming) rows)
+  TData owner arguments rows → dataOf tables.admitted
+    (map (rowOf naming) rows)
     <$> typeInfo tables owner
     <*> translateAll tables naming arguments
   THandler (Label effect arguments mark) rows →
@@ -129,22 +132,45 @@ recordOf labels fields tails =
 -- `TData t [] []` is `base t`; any other is `app t [args]`, marked
 -- DataOverRecords when the declared type has a record-row parameter,
 -- DataApplication otherwise (docs/findings.md "RT1's translator",
--- reading 5).
+-- reading 5), except Scope A's in-scope nodes (design §4 D6 as amended;
+-- dossier §18.198): an admitted head (Features.Check.Admitted) whose
+-- arguments are plain carries no marker. The substitution check repeats
+-- the test after the candidate, where a variable may become an arrow.
 dataOf
   ∷ ∀ s
-  . Array (TyRow (Ref s))
+  . Set TypeId
+  → Array (TyRow (Ref s))
   → { id ∷ TypeId, info ∷ TypeInfo }
   → Translations s
   → Translated s
-dataOf rows owner arguments =
+dataOf admitted rows owner arguments =
   { ty: TData owner.id arguments.tys rows, marks }
   where
   marks
     | Array.null rows && Array.null arguments.tys = []
+    | inScope = arguments.marks
     | otherwise = Array.cons marker arguments.marks
+  inScope = Set.member owner.id admitted
+    && Array.all (plainArgument admitted) arguments.tys
   marker =
     if Array.elem RecordSort owner.info.sorts then OverRecords
     else Application
+
+-- An argument of an in-scope node (D6 4′ and 8): builtins, variables,
+-- and admitted declared types applied to plain arguments; no arrow,
+-- handler or record at any depth.
+plainArgument ∷ ∀ s. Set TypeId → GenTy s → Boolean
+plainArgument admitted = case _ of
+  TData id arguments rows → Set.member id admitted && Array.null rows
+    && Array.all (plainArgument admitted) arguments
+  TFun _ _ _ → false
+  THandler _ _ → false
+  TRecord _ → false
+  TVar _ → true
+  TInt → true
+  TBool → true
+  TText → true
+  TUnit → true
 
 handlerOf
   ∷ ∀ s

@@ -85,8 +85,17 @@ sameSpine left right = case left, right of
 -- type, a record field or a type argument (Features.Check.Functional's
 -- set). Ruling K-a (author, 2026-10-23): the recorded problem carries
 -- the complete set, so the ground rule reads the problem alone; a head
--- outside `declared` is never judged printable.
-type Holders = { declared ∷ Set TypeId, holding ∷ Set TypeId }
+-- outside `declared` is never judged printable. Scope A (dossier
+-- §18.198): `admitted` is Features.Check.Admitted's set, the heads an
+-- `app` node may have without `DataApplication`, and `overRecords` the
+-- declared types with a record-row parameter; the substitution check
+-- reads both to name what a candidate exposes.
+type Holders =
+  { declared ∷ Set TypeId
+  , holding ∷ Set TypeId
+  , admitted ∷ Set TypeId
+  , overRecords ∷ Set TypeId
+  }
 
 -- `base`: a builtin, or a declared type of no parameters (§2.2).
 data Base = IntBase | BoolBase | TextBase | UnitBase | DataBase TypeId

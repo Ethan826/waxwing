@@ -22,7 +22,7 @@ const { Right } = t.m.Either;
 const varSet = variables => t.m.Set.fromFoldable(t.m.Foldable.foldableArray)(
   t.m.Atom.ordVar)(variables);
 const solution = compilation => ({ strategy: Verdict.OnlineSolver.value,
-  validity: Internal.Valid.value,
+  validity: Internal.Valid.create([]),
   assurance: new Verdict.Pending('Test.pending'), compilation });
 const judged = (e, compilation) =>
   ({ problem: t.m.Elaborating.problem(e), solution: solution(compilation) });

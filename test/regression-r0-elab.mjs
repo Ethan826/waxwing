@@ -27,7 +27,7 @@ const elaborating = async context => {
   const recon = t.m.Set.empty;
   const judged = (e, w, problem = t.m.Elaborating.problem(e)) => ({ problem,
     solution: { strategy: Verdict.OnlineSolver.value,
-      validity: Internal.Valid.value,
+      validity: Internal.Valid.create([]),
       assurance: new Verdict.Pending('Test.pending'),
       compilation: new Verdict.Witnessed(w) } });
   const elaborate = (e, j) => Elaborate.elaborate(recon)(e)(j);

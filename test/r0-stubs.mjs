@@ -32,7 +32,7 @@ export const stubsFrom = async load => {
   // A `RuleName` is a newtype, so its compiled form is the string.
   const soundRule = (name, theorem, apply) =>
     new Rule.SoundRule({ name, theorem, apply });
-  const valid = Internal.Valid.value;
+  const valid = Internal.Valid.create([]);
   const name = Verdict.OnlineSolver.value;
   const hint = text => new Search.SearchHint(text);
   const nonConstructive = new Verdict.NoWitness(

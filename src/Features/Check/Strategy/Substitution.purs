@@ -39,6 +39,7 @@ module Features.Check.Strategy.Substitution
   , SubstitutionVerdict
   , certifyPackage
   , certifyPackageSound
+  , exposure
   , certifySound
   , genericSubstitutionSound
   , substitutionOnly
@@ -49,6 +50,7 @@ import Prelude
 import Data.Either (Either(..), either)
 import Data.Traversable (traverse_)
 import Domain.Recorded (RecordedProblem, fields)
+import Domain.Recorded.Atom (OutsideKind)
 import Domain.Verdict (Compilation(..), StatementRef(..))
 import Domain.Verdict.Certified.Internal (Certified(..))
 import Domain.Verdict.EffectPackage (Completed, EffectPackage)
@@ -57,6 +59,7 @@ import Domain.Verdict.Search (CheckRefusal(..))
 import Features.Check.Strategy.Asked (requirementUnder)
 import Features.Check.Strategy.Atoms (atomUnder, facts)
 import Features.Check.Strategy.Candidate (Substitution, generic)
+import Features.Check.Strategy.Exposed (exposedBy)
 import Features.Check.Strategy.Effects.Complete (complete, witnessOf)
 import Features.Check.Strategy.Effects.Package (erase, settle)
 import Features.Check.Strategy.Effects.Validate
@@ -145,6 +148,10 @@ compiledFrom problem completed =
   where
   witness = witnessOf problem completed
 
+-- The outside kinds a `Valid`'s candidate exposes (Scope A; rule 1).
+exposure ∷ Valid → Array OutsideKind
+exposure (Valid kinds) = kinds
+
 checkSubstitution
   ∷ RecordedProblem → Substitution → Either CheckRefusal Valid
 checkSubstitution problem candidate
@@ -153,6 +160,6 @@ checkSubstitution problem candidate
       do
         traverse_ (atomUnder (facts problem) candidate) view.b
         traverse_ (requirementUnder problem candidate) view.bq
-        Right Valid
+        Right (Valid (exposedBy problem candidate))
       where
       view = fields problem

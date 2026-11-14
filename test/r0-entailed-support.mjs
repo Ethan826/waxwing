@@ -60,7 +60,7 @@ export const supportFrom = async load => {
       new Atom.Equal(one, other)), ...b]), bq: entries(bq), outside: [],
     adm: [], split: [], vars: varMap, types: Map.empty,
     holders: { declared: Set.insert(ordInt)(7)(Set.empty),
-      holding: Set.empty } });
+      holding: Set.empty, admitted: Set.empty, overRecords: Set.empty } });
   const pr = ty => new Atom.Printable(ty);
   return { Atom, t, v, vars, problemOf, pr, entries };
 };

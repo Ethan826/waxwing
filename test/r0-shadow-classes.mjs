@@ -67,6 +67,9 @@ const noCandidate = facts => {
     return 'today refuses, R0 Unsupported Outside';
   if (verdict === 'Unresolved Unsupported RequirementAtoms')
     return 'today refuses, BQ pending G-ValidR';
+  // Scope A (dossier §18.198): a refused declaration whose marker the
+  // narrowing removed can reach a strategy's limit instead.
+  if (/^Unresolved Limit /.test(verdict)) return 'today refuses, R0 Limit';
   if (verdict !== 'Unresolved Inference NoCandidate')
     return fail(facts, 'an unexpected verdict with no candidate');
   if (facts.at in falseContradictions)

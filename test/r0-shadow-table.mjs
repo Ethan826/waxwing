@@ -71,6 +71,8 @@ export const windowClasses = {
       + ' a separate question)', 'a strategy that certifies it'),
   'today\'s refusal becomes Unresolved (no candidate)': entry(b, ruled,
     refusedFocus, undetermined, classify),
+  'today refuses, R0 Limit': entry(b, ruled, refusedFocus, undetermined,
+    classify),
   defect: entry(null, 'none (defect rows are not labelled)', 'none (a'
     + ' defect of today\'s checkFunction)', 'its separately authorized fix',
   'its BACKLOG entry')

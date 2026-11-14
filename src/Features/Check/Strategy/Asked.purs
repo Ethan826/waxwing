@@ -16,12 +16,16 @@ module Features.Check.Strategy.Asked (requirementUnder) where
 import Prelude
 import Data.Either (Either(..))
 import Domain.Recorded (AtomId, RecordedProblem, fields)
-import Domain.Recorded.Atom (ReqAtom(..), Var)
+import Data.Array (any)
+import Data.Tuple (snd)
+import Domain.Recorded.Atom (RTExpr(..), ReqAtom(..), Var)
 import Domain.Recorded.Origin (Entry)
 import Domain.Verdict.Search (CheckRefusal(..))
 import Features.Check.Decide.Open (openAtom)
 import Features.Check.GroundRule (Judgement(..), View, atomType, judge)
 import Features.Check.Mentions (isRigid)
+import Features.Check.Spine (spine)
+import Features.Check.Strategy.Atoms (defined, facts)
 import Features.Check.Strategy.Candidate (Substitution, under)
 
 requirementUnder
@@ -37,7 +41,29 @@ requirementUnder problem candidate = judged
     | isOpen entry.value = Right unit
     | otherwise = refusal entry.origin.atom
         (judge holders (candidateView entry.value) (typeUnder entry))
+        *> definedIn entry
   typeUnder entry = under candidate (atomType entry.value)
+  -- Scope A (dossier §18.198; design §16.1): GroundRule's `Holds` is not
+  -- linked to the model's `JHolds` on a term the model leaves undefined
+  -- (a label repeated by splicing). A type with an `app` node that
+  -- `Holds` must also be `defined`, or the atom is refused, after the
+  -- judgement, so no existing refusal changes.
+  definedIn entry =
+    if applied (typeUnder entry) && not (defined known (typeUnder entry))
+    then Left (Undefined entry.origin.atom)
+    else Right unit
+  known = facts problem
+
+-- Whether a type has an `app` node, an arrow spine walked by a loop.
+applied ∷ RTExpr → Boolean
+applied ty = case ty of
+  Arrow _ _ → any applied (found.parameters <> [ found.result ])
+  Base _ → false
+  TVar _ → false
+  Record entries _ → any (applied <<< snd) entries
+  App _ _ → true
+  where
+  found = spine ty
 
 refusal ∷ AtomId → Judgement → Either CheckRefusal Unit
 refusal id = case _ of

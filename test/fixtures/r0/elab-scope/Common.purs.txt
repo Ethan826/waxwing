@@ -18,7 +18,7 @@ import Features.Check.Generate.Gen (Minted)
 header ∷ Header
 header =
   { decl: FunctionId 0
-  , holders: { declared: Set.empty, holding: Set.empty }
+  , holders: { declared: Set.empty, holding: Set.empty, admitted: Set.empty, overRecords: Set.empty }
   , declarations: noDeclarations
   }
 

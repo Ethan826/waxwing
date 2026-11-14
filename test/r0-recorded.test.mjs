@@ -57,7 +57,8 @@ const fieldsOf = () => ({
     position: Atom.NodeType.create(body) }]]),
   types: mapOf(Origin.ordPath, [[body, Atom.TVar.create(res)],
     [argument, intType]]),
-  holders: { declared: setOf([0]), holding: setOf([]) },
+  holders: { declared: setOf([0]), holding: setOf([]),
+    admitted: setOf([]), overRecords: setOf([]) },
   effects: Effect.emptyEffects
 });
 
@@ -89,7 +90,8 @@ test('problems built alike compare equal; a change in any field does not',
     q: fieldsOf().bq, b: [], bq: [], outside: [],
     adm: [], split: fieldsOf().adm,
     vars: mapOf(Atom.ordVar, []), types: mapOf(Origin.ordPath, []),
-    holders: { declared: setOf([0]), holding: setOf([0]) },
+    holders: { declared: setOf([0]), holding: setOf([0]),
+      admitted: setOf([]), overRecords: setOf([]) },
     effects: { ...Effect.emptyEffects, rigidMarks: ['a'] }
   };
   assert.deepEqual(Object.keys(changed).sort(), [...names].sort());

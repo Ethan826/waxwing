@@ -32,6 +32,7 @@ import Domain.Resolved (FunctionDecl)
 import Domain.Resolved as Resolved
 import Domain.Type (TypeId(..))
 import Domain.Verdict.Static (StaticRefusal)
+import Features.Check.Admitted (recordRowed)
 import Features.Check.Functional (functional)
 import Features.Check.Generate.Body (generateIn)
 import Features.Check.Generate.Elab (seal)
@@ -94,6 +95,8 @@ holdersOf ∷ Tables → Holders
 holdersOf tables =
   { declared: Set.fromFoldable (Array.mapWithIndex declared tables.types)
   , holding: functional tables.ctors
+  , admitted: tables.admitted
+  , overRecords: recordRowed tables.types
   }
   where
   declared index _ = TypeId index

@@ -31,7 +31,7 @@ module Features.Check.Decide
   ) where
 
 import Prelude
-import Data.Array (length, nub, null, snoc)
+import Data.Array (length, nub, nubEq, null, snoc)
 import Data.Array.NonEmpty (toArray)
 import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
@@ -46,7 +46,7 @@ import Domain.Verdict
   , InternalFault(..)
   , RuleName(..)
   , Solution
-  , Unsupport
+  , Unsupport(..)
   , Verdict(..)
   )
 import Domain.Verdict.Judged.Internal (Judged(..))
@@ -67,6 +67,7 @@ import Features.Check.Refute.Rules
   , ruleName
   )
 import Features.Check.Strategy (Ran, Strategy, runStrategy)
+import Features.Check.Strategy.Substitution (exposure)
 
 -- T-R0a's five fields, and two injected implementations: §3.2(a)'s
 -- detector, and `ends`, when the run stops early. Production injects
@@ -104,7 +105,7 @@ decide ∷ Checking → RecordedProblem → Either InternalFault Decision
 decide checking problem = do
   distinctRules checking.rules
   ran ← foldM (gated checking blocked) start (steps checking problem)
-  map (decision ran) (verdictOf blocked ran)
+  map (decision ran) (verdictOf (withExposed blocked ran) ran)
   where
   blocked = blocks (checking.openRequirements problem) problem
   start = { attempts: [], hints: [], solution: Nothing, evidence: Nothing }
@@ -143,7 +144,7 @@ gated checking blocked ran step =
   if checking.ends progress then Right ran else step ran
   where
   progress =
-    { blocked: not (null blocked)
+    { blocked: not (null (withExposed blocked ran))
     , solved: isJust ran.solution
     , refuted: isJust ran.evidence
     }
@@ -190,6 +191,15 @@ blamed = case _ of
   ByRule derivation → ByRule derivation
     { blame = nub (map _.path (toArray derivation.premises)) }
   ByCounterInstance refuted → ByCounterInstance refuted
+
+-- Rule 1 on the solution (Scope A, dossier §18.198): the outside kinds
+-- the first solution's candidate exposes (`Valid`'s payload) block as
+-- markers do, after them, each kind once. Rule 2's gating reads them
+-- too, so a run whose solution exposes one goes on as a blocked run.
+withExposed ∷ Array Unsupport → Run → Array Unsupport
+withExposed blocked ran = nubEq (blocked <> exposed)
+  where
+  exposed = maybe [] (map Outside <<< exposure <<< _.validity) ran.solution
 
 -- Rules 3 and 4.
 verdictOf ∷ Array Unsupport → Run → Either InternalFault Verdict

@@ -81,8 +81,9 @@ export const elabFrom = async load => {
   };
   // No declared type or effect: the built-ins' arities only.
   const header = decl => ({ decl, holders: { declared: m.Set.empty,
-    holding: m.Set.empty }, declarations: m.Lookup.declarationsOf(
-    { types: [], ctors: [], effects: [] }) });
+    holding: m.Set.empty, admitted: m.Set.empty,
+    overRecords: m.Set.empty }, declarations: m.Lookup.declarationsOf(
+    { types: [], ctors: [], effects: [], admitted: m.Set.empty }) });
   // Assembly requires one SignatureAt per declaration, so a hand-built
   // generator is followed by the unit signature's write.
   const signature = { parameters: [], row: { labels: [],

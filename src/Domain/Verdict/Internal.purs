@@ -14,6 +14,7 @@ module Domain.Verdict.Internal
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Domain.Recorded (AtomId)
+import Domain.Recorded.Atom (OutsideKind)
 import Domain.Verdict.Open
   ( Alternative
   , CXSubst
@@ -21,8 +22,11 @@ import Domain.Verdict.Open
   , RigidAssignment
   )
 
--- One injected checker accepted the problem, nothing more (T-R0a §3.3).
-data Valid = Valid
+-- One injected checker accepted the problem, nothing more (T-R0a §3.3),
+-- with the outside kinds its candidate's substituted terms expose (Scope
+-- A, dossier §18.198; Features.Check.Strategy.Exposed). Rule 1 blocks
+-- Solved on a non-empty list as on a marker.
+data Valid = Valid (Array OutsideKind)
 
 -- CX's certificate at base B ⊕ Nat, with the sub-body it refutes (§3.4).
 type CX = { rho ∷ CXSubst, body ∷ NonEmptyArray AtomId }

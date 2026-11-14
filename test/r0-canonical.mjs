@@ -28,8 +28,9 @@
 //            | { patternType: path } | { restType: path } | 'auxiliary'
 //            | { clauseParamType: [path, c, k] }  a site only (D1)
 //   problem  §10's fields; `vars` and `types` as [key, value] pairs;
-//            `holders` { declared: [t], holding: [t] }, ascending
-//            (ruling K-a).
+//            `holders` { declared: [t], holding: [t], admitted: [t],
+//            overRecords: [t] }, ascending (ruling K-a; Scope A,
+//            dossier §18.198).
 //
 // Canonical order (stated here, checked by `outOfOrder`): a record's
 // fields ascend by label (code units, PureScript's Ord String) and its

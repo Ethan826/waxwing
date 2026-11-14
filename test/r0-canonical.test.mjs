@@ -87,13 +87,15 @@ const problem = changes => Internal.RecordedProblem({
     ...positions.slice(1).map((position, at) =>
       [fresh(deep, roles[at]), roles[at], position])]),
   types: mapOf(O.ordPath, roots.map(at => [at, bases[0]])),
-  holders: { declared: setOf([3, 1, 2]), holding: setOf([2]) },
+  holders: { declared: setOf([3, 1, 2]), holding: setOf([2]),
+    admitted: setOf([1]), overRecords: setOf([3]) },
   ...changes
 });
 
 test('every constructor decodes to its canonical form', () => {
   const found = canonicalOf(problem({}));
-  assert.deepEqual(found.holders, { declared: [1, 2, 3], holding: [2] });
+  assert.deepEqual(found.holders, { declared: [1, 2, 3], holding: [2],
+    admitted: [1], overRecords: [3] });
   const call = { root: 'body', steps: ['Call', 'args', 2] };
   assert.deepEqual(found.b[0].value, { eq: [
     { fun: { params: [{ base: 'Int' }, { base: 'Bool' }],

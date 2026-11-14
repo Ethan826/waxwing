@@ -11,6 +11,7 @@
 module Features.Check.Strategy.Atoms
   ( Facts
   , atomUnder
+  , defined
   , facts
   ) where
 

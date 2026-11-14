@@ -57,7 +57,7 @@ const harness = spy => {
   return { decided, searches: strategy.calls };
 };
 const solution = { strategy: Verdict.OnlineSolver.value,
-  validity: Internal.Valid.value,
+  validity: Internal.Valid.create([]),
   assurance: new Verdict.Pending('Test.pending'),
   compilation: new Verdict.Witnessed(t.witness([[a,
     t.inline(t.base.int)]])) };
