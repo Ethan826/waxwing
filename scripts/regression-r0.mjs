@@ -8,7 +8,6 @@ import { r0AminRows } from './regression-r0-amin.mjs';
 import { r0PortRows } from './regression-r0-port.mjs';
 import { a2Rows } from './regression-r0-a2.mjs';
 import { t2Rows } from './regression-r0-t2.mjs';
-import { scopeARows } from './regression-r0-scope-a.mjs';
 
 export const r0Rows = [
   {
@@ -247,6 +246,5 @@ export const r0Rows = [
   ...r0AminRows,
   ...r0PortRows,
   ...a2Rows,
-  ...t2Rows,
-  ...scopeARows
+  ...t2Rows
 ];

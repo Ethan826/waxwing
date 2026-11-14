@@ -104,7 +104,7 @@ reaching ctors seeds = tailRec round { found: Set.empty, frontier: seeds }
 usersOf ∷ Array CtorInfo → Map TypeId (Array TypeId)
 usersOf ctors = foldl add Map.empty (Array.concatMap edges ctors)
   where
-  edges ctor = map (\used → Tuple (TypeId used) ctor.owner)
-    (Array.concatMap referenced ctor.fields)
+  edges ctor = map (edge ctor) (Array.concatMap referenced ctor.fields)
+  edge ctor used = Tuple (TypeId used) ctor.owner
   add found (Tuple used owner) =
     Map.insertWith (<>) used [ owner ] found

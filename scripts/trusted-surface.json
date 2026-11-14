@@ -1413,6 +1413,7 @@
    "SubstitutionVerdict",
    "certifyPackage",
    "certifyPackageSound",
+   "exposure",
    "certifySound",
    "genericSubstitutionSound",
    "substitutionOnly",
@@ -1421,6 +1422,7 @@
   "compiled": [
    "certifyPackage",
    "certifyPackageSound",
+   "exposure",
    "certifySound",
    "genericSubstitutionSound",
    "substitutionOnly",

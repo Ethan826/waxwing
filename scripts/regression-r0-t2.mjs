@@ -18,6 +18,7 @@ import { t6Rows } from './regression-r0-t6.mjs';
 import { t2PrerequisitesRows } from './regression-r0-t2-prerequisites.mjs';
 import { t2BatchRows } from './regression-r0-t2-batch.mjs';
 import { switchRows } from './regression-r0-t2-switch.mjs';
+import { scopeARows } from './regression-r0-scope-a.mjs';
 
 export const t2Rows = [
   ...t2GenerationRows,
@@ -35,5 +36,6 @@ export const t2Rows = [
   ...t6Rows,
   ...t2PrerequisitesRows,
   ...t2BatchRows,
-  ...switchRows
+  ...switchRows,
+  ...scopeARows
 ];
