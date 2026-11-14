@@ -60,9 +60,11 @@ test('E4: a constructor reference, θ(c.joined) and its marker', () => {
   const [r, s] = [fv(j, { inst: 0 }), fv(j, { inst: 1 })];
   assert.deepEqual(typeAt(program.refs, j), fun([rec({}, [r, s])],
     app(1, [rec({}, [r]), rec({}, [s])])));
+  // `Box` is in Scope A's boundary (dossier §18.200), so its reference
+  // has no marker; a holder's keeps one (test/r0-generate-expr.test.mjs).
+  void box;
   assert.deepEqual(ruleEntries(program.refs, 'E4'), [
     ['b', j, 0, 'F8', 'inst', disjoint(r, s)],
-    ['outside', box, 0, 'F8', 'inst', 'DataApplication'],
     ['outside', j, 1, 'O5', 'inst', 'DataOverRecords']]);
 });
 
@@ -88,8 +90,8 @@ test('E6: E4\'s atoms, E5\'s equations, then the markers', () => {
   const owner = app(0, [inst(at, 0)]);
   assert.deepEqual(ruleEntries(program.calls, 'E6'), [
     ['b', at, 0, 'F1', 'body', eq(Int, inst(at, 0))],
-    ['b', at, 1, 'B1', 'body', eq(owner, fun([Int], tv(fv(at, 'res'))))],
-    ['outside', at, 2, 'F8', 'inst', 'DataApplication']]);
+    ['b', at, 1, 'B1', 'body', eq(owner, fun([Int], tv(fv(at, 'res'))))]]);
+  // No marker: the owner is in Scope A's boundary (dossier §18.200).
 });
 
 test('E7-E11: operators, interpolation, comparison and `if`', () => {

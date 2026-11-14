@@ -65,7 +65,7 @@ export const rt8Checks = rows => {
   // Scope A (dossier §18.201): 105 declarations of the 116 recovered
   // programs join the class, h1 and h2 among them, pinned by name.
   const scopeA = JSON.parse(readFileSync(
-    'test/fixtures/r0/scope-a-bound-hole-recoveries.json', 'utf8'))
+    'research/r0-scope-a/bound-hole-recoveries.json', 'utf8'))
     .declarations;
   test('RT8: a Solved resting on a bound hole is its own class', () => {
     const pending = rows.filter(row => row.class === boundHoleClass)

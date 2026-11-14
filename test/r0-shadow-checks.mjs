@@ -133,7 +133,7 @@ export const windowChecks = programs => {
     // with a declaration resting on a bound hole; the pinned summary's two
     // more are R022's inline probes.
     const holed = new Set(JSON.parse(readFileSync(
-      'test/fixtures/r0/scope-a-bound-hole-recoveries.json', 'utf8'))
+      'research/r0-scope-a/bound-hole-recoveries.json', 'utf8'))
       .declarations.map(at => at.slice(0, at.lastIndexOf('#'))));
     assert.equal(found.stops.additionalIfBoundHolesRejected, 3 + holed.size);
     assert.equal(table.summary.stops.additionalIfBoundHolesRejected
