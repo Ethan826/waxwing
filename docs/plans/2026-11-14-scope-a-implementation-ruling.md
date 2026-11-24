@@ -85,3 +85,39 @@ in this pass, and no compiler verification was rerun.
 Record review: kept the original ruling intact; separated observed file
 contents, reported runtime behavior, recommendation and authorization.
 No further actionable prose finding after rereading the amendment.
+
+## Final checkpoint: recommended dispositions (2026-11-14)
+
+Recommendations for the author's reply, not implementation acceptance or
+new push authorization. Read-only inspection at 62ec785d confirmed 105
+entries across 70 origins in bound-hole-recoveries.json, 578 pinned window
+rows, and three origins in problem-only.json. Exposure source now reads
+site types and candidate images. This pass did not rerun verification,
+inspect the independent consumer report, or reproduce restored-defect runs.
+
+- U3: accept the revised placement only after final verification passes
+  and the consumer review, fixes and restored-defect evidence are durably
+  linked. Acceptance is of the implementation contract, not a new theorem.
+- Bound holes: keep the 105 additional declarations in the existing held
+  ambiguity class. Membership approval does not settle ambiguity or permit
+  unconditional acceptance claims about those recoveries.
+- Window floor: permit `> 500` for residual differences only, with the
+  exact 578-row table pinned and the full corpus inventory preserved. This
+  does not authorize reducing corpus coverage or changing other thresholds.
+- Problem-only changes: permit exactly the three listed origins, subject
+  to the existing stripped-digest and result comparisons; no other problem
+  changes are authorized by that list.
+- Equivalent mutant: omission needs the structural equivalence argument
+  and the retained covering rows, not merely a failure to detect it.
+- Protected fixtures: removing census from their named loss entries is
+  consistent with the permitted empty categories; preserve other fields.
+
+After verify, update the dossier and resume notes with actual results,
+including the earlier r0-a2-defect-block failure and its correction. Keep
+all live replacement, ambiguity, milestone and landing holds. The reported
+push has already occurred; the earlier ruling did not authorize it, and no
+new push authorization is implied. Do not rewrite remote history to undo
+that fact. No running test worktree was changed in this review.
+
+Prose review retained the distinctions between measured file contents,
+reported evidence, recommendations and the author's authorization.
