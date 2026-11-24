@@ -1,0 +1,2 @@
+fn mkPure(): Unit -> Int with pure = fn(u: Unit) => 2;
+fn main(): Int = mkPure()(());

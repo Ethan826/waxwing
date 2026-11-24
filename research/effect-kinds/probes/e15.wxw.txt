@@ -1,0 +1,4 @@
+effect Ask { fn ask(): Int; };
+fn main(): Unit with Console = with handler Ask { ask() => 1 } {
+  let f = fn(u: Unit) => Ask.ask();
+  with handler Ask { ask() => 2 } { Console.print(f(())) } };

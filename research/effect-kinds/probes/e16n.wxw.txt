@@ -1,0 +1,4 @@
+effect Log { fn log(n: Int): Unit; };
+fn bracket(release: Unit -> Unit with nofail Log,
+  body: Unit -> Int with pure): Int = { defer release(()); body(()) };
+fn main(): Int = 0;

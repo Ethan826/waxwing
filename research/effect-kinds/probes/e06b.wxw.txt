@@ -1,0 +1,2 @@
+fn mkPrint(): Unit -> Unit with Console = fn(u: Unit) => Console.print(1);
+fn main(): Unit with Console = { let p = mkPrint(); p(()) };
