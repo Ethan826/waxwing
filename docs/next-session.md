@@ -9,9 +9,13 @@ is authorized beyond it.
 
 **Integration (2026-11-24, the author's leave).** Branch
 `integrate/scope-a` merges `main` (FX033's repair, Int arithmetic Tasks
-1-2, the charter) into `scope-a-impl`. `ap/t3t5`'s d3882301 is an
-earlier form of 1f5336e1 (R036 (3)), already here. Not on `main` yet. The src merge makes Records 12 stale (see
-State below).
+1-2, the charter) and `research/effect-kinds` into `scope-a-impl`.
+`ap/t3t5`'s d3882301 is an earlier form of 1f5336e1 (R036 (3)), already
+here. The build fails: `main` renamed `Add` to `Arith (Binary Plus)`
+(12a657cd), and three Scope A modules still match `Add`
+(Generate/Expr.purs:73, Generate/Static/Walk.purs:41,
+Strategy/ReadBack/Walk.purs:84). The src merge also makes Records 12
+stale (see State below). Not on `main` yet.
 
 **State.**
 - Scope A is implemented and verified: verify passed at 62ec785d
