@@ -1,0 +1,14 @@
+effect Database { fn query(id: Int): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn lookup(id: Int): Int with Database = Database.query(id);
+
+fn note(n: Int): Unit with Logger = Logger.log(n);
+
+fn both(id: Int): Int with Database = {
+  let row = lookup(id);
+  note(row);
+  row
+};
+
+fn main(): Unit with Console = Console.print(1);

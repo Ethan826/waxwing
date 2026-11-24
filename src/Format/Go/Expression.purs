@@ -3,6 +3,7 @@ module Format.Go.Expression (expression) where
 import Prelude
 import Data.Array as Array
 import Data.String.Common (joinWith)
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.IR.Internal as IR
 import Domain.IR.Internal (Ty)
 import Format.Go.Block (lowerBlock)
@@ -47,7 +48,7 @@ expression scope next whole@(IR.Expr term) = case term.node of
     named scope lower next (functionWrapper scope.shape id) whole arguments
   IR.Construct id arguments →
     named scope lower next (ctorWrapper scope.shape id) whole arguments
-  IR.Add left right → pair addition left right
+  IR.Arith (Binary operator left right) → pair (binary operator) left right
   IR.Concat left right → pair concatenation left right
   IR.Interpolate parts → joined interpolation (each parts)
   IR.Compare operator left right →
@@ -97,6 +98,12 @@ joined render parts =
   , free: union parts.frees
   , wrappers: parts.wrappers
   }
+
+-- One Go helper per operator. A helper takes variables, so Go never folds
+-- an overflowing constant expression and the result wraps (design §1).
+binary ∷ BinaryOp → String → String → String
+binary = case _ of
+  Plus → addition
 
 addition ∷ String → String → String
 addition left right = "waxwingAdd(" <> left <> ", " <> right <> ")"

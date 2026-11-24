@@ -1,0 +1,1 @@
+{"code":"E_TYPE","message":"name is not a field of { email: Text, ...r }","span":{"start":{"line":1,"offset":47,"column":48},"end":{"line":1,"offset":51,"column":52}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/R3c-body-reads-unnamed.wxw.txt","related":[]}

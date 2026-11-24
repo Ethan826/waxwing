@@ -1,0 +1,28 @@
+effect Config { fn port(): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn makeLive(): { query: Int -> Int with pure, name: Text }
+    with Config + Logger = {
+  let port = Config.port();
+  Logger.log(port);
+  { query: fn(id: Int) => id + port, name: "live" }
+};
+
+fn makeFake(): { query: Int -> Int with pure, name: Text, calls: Int } =
+  { query: fn(id: Int) => 42, name: "fake", calls: 0 };
+
+fn checkout(db: { query: Int -> Int with pure, ...r }, id: Int): Int
+    with pure =
+  db.query(id) + 1;
+
+fn fixedConfig(p: Int): Handler(Config with pure) =
+  handler Config { port() => p };
+
+fn consoleLogger(): Handler(Logger with Console + ...e) =
+  handler Logger { log(n) => Console.print(n) };
+
+fn main(): Unit with Console = {
+  let live = with consoleLogger() { with fixedConfig(1000) { makeLive() } };
+  Console.print(checkout(live, 5));
+  Console.print(checkout(makeFake(), 5))
+};

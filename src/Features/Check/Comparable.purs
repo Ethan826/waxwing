@@ -31,7 +31,7 @@ comparable
 comparable functions env (Checked.Expr expression) = case expression.node of
   Checked.Call _ _ arguments → traverse_ recur arguments
   Checked.Construct _ _ arguments → traverse_ recur arguments
-  Checked.Add left right → traverse_ recur [ left, right ]
+  Checked.Arith arith → traverse_ recur arith
   Checked.Concat left right → traverse_ recur [ left, right ]
   Checked.Interpolate parts → traverse_ recur parts
   Checked.Compare _ left right → judge functions env left *> traverse_ recur

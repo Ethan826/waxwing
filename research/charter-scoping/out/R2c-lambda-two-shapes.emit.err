@@ -1,0 +1,1 @@
+{"code":"E_TYPE","message":"Expected { email: Text, name: Text }, found { email: Text, id: Int }","span":{"start":{"line":4,"offset":134,"column":21},"end":{"line":4,"offset":157,"column":44}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/R2c-lambda-two-shapes.wxw.txt","related":[]}

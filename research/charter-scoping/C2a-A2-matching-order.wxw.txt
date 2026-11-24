@@ -1,0 +1,28 @@
+effect Database { fn query(id: Int): Int; };
+effect Config { fn port(): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn checkout(id: Int): Int with Database = Database.query(id) + 1;
+
+fn databaseLive(): Handler(Database with Config + Logger) =
+  handler Database {
+    query(id) => {
+      Logger.log(id);
+      id + Config.port()
+    }
+  };
+
+fn fixedConfig(p: Int): Handler(Config with pure) =
+  handler Config { port() => p };
+
+fn consoleLogger(): Handler(Logger with Console + ...e) =
+  handler Logger { log(n) => Console.print(n) };
+
+fn main(): Unit with Console =
+  with consoleLogger() {
+    with fixedConfig(1000) {
+      with databaseLive() {
+        Console.print(checkout(5))
+      }
+    }
+  };

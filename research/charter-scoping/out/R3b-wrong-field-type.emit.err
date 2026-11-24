@@ -1,0 +1,1 @@
+{"code":"E_TYPE","message":"Expected { email: Text, ..._ }, found { email: Int }","span":{"start":{"line":3,"offset":115,"column":54},"end":{"line":3,"offset":127,"column":66}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/R3b-wrong-field-type.wxw.txt","related":[]}

@@ -1,0 +1,5 @@
+fn verified(u: { email: Text, ...r }): { email: Text, verified: Bool, ...r } =
+  { ...u, verified: true };
+
+fn main(): Unit with Console =
+  Console.print(verified({ email: "ada@x", id: 7 }));

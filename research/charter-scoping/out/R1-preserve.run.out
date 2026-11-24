@@ -1,0 +1,4 @@
+<ada@x>
+{ email: "ada@x!", id: 7, name: "Ada" }
+{ email: "ada@x", id: 7, name: "Ada", verified: true }
+<bo@x>

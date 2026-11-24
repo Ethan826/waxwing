@@ -4,6 +4,12 @@ Read README.md, docs/plans/bootstrap.md, docs/progress.md, and docs/findings.md
 before changing code. The language is Waxwing. Finish the current
 vertical slice before adding language features. Task tracking is local.
 
+Consult docs/waxwing-charter.md when designing or reviewing language,
+library, runtime and tooling changes. Identify the relevant principles,
+explain material tradeoffs and name any departure. The charter does not
+authorize additional work. Apply the author's latest explicit decisions
+within scope and record any earlier guidance they supersede.
+
 - Own every observed failure. Fix it or add a specific local BACKLOG.md item
   with evidence and a next action. Never hide a failure behind a rerun.
 - Never disable checks, suppress warnings, skip tests, or weaken assertions

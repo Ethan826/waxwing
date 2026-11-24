@@ -1,0 +1,8 @@
+effect Database { fn query(id: Int): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn combine(f: Int -> Int with Database, g: Int -> Int with Logger, x: Int): Int
+    with Database + Logger =
+  f(x) + g(x);
+
+fn main(): Unit with Console = Console.print(1);

@@ -333,6 +333,95 @@ README alignment follows in the next commit. No compiler rules, proofs or
 R0/a-min gates changed. Documentation checks only; no npm task was run.
 No push was requested.
 
+## D001 Int arithmetic, plan Tasks 1-2 (2026-10-24)
+
+Branch d001-arith (main 2af6e40 plus the design and plan, 7ca2a07).
+Authorized: plan Tasks 1 and 2 only. Rulings recorded in design
+section 9 and the plan header.
+
+Baseline `npm run verify` at 7ca2a07 (under the verify lock) exited 0:
+2366 parallel tests and 59 serial tests passed, 0 failed, 0 skipped;
+176 regression proofs "fixed compiler passes; restored defect fails".
+
+Task 1 (`Arith` refactor of `+`), done after Task 2. `Add` became
+`Arith (Arithmetic e)` in Syntax, Resolved, Checked and IR, with
+`data Arithmetic e = Binary BinaryOp e e` and `BinaryOp = Plus` in the
+new src/Domain/Arithmetic.purs (derived Functor, Foldable, Traversable;
+`operands`). Each walk has one case over the operands; the checker's
+`checkArithmetic` keeps `checkAddition`'s order (infer left, right,
+then require Int left, right); Go still emits `waxwingAdd` everywhere.
+New test/arithmetic.test.mjs (operands and derived foldr are left then
+right) failed first with module not found, then passed. Existing tests
+that pinned the `Add` constructor (plan, Task 1) were rewritten to the
+`Arith(Binary(Plus, …))` shape. scripts/differential-project.mjs gained
+`withoutArith` (the candidate's `Arith (Binary Plus l r)` hashed as the
+baseline's `Add`).
+
+Differential against a `git archive` build of 3672c77 (the commit before
+Task 1): `node scripts/differential.mjs --baseline <copy> --corpus all
+--regenerate` exited 0 in 17.5 min. Harvest test runs exited 0, 0.
+harvested 9139 sources, fuzz 1029, isName 1085 probes, matches 1000,
+mutations 1000: 0 differences in each. Phases reached (harvested): lex
+9139, parse 9058, resolve 8860, check 8309, specialize 5781, emit 5738,
+compile 5738. The copy was deleted afterwards. Emitted-Go equality
+covers only the sources that reached emit (harvested 5738, fuzz 8,
+matches 305, mutations 43), not every source or isName probe.
+
+Task 1 verification, recorded 2026-10-25 (author's closure). Command:
+`npm run verify`, run by the implementing agent on the working tree at
+3672c77 plus the uncommitted Task 1 changes, before the comment-only
+oracle corrections that were then committed with it as 0633480.
+Totals: 2372 parallel tests and 59 serial tests passed, 0 failed, 0
+skipped; 176 regression proofs "restored defect fails"; exit 0. The
+log and the differential's summary were retained by copying them from
+job scratch to .build/evidence/d001-task1-verify.log and
+.build/evidence/d001-task1-differential.log in this worktree (ignored
+by git, local only); the baseline verify at 7ca2a07 is
+.build/evidence/d001-task1-verify-baseline.log. Reported, not
+retained: the agent's red run of test/arithmetic.test.mjs (module not
+found). Not rerun since: the full verify and the differential.
+
+Closure (author, 2026-10-25): test/fn-syntax.test.mjs gains "+ chains
+group left; parentheses group right", asserting `a + b + c` is
+`(a + b) + c` on the tree, with `a + (b + c)` as the parenthesized
+control; printed values cannot distinguish the groupings. Passes at
+this commit. Shown failing: in an rsync copy without .build, the
+parser's `plus` in src/Format/Parse/Expression.purs re-associated a
+left `+` operand to the right; after `node scripts/build.mjs` the test
+failed with actual `Arith(Binary(Plus, Variable(a), Arith(Binary(Plus,
+Variable(b), Variable(c)))))`. The copy was deleted. Tasks 3-7 stay
+held pending a scoped authorization.
+
+Task 2: test/int-arith-oracle.mjs (BigInt model with
+`BigInt.asIntN(32, ·)` at every node, printer with full or minimal
+parentheses from an operator table, boundary values 0, ±1, ±2147483647,
+-2147483648, 2147483646, ±2^k for k = 1..30, and a seeded LCG) and
+test/int-arith-oracle.test.mjs. Seed 1 gives 200 literal trees of
+depth at most 6 (3390 leaves; 144 trees wrap at some node), each built
+fully parenthesized and minimally parenthesized; seed 2 gives 50 trees
+over parameters `a`, `b`, `c` of `fn g` called with boundary
+arguments. All 450 programs are built once by runGoBatch and every
+printed value equals the model's: `node --test
+test/int-arith-oracle.test.mjs`, 5 tests passed (20.8 s).
+Shown failing: in an rsync copy without .build, src/Format/Go.purs:42
+changed to `return a - b`, `node scripts/build.mjs`, then the same
+command: 3 passed, 2 failed, first failures `full 0` (expected
+-877450654, printed -307606134) and `parameter 0` (expected 151000832,
+printed -16776192). The copy was deleted.
+Corrected 2026-10-24 (dossier §18.87): independent code can still share
+a conceptual defect with the compiler, and with only `+` the printed
+values cannot establish parser grouping (addition is associative).
+No test pins an unparenthesized `+` chain's grouping structurally: the
+parse-shape tests cover `+` beside `|>`, access and comparison, and
+test/properties.test.mjs prints fully parenthesized trees. Codex's
+earlier review read the source and ran a model-only sanity check, not
+Go or a full verify.
+
+`npm run verify` with Task 2 and these docs (under the lock) exited 0:
+2371 parallel tests (the baseline's 2366 plus the oracle's 5) and 59
+serial tests passed, 0 failed, 0 skipped; 176 regression proofs as
+before.
+
 ## T013: incremental regression proofs (2026-10-17)
 
 Branch t013-incremental, commit f5a06bf (docs in the commit after it).

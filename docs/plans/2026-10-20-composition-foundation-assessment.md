@@ -1,3 +1,5 @@
+<!-- {% raw %} -->
+
 # Composition requirements: foundation assessment
 
 Date: 2026-10-20, revised three times the same day after the author's
@@ -839,3 +841,5 @@ what remains open:
   cannot state them). No candidate was implemented; 4.3's outcomes on
   programs 4 and 5 follow from the formulas, not from a run.
 - Sources and what could not be accessed: the README there.
+
+<!-- {% endraw %} -->

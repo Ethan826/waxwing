@@ -9,6 +9,7 @@ import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..))
+import Domain.Arithmetic (operands)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -134,7 +135,7 @@ firstFail (Checked.Expr expression) = case expression.node of
     (Array.cons body (map failureBody clauses))
   Checked.Call _ _ arguments → firstIn arguments
   Checked.Construct _ _ arguments → firstIn arguments
-  Checked.Add left right → firstIn [ left, right ]
+  Checked.Arith arith → firstIn (operands arith)
   Checked.Concat left right → firstIn [ left, right ]
   Checked.Interpolate parts → firstIn parts
   Checked.Compare _ left right → firstIn [ left, right ]
@@ -186,7 +187,7 @@ firstUnkeyed subst (Checked.Expr expression) = case expression.node of
     (Array.cons body (map failureBody clauses))
   Checked.Call _ _ arguments → firstIn arguments
   Checked.Construct _ _ arguments → firstIn arguments
-  Checked.Add left right → firstIn [ left, right ]
+  Checked.Arith arith → firstIn (operands arith)
   Checked.Concat left right → firstIn [ left, right ]
   Checked.Interpolate parts → firstIn parts
   Checked.Compare _ left right → firstIn [ left, right ]

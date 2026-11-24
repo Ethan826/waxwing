@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parse } from '../output/Format.Parse/index.js';
-import { Integer, Add, If,
+import { Integer, Arith, If,
   Boolean as Bool } from '../output/Domain.Syntax/index.js';
+import { Binary, Plus } from '../output/Domain.Arithmetic/index.js';
 import { Right } from '../output/Data.Either/index.js';
 import { checked, rejected } from './support.mjs';
 import { runGoBatch } from './go-batch.mjs';
@@ -11,12 +12,17 @@ import { executedTrees as executed, generator, parsedTrees,
 
 const shape = node => {
   if (node instanceof Integer) return { tag: 'int', value: node.value1 };
-  if (node instanceof Add) return {
-    tag: 'add', left: shape(node.value1), right: shape(node.value2) };
+  if (node instanceof Arith) return addition(node.value1);
   assert.ok(node instanceof If);
   assert.ok(node.value1 instanceof Bool);
   return { tag: 'if', flag: node.value1.value1, yes: shape(node.value2),
     no: shape(node.value3) };
+};
+// Only `+` exists in these trees: an Arith node must be a Binary Plus.
+const addition = arith => {
+  assert.ok(arith instanceof Binary);
+  assert.ok(arith.value0 instanceof Plus);
+  return { tag: 'add', left: shape(arith.value1), right: shape(arith.value2) };
 };
 const interpret = node => {
   if (node.tag === 'int') return BigInt(node.value);

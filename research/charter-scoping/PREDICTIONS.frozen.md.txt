@@ -1,0 +1,50 @@
+# Charter probes: frozen predictions (written before any run, 2026-10-24)
+
+Build: effect-kinds worktree, src identical to main 2af6e40 (= origin/main a82d064 for src/).
+Sources: L = docs/language.md (charter-scoping a82d064); ED = docs/plans/2026-10-09-effects-design.md;
+SX = examples/services.wxw; RM = README.md. Programs are the sibling *.wxw.txt files (frozen).
+
+| Probe | Fragment | Prediction | Basis |
+|---|---|---|---|
+| R1-preserve | open record param, update, spread + where-lacks | accepted; prints `<ada@x>` / `{ email: "ada@x!", id: 7, name: "Ada" }` / `{ email: "ada@x", id: 7, name: "Ada", verified: true }` / `<bo@x>` | L Row polymorphism (`older`), R005 Tranche A; RM Records |
+| R1b-lacks-implicit | spread without where, label written beside ...r in result | unknown; lean accepted, prints `{ email: "ada@x", id: 7, verified: true }` (result type writes `verified` beside `...r`, so r lacks it); alternative: E_TYPE `r may already have field verified` | L "Each tail lacks the labels written beside it" vs L R005 "until the signature says where r lacks" / RM |
+| R1c-lacks-violated | caller passes a record that already has `verified` | refused E_TYPE `verified is not allowed here: r lacks { verified }` at the argument, note `required here` | L R005 written lacks |
+| R2-lambda-access | unannotated lambda param + field access | unknown (L says access reads a field of any receiver; unsolved param not covered); lean refused E_TYPE `Expected a record, found _`-like | unknown |
+| R2b-lambda-rowvar | lambda annotation `{ email: Text, ...r }` in main (no r in signature) | refused E_UNBOUND `Unbound type variable r` | L Names: lambda annotation names are the signature's variables |
+| R2c-lambda-two-shapes | one let-bound lambda used at two record shapes | refused E_TYPE shape mismatch (`let` monomorphic) at the second call's argument; if R2 is refused, the same error as R2 | L Effects limits "let is monomorphic"; FN001 lambdas monomorphic |
+| R3-missing-field | call with record lacking `email` | refused E_TYPE, shape-mismatch text (`Expected { email: Text, ... }, found { name: Text }`-like); exact text unknown | L Row polymorphism "Mismatches use the existing texts" |
+| R3b-wrong-field-type | `email: 3` | refused E_TYPE `Expected Text, found Int` | same |
+| R3c-body-reads-unnamed | body reads `u.name` | refused E_TYPE `name is not a field of { email: Text, ...r }` at the label | L Literals, access and update |
+| R4-union-written | two services, caller writes union (both orders) | accepted; prints `15` then `16` | SX (audited/report) |
+| R5-union-omitted | caller omits `with` | refused E_EFFECT `both performs Database, which its signature does not allow` (first call) | L Rows (ambient row passes callbacks only); ED "never perform anything itself" |
+| R5b-union-partial | caller writes only Database | refused E_EFFECT `both performs Logger, which its signature does not allow` | same |
+| R6-missing-in-main | main omits Database handler | refused E_EFFECT `Unhandled Database in main`, notes naming the path | L Rows; RM Dependencies as effects |
+| R7a-combine-distinct-rows | combinator with two callbacks of different written rows | refused E_EFFECT FX017 text `f must allow every effect of combine (Database + Logger), but its row is Database; write f's row as `with Database + Logger`; a callback's row must equal its caller's (FX017)` | L Limits FX017 |
+| R7b-combine-shared-tail | combinator over shared `...e`, named functions passed | unknown; lean accepted (named functions' ambient rows instantiate fresh), prints `5` then `20` | reasoning from SX + ED decision 6 |
+| R7c-combine-lambdas | same, lambdas passed | unknown; lean accepted, prints `5` then `20` | reasoning |
+| R8-record-and-effect | open record + effect row in one signature | accepted; prints `mail ada@x` / `1` / `{ email: "ada@x", id: 7 }` | L Records + Effects (independent) |
+| R8b-service-record-field-row | record field `Text -> Unit with Mailer` (closed, no ambient in a field) called in caller with ambient | unknown; possible FX017-family refusal (closed callee row vs caller's ambient) or accepted printing `mail a@x` | L Rows ("A type written as a label's argument has no ambient row"... fields) unknown |
+| R8c-row-sorts | same name as record tail and effect tail | refused E_TYPE `r is a record row, not an effect row` at `with ...r`, note `first written here` | L Row sorts |
+| C2a-clause-row-provider | handler whose clauses perform Config + Logger; checkout row only Database | accepted; prints `5` then `1006` | ED decision 7 + `with h` rule; L Handlers |
+| C2b-construction-time-provider | constructor fn performs Config/Logger/Fail at construction, returns pure handler capturing a local; handle around construction; use outside Config scope | accepted; prints `1000` / `-1` / `1006` / `43` | ED decision 7 (handler values first class); FN001 capture; L Errors/handle; syntax of `let x = with ...` unattested (risk) |
+| C2c-inject-fake | handler value passed as parameter, installed in callee | accepted; prints `43` then `1006` | L Injection; ED `with h` (opened if closed) |
+| C2d-record-provider-capture | service record of pure functions built at construction | accepted; prints `1000` / `1006` / `43` | RM Records of functions |
+| C2e-record-use-leak | record field performs Logger; checkout row omits it | refused E_EFFECT `checkout performs Logger, which its signature does not allow` | L Limits FX017 (genuine case keeps old text) |
+| C2f-provider-dep-missing | Config handler not installed | refused E_EFFECT `Unhandled Config in main`, notes path unknown | L Rows main rule |
+| C2g-logger-value-injected | logger handler value passed to constructor, installed inside clause | accepted; prints `1006` | ED decision 7, `with h` |
+
+## Amendments (labelled; written after the first run, before running these)
+
+C2a was refused (E_EFFECT `... cannot be made equal: both end in ...`). The original predictions above stay unchanged.
+
+| Probe | Change from original | Prediction | Basis |
+|---|---|---|---|
+| C2a-A1-open-clause-row | clause row written `Config + Logger + ...e` (the consoleLogger pattern in SX) | accepted; prints `5` then `1006` | SX consoleLogger `Handler(nofail Log with Console + ...e)` |
+| C2a-A2-matching-order | installation order swapped so the context row reads Config + Logger innermost-first (Logger outside Config); clause row unchanged (closed-ambient) | unknown; lean refused with the same family as C2a (equal-row with a shared ambient tail, not order) | ED `with h`: R unified with ρ |
+| C2f-A1-open-clause-row | C2f with the A1 clause row | refused E_EFFECT `Unhandled Config in main`, notes naming the path (exact notes unknown) | L Rows main rule |
+
+## Additional probe (added after the first run, before running it)
+
+| Probe | Fragment | Prediction | Basis |
+|---|---|---|---|
+| R9-no-param-type | named function parameter without a type | refused E_SYNTAX (`Expected ':'`-like) at `)` | L grammar `parameter = identifier, ":", type`; "required function signatures" |

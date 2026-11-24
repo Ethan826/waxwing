@@ -45,7 +45,8 @@ const accepted = [
   ['fn f(g: Int -> Int -> Int): Int -> Int = g(1);',
     'Apply(Local(0), [Integer(1)])', ints],
   ['fn f(): Int -> Int = fn(x) => x + 1;',
-    'Lambda([{local: Just(0), ty: TInt}], Add(Local(0), Integer(1)))', ints],
+    'Lambda([{local: Just(0), ty: TInt}], '
+    + 'Arith(Binary(Plus, Local(0), Integer(1))))', ints],
   ['fn f(): Bool -> Int -> Int = fn(_, y) => y;',
     'Lambda([{local: Nothing, ty: TBool}, {local: Just(0), ty: TInt}], '
     + 'Local(0))', `TFun(TBool, ${ints})`],
@@ -61,7 +62,8 @@ const accepted = [
     'Pipe(Pipe(Local(0), Call(0, [], [Integer(1)])), '
     + 'Lambda([{local: Just(1), ty: TInt}], Local(1)))', 'TInt'],
   ['fn f(): Int = id(fn(x) => x + 1, 2);', 'Apply(Call(3, [' + ints + '], '
-    + '[Lambda([{local: Just(0), ty: TInt}], Add(Local(0), Integer(1)))]), '
+    + '[Lambda([{local: Just(0), ty: TInt}], '
+    + 'Arith(Binary(Plus, Local(0), Integer(1))))]), '
     + '[Integer(2)])', 'TInt']
 ];
 

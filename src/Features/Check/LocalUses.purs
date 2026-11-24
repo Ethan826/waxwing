@@ -3,6 +3,7 @@ module Features.Check.LocalUses (usesOf) where
 import Prelude
 import Data.Array as Array
 import Data.Foldable (sum)
+import Domain.Arithmetic (operands)
 import Domain.Resolved (Expr(..), Item(..), LiteralItem(..), LocalId(..))
 
 -- How many times a parameter (a local numbered below the parameter count)
@@ -18,7 +19,7 @@ parts ∷ Expr → Array Expr
 parts = case _ of
   Call _ _ arguments → arguments
   Construct _ _ arguments → arguments
-  Add _ left right → [ left, right ]
+  Arith _ arith → operands arith
   Concat _ left right → [ left, right ]
   Interpolate _ holes → holes
   Compare _ _ left right → [ left, right ]

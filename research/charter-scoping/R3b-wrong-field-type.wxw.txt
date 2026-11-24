@@ -1,0 +1,3 @@
+fn contact(u: { email: Text, ...r }): Text = "<${u.email}>";
+
+fn main(): Unit with Console = Console.print(contact({ email: 3 }));

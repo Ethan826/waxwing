@@ -7,6 +7,12 @@ this block, then dossier §18.194-§18.202 (docs/plans/2026-10-20-record-
 composition-dossier.md). Wait for the author's next direction; nothing
 is authorized beyond it.
 
+**Integration (2026-11-24, the author's leave).** Branch
+`integrate/scope-a` merges `main` (FX033's repair, Int arithmetic Tasks
+1-2, the charter) into `scope-a-impl`. `ap/t3t5`'s d3882301 is an
+earlier form of 1f5336e1 (R036 (3)), already here. Not on `main` yet. The src merge makes Records 12 stale (see
+State below).
+
 **State.**
 - Scope A is implemented and verified: verify passed at 62ec785d
   (parallel 3521/3521, serial 245/245, regression proofs 541/541,
@@ -41,6 +47,25 @@ put data files under test/fixtures/r0 (the corpus loader reads them).
 **Held:** live replacement, milestone changes, F14's retirement,
 effect-marker lifts, Scope B and C, merging or integrating into
 `r0-t2-d1` or main, pushing.
+
+---
+
+# From main: charter handoff (2026-10-24)
+
+The approved [charter](waxwing-charter.md) and its guidance are committed
+on `main` as `19f49c7`. The author also approved the README update and
+explicitly requested committing and pushing only charter-related work and
+the README. Effect's first mention links to its website. The
+[prose record][readme-charter-review] contains the independent review and
+final documentation checks; all 14 original code blocks are unchanged.
+No npm task, compiler test or new proof was needed for these prose changes.
+
+The [adoption record](plans/2026-10-24-charter-adoption.md) lists active
+contributor guidance and the deferred design pilot. Existing R0/a-min gates
+remain unchanged. Preserve the separate local effect research and Claude
+handoff files below; they are not part of the requested push.
+
+[readme-charter-review]: plans/2026-10-24-readme-charter-prose-review.md
 
 ---
 

@@ -4,6 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (traverse_)
+import Domain.Arithmetic (operands)
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved (EffectInfo)
@@ -29,7 +30,7 @@ printable holders env (Checked.Expr expression) = case expression.node of
     (Array.cons body (map failureBody clauses))
   Checked.Fail value → recur value
   Checked.Construct _ _ arguments → each arguments
-  Checked.Add left right → each [ left, right ]
+  Checked.Arith arith → each (operands arith)
   Checked.Concat left right → each [ left, right ]
   Checked.Interpolate parts → each parts
   Checked.Compare _ left right → each [ left, right ]

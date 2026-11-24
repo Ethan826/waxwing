@@ -6,6 +6,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
+import Domain.Arithmetic (Arithmetic)
 import Domain.Row (EffectRef, TypeHead)
 import Domain.Syntax (Operator, Span)
 import Domain.Resolved (CtorId, FunctionId, LocalId, TypeId)
@@ -133,7 +134,7 @@ data Node
   | Local LocalId
   | Call FunctionId (Array Expr)
   | Construct CtorId (Array Expr)
-  | Add Expr Expr
+  | Arith (Arithmetic Expr)
   | Concat Expr Expr
   | Interpolate (Array Expr)
   | Compare Operator Expr Expr

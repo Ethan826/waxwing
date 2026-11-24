@@ -1,0 +1,17 @@
+effect Database { fn query(id: Int): Int; };
+
+fn checkout(id: Int): Int with Database = Database.query(id) + 1;
+
+fn runCheckout(db: Handler(Database with pure), id: Int): Int =
+  with db { checkout(id) };
+
+fn liveFrom(port: Int): Handler(Database with pure) =
+  handler Database { query(id) => id + port };
+
+fn fakeDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => 42 };
+
+fn main(): Unit with Console = {
+  Console.print(runCheckout(fakeDatabase(), 5));
+  Console.print(runCheckout(liveFrom(1000), 5))
+};

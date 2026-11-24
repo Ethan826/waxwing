@@ -3,6 +3,7 @@ module Domain.Checked.Internal where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe)
+import Domain.Arithmetic (Arithmetic)
 import Domain.Syntax (Operator, Sort, Span)
 import Domain.Checked.Unnumbered (UnnumberedRow)
 import Domain.Type (TyRow, rename, renameRow)
@@ -70,7 +71,7 @@ data Node
   | CtorRef CtorId Instantiation
   | Call FunctionId Instantiation (Array Expr)
   | Construct CtorId Instantiation (Array Expr)
-  | Add Expr Expr
+  | Arith (Arithmetic Expr)
   | Concat Expr Expr
   | Interpolate (Array Expr)
   | Compare Operator Expr Expr

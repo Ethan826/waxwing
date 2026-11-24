@@ -1,0 +1,6 @@
+effect Logger { fn log(n: Int): Unit; };
+
+fn checkout(db: { query: Int -> Int with Logger, ...r }, id: Int): Int =
+  db.query(id) + 1;
+
+fn main(): Unit with Console = Console.print(1);

@@ -1,0 +1,21 @@
+effect Database { fn query(id: Int): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn checkout(id: Int): Int with Database = Database.query(id) + 1;
+
+fn databaseWith(log: Handler(Logger with pure), port: Int)
+    : Handler(Database with pure) =
+  handler Database {
+    query(id) => with log {
+      Logger.log(id);
+      id + port
+    }
+  };
+
+fn silentLogger(): Handler(Logger with pure) =
+  handler Logger { log(n) => () };
+
+fn main(): Unit with Console =
+  with databaseWith(silentLogger(), 1000) {
+    Console.print(checkout(5))
+  };

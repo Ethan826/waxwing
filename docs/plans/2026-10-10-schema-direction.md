@@ -1,5 +1,10 @@
 # First-party schemas, boundary parsing and generated test data
 
+The [approved charter](../waxwing-charter.md) states the current purpose
+and design principles. Read dated implementation snapshots below as
+historical records. The latest explicit author direction governs within
+scope; subsystem designs and implementation approvals remain separate.
+
 Recorded 2026-10-10 at the user's request. SCH001 is a requested language/
 standard-library foundation for the v1 planning discussion, not an approved
 implementation plan. The user wants a built-in Schema facility connecting
