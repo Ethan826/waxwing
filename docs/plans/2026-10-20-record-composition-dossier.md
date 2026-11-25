@@ -9409,3 +9409,21 @@ The author ruled:
   consequence of their approved categories change.
 
 All remaining holds continue. No further push is authorized.
+
+### 18.203 Everything lands on `main` (2026-11-24)
+
+The author ruled: land everything on `main` now, research and compiler
+together, in one fast-forward of `integrate/scope-a`. This lifts the
+hold on merging and integrating into `main` and authorizes the push of
+`main`. It withdraws the plan of 2026-10-21 to send research up on its
+own branch. Every research hold in §18.202 continues: live replacement,
+milestone changes, F14's retirement, effect-marker lifts, Scopes B and
+C, and the ambiguity hold on the 105 bound-hole declarations.
+
+The integration merged `main` (FX033's repair, Int arithmetic Tasks
+1-2, the charter) and `research/effect-kinds` into `scope-a-impl`, and
+brought Scope A onto `main`'s `Arith` node (257f0bee). Records 13 at
+257f0bee reproduce records 12 but for the commit (fe58eb0b); trace-inert
+was re-pinned (e4c4abba). The final verify and the author's acceptance
+of `partialfirst-growth` are in docs/progress.md.
+

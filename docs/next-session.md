@@ -1,4 +1,61 @@
-# RESUME HERE (2026-11-14, America/New_York; updated §18.202)
+# RESUME HERE (2026-11-24, America/New_York; §18.203)
+
+Self-contained handoff for a fresh context. Read this block, then
+dossier §18.194-§18.203 (docs/plans/2026-10-20-record-composition-
+dossier.md). Wait for the author's next direction; nothing is
+authorized beyond it.
+
+**Landed.** By the author's ruling of 2026-11-24 (§18.203), `main` holds
+everything: Scope A (`scope-a-impl`), the R0 line (`r0-t2-d1` and the
+`ap/*` and `a2/*` branches, all contained), `research/effect-kinds`,
+and `main`'s own FX033 repair, Int arithmetic Tasks 1-2 and charter.
+Landed as one fast-forward of `integrate/scope-a`, research and
+compiler together; the earlier plan to send research up on its own
+branch is withdrawn. The integration's build fix (257f0bee) moved four
+Scope A sites onto `Arith (Binary Plus)`, keeping rule 7 and the path
+step `Add`; docs/progress.md has the detail.
+
+**Verified.** Records 13 at 257f0bee: the results dump is byte-identical
+to Scope A's final dump; comparison 13 equals comparison 12 but for its
+commit; performance read-back CPU x2.36, RSS x1.11, validator CPU x2.06,
+RSS x0.96, within the §18.168 budgets. trace-inert re-pinned. The final
+verify passed every parallel and serial test and 540 of 541 regression
+proofs; `partialfirst-growth` measured 2.995 against 3 under another
+session's load and was accepted without a rerun. Rerun it on a quiet
+machine.
+
+**What remains, research-wise** (each held until the author rules):
+- Live replacement: the activation gate reads shadow minting met, live
+  replacement not met (2), which waits on criterion 2, the A1 ruling on
+  whole-program losses under decide.
+- The 105 recovered declarations resting on a bound hole stay under the
+  ambiguity hold (§18.202).
+- No milestone has moved since 2026-10-25: an approved way to preserve
+  and check effects in the new checker; complete typed programs from
+  the new checker with the compatibility boundary resolved; composed
+  records that compile and run with the new path safely enabled.
+- F14's retirement, effect-marker lifts, and Scopes B and C.
+- FX033's rule H′ is argued, not proved: RC′, O-SUB and effect
+  soundness are not established, and a-min's E4′ wording must adopt
+  H′. FX034's cause is unverified. FX030 to FX032 stay open.
+- docs/plans/r0-amin-statements.md:1597 cites Failure.purs:102; the
+  raise line is now 103. Its coverage fixture keeps `:102` to match.
+
+**Before any src commit:** `purs-tidy check src tools/style/src`;
+`node scripts/width.mjs` (0 over 80); the structural gate
+(`checkStructure` in scripts/structure.mjs, which must be empty; it
+also caps files at 250 lines); regression needles still match. Verify:
+`WAXWING_VERIFY_TEST_CONCURRENCY=2 WAXWING_REGRESSION_JOBS=1 node
+scripts/verify.mjs`. Any src change makes records 13 stale: repeat
+scripts/r0-t2-perf-run.mjs and research/r0-scope-a/comparison11.mjs
+(the pre-switch dump is the 2026-11-04 comparison's baseline dump),
+repoint the gate, then re-pin trace-inert.
+
+**Held:** everything in "What remains", and each push.
+
+---
+
+# Earlier: Scope A handoff (2026-11-14, superseded by the block above)
 
 Self-contained handoff for a fresh context. Work in this worktree,
 /Users/ethan/Desktop/waxwing/.claude/worktrees/r0-t2-d1, which is now
