@@ -371,15 +371,18 @@ Task 16 Step 1 describes, made with r0-results-diff on the dumps. The
 gate checks that the comparison was recorded. Whether the moves are
 acceptable is for the author to rule.
 
-Measured on 2026-11-14: met. The status cites
-test/fixtures/r0/t2-minting-comparison12.json, the repeat on the final
-Scope A source (§18.200) at 4372ce35 (records 11, at ff5e90f8, went
-stale with a source restyle). Comparison 10's moved rows are unchanged
+Measured on 2026-11-24: met. The status cites
+test/fixtures/r0/t2-minting-comparison13.json, the repeat at 257f0bee,
+where `main` was merged into Scope A and `Add` became `Arith` (records
+12, at 4372ce35, went stale with that src change; records 11, at
+ff5e90f8, with a source restyle). The results dump is byte-identical
+to Scope A's final dump, so the record equals records 12 but for its
+commit. Comparison 10's moved rows are unchanged
 (census 0, window 16, rt8 15, shadow 16), and 593 declarations move by
 Scope A, none of them among those, each checked against the two Scope A
 allowlists (its `scopeA` section; research/r0-scope-a/movement-check.mjs
 and comparison11.mjs). Its `commit` is
-4372ce35da81a0bbe35e2beb1b0a6aaff8a4c83a, and src is unchanged since.
+257f0bee1ef7199372c1e8a4aeb6654ec0e825bd, and src is unchanged since.
 Whether the moves are acceptable is the author's to rule.
 
 ### 6. Performance qualified, read-back and validator apart
@@ -406,10 +409,10 @@ Measured on 2026-11-04 (3cad78cd): not met. There is no budget
 ruling and there are no budget figures, so the report lists the
 missing ruling, the missing figures and each of the four budgets the
 status lacks. A measurement is recorded:
-test/fixtures/r0/t2-performance-12.json, measured at 4372ce35
-(2026-11-14; read-back CPU ×2.39, RSS ×1.03; validator CPU ×2.07, RSS
-×1.04), with its conditions and both parts. Its `commit` is
-4372ce35da81a0bbe35e2beb1b0a6aaff8a4c83a, and src is unchanged since.
+test/fixtures/r0/t2-performance-13.json, measured at 257f0bee
+(2026-11-24; read-back CPU ×2.36, RSS ×1.11; validator CPU ×2.06, RSS
+×0.96), with its conditions and both parts. Its `commit` is
+257f0bee1ef7199372c1e8a4aeb6654ec0e825bd, and src is unchanged since.
 The budgets are approved (§18.168) and its figures are within them; the
 source identity check passes. The attribution of the
 failed perf files (test/fixtures/r0/t2-perf-attribution.json) is not
