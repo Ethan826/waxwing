@@ -1,5 +1,27 @@
 # Bootstrap evidence and current checkpoint
 
+## Scope A integration: records 13 and the final verify (2026-11-24)
+
+Records 12 went stale with the integration's src change. Repeated at
+257f0bee (fe58eb0b): the results dump is byte-identical to Scope A's
+final dump, so the minting comparison equals records 12 but for its
+commit (t2-minting-comparison13.json), and the performance run gives
+read-back CPU x2.36, RSS x1.11 and validator CPU x2.06, RSS x0.96, all
+within the section 18.168 budgets (t2-performance-13.json). The gate
+reads as before: shadow minting met, live replacement not met (2).
+trace-inert re-pinned at fe58eb0b (e4c4abba): exactly the 326
+declarations with `+` moved, the key set is unchanged.
+
+The final `verify` (log ~/Desktop/waxwing-checks/20261124-200209/)
+passed 3,528 of 3,528 parallel and 245 of 245 serial tests, and 540 of
+541 regression proofs. `partialfirst-growth` failed: its restored
+defect measured a growth ratio of 2.995 against a threshold of 3, with
+load1 between 27 and 48 from another session's heavy checker running
+at the same time. No src in this integration touches what it measures.
+The author accepted the result without a rerun (2026-11-24). This is a
+timing proof under contention, not a fixed or explained failure; rerun
+it on a quiet machine before relying on it.
+
 ## Scope A integration: the build on `Arith` (2026-11-24)
 
 On `integrate/scope-a`, `main`'s `Arith (Binary Plus left right)`
