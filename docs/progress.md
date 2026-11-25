@@ -384,6 +384,25 @@ README alignment follows in the next commit. No compiler rules, proofs or
 R0/a-min gates changed. Documentation checks only; no npm task was run.
 No push was requested.
 
+## Effect kinds and extensibility research (2026-10-24)
+
+The author requested a broad prior-art spike before choosing stronger
+purity guarantees or an extensible effect-kind design. Findings and the
+open-question ledger are in
+[the research note](plans/2026-10-24-effect-kinds-research.md).
+Two read-only readers covered Effekt and library extensibility; a bounded
+Effekt source review found no material issue in the synthesis. The note
+separates caller requirements, captures, external interaction, failure,
+state, divergence and lifetime. It records 16 proposed separating cases
+and a bounded route from promises to reviewed statements.
+
+Source reading and document checks only: no examples, compiler, oracle or
+proofs were run. No language rule or implementation scope was selected.
+The existing R0/a-min gates remain unchanged. The note and its editorial
+record stayed uncommitted in the `integrate` worktree until 2026-11-24,
+when they were committed to `main` with the landing (§18.203); the
+reports built on it are in research/effect-kinds/.
+
 ## D001 Int arithmetic, plan Tasks 1-2 (2026-10-24)
 
 Branch d001-arith (main 2af6e40 plus the design and plan, 7ca2a07).

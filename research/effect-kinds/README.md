@@ -6,10 +6,10 @@ blocked.
 
 The research note that frames this work is
 `docs/plans/2026-10-24-effect-kinds-research.md`, written by another
-session in the `integrate` worktree. When these files were committed it
-was still uncommitted there, along with its editorial note
-`docs/plans/2026-10-24-effect-kinds-prose-review.md`. This branch does
-not copy or change either file. Read the note first: its §5 promises,
+session in the `integrate` worktree, with its editorial note
+`docs/plans/2026-10-24-effect-kinds-prose-review.md`. Both stayed
+uncommitted there until 2026-11-24, when they landed on `main` beside
+these files. Read the note first: its §5 promises,
 §7 cases E01-E16 and §8 passes P1-P6 are the frame for everything
 below.
 
