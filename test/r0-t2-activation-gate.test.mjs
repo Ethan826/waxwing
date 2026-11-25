@@ -172,8 +172,9 @@ const reportRun = () => spawnSync('node',
 
 // Criteria 5 and 6 read each record's `commit` against HEAD's src tree.
 // On the committed tree both records are fresh (src unchanged since
-// 257f0bee, both; records 13, the integration of main, 2026-11-24). Must-fail: src changed since the
-// commit names it stale; without the field the record is unmet.
+// 257f0bee, both; records 13, the integration of main, 2026-11-24).
+// Must-fail: src changed since the commit names it stale; without the
+// field the record is unmet.
 test('criteria 5 and 6 see a record stale against src', () => {
   const run = reportRun();
   assert.ok(run.stdout.includes('    src unchanged since '
