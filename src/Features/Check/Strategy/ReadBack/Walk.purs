@@ -20,6 +20,7 @@ import Data.Array (drop, findMap, length, take)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Origin (Step(..))
 
@@ -81,12 +82,18 @@ expressionChildren node = case node of
   Checked.Apply callee arguments → [ child "Apply" "function" callee ]
     <> expressions "Apply" "args" arguments
     <> overApplied callee arguments
-  Checked.Add left right → pair "Add" left right
+  Checked.Arith arith → arithChildren arith
   Checked.Concat left right → pair "Concat" left right
   Checked.Interpolate parts → expressions "Interpolate" "parts" parts
   Checked.Compare _ left right → pair "Compare" left right
   Checked.Pipe left right → pair "Pipe" left right
   _ → controlChildren node
+
+-- Total over the operators, unlike the groups' `_ →`, so a new operator
+-- fails to compile here instead of reading as no node. `+` keeps the
+-- path step `Add` its recorded paths were pinned with.
+arithChildren ∷ Arithmetic Checked.Expr → Array Child
+arithChildren (Binary Plus left right) = pair "Add" left right
 
 controlChildren ∷ Checked.Node → Array Child
 controlChildren node = case node of

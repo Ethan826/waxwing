@@ -11,11 +11,29 @@ is authorized beyond it.
 `integrate/scope-a` merges `main` (FX033's repair, Int arithmetic Tasks
 1-2, the charter) and `research/effect-kinds` into `scope-a-impl`.
 `ap/t3t5`'s d3882301 is an earlier form of 1f5336e1 (R036 (3)), already
-here. The build fails: `main` renamed `Add` to `Arith (Binary Plus)`
-(12a657cd), and three Scope A modules still match `Add`
-(Generate/Expr.purs:73, Generate/Static/Walk.purs:41,
-Strategy/ReadBack/Walk.purs:84). The src merge also makes Records 12
-stale (see State below). Not on `main` yet.
+here. `main` renamed `Add` to `Arith (Binary Plus)` (12a657cd); the
+build fix (2026-11-24, uncommitted at handoff) brings the four Scope A
+sites (Generate/Expr.purs, Generate/Static/Walk.purs and Rules.purs,
+Strategy/ReadBack/Walk.purs) onto `Arith`, each matching `Binary Plus`
+so `Minus` fails to compile there. The generator keeps rule 7 and the
+label `Add`; the two walkers keep the path step `Add`. Six JavaScript
+test helpers follow, in three roles. Four readers (r0-translator-exprs,
+r0-census-walk, r0-generate-paths, r0-elab-walk) read `Arith` from the
+compiled output and throw at run time on another operator; all but
+r0-census-walk, which lists children and no paths, keep the step
+`Add`, and the translator, the generator's mirror, keeps rule E7.
+r0-holes-gen constructs `Arith (Binary Plus …)`, and RT5's list names
+the constructor `Arith`. Citations
+of the raise lines `main` moved (Failure.purs:103, Printable.purs:58)
+are repointed, except effects-coverage.json's row name, which matches
+r0-amin-statements.md and keeps `:102`, and the read-back
+termination table has a row for `Domain.Arithmetic`'s derived
+Traversable. The build, purs-tidy and width pass; the owner's verify
+is pending. Stale, to re-pin by the coordinator: the
+activation-gate records (Records 12, test/fixtures/r0/
+t2-activation-gate.json, two activation-gate tests; see State below)
+and the trace-inert pins (their digest names `Arith` where it named
+`Add`). Not on `main` yet.
 
 **State.**
 - Scope A is implemented and verified: verify passed at 62ec785d

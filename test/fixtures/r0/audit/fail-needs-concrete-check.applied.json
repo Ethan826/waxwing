@@ -1,7 +1,7 @@
 {
   "name": "fail-needs-concrete-check/applied",
   "refusal": "FailNeedsConcrete",
-  "site": "src/Features/Check/Failure.purs:102",
+  "site": "src/Features/Check/Failure.purs:103",
   "token": "FailNeedsConcrete",
   "class": "semantic",
   "evidence": "checked",

@@ -13,6 +13,7 @@ module Features.Check.Generate.Expr (expr) where
 import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (maybe)
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (Base(..), CheckedName(..))
 import Domain.Recorded.Effect (MTy(..))
@@ -58,6 +59,8 @@ expr context path found = do
   leaf ty base node = pure -- E1
     { ty, marked: MBase base, node: fixed (pure node), emits: none }
   recur = expr
+  -- `+` keeps E7's rule number and the path step `Add`.
+  added one other = Checked.Arith (Binary Plus one other)
   rule = case _ of
     Integer _ value → leaf TInt IntBase (Checked.Integer value)
     Boolean _ value → leaf TBool BoolBase (Checked.Boolean value)
@@ -70,8 +73,8 @@ expr context path found = do
       arguments
     Construct span ctor arguments → construct recur context path span ctor
       arguments
-    Add span left right → arithmetic recur context path span
-      { rule: 7, label: "Add", base: TInt, made: Checked.Add, marked: IntBase }
+    Arith span (Binary Plus left right) → arithmetic recur context path span
+      { rule: 7, label: "Add", base: TInt, made: added, marked: IntBase }
       left
       right
     Concat span left right → arithmetic recur context path span

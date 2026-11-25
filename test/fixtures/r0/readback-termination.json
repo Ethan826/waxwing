@@ -2,6 +2,12 @@
   "about": "R036 (1), T5 (dossier §18.161 (3)): the reviewed termination arguments for every tailRec-family use, JS loop and reference cycle that test/readback-total-scan.mjs finds in the src module closure of Features.Check.Strategy.ReadBack.Package. Evidence for review, not a proof of totality or exception freedom; docs/plans/2026-11-04-readback-termination-audit.md. A new loop or cycle fails test/structure-readback-total.test.mjs until it has a row here.",
   "entries": [
     {
+      "key": "Domain.Arithmetic.{traversableArithmetic}",
+      "kind": "cycle",
+      "count": 1,
+      "argument": "Derived Traversable on Arithmetic: the dictionary refers to itself because its sequence is traverse(traversableArithmetic) with identity. Arithmetic is not recursive (Binary holds an operator and two operands of the parameter type), so traverse applies the supplied function once to each operand and combines the results with the Binary constructor through map and apply (the supplied Applicative decides whether and how often that constructor runs); traverse contains no recursive call, neither to itself nor to sequence. The cycle is one step (sequence to traverse) and does not recur."
+    },
+    {
       "key": "Domain.Problem.Names.{eqTypeName}",
       "kind": "cycle",
       "count": 1,

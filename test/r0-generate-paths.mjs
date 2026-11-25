@@ -13,6 +13,7 @@ const { typeRefSpan } = await import('../output/Domain.Syntax/index.js');
 
 // [constructor, field] → the constructor's argument holding it.
 const fieldsOf = {
+  // `Add`: `+`'s operands, in its Binary (stepOf)
   Call: { args: 2 }, Construct: { args: 2 }, Add: { left: 1, right: 2 },
   Concat: { left: 1, right: 2 }, Interpolate: { parts: 1 },
   Compare: { left: 2, right: 3 },
@@ -37,6 +38,20 @@ const fieldsOf = {
 // (`Boolean`).
 export const nameOf = node => node?.constructor?.name?.replace(/^\$\$/, '');
 
+// A node's path step: its constructor's name, except that `+`, built as
+// `Arith (Binary Plus l r)`, keeps the step `Add` its paths were pinned
+// with, and its `left` and `right` are the Binary's `value1`, `value2`.
+// Another operator throws until it is given its step.
+const stepOf = node => {
+  const name = nameOf(node);
+  if (name !== 'Arith') return name;
+  if (nameOf(node.value1) === 'Binary'
+    && nameOf(node.value1.value0) === 'Plus') return 'Add';
+  throw new Error(`not a Plus: ${nameOf(node.value1?.value0)}`);
+};
+const slotOf = (node, name, slot) =>
+  (name === 'Add' ? node.value1 : node)[`value${slot}`];
+
 const spanOf = node => node.value0?.start !== undefined ? node.value0
   : node.span;
 
@@ -46,12 +61,12 @@ const walk = (node, steps) => {
   for (let index = 0; index < steps.length; index += 1) {
     const step = steps[index];
     if (Array.isArray(at)) { at = at[step]; continue; }
-    const name = nameOf(at);
+    const name = stepOf(at);
     if (name in fieldsOf && step === name) {
       const field = steps[index + 1];
       const slot = fieldsOf[name][field];
       if (slot === undefined) throw new Error(`${name} has no ${field}`);
-      at = at[`value${slot}`];
+      at = slotOf(at, name, slot);
       // `Given` holds a field record; its value is the expression.
       if (name === 'Given') at = at.value;
       index += 1;
@@ -97,7 +112,7 @@ export const sameSpan = (a, b) => a.start.offset === b.start.offset
   && a.end.offset === b.end.offset;
 
 const isNode = value => value !== null && typeof value === 'object'
-  && (nameOf(value) in fieldsOf || nameOf(value) in leaves);
+  && (stepOf(value) in fieldsOf || stepOf(value) in leaves);
 const leaves = { Integer: 1, Boolean: 1, Local: 1, FunctionRef: 1, CtorRef: 1,
     UnitValue: 1, OperationRef: 1, PrintRef: 1, ShowRef: 1, CrashRef: 1,
   TextLiteral: 1, Wildcard: 1, Bind: 1, IntLit: 1, BoolLit: 1 };
@@ -108,9 +123,9 @@ export const nodesOf = body => {
   const found = [];
   const visit = (node, steps) => {
     found.push({ steps, node });
-    const name = nameOf(node);
+    const name = stepOf(node);
     for (const [field, slot] of Object.entries(fieldsOf[name] ?? {})) {
-      let value = node[`value${slot}`];
+      let value = slotOf(node, name, slot);
       if (name === 'Given') value = value.value;
       const here = [...steps, name, field];
       if (isNode(value)) { visit(value, here); continue; }

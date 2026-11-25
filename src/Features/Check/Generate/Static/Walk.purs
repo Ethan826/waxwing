@@ -11,6 +11,7 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.Recorded.Origin (Path, Step(..))
 import Domain.Resolved (Expr(..), Item(..), LiteralItem(..))
 import Features.Check.Generate.Fresh (child, childAt, childOf)
@@ -38,7 +39,7 @@ children path = case _ of
   CtorRef _ _ → []
   Call _ _ arguments → indexed "Call" "args" arguments
   Construct _ _ arguments → indexed "Construct" "args" arguments
-  Add _ left right → pair "Add" left right
+  Arith _ (Binary Plus left right) → pair "Add" left right
   Concat _ left right → pair "Concat" left right
   Interpolate _ parts → indexed "Interpolate" "parts" parts
   Compare _ _ left right → pair "Compare" left right

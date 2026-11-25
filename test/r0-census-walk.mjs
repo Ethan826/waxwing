@@ -10,6 +10,7 @@ const R = await load('Domain.Resolved');
 const T = await load('Domain.Type');
 const Row = await load('Domain.Row');
 const { Just } = await load('Data.Maybe');
+const { Binary, Plus } = await load('Domain.Arithmetic');
 
 const none = () => [];
 const fieldValues = fields => fields.map(field => field.value);
@@ -24,6 +25,13 @@ const literalItem = found => {
   if (found instanceof R.Spreading) return found.value1;
   throw new Error(`r0-census-walk: not a LiteralItem: ${String(found)}`);
 };
+// `+`, the one operator today; another throws until it is listed.
+const plus = found => {
+  const arith = found.value1;
+  if (arith instanceof Binary && arith.value0 instanceof Plus)
+    return [arith.value1, arith.value2];
+  throw new Error(`r0-census-walk: not a Plus: ${String(arith)}`);
+};
 
 // Each Expr constructor: its child expressions.
 const children = [
@@ -32,7 +40,7 @@ const children = [
   [R.OperationRef, none], [R.PrintRef, none], [R.ShowRef, none],
   [R.CrashRef, none], [R.TextLiteral, none],
   [R.Call, e => e.value2], [R.Construct, e => e.value2],
-  [R.Add, e => [e.value1, e.value2]], [R.Concat, e => [e.value1, e.value2]],
+  [R.Arith, plus], [R.Concat, e => [e.value1, e.value2]],
   [R.Interpolate, e => e.value1],
   [R.Compare, e => [e.value2, e.value3]],
   [R.If, e => [e.value1, e.value2, e.value3]],

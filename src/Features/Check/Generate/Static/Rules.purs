@@ -21,6 +21,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Resolved (Expr(..), FunctionDecl, Ty(..), VarId)
 import Domain.Verdict (StaticRefusal)
@@ -69,7 +70,7 @@ sitesAt tables signatures (Tuple at found) = map (Tuple at) <$> case found of
   Local _ _ → pure []
   FunctionRef _ _ → pure []
   CtorRef _ _ → pure []
-  Add _ _ _ → pure []
+  Arith _ (Binary Plus _ _) → pure []
   Concat _ _ _ → pure []
   Interpolate _ _ → pure []
   Compare _ _ _ _ → pure []

@@ -8,6 +8,7 @@ import { call, construct, ctorRef, flush, functionRef }
 import { Maybe, R, translate } from './r0-translator-types.mjs';
 import { effectRules } from './r0-translator-effects.mjs';
 import { recordRules } from './r0-translator-records.mjs';
+import { Binary, Plus } from '../output/Domain.Arithmetic/index.js';
 
 const site = (path, rule, span) => ({ path, rule, span, kind: 'body' });
 const res = (cx, here) =>
@@ -24,11 +25,20 @@ const Unit = base('Unit');
 const child = (cx, env, path, node) => (expression, ...steps) =>
   cx.expr(cx, expression, at(path, node, ...steps), env);
 
-const binary = (rule, type) => (cx, e, path, env) => {
+// E7 reads `Arith (Binary Plus l r)` under the step `Add`, the name its
+// paths were pinned with; any other operator throws, as an unknown node.
+const plusOperands = e => {
+  if (e.value1 instanceof Binary && e.value1.value0 instanceof Plus)
+    return [e.value1.value1, e.value1.value2];
+  throw new Error(`r0-translator: not a Plus: ${String(e.value1)}`);
+};
+const concatOperands = e => [e.value1, e.value2];
+
+const binary = (rule, name, type, operands) => (cx, e, path, env) => {
   const here = site(path, rule, e.value0);
-  const name = rule === 'E7' ? 'Add' : 'Concat';
-  B1(cx, here, child(cx, env, path, name)(e.value1, 'left'), type);
-  B1(cx, here, child(cx, env, path, name)(e.value2, 'right'), type);
+  const [left, right] = operands(e);
+  B1(cx, here, child(cx, env, path, name)(left, 'left'), type);
+  B1(cx, here, child(cx, env, path, name)(right, 'right'), type);
   return type;
 };
 
@@ -138,7 +148,8 @@ const coreRules = [
   [R.Construct, (cx, e, path, env) => construct(cx,
     site(path, 'E6', e.value0), e.value1,
     arguments_(cx, e, path, env, 'Construct', 'value2'))],
-  [R.Add, binary('E7', Int)], [R.Concat, binary('E8', Text)],
+  [R.Arith, binary('E7', 'Add', Int, plusOperands)],
+  [R.Concat, binary('E8', 'Concat', Text, concatOperands)],
   [R.Interpolate, (cx, e, path, env) => {
     const here = site(path, 'E9', e.value0);
     e.value1.forEach((part, index) => B1(cx, here,

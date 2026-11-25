@@ -88,7 +88,7 @@ test('P7: the rest binder is { ...⟨p, rest⟩ } at RestType p', () => {
 // come from (Style.Arms reads each source's data constructors), so a
 // constructor added there fails here until a fixture covers it.
 const exprs = ['Integer', 'Boolean', 'Local', 'FunctionRef', 'CtorRef',
-  'Call', 'Construct', 'Add', 'Concat', 'Interpolate', 'Compare', 'If',
+  'Call', 'Construct', 'Arith', 'Concat', 'Interpolate', 'Compare', 'If',
   'Match', 'Lambda', 'Apply', 'Pipe', 'UnitValue', 'Block', 'OperationRef',
   'Perform', 'PrintRef', 'Print', 'ShowRef', 'Show', 'CrashRef', 'Crash',
   'Handler', 'With', 'Handle', 'Fail', 'TextLiteral', 'RecordLiteral',

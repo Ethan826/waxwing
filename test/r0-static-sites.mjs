@@ -97,7 +97,7 @@ export const table = [
     semantic, 'checked'],
   ['MarkAt', 'HandlerFails', `${A}MarkReport.purs:62`, 'HandlerMayFail',
     semantic, 'checked'],
-  ['SettledAt', 'FailPayloadSettled', `${A}Failure.purs:102`,
+  ['SettledAt', 'FailPayloadSettled', `${A}Failure.purs:103`,
     'FailNeedsConcrete', semantic, 'checked'],
   ['SettledAt', 'ArmRedundant', `${A}Coverage.purs:101`, 'RedundantArm',
     semantic, 'checked'],

@@ -103,6 +103,14 @@ const walker = sites => {
       expr(r[one], node.value0, at(path, label, left));
       expr(r[two], node.value1, at(path, label, right));
     };
+    // `+` is `Arith (Binary Plus l r)` in both trees, at the step `Add`;
+    // another operator fails closed.
+    const plus = (found, made) => {
+      if (name(found) !== 'Binary' || name(found.value0) !== 'Plus')
+        throw new Error(`r0-elab-walk: no arm for ${name(found.value0)}`);
+      expr(found.value1, made.value1, at(path, 'Add', 'left'));
+      expr(found.value2, made.value2, at(path, 'Add', 'right'));
+    };
     switch (name(r)) {
       case 'FunctionRef': case 'CtorRef': slots(path, node.value1); return;
       case 'OperationRef': slots(path, node.value2); return;
@@ -112,7 +120,7 @@ const walker = sites => {
         named(r.value2, node, path, 'Construct', 'value1', 'value2'); return;
       case 'Perform':
         named(r.value3, node, path, 'Perform', 'value2', 'value3'); return;
-      case 'Add': pair('Add', 'value1', 'value2'); return;
+      case 'Arith': plus(r.value1, node.value0); return;
       case 'Concat': pair('Concat', 'value1', 'value2'); return;
       case 'Compare':
         expr(r.value2, node.value1, at(path, 'Compare', 'left'));

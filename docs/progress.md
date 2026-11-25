@@ -1,5 +1,34 @@
 # Bootstrap evidence and current checkpoint
 
+## Scope A integration: the build on `Arith` (2026-11-24)
+
+On `integrate/scope-a`, `main`'s `Arith (Binary Plus left right)`
+replaced `Add` in four Scope A sites: Generate/Expr.purs (rule 7, a
+`where` helper builds the checked node), Generate/Static/Walk.purs,
+Generate/Static/Rules.purs and Strategy/ReadBack/Walk.purs (a total
+`arithChildren`, since its groups end in `_ →`). Each matches `Binary
+Plus`, so adding `Minus` fails to compile there; the generator keeps
+rule 7 and the label `Add`, and the two walkers keep the path step
+`Add` with `left` and `right`. Six test helpers mirror the
+constructors by name. Four readers (r0-translator-exprs,
+r0-census-walk, r0-generate-paths, r0-elab-walk) read `Arith` from the
+compiled output and throw at run time on another operator; the three
+that build paths keep the step `Add`, and the translator, the
+generator's mirror, keeps rule E7. r0-holes-gen constructs `Arith
+(Binary Plus …)`, and RT5's list names the constructor `Arith`; these
+two reject nothing at run time. `node scripts/build.mjs`,
+purs-tidy and width pass; verify is the owner's, after this step.
+Expected stale until re-pinned: the activation-gate records (two
+tests) and the trace-inert pins.
+
+The merge also moved two cited raise lines and widened the read-back's
+reach (ruling 6, amended): citations of `Failure.purs:102` now name
+`:103` (r0-static-sites, the three fail-needs-concrete-check audit
+records; effects-coverage.json keeps `:102`, the row name of the
+statements record r0-amin-statements.md), `Printable.purs:57` in
+r0-static-problem names `:58`, and readback-termination.json has a row
+for the derived `Domain.Arithmetic.{traversableArithmetic}` cycle.
+
 ## Tranche 2 read-back: Stage B Tasks 13 and 16 (2026-11-03)
 
 Resumed under dossier §18.157. Task 13 (abc0260, b0d20c1, d375ffc):

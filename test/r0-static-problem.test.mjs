@@ -46,7 +46,7 @@ const placed = [
     [`${R}SortConflict.purs:57`]],
   ['EffectRowAsRecord', ['ResolveRule StaticSort'],
     [`${R}SortConflict.purs:58`]],
-  ['NotPrintable', ['CheckSemantic', 'Lowering'], [`${C}Printable.purs:57`,
+  ['NotPrintable', ['CheckSemantic', 'Lowering'], [`${C}Printable.purs:58`,
     'src/Features/Specialize/Printable.purs:113']],
   ['MissingField', ['CheckSemantic'], [`${C}Record.purs:184`]],
   ['ExpectedRecord', ['ResolveRule StaticSort', 'CheckSemantic'],

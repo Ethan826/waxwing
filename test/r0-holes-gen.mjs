@@ -6,6 +6,9 @@
 // well-typed: the walks under test read no typing invariant.
 // `generatorOf(M, next)` takes the compiled modules
 // { Core, Row, Open, Maybe, Tuple, Syntax } and a PRNG in [0, 1).
+// `+` is built as `Arith (Binary Plus l r)`, drawing as `Add l r` did.
+import { Binary, Plus } from '../output/Domain.Arithmetic/index.js';
+
 export const bounds = { seeds: [1, 2, 3], bodies: 2000, types: 5000,
   bodyDepth: 3, bodyTypeDepth: 3, typeDepth: 4, patternDepth: 2,
   metas: 8, rigids: 3 };
@@ -79,7 +82,8 @@ export const generatorOf = (M, next) => {
     return [...leafNodes,
       () => new O.FunctionRef(0, inst()), () => new O.CtorRef(0, inst()),
       () => new O.Call(0, inst(), es()), () => new O.Construct(0, inst(), es()),
-      () => new O.Add(e(), e()), () => new O.Concat(e(), e()),
+      () => new O.Arith(new Binary(Plus.value, e(), e())),
+      () => new O.Concat(e(), e()),
       () => new O.Interpolate(es()),
       () => new O.Compare(M.Syntax.Equal.value, e(), e()),
       () => new O.If(e(), e(), e()),
